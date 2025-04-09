@@ -3,223 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高中数学函数绘图工具(GeoGebra版)</title>
+    <title>数学函数绘图工具(GeoGebra版)</title>
     <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --border-color: #dadce0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --card-bg: #ffffff;
+        }
+        
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
             line-height: 1.6;
-            padding: 20px;
         }
         
-        .container {
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .header h1 {
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .main-container {
             display: flex;
             flex-wrap: wrap;
             max-width: 1200px;
-            margin: 0 auto;
-            gap: 20px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            gap: 1.5rem;
+        }
+        
+        .graph-container {
+            flex: 2;
+            min-width: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .graph-container:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         }
         
         .control-panel {
             flex: 1;
             min-width: 300px;
             background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .graph-container {
-            flex: 2;
-            min-width: 400px;
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        h2 {
-            color: #3498db;
-            margin: 15px 0 10px;
-            font-size: 1.2em;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        
-        select, input[type="text"], input[type="color"], input[type="range"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #2980b9;
-        }
-        
-        .range-value {
-            display: inline-block;
-            width: 50px;
-            text-align: right;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
         
         #ggb-element {
             width: 100%;
             height: 500px;
-            border: 1px solid #eee;
-            background-color: white;
+            border: none;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .control-group h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        select, input[type="text"], input[type="color"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        select:hover, input[type="text"]:hover, input[type="color"]:hover {
+            border-color: var(--primary-color);
+        }
+        
+        select:focus, input[type="text"]:focus, input[type="color"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        button {
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+        
+        button i {
+            font-size: 1.1rem;
+        }
+        
+        button.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        button.primary:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button.secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #e8eaed;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .range-container label {
+            min-width: 80px;
+            margin-bottom: 0;
+        }
+        
+        input[type="range"] {
+            flex-grow: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: var(--secondary-color);
+        }
+        
+        .range-value {
+            font-weight: 500;
+            min-width: 40px;
+            text-align: center;
+            background: var(--light-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
         }
         
         .function-display {
-            margin-top: 15px;
-            padding: 10px;
+            margin-top: 1rem;
+            padding: 1rem;
             background-color: #f8f9fa;
-            border-radius: 4px;
+            border-radius: 8px;
             font-family: monospace;
+            border: 1px solid var(--border-color);
         }
         
         .checkbox-group {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem;
         }
         
         .checkbox-group input[type="checkbox"] {
-            margin-right: 10px;
+            margin-right: 0.5rem;
+            width: 1.1rem;
+            height: 1.1rem;
         }
         
-        @media (max-width: 768px) {
-            .container {
+        .graph-hint {
+            text-align: center;
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 900px) {
+            .main-container {
                 flex-direction: column;
             }
             
-            .control-panel, .graph-container {
+            .graph-container, .control-panel {
                 min-width: 100%;
             }
             
-            #ggb-element {
-                height: 400px;
+            .header h1 {
+                font-size: 1.8rem;
             }
         }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .control-group:nth-child(1) { animation-delay: 0.1s; }
+        .control-group:nth-child(2) { animation-delay: 0.2s; }
+        .control-group:nth-child(3) { animation-delay: 0.3s; }
+        .control-group:nth-child(4) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header">
+        <h1><i class="fas fa-chart-line"></i> 数学函数绘图工具</h1>
+        <p>交互式函数图像可视化教学工具 - 探索各种数学函数的图形</p>
+    </div>
+    
+    <div class="main-container">
         <div class="control-panel">
-            <h1>高中数学函数绘图工具(GeoGebra版)</h1>
-            
-            <div class="form-group">
-                <label for="function-select">选择预设函数</label>
-                <select id="function-select">
-                    <option value="">-- 选择预设函数 --</option>
-                    <option value="x">一次函数: y = x</option>
-                    <option value="2x+1">一次函数: y = 2x + 1</option>
-                    <option value="x^2">二次函数: y = x²</option>
-                    <option value="x^2-2x+1">二次函数: y = x² - 2x + 1</option>
-                    <option value="2^x">指数函数: y = 2^x</option>
-                    <option value="(1/2)^x">指数函数: y = (1/2)^x</option>
-                    <option value="sqrt(x)">幂函数: y = √x</option>
-                    <option value="x^3">幂函数: y = x³</option>
-                    <option value="sin(x)">三角函数: y = sin(x)</option>
-                    <option value="cos(x)">三角函数: y = cos(x)</option>
-                    <option value="tan(x)">三角函数: y = tan(x)</option>
-                    <option value="ln(x)">对数函数: y = ln(x)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="custom-function">或输入自定义函数 (使用x作为变量)</label>
-                <input type="text" id="custom-function" placeholder="例如: 2*sin(x)+1">
-            </div>
-            
-            <div class="form-group">
-                <button id="plot-btn">绘制函数</button>
-                <button id="reset-btn" style="margin-left: 10px; background-color: #e74c3c;">重置</button>
-            </div>
-            
-            <div class="form-group">
-                <label>函数图像设置</label>
-                <input type="color" id="line-color" value="#3498db">
-            </div>
-            
-            <div class="form-group">
-                <label>X轴范围: <span id="x-min-value" class="range-value">-5</span> 到 <span id="x-max-value" class="range-value">5</span></label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="range" id="x-min" min="-20" max="0" step="0.1" value="-5" style="flex: 1;">
-                    <input type="range" id="x-max" min="0" max="20" step="0.1" value="5" style="flex: 1;">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Y轴范围: <span id="y-min-value" class="range-value">-5</span> 到 <span id="y-max-value" class="range-value">5</span></label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="range" id="y-min" min="-20" max="0" step="0.1" value="-5" style="flex: 1;">
-                    <input type="range" id="y-max" min="0" max="20" step="0.1" value="5" style="flex: 1;">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="show-grid" checked>
-                    <label for="show-grid">显示网格</label>
+            <div class="control-group">
+                <h3><i class="fas fa-function"></i> 函数选择</h3>
+                <div class="form-group">
+                    <!-- <label for="function-select">预设函数</label> -->
+                    <select id="function-select">
+                        <option value="">-- 选择函数 --</option>
+                        <option value="x">一次函数: y = x</option>
+                        <option value="2x+1">一次函数: y = 2x + 1</option>
+                        <option value="x^2">二次函数: y = x²</option>
+                        <option value="x^2-2x+1">二次函数: y = x² - 2x + 1</option>
+                        <option value="2^x">指数函数: y = 2^x</option>
+                        <option value="(1/2)^x">指数函数: y = (1/2)^x</option>
+                        <option value="sqrt(x)">幂函数: y = √x</option>
+                        <option value="x^3">幂函数: y = x³</option>
+                        <option value="sin(x)">三角函数: y = sin(x)</option>
+                        <option value="cos(x)">三角函数: y = cos(x)</option>
+                        <option value="tan(x)">三角函数: y = tan(x)</option>
+                        <option value="ln(x)">对数函数: y = ln(x)</option>
+                    </select>
                 </div>
                 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="show-axes" checked>
-                    <label for="show-axes">显示坐标轴</label>
+                <div class="form-group">
+                    <label for="custom-function">自定义函数 (使用x作为变量)</label>
+                    <input type="text" id="custom-function" placeholder="例如: 2*sin(x)+1">
+                </div>
+                
+                <div class="btn-group">
+                    <button id="plot-btn" class="primary">
+                        <i class="fas fa-project-diagram"></i> 绘制函数
+                    </button>
+                    <button id="reset-btn" class="secondary">
+                        <i class="fas fa-trash-alt"></i> 重置
+                    </button>
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="grid-size">网格大小: <span id="grid-size-value" class="range-value">1</span></label>
-                <input type="range" id="grid-size" min="0.1" max="2" step="0.1" value="1">
+            <div class="control-group">
+                <h3><i class="fas fa-palette"></i> 图像设置</h3>
+                <!-- <div class="form-group">
+                    <label for="line-color">函数颜色</label>
+                    <input type="color" id="line-color" value="#4285f4">
+                </div> -->
+                
+                <!-- <div class="form-group">
+                    <label>X轴范围</label>
+                    <div class="range-container">
+                        <input type="range" id="x-min" min="-20" max="0" step="0.1" value="-5">
+                        <span id="x-min-value" class="range-value">-5</span>
+                        <span>到</span>
+                        <input type="range" id="x-max" min="0" max="20" step="0.1" value="5">
+                        <span id="x-max-value" class="range-value">5</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Y轴范围</label>
+                    <div class="range-container">
+                        <input type="range" id="y-min" min="-20" max="0" step="0.1" value="-5">
+                        <span id="y-min-value" class="range-value">-5</span>
+                        <span>到</span>
+                        <input type="range" id="y-max" min="0" max="20" step="0.1" value="5">
+                        <span id="y-max-value" class="range-value">5</span>
+                    </div>
+                </div> -->
+                
+                <div class="form-group">
+                    <label>网格设置</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="show-grid" checked>
+                        <label for="show-grid">显示网格</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="show-axes" checked>
+                        <label for="show-axes">显示坐标轴</label>
+                    </div>
+<!--                     
+                    <div class="range-container" style="margin-top: 0.5rem;">
+                        <label for="grid-size">网格大小:</label>
+                        <input type="range" id="grid-size" min="0.1" max="2" step="0.1" value="1">
+                        <span id="grid-size-value" class="range-value">1</span>
+                    </div> -->
+                </div>
             </div>
             
-            <div class="function-display">
-                <strong>当前函数:</strong> <span id="current-function">未选择函数</span>
-            </div>
+            <!-- <div class="control-group">
+                <h3><i class="fas fa-info-circle"></i> 当前函数</h3>
+                <div class="function-display">
+                    <strong>当前函数:</strong> <span id="current-function">未选择函数</span>
+                </div>
+            </div> -->
         </div>
         
         <div class="graph-container">
             <div id="ggb-element"></div>
-            <div style="text-align: center; margin-top: 10px; color: #777;">
+            <!-- <div class="graph-hint">
                 提示: 使用GeoGebra工具栏可以平移、缩放和测量
-            </div>
+            </div> -->
         </div>
     </div>
 
@@ -229,15 +421,15 @@
         const customFunction = document.getElementById('custom-function');
         const plotBtn = document.getElementById('plot-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const lineColor = document.getElementById('line-color');
-        const xMin = document.getElementById('x-min');
-        const xMax = document.getElementById('x-max');
-        const yMin = document.getElementById('y-min');
-        const yMax = document.getElementById('y-max');
-        const xMinValue = document.getElementById('x-min-value');
-        const xMaxValue = document.getElementById('x-max-value');
-        const yMinValue = document.getElementById('y-min-value');
-        const yMaxValue = document.getElementById('y-max-value');
+        // const lineColor = document.getElementById('line-color');
+        // const xMin = document.getElementById('x-min');
+        // const xMax = document.getElementById('x-max');
+        // const yMin = document.getElementById('y-min');
+        // const yMax = document.getElementById('y-max');
+        // const xMinValue = document.getElementById('x-min-value');
+        // const xMaxValue = document.getElementById('x-max-value');
+        // const yMinValue = document.getElementById('y-min-value');
+        // const yMaxValue = document.getElementById('y-max-value');
         const showGrid = document.getElementById('show-grid');
         const showAxes = document.getElementById('show-axes');
         const gridSize = document.getElementById('grid-size');
@@ -249,8 +441,8 @@
         const parameters = {
             "id": "ggb-element",
             "appName": "classic",
-            "width": 800,
-            "height": 500,
+            "width": "730",
+            "height": "560",
             "showMenuBar": false,
             "showToolBar": true,
             "showAlgebraInput": false,
@@ -260,6 +452,8 @@
             "enableRightClick": false,
             "errorDialogsActive": false,
             "useBrowserForJS": false,
+            "borderColor":"#FFFFFF",
+            "borderRadius":"12px",
             "preventFocus": false,
             "allowStyleBar": true,
             "language": "zh_CN",
@@ -271,40 +465,34 @@
         };
         applet = new GGBApplet(parameters, true);
         window.addEventListener('load', function() {
-            
             applet.inject('ggb-element');
             
             // 初始设置
-            updateRangeValues();
+            // updateRangeValues();
             setTimeout(() => {
-                // updateGeoGebraView();
+                updateGeoGebraView();
             }, 1000);
         });
         
         // 更新范围显示值
-        function updateRangeValues() {
-            xMinValue.textContent = parseFloat(xMin.value).toFixed(1);
-            xMaxValue.textContent = parseFloat(xMax.value).toFixed(1);
-            yMinValue.textContent = parseFloat(yMin.value).toFixed(1);
-            yMaxValue.textContent = parseFloat(yMax.value).toFixed(1);
-            gridSizeValue.textContent = parseFloat(gridSize.value).toFixed(1);
-        }
+        // function updateRangeValues() {
+        //     xMinValue.textContent = parseFloat(xMin.value).toFixed(1);
+        //     xMaxValue.textContent = parseFloat(xMax.value).toFixed(1);
+        //     yMinValue.textContent = parseFloat(yMin.value).toFixed(1);
+        //     yMaxValue.textContent = parseFloat(yMax.value).toFixed(1);
+        //     gridSizeValue.textContent = parseFloat(gridSize.value).toFixed(1);
+        // }
         
         // 更新GeoGebra视图设置
         function updateGeoGebraView() {
             if (!ggbApp) return;
-            // ggbApp.reset();
+            
             ggbApp.evalCommand('SetPerspective("-A")');
-            ggbApp.evalCommand("silder=Slider(400, 1000)");
-            // ggbApp.evalCommand(`ShowAxes[1,false]`);
-            // ggbApp.evalCommand(`ShowGrid[1,false]`);
-            // 设置坐标轴范围
-            // ggbApp.evalCommand(`SetVisibleInView[1,-${Math.abs(parseFloat(xMin.value))}-1,${parseFloat(xMax.value)}+1,-${Math.abs(parseFloat(yMin.value))}-1,${parseFloat(yMax.value)}+1]`);
             
             // 设置网格
             if (showGrid.checked) {
                 ggbApp.evalCommand(`ShowGrid[1,true]`);
-                ggbApp.evalCommand(`SetGridType[1,${parseFloat(gridSize.value)}]`);
+                // ggbApp.evalCommand(`SetGridType[1,${parseFloat(gridSize.value)}]`);
             } else {
                 ggbApp.evalCommand(`ShowGrid[1,false]`);
             }
@@ -318,9 +506,9 @@
         }
         
         // 监听所有控制元素的变化
-        [xMin, xMax, yMin, yMax, showGrid, showAxes, gridSize].forEach(el => {
+        [showGrid, showAxes].forEach(el => {
             el.addEventListener('input', () => {
-                updateRangeValues();
+                // updateRangeValues();
                 updateGeoGebraView();
             });
         });
@@ -339,13 +527,15 @@
             if (func) {
                 try {
                     // 删除之前的函数
-                    //ggbApp.deleteObject('f');
+                    if (ggbApp.exists('f')) {
+                        ggbApp.deleteObject('f');
+                    }
                     
                     // 添加新函数
                     ggbApp.evalCommand(`f(x)=${func}`);
                     
                     // 设置函数颜色
-                    ggbApp.setColor('f', lineColor.value.slice(1)); // 去掉#号
+                    // ggbApp.setColor('f', lineColor.value.slice(1)); // 去掉#号
                     
                     currentFunctionDisplay.textContent = `y = ${func}`;
                     
@@ -362,7 +552,7 @@
             if (!ggbApp) return;
             
             // 重置视图
-            //ggbApp.reset();
+            ggbApp.reset();
             
             // 重置输入
             functionSelect.value = '';
@@ -370,16 +560,16 @@
             currentFunctionDisplay.textContent = '未选择函数';
             
             // 重置范围滑块
-            xMin.value = -5;
-            xMax.value = 5;
-            yMin.value = -5;
-            yMax.value = 5;
+            // xMin.value = -5;
+            // xMax.value = 5;
+            // yMin.value = -5;
+            // yMax.value = 5;
             gridSize.value = 1;
-            lineColor.value = '#3498db';
+            lineColor.value = '#4285f4';
             showGrid.checked = true;
             showAxes.checked = true;
             
-            updateRangeValues();
+            // updateRangeValues();
             updateGeoGebraView();
         }
         
@@ -391,11 +581,11 @@
             if (e.key === 'Enter') plotFunction();
         });
         
-        lineColor.addEventListener('change', () => {
-            if (ggbApp && ggbApp.exists('f')) {
-                ggbApp.setColor('f', lineColor.value.slice(1));
-            }
-        });
+        // lineColor.addEventListener('change', () => {
+        //     if (ggbApp && ggbApp.exists('f')) {
+        //         ggbApp.setColor('f', lineColor.value.slice(1));
+        //     }
+        // });
     </script>
 </body>
 </html>

@@ -5,111 +5,271 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>四棱锥P-ABCD动态演示</title>
     <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --border-color: #dadce0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --card-bg: #ffffff;
         }
-        #geogebra {
-            width: 100%;
-            height: 500px;
-            border: 1px solid #ddd;
-            background: #f8f9fa;
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        .controls {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f5f5f5;
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .header h1 {
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .content-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .example-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .example-content {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+        
+        #ggb-element {
+            align-items: end;
+            border: none;
+            background: white;
             border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .control-panel {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 0.8rem;
+        }
+        
+        button {
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+        
+        button i {
+            font-size: 1.1rem;
+        }
+        
+        button.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        button.primary:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button.secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #e8eaed;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>四棱锥P-ABCD动态演示</h2>
-        <div>
-            [典例 1]如图，在四棱锥P-ABCD中，PA⊥底面ABCD，AB⊥AD，AC⊥CD,∠ABC=60°，PA=AB=BC，E是PC的中点，证明:
-            (1)CD⊥AE;
+    <div class="header">
+        <h1><i class="fas fa-shapes"></i> 四棱锥P-ABCD动态演示</h1>
+        <p>几何定理可视化教学工具 - 探索空间几何关系</p>
+    </div>
+    
+    <div class="main-container">
+        <div class="content-container">
+            <div class="example-title">
+                <i class="fas fa-book"></i> 典例分析
+            </div>
+            <div class="example-content">
+                [典例 1]如图，在四棱锥P-ABCD中，PA⊥底面ABCD，AB⊥AD，AC⊥CD,∠ABC=60°，PA=AB=BC，E是PC的中点，证明:
+                (1)CD⊥AE;
+                <button id="showProofBtn" class="secondary">
+                    <i class="fas fa-lightbulb"></i> 显示证明
+                </button>
+            </div>
+            
+            <div id="ggb-element"></div>
+<!--             
+            <div class="control-panel">
+                <h3><i class="fas fa-sliders-h"></i> 控制面板</h3>
+                <div class="btn-group">
+                    <button id="resetViewBtn" class="primary">
+                        <i class="fas fa-sync-alt"></i> 重置视图
+                    </button>
+                    
+                </div>
+            </div> -->
         </div>
-        <div id="ggb-element"></div>
     </div>
 
     <script>
         // 定义全局变量以便在回调中访问
         var parameters = {
-            // "id": "ggbApplet",
             "appName": "3d",
-            "width": 800,
-            "height": 500,
-            "showMenuBar":false,
-            "showAlgebraInput":false,
-            "showToolBar":false,
-            // "customToolBar":"0 | 1 501 5 19 , 67 | 2 15 45 18 , 7 37 | 514 3 9 , 13 44 , 47 | 16 | 551 550 11 ,  20 22 21 23 , 55 56 57 , 12 | 69 | 510 511 , 512 513 | 533 531 , 534 532 , 522 523 , 537 536 , 535 | 521 520 | 36 , 38 49 560 | 571 30 29 570 31 33 | 17 | 540 40 41 42 , 27 28 35 , 6 , 502",
-            "showToolBarHelp":false,
-            "showResetIcon":false,
-            "enableLabelDrags":false,
-            "enableShiftDragZoom":true,
-            "enableRightClick":false,
-            "errorDialogsActive":false,
-            "useBrowserForJS":false,
-            "allowStyleBar":false,
-            "preventFocus":false,
-            "showZoomButtons":true,
-            "capturingThreshold":3,
-            // add code here to run when the applet starts
-            // "appletOnLoad":function(api){ /* api.evalCommand('Segment((1,2),(3,4))');*/ },
+            "width": "500",
+            "height": "300",
+            "showMenuBar": false,
+            "showAlgebraInput": false,
+            "showToolBar": false,
+            "showToolBarHelp": false,
+            "showResetIcon": false,
+            "enableLabelDrags": false,
+            "enableShiftDragZoom": true,
+            "enableRightClick": false,
+            "errorDialogsActive": false,
+            "useBrowserForJS": false,
+            "allowStyleBar": true,
+            "preventFocus": false,
+            "showZoomButtons": true,
+            "capturingThreshold": 3,
             "appletOnLoad": function(api) {
                 window.ggbApp = api;
                 initPrism();
             },
-            "showFullscreenButton":true,
-            "scale":1,
-            "disableAutoScale":false,
-            "allowUpscale":false,
-            "clickToLoad":false,
-            "buttonRounding":0.7,
-            "buttonShadows":false,
-            "language":"zh-CN",
+            "showFullscreenButton": true,
+            "scale": 1,
+            "disableAutoScale": false,
+            "allowUpscale": false,
+            "clickToLoad": false,
+            "buttonRounding": 0.7,
+            "buttonShadows": false,
+            "language": "zh-CN",
         };
-        // is3D=is 3D applet using 3D view, AV=Algebra View, SV=Spreadsheet View, CV=CAS View, 
-        // EV2=Graphics View 2, CP=Construction Protocol, PC=Probability Calculator 
-        // DA=Data Analysis, FI=Function Inspector, macro=Macros
-        // var views = {'is3D': 1,'AV': 0,'SV': 1,'CV': 1,'EV2': 1,'CP': 1,'PC': 1,'DA': 1,'FI': 1,'macro': 1};
+
         var ggbApp1 = new GGBApplet(parameters, true);
-            // 页面加载完成后初始化
+        
         window.addEventListener('load', function() {
-            
             ggbApp1.inject('ggb-element');
             
-            
+            // 添加加载动画
+            document.getElementById('ggb-element').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('ggb-element').style.transition = 'opacity 0.5s ease';
+                document.getElementById('ggb-element').style.opacity = '1';
+            }, 300);
         });
 
-            
-        
         // 初始化函数
         function initPrism() {
+            if (!window.ggbApp) return;
+            
             ggbApp.reset();
             ggbApp.evalCommand('SetPerspective("T")');
-            // ggbApp.evalCommand("SetVisibleInView(xAxis, -1, false)"); // 显示xOy平面
             ggbApp.evalCommand(`ShowAxes[3,false]`);
             ggbApp.setVisible("xOyPlane", false);
+            
             const a = 3; // 定义PA=AB=BC=3单位
             const b = a/Math.sqrt(3); // 定义AD=CD=2单位
-            // ggbApp.setAxesVisible(3, false, false, false);
-            ggbApp.setLayerVisible(-1, false);
-
+            
             // 底面顶点定义
             ggbApp.evalCommand("A = (0, 0, 0)");
             ggbApp.evalCommand(`B = (${a}, 0, 0)`);          // AB⊥AD且AB长度=a
             ggbApp.evalCommand(`D = (0, ${2*b}, 0)`);           // AD长度=a
             ggbApp.evalCommand(`C = (${a/2}, ${a/2*Math.sqrt(3)}, 0)`);      // 由∠ABC=60°和AC⊥CD推导得出
-
-            // 验证AC⊥CD
-            // ggbApp.evalCommand("AC = Vector(C - A)");
-            // ggbApp.evalCommand("CD = Vector(D - C)");
-            // ggbApp.evalCommand('if(AC ⋅ CD == 0, "条件满足", "错误")');
 
             // 顶点P和高
             ggbApp.evalCommand(`P=(0, 0, ${a})`);          // PA⊥底面且PA=a
@@ -129,17 +289,40 @@
 
             // 设置样式
             ggbApp.evalCommand("SetColor(bottom, \"#2196F3\")");
-            // ggbApp.evalCommand("SetOpacity(bottom, 0.6)");
-            ggbApp.evalCommand("SetColor(s1, \"#000000\")");
-            ggbApp.evalCommand("SetColor(s2, \"#000000\")");
-            ggbApp.evalCommand("SetColor(s3, \"#000000\")");
-            ggbApp.evalCommand("SetColor(s4, \"#000000\")");
+            ggbApp.evalCommand("SetColor(s1, \"#FF9800\")");
+            ggbApp.evalCommand("SetColor(s2, \"#4CAF50\")");
+            ggbApp.evalCommand("SetColor(s3, \"#9C27B0\")");
+            ggbApp.evalCommand("SetColor(s4, \"#F44336\")");
             ggbApp.evalCommand("SetColor(E, \"#FF0000\")");
-
+            ggbApp.evalCommand("SetLineThickness(AE, 3)");
+            ggbApp.evalCommand("SetColor(AE, \"#000000\")");
         }
 
-        
-             
+        // 重置视图
+        // document.getElementById("resetViewBtn").addEventListener("click", function() {
+        //     if (ggbApp) {
+        //         ggbApp.evalCommand("SetViewDirection((1, -2, 0.5))");
+        //     }
+            
+        //     // 添加按钮点击动画
+        //     this.style.transform = 'scale(0.95)';
+        //     setTimeout(() => {
+        //         this.style.transition = 'transform 0.2s ease';
+        //         this.style.transform = 'scale(1)';
+        //     }, 200);
+        // });
+
+        // 显示证明
+        document.getElementById("showProofBtn").addEventListener("click", function() {
+            alert("证明过程:\n\n1. 因为PA⊥底面ABCD，所以PA⊥CD\n2. 又因为AC⊥CD\n3. 所以CD垂直于PA和AC所在的平面PAE\n4. 因此CD⊥AE");
+            
+            // 添加按钮点击动画
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transition = 'transform 0.2s ease';
+                this.style.transform = 'scale(1)';
+            }, 200);
+        });
     </script>
 </body>
 </html>
