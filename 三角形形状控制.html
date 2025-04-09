@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGebra 三角形类型演示</title>
+    <script src="https://www.geogebra.org/apps/deployggb.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        #geogebra-container {
+            width: 700px;
+            height: 680px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #control-panel {
+            width: 300px;
+            padding: 20px;
+            margin-left: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .triangle-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .info-item {
+            margin: 8px 0;
+        }
+
+        h2 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div id="control-panel">
+        <h2>三角形类型控制</h2>
+        <button class="btn" onclick="setEquilateral()">等边三角形</button>
+        <button class="btn" onclick="setIsosceles()">等腰三角形</button>
+        <button class="btn" onclick="setRight()">直角三角形</button>
+        <button class="btn" onclick="setAcute()">锐角三角形</button>
+        <button class="btn" onclick="setObtuse()">钝角三角形</button>
+
+        <div class="triangle-info">
+            <h3>三角形属性</h3>
+            <div class="info-item" id="angleA">∠A: 计算中...</div>
+            <div class="info-item" id="angleB">∠B: 计算中...</div>
+            <div class="info-item" id="angleC">∠C: 计算中...</div>
+            <div class="info-item" id="sideAB">边AB: 计算中...</div>
+            <div class="info-item" id="sideBC">边BC: 计算中...</div>
+            <div class="info-item" id="sideCA">边CA: 计算中...</div>
+        </div>
+    </div>
+    <div id="geogebra-container"></div>
+
+    <script type="text/javascript">
+        var parameters = {
+            "appName": "classic",
+            // "prerelease": false,
+            "width": 700,
+            "height": 680,
+            "showToolBar": false,
+            "borderColor": null,
+            "showMenuBar": false,
+            "showAlgebraInput": false,
+            "showResetIcon": true,
+            "enableLabelDrags": false,
+            "enableShiftDragZoom": true,
+            "enableRightClick": false,
+            "capturingThreshold": null,
+            "showToolBarHelp": false,
+            "errorDialogsActive": true,
+            "useBrowserForJS": false,
+            "appletOnLoad": function (api) {
+                window.ggbApp = api;
+                initializeScene();
+            }
+        };
+
+        var ggbApp = new GGBApplet(parameters, true);
+
+        window.onload = function () {
+            ggbApp.inject('geogebra-container');
+        };
+        function initializeScene() {
+            if (!ggbApp) return;
+            ggbApp.reset();
+            ggbApp.evalCommand('SetPerspective("-A")');
+            ggbApp.evalCommand(`ShowAxes[1,false]`);
+            ggbApp.evalCommand(`ShowGrid[1,false]`);
+            setAcute();
+            startUpdatingProperties();
+        }
+        // 更新三角形属性的函数
+        function updateTriangleProperties() {
+            if (!ggbApp || !ggbApp.getValue) return;
+
+            try {
+                // 获取角度
+                var angleA = ggbApp.getValue("α");
+                var angleB = ggbApp.getValue("β");
+                var angleC = ggbApp.getValue("γ");
+
+                // 获取边长
+                var sideAB = ggbApp.getValue("a");
+                var sideBC = ggbApp.getValue("b");
+                var sideCA = ggbApp.getValue("c");
+
+                // 更新显示
+                const pi = Math.PI;
+                document.getElementById("angleA").textContent = `∠A: ${(angleA/pi*180).toFixed(0)}°`;
+                document.getElementById("angleB").textContent = `∠B: ${(angleB/pi*180).toFixed(0)}°`;
+                document.getElementById("angleC").textContent = `∠C: ${(angleC/pi*180).toFixed(0)}°`;
+                document.getElementById("sideAB").textContent = `边AB: ${sideAB.toFixed(2)}`;
+                document.getElementById("sideBC").textContent = `边BC: ${sideBC.toFixed(2)}`;
+                document.getElementById("sideCA").textContent = `边CA: ${sideCA.toFixed(2)}`;
+            } catch (e) {
+                console.log("更新属性时出错:", e);
+            }
+        }
+
+        // 定期更新属性
+        function startUpdatingProperties() {
+            updateTriangleProperties();
+            setInterval(updateTriangleProperties, 1000);
+        }
+
+        // 设置等边三角形
+        function setEquilateral() {
+            ggbApp.evalCommand("A=(0,0)");
+            ggbApp.evalCommand("B=(4,0)");
+            ggbApp.evalCommand("C=(2,3.464)");
+            ggbApp.evalCommand("a=Segment(A,B)");
+            ggbApp.evalCommand("b=Segment(B,C)");
+            ggbApp.evalCommand("c=Segment(C,A)");
+            ggbApp.evalCommand("α=Angle(B,A,C)");
+            ggbApp.evalCommand("β=Angle(C,B,A)");
+            ggbApp.evalCommand("γ=Angle(A,C,B)");
+            updateTriangleProperties();
+        }
+
+        // 设置等腰三角形
+        function setIsosceles() {
+            ggbApp.evalCommand("A=(0,0)");
+            ggbApp.evalCommand("B=(5,0)");
+            ggbApp.evalCommand("C=(2.5,4)");
+            ggbApp.evalCommand("a=Segment(A,B)");
+            ggbApp.evalCommand("b=Segment(B,C)");
+            ggbApp.evalCommand("c=Segment(C,A)");
+            ggbApp.evalCommand("α=Angle(B,A,C)");
+            ggbApp.evalCommand("β=Angle(C,B,A)");
+            ggbApp.evalCommand("γ=Angle(A,C,B)");
+            updateTriangleProperties();
+        }
+
+        // 设置直角三角形
+        function setRight() {
+            ggbApp.evalCommand("A=(0,0)");
+            ggbApp.evalCommand("B=(4,0)");
+            ggbApp.evalCommand("C=(4,3)");
+            ggbApp.evalCommand("a=Segment(A,B)");
+            ggbApp.evalCommand("b=Segment(B,C)");
+            ggbApp.evalCommand("c=Segment(C,A)");
+            ggbApp.evalCommand("α=Angle(B,A,C)");
+            ggbApp.evalCommand("β=Angle(C,B,A)");
+            ggbApp.evalCommand("γ=Angle(A,C,B)");
+            updateTriangleProperties();
+        }
+
+        // 设置锐角三角形
+        function setAcute() {
+            ggbApp.evalCommand("A=(0,0)");
+            ggbApp.evalCommand("B=(5,0)");
+            ggbApp.evalCommand("C=(3,4)");
+            ggbApp.evalCommand("a=Segment(A,B)");
+            ggbApp.evalCommand("b=Segment(B,C)");
+            ggbApp.evalCommand("c=Segment(C,A)");
+            ggbApp.evalCommand("α=Angle(B,A,C)");
+            ggbApp.evalCommand("β=Angle(C,B,A)");
+            ggbApp.evalCommand("γ=Angle(A,C,B)");
+            updateTriangleProperties();
+        }
+
+        // 设置钝角三角形
+        function setObtuse() {
+            ggbApp.evalCommand("A=(0,0)");
+            ggbApp.evalCommand("B=(6,0)");
+            ggbApp.evalCommand("C=(2,2)");
+            ggbApp.evalCommand("a=Segment(A,B)");
+            ggbApp.evalCommand("b=Segment(B,C)");
+            ggbApp.evalCommand("c=Segment(C,A)");
+            ggbApp.evalCommand("α=Angle(B,A,C)");
+            ggbApp.evalCommand("β=Angle(C,B,A)");
+            ggbApp.evalCommand("γ=Angle(A,C,B)");
+            updateTriangleProperties();
+        }
+    </script>
+</body>
+
+</html>

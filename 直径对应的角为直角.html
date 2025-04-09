@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>泰勒斯定理半圆演示</title>
+    <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .main-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1;
+            padding: 20px;
+            min-width: 0;
+        }
+
+        .right-panel {
+            width: 350px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-left: 1px solid #ddd;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .theorem {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        #ggb-container {
+            width: 100%;
+            height: 500px;
+            margin-bottom: 15px;
+        }
+
+        .instructions {
+            background-color: #fff;
+            padding: 15px;
+            border-left: 3px solid #3498db;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .properties {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .property-item {
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+        }
+
+        .animation-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 1;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .btn-play {
+            background-color: #2ecc71;
+        }
+
+        .btn-play:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-pause {
+            background-color: #e74c3c;
+        }
+
+        .btn-pause:hover {
+            background-color: #c0392b;
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .right-panel {
+                width: auto;
+                border-left: none;
+                border-top: 1px solid #ddd;
+            }
+
+            #ggb-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="left-panel">
+            <h1>泰勒斯定理半圆演示</h1>
+            <div id="ggb-container"></div>
+        </div>
+
+        <div class="right-panel">
+            <div class="theorem">
+                <h2>泰勒斯定理</h2>
+                <p><strong>定理内容：</strong>直径所对的圆周角恒为直角。</p>
+                <p>本演示中：</p>
+                <ul>
+                    <li>AB为圆的直径</li>
+                    <li>C为半圆上的动点</li>
+                    <li>无论C如何移动，∠ACB始终为90°</li>
+                </ul>
+            </div>
+
+            <div class="instructions">
+                <h3>操作说明</h3>
+                <p>1. 拖动点C观察角度变化（点C只能沿半圆移动）</p>
+                <p>2. 使用下方按钮控制点C的自动移动</p>
+
+                <div class="animation-controls">
+                    <button id="playBtn" class="btn btn-play" onclick="startAnimation()">▶ 播放</button>
+                    <button id="pauseBtn" class="btn btn-pause" onclick="pauseAnimation()" disabled>⏸ 暂停</button>
+                    <button id="resetBtn" class="btn" onclick="resetView()">↻ 重置</button>
+                </div>
+            </div>
+
+            <div class="properties">
+                <h3>实时属性</h3>
+                <div class="property-item" id="angle-display">∠ACB: 90°</div>
+                <div class="property-item" id="point-position">点C坐标: (0, 3)</div>
+                <div class="property-item" id="animation-status">动画状态: 停止</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        var ggbApp;
+
+
+        // 初始化GeoGebra
+        var applet = new GGBApplet({
+            "width": "700",
+            "height": "500",
+            "appName": "classic",
+            "showToolBar": false,
+            "showMenuBar": false,
+            "showAlgebraInput": false,
+            "showZoomButtons": false,
+            "enableRightClick": false,
+            "allowStyleBar": false,
+            "enableShiftDragZoom": true, // 保留缩放功能
+            "borderColor": null,         // 无边框
+            "language": "zh",
+            "appletOnLoad": function (api) {
+                window.ggbApp = api;
+                initializeScene();
+                startUpdatingProperties();
+            },
+            "language": "zh"
+        }, true);
+
+        window.addEventListener("load", function () {
+            applet.inject('ggb-container');
+        });
+
+        function initializeScene() {
+            if (!ggbApp) return;
+            ggbApp.reset();
+            ggbApp.evalCommand('SetPerspective("-A")');
+            // 设置初始视图
+            ggbApp.evalCommand("A=(-3,0)");
+            ggbApp.evalCommand("B=(3,0)");
+            ggbApp.evalCommand("s=Semicircle(A,B)");
+            ggbApp.evalCommand("C=Point(s)");
+            ggbApp.evalCommand("a=Segment(A,C)");
+            ggbApp.evalCommand("b=Segment(B,C)");
+            ggbApp.evalCommand("SetDynamicColor(a,1,0,0)");
+            ggbApp.evalCommand("SetDynamicColor(b,0,0,1)");
+            ggbApp.evalCommand("angle=Angle(A,C,B)");
+            ggbApp.evalCommand("ShowLabel(C,true)");
+            ggbApp.evalCommand("SetConditionToShowObject(angle,true)");
+            //自动
+            // ggbApp. setAnimating("C",true);
+            // ggbApp. startAnimation();
+
+        }
+
+        function resetView() {
+            pauseAnimation();
+            if (ggbApp) {
+                ggbApp.reset();
+                initializeScene();
+            }
+            updateAnimationStatus("停止");
+        }
+
+        // 开始动画
+        function startAnimation() {
+            if (!ggbApp) return;
+
+            // 启用/禁用按钮
+            document.getElementById("playBtn").disabled = true;
+            document.getElementById("pauseBtn").disabled = false;
+
+            updateAnimationStatus("播放中");
+
+            // 创建动画循环
+            ggbApp.setAnimating("C", true);
+            ggbApp.startAnimation();
+        }
+
+        // 暂停动画
+        function pauseAnimation() {
+            if (ggbApp.isAnimationRunning()) {
+                ggbApp.stopAnimation();
+
+
+                // 启用/禁用按钮
+                document.getElementById("playBtn").disabled = false;
+                document.getElementById("pauseBtn").disabled = true;
+
+                updateAnimationStatus("已暂停");
+
+            }
+        }
+
+        // 更新实时属性
+        function updateProperties() {
+            if (!window.ggbApp) return;
+
+            try {
+                const angle = ggbApp.getValue("angle");
+                const cx = ggbApp.getXcoord("C");
+                const cy = ggbApp.getYcoord("C");
+
+                const pi = Math.PI;
+                document.getElementById("angle-display").textContent = `∠ACB: ${(angle/pi*180).toFixed(0)}°`;
+                document.getElementById("point-position").textContent = `点C坐标: (${cx.toFixed(2)}, ${cy.toFixed(2)})`;
+            } catch (e) {
+                console.error("更新属性时出错:", e);
+            }
+        }
+
+        // 更新动画状态显示
+        function updateAnimationStatus(status) {
+            document.getElementById("animation-status").textContent = `动画状态: ${status}`;
+        }
+
+        // 开始定期更新属性
+        function startUpdatingProperties() {
+            updateProperties();
+            setInterval(updateProperties, 500);
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学做图经验分享</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --border-color: #dadce0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --card-bg: #ffffff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .search-container {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #searchInput {
+            width: 60%;
+            max-width: 500px;
+            padding: 12px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            transition: all 0.3s;
+        }
+        
+        #searchInput:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 15px rgba(66, 133, 244, 0.2);
+        }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 10px;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-icon {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px;
+            text-align: center;
+            font-size: 2.5rem;
+        }
+        
+        .card-content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+        
+        .card-path {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+        
+        .card-actions {
+            display: flex;
+            padding: 0 20px 20px;
+            gap: 10px;
+        }
+        
+        .card-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .card-btn.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .card-btn.primary:hover {
+            background-color: #3367d6;
+        }
+        
+        .card-btn.secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .card-btn.secondary:hover {
+            background-color: #e8eaed;
+        }
+        
+        .no-results {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 50px;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+            
+            #searchInput {
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-folder-open"></i> 教学演示工具集</h1>
+        <p>Deepseek+Geogebra制作的教学相关的交互式演示工具</p>
+    </div>
+    
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="搜索几何工具..." aria-label="搜索几何工具">
+        </div>
+        
+        <div class="cards-container" id="cardsContainer">
+            <!-- 卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // JSON数据源
+        const geometryTools = [
+            {
+                "name": "3D几何体演示",
+                "path": "3D几何体.html",
+                "icon": "cube",
+                "description": "交互式3D几何体可视化教学工具"
+            },
+            {
+                "name": "函数图像绘制",
+                "path": "函数图像.html",
+                "icon": "chart-line",
+                "description": "绘制各种数学函数图像的工具"
+            },
+            {
+                "name": "立方体三视图",
+                "path": "立方体三视图.html",
+                "icon": "project-diagram",
+                "description": "展示立方体三视图关系的教学工具"
+            },
+            {
+                "name": "三角形形状控制",
+                "path": "三角形形状控制.html",
+                "icon": "draw-polygon",
+                "description": "动态调整三角形各边长的演示工具"
+            },
+            {
+                "name": "三棱柱演示",
+                "path": "三棱柱.html",
+                "icon": "gem",
+                "description": "三棱柱的3D可视化与参数调整"
+            },
+            {
+                "name": "四棱柱例题1",
+                "path": "四棱柱-例题1.html",
+                "icon": "box",
+                "description": "四棱柱相关例题的交互式解答"
+            },
+            {
+                "name": "可调高度长方体",
+                "path": "长方体可调高度.html",
+                "icon": "ruler-combined",
+                "description": "可调整高度和尺寸的长方体演示"
+            },
+            {
+                "name": "直径对应直角定理",
+                "path": "直径对应的角为直角.html",
+                "icon": "circle",
+                "description": "演示圆周角与直径关系的定理"
+            }
+        ];
+
+        // 渲染卡片
+        function renderCards(files) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            if (files.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                        <h3>未找到匹配的工具</h3>
+                        <p>请尝试不同的搜索关键词</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            files.forEach((file, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.animationDelay = `${0.1 + index * 0.1}s`;
+                
+                card.innerHTML = `
+                    <div class="card-icon">
+                        <i class="fas fa-${file.icon}"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${file.name}</h3>
+                        <p class="card-path">${file.description}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-btn primary" onclick="openFile('${file.path}')">
+                            <i class="fas fa-external-link-alt"></i> 打开
+                        </button>
+                        <button class="card-btn secondary" onclick="showDetails('${file.name}', '${file.path}', '${file.description}')">
+                            <i class="fas fa-info-circle"></i> 详情
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // 打开文件
+        function openFile(path) {
+            window.open(path, '_blank');
+        }
+        
+        // 显示文件详情
+        function showDetails(name, path, description) {
+            alert(`工具名称: ${name}\n\n文件路径: ${path}\n\n功能描述: ${description}`);
+        }
+        
+        // 搜索功能
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (searchTerm === '') {
+                    renderCards(geometryTools);
+                    return;
+                }
+                
+                const filteredFiles = geometryTools.filter(file => 
+                    file.name.toLowerCase().includes(searchTerm) || 
+                    file.path.toLowerCase().includes(searchTerm) ||
+                    file.description.toLowerCase().includes(searchTerm)
+                );
+                
+                renderCards(filteredFiles);
+            });
+        }
+        
+        // 初始化页面
+        function init() {
+            renderCards(geometryTools);
+            setupSearch();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

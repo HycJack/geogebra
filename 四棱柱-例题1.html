@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四棱锥P-ABCD动态演示</title>
+    <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #geogebra {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>四棱锥P-ABCD动态演示</h2>
+        <div>
+            [典例 1]如图，在四棱锥P-ABCD中，PA⊥底面ABCD，AB⊥AD，AC⊥CD,∠ABC=60°，PA=AB=BC，E是PC的中点，证明:
+            (1)CD⊥AE;
+        </div>
+        <div id="ggb-element"></div>
+    </div>
+
+    <script>
+        // 定义全局变量以便在回调中访问
+        var parameters = {
+            // "id": "ggbApplet",
+            "appName": "3d",
+            "width": 800,
+            "height": 500,
+            "showMenuBar":false,
+            "showAlgebraInput":false,
+            "showToolBar":false,
+            // "customToolBar":"0 | 1 501 5 19 , 67 | 2 15 45 18 , 7 37 | 514 3 9 , 13 44 , 47 | 16 | 551 550 11 ,  20 22 21 23 , 55 56 57 , 12 | 69 | 510 511 , 512 513 | 533 531 , 534 532 , 522 523 , 537 536 , 535 | 521 520 | 36 , 38 49 560 | 571 30 29 570 31 33 | 17 | 540 40 41 42 , 27 28 35 , 6 , 502",
+            "showToolBarHelp":false,
+            "showResetIcon":false,
+            "enableLabelDrags":false,
+            "enableShiftDragZoom":true,
+            "enableRightClick":false,
+            "errorDialogsActive":false,
+            "useBrowserForJS":false,
+            "allowStyleBar":false,
+            "preventFocus":false,
+            "showZoomButtons":true,
+            "capturingThreshold":3,
+            // add code here to run when the applet starts
+            // "appletOnLoad":function(api){ /* api.evalCommand('Segment((1,2),(3,4))');*/ },
+            "appletOnLoad": function(api) {
+                window.ggbApp = api;
+                initPrism();
+            },
+            "showFullscreenButton":true,
+            "scale":1,
+            "disableAutoScale":false,
+            "allowUpscale":false,
+            "clickToLoad":false,
+            "buttonRounding":0.7,
+            "buttonShadows":false,
+            "language":"zh-CN",
+        };
+        // is3D=is 3D applet using 3D view, AV=Algebra View, SV=Spreadsheet View, CV=CAS View, 
+        // EV2=Graphics View 2, CP=Construction Protocol, PC=Probability Calculator 
+        // DA=Data Analysis, FI=Function Inspector, macro=Macros
+        // var views = {'is3D': 1,'AV': 0,'SV': 1,'CV': 1,'EV2': 1,'CP': 1,'PC': 1,'DA': 1,'FI': 1,'macro': 1};
+        var ggbApp1 = new GGBApplet(parameters, true);
+            // 页面加载完成后初始化
+        window.addEventListener('load', function() {
+            
+            ggbApp1.inject('ggb-element');
+            
+            
+        });
+
+            
+        
+        // 初始化函数
+        function initPrism() {
+            ggbApp.reset();
+            ggbApp.evalCommand('SetPerspective("T")');
+            // ggbApp.evalCommand("SetVisibleInView(xAxis, -1, false)"); // 显示xOy平面
+            ggbApp.evalCommand(`ShowAxes[3,false]`);
+            ggbApp.setVisible("xOyPlane", false);
+            const a = 3; // 定义PA=AB=BC=3单位
+            const b = a/Math.sqrt(3); // 定义AD=CD=2单位
+            // ggbApp.setAxesVisible(3, false, false, false);
+            ggbApp.setLayerVisible(-1, false);
+
+            // 底面顶点定义
+            ggbApp.evalCommand("A = (0, 0, 0)");
+            ggbApp.evalCommand(`B = (${a}, 0, 0)`);          // AB⊥AD且AB长度=a
+            ggbApp.evalCommand(`D = (0, ${2*b}, 0)`);           // AD长度=a
+            ggbApp.evalCommand(`C = (${a/2}, ${a/2*Math.sqrt(3)}, 0)`);      // 由∠ABC=60°和AC⊥CD推导得出
+
+            // 验证AC⊥CD
+            // ggbApp.evalCommand("AC = Vector(C - A)");
+            // ggbApp.evalCommand("CD = Vector(D - C)");
+            // ggbApp.evalCommand('if(AC ⋅ CD == 0, "条件满足", "错误")');
+
+            // 顶点P和高
+            ggbApp.evalCommand(`P=(0, 0, ${a})`);          // PA⊥底面且PA=a
+
+            // 中点E
+            ggbApp.evalCommand("E=Midpoint(P, C)");
+            ggbApp.evalCommand("BE=Segment(B, E)");
+            ggbApp.evalCommand("AE=Segment(A, E)");
+            ggbApp.evalCommand("AC=Segment(A, C)");
+
+            // 构建棱锥面
+            ggbApp.evalCommand("bottom = Polygon(A, B, C, D)");
+            ggbApp.evalCommand("s1 = Polygon(P, A, B)");
+            ggbApp.evalCommand("s2 = Polygon(P, B, C)");
+            ggbApp.evalCommand("s3 = Polygon(P, C, D)");
+            ggbApp.evalCommand("s4 = Polygon(P, D, A)");
+
+            // 设置样式
+            ggbApp.evalCommand("SetColor(bottom, \"#2196F3\")");
+            // ggbApp.evalCommand("SetOpacity(bottom, 0.6)");
+            ggbApp.evalCommand("SetColor(s1, \"#000000\")");
+            ggbApp.evalCommand("SetColor(s2, \"#000000\")");
+            ggbApp.evalCommand("SetColor(s3, \"#000000\")");
+            ggbApp.evalCommand("SetColor(s4, \"#000000\")");
+            ggbApp.evalCommand("SetColor(E, \"#FF0000\")");
+
+        }
+
+        
+             
+    </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可调高度的3D三棱柱</title>
+    <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #ggb-element {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+        }
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+        }
+        .slider-container label {
+            margin-right: 10px;
+            width: 100px;
+        }
+        #heightSlider {
+            flex-grow: 1;
+        }
+        #heightValue {
+            margin-left: 10px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>可调高度的3D三棱柱</h1>
+        <div id="ggb-element"></div>
+        
+        <div class="controls">
+            <div class="slider-container">
+                <label for="heightSlider">棱柱高度:</label>
+                <input type="range" id="heightSlider" min="0" max="10" value="3" step="0.1">
+                <span id="heightValue">3.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化GeoGebra应用
+        var parameters = {
+            "appName": "3d",
+            "width": 800,
+            "height": 500,
+            "showToolBar": false,
+            "showAlgebraInput": false,
+            "showMenuBar": false,
+            "allowStyleBar": false,
+            "enable3d": true,
+            "perspective": "O",
+            "appletOnLoad": function(api) {
+                window.ggbApp = api;
+                initializePrism();
+            },
+            "language": "zh-CN",
+        };
+
+        var ggbApp1 = new GGBApplet(parameters, true);
+        
+        window.addEventListener("load", function() {
+            ggbApp1.inject("ggb-element");
+        });
+
+        // 初始化三棱柱
+        function initializePrism() {
+            ggbApp.reset();
+            ggbApp.evalCommand('SetPerspective("T")');
+            ggbApp.evalCommand(`ShowAxes[3,false]`);
+            ggbApp.setVisible("xOyPlane", false);
+
+            // 定义底面边长和初始高度
+            ggbApp.evalCommand("l = 4");  // 底面边长
+            ggbApp.evalCommand("h = 3");  // 初始高度
+
+            // 创建底面三个顶点 (正三角形)
+            ggbApp.evalCommand("A = (0, 0, 0)");
+            ggbApp.evalCommand("B = (l, 0, 0)");
+            ggbApp.evalCommand("C = (l/2, sqrt(3)*l/2, 0)");
+            
+            // 创建顶面三个顶点
+            ggbApp.evalCommand("A1 = (0, 0, h)");
+            ggbApp.evalCommand("B1 = (l, 0, h)");
+            ggbApp.evalCommand("C1 = (l/2, sqrt(3)*l/2, h)");
+
+            // 创建底面和顶面
+            ggbApp.evalCommand("bottom = Polygon(A, B, C)");
+            ggbApp.evalCommand("top = Polygon(A1, B1, C1)");
+
+            // 创建三个侧面
+            ggbApp.evalCommand("sAB = Polygon(A, B, B1, A1)");
+            ggbApp.evalCommand("sBC = Polygon(B, C, C1, B1)");
+            ggbApp.evalCommand("sCA = Polygon(C, A, A1, C1)");
+
+            // 设置颜色
+            ggbApp.evalCommand("SetColor(bottom, \"#4CAF50\")");
+            ggbApp.evalCommand("SetColor(top, \"#2196F3\")");
+            ggbApp.evalCommand("SetColor(sAB, \"#FF9800\")");
+            ggbApp.evalCommand("SetColor(sBC, \"#F44336\")");
+            ggbApp.evalCommand("SetColor(sCA, \"#9C27B0\")");
+
+
+            // 创建棱边
+            ggbApp.evalCommand("edge1 = Segment(A, B)");
+            ggbApp.evalCommand("edge2 = Segment(B, C)");
+            ggbApp.evalCommand("edge3 = Segment(C, A)");
+            ggbApp.evalCommand("edge4 = Segment(A1, B1)");
+            ggbApp.evalCommand("edge5 = Segment(B1, C1)");
+            ggbApp.evalCommand("edge6 = Segment(C1, A1)");
+            ggbApp.evalCommand("edge7 = Segment(A, A1)");
+            ggbApp.evalCommand("edge8 = Segment(B, B1)");
+            ggbApp.evalCommand("edge9 = Segment(C, C1)");
+
+            // 设置棱边样式
+            ggbApp.evalCommand("SetLineThickness(edge1, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge2, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge3, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge4, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge5, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge6, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge7, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge8, 3)");
+            ggbApp.evalCommand("SetLineThickness(edge9, 3)");
+            ggbApp.evalCommand("SetColor(edge1, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge2, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge3, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge4, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge5, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge6, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge7, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge8, \"#000000\")");
+            ggbApp.evalCommand("SetColor(edge9, \"#000000\")");
+
+            // 设置视角
+            ggbApp.evalCommand("SetViewDirection((1, -2, 0.5))");
+        }
+
+        // 滑块控制高度
+        document.getElementById("heightSlider").addEventListener("input", function(e) {
+            var height = parseFloat(e.target.value);
+            document.getElementById("heightValue").textContent = height.toFixed(1);
+
+            if (ggbApp) {
+                ggbApp.setValue("h", height);
+                ggbApp.evalCommand("UpdateConstruction()");
+            }
+        });
+    </script>
+</body>
+</html>

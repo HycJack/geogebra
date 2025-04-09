@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D几何体演示工具</title>
+    <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --border-color: #dadce0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .header h1 {
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            gap: 1.5rem;
+        }
+        
+        .viewer-container {
+            flex: 2;
+            min-width: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .viewer-container:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        #ggb-element {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .control-group h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .slider-container label {
+            font-weight: 500;
+            min-width: 80px;
+        }
+        
+        input[type="range"] {
+            flex-grow: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: var(--secondary-color);
+        }
+        
+        #heightValue {
+            font-weight: 500;
+            min-width: 40px;
+            text-align: center;
+            background: var(--light-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        
+        select {
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        select:hover {
+            border-color: var(--primary-color);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        button {
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+        
+        button i {
+            font-size: 1.1rem;
+        }
+        
+        button.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        button.primary:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+        }
+        
+        button.secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #e8eaed;
+            transform: translateY(-2px);
+        }
+        
+        .shape-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .viewer-container, .control-panel {
+                min-width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .control-group {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .control-group:nth-child(1) { animation-delay: 0.1s; }
+        .control-group:nth-child(2) { animation-delay: 0.2s; }
+        .control-group:nth-child(3) { animation-delay: 0.3s; }
+        
+        /* 工具提示样式 */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark-color);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-shapes"></i> 3D几何体演示工具</h1>
+        <p>交互式3D几何体可视化教学工具 - 拖动滑块实时查看变化</p>
+    </div>
+    
+    <div class="main-container">
+        <div class="viewer-container">
+            <div id="ggb-element"></div>
+        </div>
+        
+        <div class="control-panel">
+            <div class="control-group">
+                <h3><i class="fas fa-cube"></i> 几何体设置</h3>
+                <label for="shapeSelector">选择几何体:</label>
+                <select id="shapeSelector">
+                    <option value="triangularPrism"><i class="fas fa-gem"></i> 三棱柱</option>
+                    <option value="rectangularPrism"><i class="fas fa-cube"></i> 四棱柱</option>
+                    <option value="cylinder"><i class="fas fa-circle"></i> 圆柱体</option>
+                    <option value="triangularPyramid"><i class="fas fa-mountain"></i> 三棱锥</option>
+                    <option value="sphere"><i class="fas fa-mountain"></i> 球体</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <h3><i class="fas fa-ruler-combined"></i> 尺寸设置</h3>
+                <div class="slider-container">
+                    <label for="heightSlider">高度:</label>
+                    <input type="range" id="heightSlider" min="0.5" max="10" value="3" step="0.1">
+                    <span id="heightValue">3.0</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3><i class="fas fa-eye"></i> 视图控制</h3>
+                <div class="btn-group">
+                    <button id="resetViewBtn" class="primary">
+                        <i class="fas fa-sync-alt"></i> 重置视图
+                    </button>
+                    <!-- <button id="toggleLabelsBtn" class="secondary">
+                        <i class="fas fa-tag"></i> 切换标签
+                    </button> -->
+                    
+                    <button class="secondary" id="frontView">正视图</button>
+                    <button class="secondary" id="topView">俯视图</button>
+                    <button class="secondary" id="sideView">侧视图</button>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化GeoGebra应用
+        var parameters = {
+            "appName": "3d",
+            "width": "730",
+            "height": "500",
+            "showToolBar": false,
+            "showAlgebraInput": false,
+            "showMenuBar": false,
+            "allowStyleBar": false,
+            "enable3d": true,
+            "perspective": "O",
+            "appletOnLoad": function(api) {
+                window.ggbApp = api;
+            ggbApp.evalCommand('SetPerspective("T")');
+            // ggbApp.evalCommand("SetVisibleInView(xAxis, -1, false)"); // 显示xOy平面
+            ggbApp.evalCommand(`ShowAxes[3,false]`);
+            ggbApp.setVisible("xOyPlane", false);
+                initializeShape('triangularPrism');
+            },
+            "language": "zh-CN",
+        };
+
+        var ggbApp1 = new GGBApplet(parameters, true);
+        var showLabels = true;
+        var currentShape = '';
+        var oldObjects = [];
+        
+        window.addEventListener("load", function() {
+            ggbApp1.inject("ggb-element");
+            
+            // 添加加载动画
+            document.getElementById('ggb-element').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('ggb-element').style.transition = 'opacity 0.5s ease';
+                document.getElementById('ggb-element').style.opacity = '1';
+            }, 300);
+        });
+
+        // 删除旧对象
+        function removeOldObjects() {
+            if (ggbApp && oldObjects.length > 0) {
+                for (let obj of oldObjects) {
+                    try {
+                        ggbApp.deleteObject(obj);
+                    } catch(e) {
+                        console.log("删除对象时出错:", obj, e);
+                    }
+                }
+                oldObjects = [];
+            }
+        }
+
+        // 初始化几何体
+        function initializeShape(shapeType) {
+
+            if (currentShape === shapeType) return;
+            currentShape = shapeType;
+            
+            // 删除旧对象
+            removeOldObjects();
+            
+            // 定义基本参数
+            ggbApp.evalCommand("l = 2");  // 边长/半径
+            ggbApp.evalCommand("h = " + document.getElementById("heightSlider").value);  // 高度
+
+            switch(shapeType) {
+                case 'triangularPrism':
+                    createTriangularPrism();
+                    break;
+                case 'rectangularPrism':
+                    createRectangularPrism();
+                    break;
+                case 'cylinder':
+                    createCylinder();
+                    break;
+                case 'triangularPyramid':
+                    createTriangularPyramid();
+                    break;
+                case 'sphere':
+                    createSphere();
+                    break;
+            }
+            
+            // 设置视角
+            // ggbApp.evalCommand("SetViewDirection((1, -2, 0.5))");
+            showLabels = false;
+            updateLabelsVisibility();
+            
+            // 添加切换动画
+            const viewer = document.getElementById('ggb-element');
+            viewer.style.transform = 'scale(0.95)';
+            viewer.style.opacity = '0.8';
+            setTimeout(() => {
+                viewer.style.transition = 'all 0.3s ease';
+                viewer.style.transform = 'scale(1)';
+                viewer.style.opacity = '1';
+            }, 50);
+        }
+
+        // 创建三棱柱
+        function createTriangularPrism() {
+            // 底面三个顶点 (正三角形)
+            ggbApp.evalCommand("A = (0, 0, 0)");
+            ggbApp.evalCommand("B = (l, 0, 0)");
+            ggbApp.evalCommand("C = (l/2, sqrt(3)*l/2, 0)");
+            
+            // 顶面三个顶点
+            ggbApp.evalCommand("A1 = (0, 0, h)");
+            ggbApp.evalCommand("B1 = (l, 0, h)");
+            ggbApp.evalCommand("C1 = (l/2, sqrt(3)*l/2, h)");
+
+            // 创建底面和顶面
+            ggbApp.evalCommand("bottom = Polygon(A, B, C)");
+            ggbApp.evalCommand("top = Polygon(A1, B1, C1)");
+
+            // 创建三个侧面
+            ggbApp.evalCommand("sAB = Polygon(A, B, B1, A1)");
+            ggbApp.evalCommand("sBC = Polygon(B, C, C1, B1)");
+            ggbApp.evalCommand("sCA = Polygon(C, A, A1, C1)");
+
+            // 设置颜色
+            ggbApp.evalCommand("SetColor(bottom, \"#4CAF50\")");
+            ggbApp.evalCommand("SetColor(top, \"#2196F3\")");
+            ggbApp.evalCommand("SetColor(sAB, \"#FF9800\")");
+            ggbApp.evalCommand("SetColor(sBC, \"#F44336\")");
+            ggbApp.evalCommand("SetColor(sCA, \"#9C27B0\")");
+
+            // 创建棱边
+            createEdges(['A', 'B', 'C'], ['A1', 'B1', 'C1']);
+            
+            // 记录创建的对象
+            oldObjects = ['A', 'B', 'C', 'A1', 'B1', 'C1', 'bottom', 'top', 'sAB', 'sBC', 'sCA'];
+        }
+        // 添加球体创建函数
+        function createSphere() {
+            ggbApp.evalCommand("O = (l, l, l)");
+            ggbApp.evalCommand("sphere = Sphere(O, l)");
+            ggbApp.evalCommand("SetColor(sphere, \"#FF5722\")");
+            oldObjects = ['O', 'sphere'];
+        }
+        // 创建四棱柱
+        function createRectangularPrism() {
+            // 底面四个顶点
+            ggbApp.evalCommand("A = (0, 0, 0)");
+            ggbApp.evalCommand("B = (l, 0, 0)");
+            ggbApp.evalCommand("C = (l, l, 0)");
+            ggbApp.evalCommand("D = (0, l, 0)");
+
+            // 顶面四个顶点
+            ggbApp.evalCommand("A1 = (0, 0, h)");
+            ggbApp.evalCommand("B1 = (l, 0, h)");
+            ggbApp.evalCommand("C1 = (l, l, h)");
+            ggbApp.evalCommand("D1 = (0, l, h)");
+
+            // 创建底面和顶面
+            ggbApp.evalCommand("bottom = Polygon(A, B, C, D)");
+            ggbApp.evalCommand("top = Polygon(A1, B1, C1, D1)");
+
+            // 创建四个侧面
+            ggbApp.evalCommand("sAB = Polygon(A, B, B1, A1)");
+            ggbApp.evalCommand("sBC = Polygon(B, C, C1, B1)");
+            ggbApp.evalCommand("sCD = Polygon(C, D, D1, C1)");
+            ggbApp.evalCommand("sDA = Polygon(D, A, A1, D1)");
+
+            // 设置颜色
+            ggbApp.evalCommand("SetColor(bottom, \"#4CAF50\")");
+            ggbApp.evalCommand("SetColor(top, \"#2196F3\")");
+            ggbApp.evalCommand("SetColor(sAB, \"#FF9800\")");
+            ggbApp.evalCommand("SetColor(sBC, \"#F44336\")");
+            ggbApp.evalCommand("SetColor(sCD, \"#9C27B0\")");
+            ggbApp.evalCommand("SetColor(sDA, \"#00BCD4\")");
+
+            // 创建棱边
+            createEdges(['A', 'B', 'C', 'D'], ['A1', 'B1', 'C1', 'D1']);
+            
+            // 记录创建的对象
+            oldObjects = ['A', 'B', 'C', 'D', 'A1', 'B1', 'C1', 'D1', 'bottom', 'top', 'sAB', 'sBC', 'sCD', 'sDA'];
+        }
+
+        // 创建圆柱体
+        function createCylinder() {
+            // 底面圆心和圆周点
+            ggbApp.evalCommand("O = (l, l, 0)");
+            ggbApp.evalCommand("P1 = (l + l, l, 0)");
+            
+            // 顶面圆心和圆周点
+            ggbApp.evalCommand("O1 = (l, l, h)");
+            ggbApp.evalCommand("P11 = (l + l, l, h)");
+
+            
+            // 创建底面和顶面圆
+            ggbApp.evalCommand("bottomCircle = Circle(O, P1)");
+            ggbApp.evalCommand("topCircle = Circle(O1, P11)");
+            
+            // 创建侧面
+            ggbApp.evalCommand("side = Cylinder(bottomCircle, h)");
+            
+            // 设置颜色
+            ggbApp.evalCommand("SetColor(bottomCircle, \"#4CAF50\")");
+            ggbApp.evalCommand("SetColor(topCircle, \"#2196F3\")");
+            ggbApp.evalCommand("SetColor(side, \"#FF9800\")");
+
+            // 记录创建的对象
+            oldObjects = ['O', 'P1', 'O1', 'P11',  
+                         'bottomCircle', 'topCircle', 'side'];
+        }
+
+        // 创建三棱锥
+        function createTriangularPyramid() {
+            // 底面三个顶点 (正三角形)
+            ggbApp.evalCommand("A = (0, 0, 0)");
+            ggbApp.evalCommand("B = (l, 0, 0)");
+            ggbApp.evalCommand("C = (l/2, sqrt(3)*l/2, 0)");
+            
+            // 顶点
+            ggbApp.evalCommand("P = (l/2, l/2/sqrt(3), h)");
+
+            // 创建底面
+            ggbApp.evalCommand("bottom = Polygon(A, B, C)");
+
+            // 创建三个侧面
+            ggbApp.evalCommand("sPA = Polygon(P, A, B)");
+            ggbApp.evalCommand("sPB = Polygon(P, B, C)");
+            ggbApp.evalCommand("sPC = Polygon(P, C, A)");
+
+            // 设置颜色
+            ggbApp.evalCommand("SetColor(bottom, \"#4CAF50\")");
+            ggbApp.evalCommand("SetColor(sPA, \"#FF9800\")");
+            ggbApp.evalCommand("SetColor(sPB, \"#F44336\")");
+            ggbApp.evalCommand("SetColor(sPC, \"#9C27B0\")");
+
+            // 创建棱边
+            createEdges(['A', 'B', 'C'], ['P', 'P', 'P']);
+            
+            // 记录创建的对象
+            oldObjects = ['A', 'B', 'C', 'P', 'bottom', 'sPA', 'sPB', 'sPC'];
+        }
+
+        // 创建棱边
+        function createEdges(bottomPoints, topPoints) {
+            // 创建底面棱边
+            for (let i = 0; i < bottomPoints.length; i++) {
+                const next = (i + 1) % bottomPoints.length;
+                ggbApp.evalCommand(`edge${i+1} = Segment(${bottomPoints[i]}, ${bottomPoints[next]})`);
+                ggbApp.evalCommand(`SetLineThickness(edge${i+1}, 3)`);
+                ggbApp.evalCommand(`SetColor(edge${i+1}, "#000000")`);
+                oldObjects.push(`edge${i+1}`);
+            }
+            
+            // 创建顶面棱边
+            for (let i = 0; i < topPoints.length; i++) {
+                const next = (i + 1) % topPoints.length;
+                if (topPoints[i] !== topPoints[next]) {
+                    ggbApp.evalCommand(`edge${i+1+bottomPoints.length} = Segment(${topPoints[i]}, ${topPoints[next]})`);
+                    ggbApp.evalCommand(`SetLineThickness(edge${i+1+bottomPoints.length}, 3)`);
+                    ggbApp.evalCommand(`SetColor(edge${i+1+bottomPoints.length}, "#000000")`);
+                    oldObjects.push(`edge${i+1+bottomPoints.length}`);
+                }
+            }
+            
+            // 创建侧面棱边
+            for (let i = 0; i < bottomPoints.length; i++) {
+                if (bottomPoints[i] !== topPoints[i]) {
+                    ggbApp.evalCommand(`edge${i+1+bottomPoints.length+topPoints.length} = Segment(${bottomPoints[i]}, ${topPoints[i]})`);
+                    ggbApp.evalCommand(`SetLineThickness(edge${i+1+bottomPoints.length+topPoints.length}, 3)`);
+                    ggbApp.evalCommand(`SetColor(edge${i+1+bottomPoints.length+topPoints.length}, "#000000")`);
+                    oldObjects.push(`edge${i+1+bottomPoints.length+topPoints.length}`);
+                }
+            }
+        }
+
+        // 更新标签可见性
+        function updateLabelsVisibility() {
+            const objects = ggbApp.getAllObjectNames();
+            for (let obj of objects) {
+                if (obj.match(/^[A-Za-z]+[0-9]*$/)) { // 匹配点名称
+                    ggbApp.setLabelVisible(obj, showLabels);
+                }
+            }
+        }
+
+        // 事件监听器
+        document.getElementById("shapeSelector").addEventListener("change", function(e) {
+            initializeShape(e.target.value);
+            
+            // 添加按钮点击动画
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transition = 'transform 0.2s ease';
+                this.style.transform = 'scale(1)';
+            }, 200);
+        });
+
+        document.getElementById("heightSlider").addEventListener("input", function(e) {
+            var height = parseFloat(e.target.value);
+            document.getElementById("heightValue").textContent = height.toFixed(1);
+
+            if (ggbApp) {
+                ggbApp.setValue("h", height);
+                ggbApp.evalCommand("UpdateConstruction()");
+            }
+        });
+
+        document.getElementById("resetViewBtn").addEventListener("click", function() {
+            if (ggbApp) {
+                ggbApp.evalCommand("SetViewDirection((1, -2, 0.5))");
+            }
+            
+            // 添加按钮点击动画
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transition = 'transform 0.2s ease';
+                this.style.transform = 'scale(1)';
+            }, 200);
+        });
+
+        // document.getElementById("toggleLabelsBtn").addEventListener("click", function() {
+        //     showLabels = !showLabels;
+        //     updateLabelsVisibility();
+            
+        //     // 添加按钮点击动画
+        //     this.style.transform = 'scale(0.95)';
+        //     setTimeout(() => {
+        //         this.style.transition = 'transform 0.2s ease';
+        //         this.style.transform = 'scale(1)';
+        //     }, 200);
+            
+        //     // 更新按钮图标
+        //     const icon = this.querySelector('i');
+        //     if (showLabels) {
+        //         icon.className = 'fas fa-tag';
+        //     } else {
+        //         icon.className = 'fas fa-tag-slash';
+        //     }
+        // });
+        // // View controls
+        document.getElementById('frontView').addEventListener('click', function () {
+                ggbApp.evalCommand('SetViewDirection(Vector((0, 1, 0)))');
+            });
+
+        document.getElementById('topView').addEventListener('click', function () {
+            ggbApp.evalCommand('SetViewDirection(Vector((0, 0, 1)))');
+        });
+
+        document.getElementById('sideView').addEventListener('click', function () {
+            ggbApp.evalCommand('SetViewDirection(Vector((1, 0, 0)))');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可调高度的3D正四棱柱</title>
+    <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #ggb-element {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ddd;
+        }
+
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .slider-container label {
+            margin-right: 10px;
+            width: 100px;
+        }
+
+        #heightSlider {
+            flex-grow: 1;
+        }
+
+        #heightValue {
+            margin-left: 10px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>可调高度的3D正四棱柱</h1>
+
+        <div id="ggb-element"></div>
+
+        <div class="controls">
+            <div class="slider-container">
+                <label for="heightSlider">棱柱高度:</label>
+                <input type="range" id="heightSlider" min="0" max="10" value="3" step="0.1">
+                <span id="heightValue">3.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化GeoGebra应用
+        var parameters = {
+            "appName": "3d",
+            "width": 800,
+            "height": 500,
+            "showToolBar": true,
+            "showAlgebraInput": false,
+            "showMenuBar": true,
+            "allowStyleBar": true,
+            "enable3d": true,
+            "perspective": "O",
+            "appletOnLoad": function (api) {
+                window.ggbApp = api;
+                initializePrism();
+            },
+            "language": "en",
+        }
+        // var views = {'is3D': 1,'AV': 0,'SV': 0,'CV': 0,'EV2': 0,'CP': 0,'PC': 0,'DA': 0,'FI': 0,'macro': 0};
+        var ggbApp1 = new GGBApplet(parameters, '5.0');
+        window.addEventListener("load", function () {
+            ggbApp1.inject("ggb-element");
+
+
+        });
+
+        // 初始化四棱柱 - 逐行执行命令
+        function initializePrism() {
+            ggbApp.reset();
+            ggbApp.evalCommand('SetPerspective("T")');
+            // ggbApp.evalCommand("silder=Text(\"aaaaa\", (0, 0, 0))");
+            // ggbApp.setShowPlane(false);
+            ggbApp.setAxesVisible(3, false, false, false);
+            ggbApp.setGridVisible(3, false);
+            ggbApp.setLayerVisible(1, false);
+
+            // 定义底面边长和初始高度
+            ggbApp.evalCommand("l = 4");
+            ggbApp.evalCommand("h = 3");
+
+            // 创建底面四个顶点
+            ggbApp.evalCommand("A = (0, 0, 0)");
+            ggbApp.evalCommand("B = (l, 0, 0)");
+            ggbApp.evalCommand("C = (l, l, 0)");
+            ggbApp.evalCommand("D = (0, l, 0)");
+
+            // 创建顶面四个顶点
+            ggbApp.evalCommand("A1 = (0, 0, h)");
+            ggbApp.evalCommand("B1 = (l, 0, h)");
+            ggbApp.evalCommand("C1 = (l, l, h)");
+            ggbApp.evalCommand("D1 = (0, l, h)");
+
+            // 创建底面和顶面
+            ggbApp.evalCommand("bottom = Polygon(A, B, C, D)");
+            ggbApp.evalCommand("top = Polygon(A1, B1, C1, D1)");
+
+            // 创建四个侧面
+            ggbApp.evalCommand("sAB = Polygon(A, B, B1, A1)");
+            ggbApp.evalCommand("sBC = Polygon(B, C, C1, B1)");
+            ggbApp.evalCommand("sCD = Polygon(C, D, D1, C1)");
+            ggbApp.evalCommand("sDA = Polygon(D, A, A1, D1)");
+
+            // 设置颜色
+            ggbApp.evalCommand("SetColor(bottom, \"#4CAF50\")");
+            ggbApp.evalCommand("SetColor(top, \"#2196F3\")");
+            ggbApp.evalCommand("SetColor(sAB, \"#FF9800\")");
+            ggbApp.evalCommand("SetColor(sBC, \"#F44336\")");
+            ggbApp.evalCommand("SetColor(sCD, \"#9C27B0\")");
+            ggbApp.evalCommand("SetColor(sDA, \"#00BCD4\")");
+
+            // 设置标签不可见
+            // ggbApp.setLabelVisible(bottom, false);
+            // ggbApp.setLabelVisible(top, false);
+            // ggbApp.setLabelVisible(sAB, false);
+            // ggbApp.setLabelVisible(sBC, false);
+            // ggbApp.setLabelVisible(sCD, false);
+            // ggbApp.setLabelVisible(sDA, false);
+
+            // 设置视角
+            ggbApp.evalCommand("SetViewDirection((1, -2, 0.5))");
+            
+        }
+
+        // 滑块控制高度
+        document.getElementById("heightSlider").addEventListener("input", function (e) {
+            var height = parseFloat(e.target.value);
+            document.getElementById("heightValue").textContent = height.toFixed(1);
+
+            if (ggbApp) {
+                ggbApp.setValue("h", height);
+                ggbApp.evalCommand("UpdateConstruction()");
+            }
+        });
+    </script>
+</body>
+
+</html>

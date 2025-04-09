@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小立方体三视图教学演示</title>
+    <script src="https://www.geogebra.org/apps/deployggb.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        header {
+            background-color: #3f51b5;
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 1.5em;
+            font-weight: normal;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        #geogebra-container {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            min-height: 500px;
+        }
+
+        #control-panel {
+            width: 300px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        h2,
+        h3 {
+            color: #3f51b5;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        button {
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #303f9f;
+        }
+
+        .view-btn {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #e0e0e0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            #control-panel {
+                width: 100%;
+            }
+
+            #geogebra-container {
+                height: 100%;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>小立方体三视图教学演示</h1>
+    </header>
+
+    <div class="main-container">
+        <div id="geogebra-container"></div>
+
+        <div id="control-panel">
+            <h2>小立方体三视图控制</h2>
+
+            <div class="control-group">
+                <button id="addCube">添加立方体</button>
+            </div>
+
+            <div class="control-group">
+                <h3>视图控制</h3>
+                <div class="view-btn">
+                    <button id="frontView">正视图</button>
+                    <button id="topView">俯视图</button>
+                    <button id="sideView">侧视图</button>
+                </div>
+            </div>
+
+            <div class="control-group" style="display:none">
+                <h3>添加立方体</h3>
+                <label for="cubeX">X坐标:</label>
+                <input type="number" id="cubeX" value="0" step="1">
+
+                <label for="cubeY">Y坐标:</label>
+                <input type="number" id="cubeY" value="0" step="1">
+
+                <label for="cubeZ">Z坐标:</label>
+                <input type="number" id="cubeZ" value="0" step="1">
+            </div>
+
+            <div class="control-group">
+                <h3>显示选项</h3>
+                <label>
+                    <input type="checkbox" id="showAxes" checked> 显示坐标轴
+                </label>
+                <label>
+                    <input type="checkbox" id="showGrid" checked> 显示网格
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        小立方体三视图教学演示工具 © 2023
+    </footer>
+
+    <script>
+        // Initialize GeoGebra
+        var parameters = {
+            "appName": "3d",
+            "prerelease": false,
+            "width": 1100,
+            "height": 634,
+            //scaleContainerClass:"geogebra-container";
+            "showToolBar": false,
+            "borderColor": null,
+            "showMenuBar": false,
+            "showAlgebraInput": false,
+            "showResetIcon": true,
+            "enableLabelDrags": false,
+            "enableShiftDragZoom": true,
+            "enableRightClick": false,
+            "capturingThreshold": null,
+            "showToolBarHelp": false,
+            "errorDialogsActive": true,
+            "useBrowserForJS": false,
+            "enable3D": true,
+            "language": "zh",
+            "appletOnLoad": function (api) {
+                window.ggbApp = api;
+                setupEventListeners();
+                initializeScene();
+                api.setGridVisible(3, true);
+            }
+        };
+
+        var applet = new GGBApplet(parameters, true);
+
+        window.onload = function () {
+            applet.inject('geogebra-container');
+        };
+
+        function initializeScene() {
+            if (!window.ggbApp) return;
+            // ggbApp.setVisible("xOyPlane", false);
+            ggbApp.evalCommand(`ShowAxes[3,false]`);
+            // Set initial view
+            ggbApp.evalCommand('SetPerspective("T")');
+        }
+
+        function setupEventListeners() {
+            // View controls
+            document.getElementById('frontView').addEventListener('click', function () {
+                ggbApp.evalCommand('SetViewDirection(Vector((0, 1, 0)))');
+            });
+
+            document.getElementById('topView').addEventListener('click', function () {
+                ggbApp.evalCommand('SetViewDirection(Vector((0, 0, 1)))');
+            });
+
+            document.getElementById('sideView').addEventListener('click', function () {
+                ggbApp.evalCommand('SetViewDirection(Vector((1, 0, 0)))');
+            });
+
+            // Cube controls
+            document.getElementById('addCube').addEventListener('click', function () {
+                const x = parseFloat(document.getElementById('cubeX').value) || 0;
+                const y = parseFloat(document.getElementById('cubeY').value) || 0;
+                const z = parseFloat(document.getElementById('cubeZ').value) || 0;
+                addCubeAt(x, y, z);
+            });
+
+            // Display options
+            document.getElementById('showAxes').addEventListener('change', function (e) {
+                if (!e.target.checked) {
+                    ggbApp.setAxesVisible(3, false, false, false);
+                } else {
+                    ggbApp.setAxesVisible(3, true, true, true);
+                }
+            });
+
+            document.getElementById('showGrid').addEventListener('change', function (e) {
+                if (!e.target.checked) {
+                    ggbApp.setGridVisible(3, false);
+                } else {
+                    ggbApp.setGridVisible(3, true);
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function () {
+                const container = document.getElementById('geogebra-container');
+                ggbApp.setSize(container.offsetWidth, container.offsetHeight);
+            });
+        }
+
+        function addCubeAt(x, y, z) {
+            if (!window.ggbApp) return;
+
+            const size = 1;
+            const cubeName = `Cube_${Date.now()}`;
+
+            ggbApp.evalCommand(`A= (${x}, ${y}, ${z})`);
+            ggbApp.evalCommand(`B = (${x + size}, ${y}, ${z})`);
+            ggbApp.evalCommand(`C= (${x}, ${y}, ${z + size})`);
+            ggbApp.evalCommand(`Cube(B, A, C)`);
+
+            // Set cube color (optional)
+            ggbApp.setColor(cubeName, 0, 0, 255); // Blue
+            ggbApp.setLineThickness(cubeName, 2);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中数学函数绘图工具(GeoGebra版)</title>
+    <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .graph-container {
+            flex: 2;
+            min-width: 400px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #3498db;
+            margin: 15px 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        select, input[type="text"], input[type="color"], input[type="range"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .range-value {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+        }
+        
+        #ggb-element {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #eee;
+            background-color: white;
+        }
+        
+        .function-display {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .control-panel, .graph-container {
+                min-width: 100%;
+            }
+            
+            #ggb-element {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h1>高中数学函数绘图工具(GeoGebra版)</h1>
+            
+            <div class="form-group">
+                <label for="function-select">选择预设函数</label>
+                <select id="function-select">
+                    <option value="">-- 选择预设函数 --</option>
+                    <option value="x">一次函数: y = x</option>
+                    <option value="2x+1">一次函数: y = 2x + 1</option>
+                    <option value="x^2">二次函数: y = x²</option>
+                    <option value="x^2-2x+1">二次函数: y = x² - 2x + 1</option>
+                    <option value="2^x">指数函数: y = 2^x</option>
+                    <option value="(1/2)^x">指数函数: y = (1/2)^x</option>
+                    <option value="sqrt(x)">幂函数: y = √x</option>
+                    <option value="x^3">幂函数: y = x³</option>
+                    <option value="sin(x)">三角函数: y = sin(x)</option>
+                    <option value="cos(x)">三角函数: y = cos(x)</option>
+                    <option value="tan(x)">三角函数: y = tan(x)</option>
+                    <option value="ln(x)">对数函数: y = ln(x)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="custom-function">或输入自定义函数 (使用x作为变量)</label>
+                <input type="text" id="custom-function" placeholder="例如: 2*sin(x)+1">
+            </div>
+            
+            <div class="form-group">
+                <button id="plot-btn">绘制函数</button>
+                <button id="reset-btn" style="margin-left: 10px; background-color: #e74c3c;">重置</button>
+            </div>
+            
+            <div class="form-group">
+                <label>函数图像设置</label>
+                <input type="color" id="line-color" value="#3498db">
+            </div>
+            
+            <div class="form-group">
+                <label>X轴范围: <span id="x-min-value" class="range-value">-5</span> 到 <span id="x-max-value" class="range-value">5</span></label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="range" id="x-min" min="-20" max="0" step="0.1" value="-5" style="flex: 1;">
+                    <input type="range" id="x-max" min="0" max="20" step="0.1" value="5" style="flex: 1;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Y轴范围: <span id="y-min-value" class="range-value">-5</span> 到 <span id="y-max-value" class="range-value">5</span></label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="range" id="y-min" min="-20" max="0" step="0.1" value="-5" style="flex: 1;">
+                    <input type="range" id="y-max" min="0" max="20" step="0.1" value="5" style="flex: 1;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-grid" checked>
+                    <label for="show-grid">显示网格</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-axes" checked>
+                    <label for="show-axes">显示坐标轴</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="grid-size">网格大小: <span id="grid-size-value" class="range-value">1</span></label>
+                <input type="range" id="grid-size" min="0.1" max="2" step="0.1" value="1">
+            </div>
+            
+            <div class="function-display">
+                <strong>当前函数:</strong> <span id="current-function">未选择函数</span>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <div id="ggb-element"></div>
+            <div style="text-align: center; margin-top: 10px; color: #777;">
+                提示: 使用GeoGebra工具栏可以平移、缩放和测量
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const functionSelect = document.getElementById('function-select');
+        const customFunction = document.getElementById('custom-function');
+        const plotBtn = document.getElementById('plot-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const lineColor = document.getElementById('line-color');
+        const xMin = document.getElementById('x-min');
+        const xMax = document.getElementById('x-max');
+        const yMin = document.getElementById('y-min');
+        const yMax = document.getElementById('y-max');
+        const xMinValue = document.getElementById('x-min-value');
+        const xMaxValue = document.getElementById('x-max-value');
+        const yMinValue = document.getElementById('y-min-value');
+        const yMaxValue = document.getElementById('y-max-value');
+        const showGrid = document.getElementById('show-grid');
+        const showAxes = document.getElementById('show-axes');
+        const gridSize = document.getElementById('grid-size');
+        const gridSizeValue = document.getElementById('grid-size-value');
+        const currentFunctionDisplay = document.getElementById('current-function');
+        
+        // 初始化GeoGebra
+        let applet;
+        const parameters = {
+            "id": "ggb-element",
+            "appName": "classic",
+            "width": 800,
+            "height": 500,
+            "showMenuBar": false,
+            "showToolBar": true,
+            "showAlgebraInput": false,
+            "showResetIcon": true,
+            "enableLabelDrags": false,
+            "enableShiftDragZoom": true,
+            "enableRightClick": false,
+            "errorDialogsActive": false,
+            "useBrowserForJS": false,
+            "preventFocus": false,
+            "allowStyleBar": true,
+            "language": "zh_CN",
+            "scale": 1,
+            "appletOnLoad": function (api) {
+                window.ggbApp = api;
+                updateGeoGebraView();
+            },
+        };
+        applet = new GGBApplet(parameters, true);
+        window.addEventListener('load', function() {
+            
+            applet.inject('ggb-element');
+            
+            // 初始设置
+            updateRangeValues();
+            setTimeout(() => {
+                // updateGeoGebraView();
+            }, 1000);
+        });
+        
+        // 更新范围显示值
+        function updateRangeValues() {
+            xMinValue.textContent = parseFloat(xMin.value).toFixed(1);
+            xMaxValue.textContent = parseFloat(xMax.value).toFixed(1);
+            yMinValue.textContent = parseFloat(yMin.value).toFixed(1);
+            yMaxValue.textContent = parseFloat(yMax.value).toFixed(1);
+            gridSizeValue.textContent = parseFloat(gridSize.value).toFixed(1);
+        }
+        
+        // 更新GeoGebra视图设置
+        function updateGeoGebraView() {
+            if (!ggbApp) return;
+            // ggbApp.reset();
+            ggbApp.evalCommand('SetPerspective("-A")');
+            ggbApp.evalCommand("silder=Slider(400, 1000)");
+            // ggbApp.evalCommand(`ShowAxes[1,false]`);
+            // ggbApp.evalCommand(`ShowGrid[1,false]`);
+            // 设置坐标轴范围
+            // ggbApp.evalCommand(`SetVisibleInView[1,-${Math.abs(parseFloat(xMin.value))}-1,${parseFloat(xMax.value)}+1,-${Math.abs(parseFloat(yMin.value))}-1,${parseFloat(yMax.value)}+1]`);
+            
+            // 设置网格
+            if (showGrid.checked) {
+                ggbApp.evalCommand(`ShowGrid[1,true]`);
+                ggbApp.evalCommand(`SetGridType[1,${parseFloat(gridSize.value)}]`);
+            } else {
+                ggbApp.evalCommand(`ShowGrid[1,false]`);
+            }
+            
+            // 设置坐标轴
+            if (showAxes.checked) {
+                ggbApp.evalCommand(`ShowAxes[1,true]`);
+            } else {
+                ggbApp.evalCommand(`ShowAxes[1,false]`);
+            }
+        }
+        
+        // 监听所有控制元素的变化
+        [xMin, xMax, yMin, yMax, showGrid, showAxes, gridSize].forEach(el => {
+            el.addEventListener('input', () => {
+                updateRangeValues();
+                updateGeoGebraView();
+            });
+        });
+        
+        // 绘制函数图像
+        function plotFunction() {
+            let func = '';
+            
+            if (functionSelect.value) {
+                func = functionSelect.value;
+                customFunction.value = func;
+            } else if (customFunction.value.trim()) {
+                func = customFunction.value.trim();
+            }
+            
+            if (func) {
+                try {
+                    // 删除之前的函数
+                    //ggbApp.deleteObject('f');
+                    
+                    // 添加新函数
+                    ggbApp.evalCommand(`f(x)=${func}`);
+                    
+                    // 设置函数颜色
+                    ggbApp.setColor('f', lineColor.value.slice(1)); // 去掉#号
+                    
+                    currentFunctionDisplay.textContent = `y = ${func}`;
+                    
+                    // 更新视图
+                    updateGeoGebraView();
+                } catch (e) {
+                    alert('无效的函数表达式: ' + e.message);
+                }
+            }
+        }
+        
+        // 重置图形
+        function resetGraph() {
+            if (!ggbApp) return;
+            
+            // 重置视图
+            //ggbApp.reset();
+            
+            // 重置输入
+            functionSelect.value = '';
+            customFunction.value = '';
+            currentFunctionDisplay.textContent = '未选择函数';
+            
+            // 重置范围滑块
+            xMin.value = -5;
+            xMax.value = 5;
+            yMin.value = -5;
+            yMax.value = 5;
+            gridSize.value = 1;
+            lineColor.value = '#3498db';
+            showGrid.checked = true;
+            showAxes.checked = true;
+            
+            updateRangeValues();
+            updateGeoGebraView();
+        }
+        
+        // 事件监听
+        plotBtn.addEventListener('click', plotFunction);
+        resetBtn.addEventListener('click', resetGraph);
+        functionSelect.addEventListener('change', plotFunction);
+        customFunction.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') plotFunction();
+        });
+        
+        lineColor.addEventListener('change', () => {
+            if (ggbApp && ggbApp.exists('f')) {
+                ggbApp.setColor('f', lineColor.value.slice(1));
+            }
+        });
+    </script>
+</body>
+</html>
