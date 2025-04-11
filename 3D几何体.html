@@ -7,276 +7,81 @@
     <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --primary-color: #4285f4;
-            --secondary-color: #34a853;
-            --accent-color: #ea4335;
-            --dark-color: #202124;
-            --light-color: #f8f9fa;
-            --border-color: #dadce0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --card-bg: #ffffff;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
-            opacity: 0.1;
-            pointer-events: none;
-        }
-        
-        .header h1 {
-            font-weight: 700;
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .header p {
-            font-weight: 400;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .main-container {
+        /* Page-specific styles */
+        .main-layout-3d { /* Specific layout for this page */
             display: flex;
             flex-wrap: wrap;
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            gap: 1.5rem;
         }
-        
-        .viewer-container {
+        .viewer-container-3d { /* Specific styles for viewer */
             flex: 2;
             min-width: 500px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            overflow: hidden;
-            transition: all 0.3s ease;
         }
-        
-        .viewer-container:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-        
-        .control-panel {
+        .control-panel-3d { /* Specific styles for control panel */
             flex: 1;
             min-width: 300px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.5rem; /* Keep gap from original */
         }
-        
-        #ggb-element {
-            width: 100%;
-            height: 500px;
-            border: none;
+        #ggb-element { /* Remove border from original inline style */
+             border: none; /* Overrides .ggb-container border */
+             border-radius: 0; /* Overrides .ggb-container radius */
         }
-        
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-        
-        .control-group h3 {
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: var(--primary-color);
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        
-        .slider-container label {
-            font-weight: 500;
-            min-width: 80px;
-        }
-        
-        input[type="range"] {
-            flex-grow: 1;
-            height: 8px;
-            -webkit-appearance: none;
-            background: var(--border-color);
-            border-radius: 4px;
-            outline: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-            background: var(--secondary-color);
-        }
-        
-        #heightValue {
-            font-weight: 500;
-            min-width: 40px;
-            text-align: center;
-            background: var(--light-color);
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
-        
-        select {
-            padding: 0.8rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            background: white;
-            transition: all 0.3s;
-            cursor: pointer;
-            width: 100%;
-        }
-        
-        select:hover {
-            border-color: var(--primary-color);
-        }
-        
-        select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 0.5rem;
-        }
-        
-        button {
-            padding: 0.8rem 1.2rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            flex: 1;
-        }
-        
-        button i {
-            font-size: 1.1rem;
-        }
-        
-        button.primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        button.primary:hover {
-            background-color: #3367d6;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        button.secondary {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            border: 1px solid var(--border-color);
-        }
-        
-        button.secondary:hover {
-            background-color: #e8eaed;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .view-controls {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.8rem;
-        }
-        
-        .view-btn {
-            padding: 0.6rem;
-            font-size: 0.85rem;
-        }
-        
-        @media (max-width: 900px) {
-            .main-container {
-                flex-direction: column;
-            }
-            
-            .viewer-container, .control-panel {
-                min-width: 100%;
-            }
-            
-            .header h1 {
-                font-size: 1.8rem;
-            }
-        }
-        
-        /* 动画效果 */
-        @keyframes fadeIn {
+         /* Keep animations */
+         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+        .control-group { /* Apply animation directly */
+             animation: fadeIn 0.4s ease-out forwards;
+        }
         .control-group:nth-child(1) { animation-delay: 0.1s; }
         .control-group:nth-child(2) { animation-delay: 0.2s; }
         .control-group:nth-child(3) { animation-delay: 0.3s; }
+
+         /* Responsive adjustments specific to this layout */
+         @media (max-width: 900px) {
+            .main-layout-3d {
+                flex-direction: column;
+            }
+            .viewer-container-3d, .control-panel-3d {
+                min-width: 100%;
+            }
+        }
+        /* Specific button style adjustments if needed */
+        .view-btn {
+            padding: 0.6rem; /* Keep specific padding */
+            font-size: 0.85rem; /* Keep specific font size */
+        }
+        select { /* Keep specific select styles */
+             padding: 0.8rem;
+             border: 1px solid var(--border-color);
+             border-radius: 8px;
+             font-size: 1rem;
+             background: white;
+             transition: all 0.3s;
+             cursor: pointer;
+             width: 100%;
+        }
+        select:hover {
+             border-color: var(--primary-color);
+        }
+        select:focus {
+             outline: none;
+             border-color: var(--primary-color);
+             box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        #heightValue { /* Keep specific height value style */
+             font-weight: 500;
+             min-width: 40px;
+             text-align: center;
+             background: var(--light-color);
+             padding: 0.3rem 0.6rem;
+             border-radius: 4px;
+             border: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
@@ -284,13 +89,17 @@
         <h1><i class="fas fa-shapes"></i> 3D几何体演示工具</h1>
         <p>交互式3D几何体可视化教学工具 - 拖动滑块实时查看变化</p>
     </div>
-    
-    <div class="main-container">
-        <div class="viewer-container">
-            <div id="ggb-element"></div>
+
+    <!-- Use main-content-area for centering and padding, add specific layout class -->
+    <div class="main-content-area main-layout-3d">
+        <!-- Add 'card' class to containers -->
+        <div class="viewer-container-3d card">
+            <!-- Add 'ggb-container' class -->
+            <div id="ggb-element" class="ggb-container"></div>
         </div>
-        
-        <div class="control-panel">
+
+        <!-- Add 'card' class to control panel -->
+        <div class="control-panel-3d card">
             <div class="control-group">
                 <h3><i class="fas fa-cube"></i> 几何体设置</h3>
                 <label for="shapeSelector">选择几何体:</label>
@@ -315,18 +124,22 @@
             <div class="control-group">
                 <h3><i class="fas fa-eye"></i> 视图控制</h3>
                 <div class="btn-group">
-                    <button id="resetViewBtn" class="primary">
+                    <!-- Add 'btn' class -->
+                    <button id="resetViewBtn" class="btn primary">
                         <i class="fas fa-sync-alt"></i> 重置视图
                     </button>
                 </div>
                 <div class="view-controls">
-                    <button id="frontView" class="secondary view-btn">
+                     <!-- Add 'btn' class -->
+                    <button id="frontView" class="btn secondary view-btn">
                         <i class="fas fa-arrow-up"></i> 正视图
                     </button>
-                    <button id="topView" class="secondary view-btn">
+                     <!-- Add 'btn' class -->
+                    <button id="topView" class="btn secondary view-btn">
                         <i class="fas fa-arrow-down"></i> 俯视图
                     </button>
-                    <button id="sideView" class="secondary view-btn">
+                     <!-- Add 'btn' class -->
+                    <button id="sideView" class="btn secondary view-btn">
                         <i class="fas fa-arrow-right"></i> 侧视图
                     </button>
                 </div>

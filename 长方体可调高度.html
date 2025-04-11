@@ -5,101 +5,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>可调高度的3D正四棱柱</title>
+    <!-- Common Libraries -->
     <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Link to common stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Page-specific styles -->
     <style>
-        :root {
-            --primary-color: #4285f4;
-            --secondary-color: #34a853;
-            --accent-color: #ea4335;
-            --dark-color: #202124;
-            --light-color: #f8f9fa;
-            --border-color: #dadce0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --card-bg: #ffffff;
+        /* Specific layout for this page */
+        .prism-layout {
+            display: flex;
+            flex-direction: row; /* Change to row for left-right layout */
+            gap: 1.5rem; /* Use common gap */
+            /* max-width: 900px; /* Remove max-width or adjust as needed */
+            align-items: flex-start; /* Align items to the top */
         }
+        .controls-prism { /* Controls on the left */
+            flex: 1; /* Adjust flex ratio as needed */
+            min-width: 250px; /* Set a min-width for controls */
+            max-width: 320px; /* Optional: Set a max-width */
+        }
+         .viewer-container-prism { /* Viewer on the right */
+             flex: 3; /* Adjust flex ratio as needed */
+             min-width: 500px; /* Set a min-width for viewer */
+         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 2rem; /* Added margin */
-        }
-
-        .header::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
-            opacity: 0.1;
-            pointer-events: none;
-        }
-
-        .header h1 {
-            font-weight: 700;
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-            display: flex; /* Added for icon alignment */
-            align-items: center; /* Added for icon alignment */
-            justify-content: center; /* Added for icon alignment */
-            gap: 0.75rem; /* Added for icon alignment */
-        }
-
-        .header p {
-            font-weight: 400;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Renamed .container to .main-container for consistency */
-        .main-container {
-            display: flex; /* Changed to flex */
-            flex-direction: column; /* Stack elements vertically */
-            align-items: center; /* Center items horizontally */
-            max-width: 900px; /* Adjusted max-width */
-            margin: 0 auto; /* Keep margin 0 auto */
-            padding: 0 1rem; /* Added padding */
-            gap: 1.5rem; /* Added gap */
-        }
-
-        /* Style for the GeoGebra viewer container */
-        .viewer-container {
-            width: 100%; /* Take full width */
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            padding: 1.5rem; /* Add padding */
-        }
-        .viewer-container:hover {
-             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-        .viewer-container h1 { /* Style the h1 inside viewer */
+        /* Style the h1 inside the viewer card */
+         .viewer-container-prism h1 {
             color: var(--dark-color);
             text-align: center;
             border-bottom: 2px solid var(--primary-color);
@@ -109,88 +42,35 @@
             font-size: 1.5rem;
         }
 
-        #ggb-element {
-            width: 100%;
-            height: 500px;
-            border: 1px solid var(--border-color); /* Use variable */
-            border-radius: 8px; /* Added radius */
-        }
-
-        /* Style for the controls container */
-        .controls {
-            width: 100%; /* Take full width */
-            margin-top: 0; /* Removed margin, handled by gap */
-            padding: 1.5rem; /* Adjusted padding */
-            background-color: var(--card-bg); /* Use variable */
-            border-radius: 12px; /* Adjusted radius */
-            box-shadow: 0 2px 10px var(--shadow-color); /* Added shadow */
-            border: 1px solid var(--border-color); /* Added border */
-        }
-        .controls h3 { /* Added style for potential future headings */
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: var(--primary-color);
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 1rem;
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem; /* Added gap */
-        }
-
-        .slider-container label {
-            margin-right: 0; /* Removed margin */
-            width: auto; /* Removed fixed width */
-            font-weight: 500; /* Added font-weight */
-            min-width: 80px; /* Added min-width */
-        }
-
-        input[type="range"]#heightSlider { /* Target specific slider */
-            flex-grow: 1;
-            height: 8px;
-            -webkit-appearance: none;
-            background: var(--border-color);
-            border-radius: 4px;
-            outline: none;
-        }
-
-        input[type="range"]#heightSlider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        input[type="range"]#heightSlider::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-            background: var(--secondary-color);
-        }
-
+        /* Style the slider value display */
         #heightValue {
-            margin-left: 0; /* Removed margin */
-            font-weight: 500; /* Adjusted font-weight */
-            min-width: 40px;
-            text-align: center; /* Centered text */
-            background: var(--light-color); /* Use variable */
-            padding: 0.3rem 0.6rem; /* Added padding */
-            border-radius: 4px; /* Added radius */
-            border: 1px solid var(--border-color); /* Added border */
+            font-weight: 500;
+            min-width: 45px;
+            text-align: center;
+            background: var(--light-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
         }
 
-        @media (max-width: 900px) {
-            .header h1 {
-                font-size: 1.8rem;
-            }
-            .main-container {
-                max-width: 100%;
-            }
+        /* Ensure ggb-container uses common style */
+        #ggb-element {
+             /* Inherits from .ggb-container in style.css */
+             height: 500px; /* Keep specific height */
         }
+
+         /* Responsive adjustments */
+         @media (max-width: 900px) {
+             .prism-layout {
+                 flex-direction: column; /* Stack vertically on smaller screens */
+                 align-items: center; /* Center items when stacked */
+             }
+              .controls-prism, .viewer-container-prism {
+                  width: 100%; /* Make cards take full width when stacked */
+                  min-width: unset; /* Remove min-width when stacked */
+                  max-width: unset; /* Remove max-width when stacked */
+              }
+         }
     </style>
 </head>
 
@@ -199,27 +79,35 @@
         <h1><i class="fas fa-cube"></i> 可调高度的3D正四棱柱</h1>
         <p>拖动滑块调整棱柱的高度</p>
     </div>
-    <div class="main-container">
-        <div class="viewer-container">
-            <div class="slider-container">
-                <label for="heightSlider">棱柱高度:</label>
-                <input type="range" id="heightSlider" min="0" max="10" value="3" step="0.1">
-                <span id="heightValue">3.0</span>
-            </div>
-             <div id="ggb-element"></div>
-        </div>
+    <!-- Use main-content-area for centering/padding -->
+    <main class="main-content-area">
+        <!-- Add specific layout class -->
+        <div class="prism-layout">
 
-        <!-- <div class="controls">
-            
-        </div> -->
-    </div>
+            <!-- Viewer Card (Right) -->
+            <div class="viewer-container-prism card">
+                 <h1>可调高度的3D正四棱柱</h1>
+                 <!-- Add 'ggb-container' class -->
+                 <div id="ggb-element" class="ggb-container"></div>
+            </div>
+            <!-- Controls Card (Left) -->
+            <div class="controls-prism card">
+                <h3><i class="fas fa-ruler-vertical"></i> 控制</h3> <!-- Optional heading -->
+                <div class="slider-container">
+                   <label for="heightSlider">棱柱高度:</label>
+                   <input type="range" id="heightSlider" min="0" max="10" value="3" step="0.1">
+                   <span id="heightValue">3.0</span>
+               </div>
+           </div>
+        </div>
+    </main>
 
     <script>
         // 初始化GeoGebra应用
         var parameters = {
             "appName": "3d",
             "width": 800,
-            "height": 500,
+            "height": 470,
             "showToolBar": false,
             "showAlgebraInput": false,
             "showMenuBar": false,

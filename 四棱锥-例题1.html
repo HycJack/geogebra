@@ -4,173 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>四棱锥P-ABCD动态演示</title>
+    <!-- Common Libraries -->
     <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Link to common stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Page-specific styles -->
     <style>
-        :root {
-            --primary-color: #4285f4;
-            --secondary-color: #34a853;
-            --accent-color: #ea4335;
-            --dark-color: #202124;
-            --light-color: #f8f9fa;
-            --border-color: #dadce0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --card-bg: #ffffff;
+        /* Specific layout for this page */
+        .pyramid-layout {
+            /* Simple layout, content centered by main-content-area */
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        .content-container-pyramid { /* Specific container */
+             /* Inherits card styles */
+             margin-bottom: 2rem; /* Keep margin */
         }
-        
-        body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
-            opacity: 0.1;
-            pointer-events: none;
-        }
-        
-        .header h1 {
-            font-weight: 700;
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .header p {
-            font-weight: 400;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .main-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .content-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .example-title {
+        .example-title { /* Specific title style */
             font-size: 1.3rem;
             color: var(--primary-color);
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--border-color);
+            display: flex; /* Align icon */
+            align-items: center;
+            gap: 0.5rem;
         }
-        
-        .example-content {
+        .example-content { /* Specific content style */
             margin-bottom: 1.5rem;
             line-height: 1.8;
-        }
-        
-        #ggb-element {
-            align-items: end;
-            border: none;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .control-panel {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            display: flex;
-            flex-direction: column;
+            display: flex; /* Align button */
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Wrap button if needed */
             gap: 1rem;
         }
-        
-        .btn-group {
-            display: flex;
-            gap: 0.8rem;
+        #ggb-element { /* Specific GGB container style */
+             /* Inherits from .ggb-container */
+             height: 450px; /* Adjust height if needed */
+             margin: 0 auto; /* Center if needed */
+             max-width: 700px; /* Limit width */
         }
-        
-        button {
-            padding: 0.8rem 1.2rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            flex: 1;
+        #showProofBtn { /* Specific button style */
+             flex-shrink: 0; /* Prevent button from shrinking */
         }
-        
-        button i {
-            font-size: 1.1rem;
-        }
-        
-        button.primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        button.primary:hover {
-            background-color: #3367d6;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        button.secondary {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            border: 1px solid var(--border-color);
-        }
-        
-        button.secondary:hover {
-            background-color: #e8eaed;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8rem;
-            }
-            
-            .btn-group {
-                flex-direction: column;
-            }
-        }
+
+         /* Responsive adjustments */
+         @media (max-width: 768px) {
+             .example-content {
+                 flex-direction: column;
+                 align-items: flex-start;
+             }
+             #showProofBtn {
+                 width: 100%; /* Make button full width */
+             }
+         }
     </style>
 </head>
 <body>
@@ -178,40 +66,38 @@
         <h1><i class="fas fa-shapes"></i> 四棱锥P-ABCD动态演示</h1>
         <p>几何定理可视化教学工具 - 探索空间几何关系</p>
     </div>
-    
-    <div class="main-container">
-        <div class="content-container">
+
+    <!-- Use main-content-area for centering/padding -->
+    <main class="main-content-area">
+        <!-- Add specific layout class and card class -->
+        <div class="pyramid-layout content-container-pyramid card">
             <div class="example-title">
                 <i class="fas fa-book"></i> 典例分析
             </div>
             <div class="example-content">
+                <span> <!-- Wrap text in span for flex layout -->
                 [典例 1]如图，在四棱锥P-ABCD中，PA⊥底面ABCD，AB⊥AD，AC⊥CD,∠ABC=60°，PA=AB=BC，E是PC的中点，证明:
                 (1)CD⊥AE;
-                <button id="showProofBtn" class="secondary">
+                </span>
+                <!-- Add 'btn' class -->
+                <button id="showProofBtn" class="btn secondary">
                     <i class="fas fa-lightbulb"></i> 显示证明
                 </button>
             </div>
-            
-            <div id="ggb-element"></div>
-<!--             
-            <div class="control-panel">
-                <h3><i class="fas fa-sliders-h"></i> 控制面板</h3>
-                <div class="btn-group">
-                    <button id="resetViewBtn" class="primary">
-                        <i class="fas fa-sync-alt"></i> 重置视图
-                    </button>
-                    
-                </div>
-            </div> -->
+
+            <!-- Add 'ggb-container' class -->
+            <div id="ggb-element" class="ggb-container"></div>
+
+            <!-- Control panel removed as it was commented out -->
         </div>
-    </div>
+    </main>
 
     <script>
         // 定义全局变量以便在回调中访问
         var parameters = {
             "appName": "3d",
             "width": "500",
-            "height": "300",
+            "height": "400",
             "showMenuBar": false,
             "showAlgebraInput": false,
             "showToolBar": false,

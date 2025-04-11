@@ -3,251 +3,97 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>泰勒斯定理半圆演示</title>
+    <!-- Common Libraries -->
     <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Link to common stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Page-specific styles -->
     <style>
-        :root {
-            --primary-color: #4285f4;
-            --secondary-color: #34a853;
-            --accent-color: #ea4335;
-            --dark-color: #202124;
-            --light-color: #f8f9fa;
-            --border-color: #dadce0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --card-bg: #ffffff;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 2rem; /* Added margin */
-        }
-
-        .header::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
-            opacity: 0.1;
-            pointer-events: none;
-        }
-
-        .header h1 {
-            font-weight: 700;
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-            display: flex; /* Added for icon alignment */
-            align-items: center; /* Added for icon alignment */
-            justify-content: center; /* Added for icon alignment */
-            gap: 0.75rem; /* Added for icon alignment */
-        }
-
-        .header p {
-            font-weight: 400;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
-        }
-
-        .main-container {
+        /* Specific layout for this page */
+        .thales-layout {
             display: flex;
-            max-width: 1200px;
-            margin: 0 auto; /* Keep margin 0 auto */
-            padding: 0 1rem; /* Added padding */
-            gap: 1.5rem; /* Added gap */
-            background: transparent; /* Changed background */
-            border-radius: 0; /* Removed border-radius */
-            box-shadow: none; /* Removed box-shadow */
-            overflow: visible; /* Changed overflow */
+            gap: 1.5rem; /* Use gap from common styles */
+        }
+        .left-panel-thales {
+            flex: 2; /* Adjust flex ratio if needed */
+            min-width: 500px; /* Keep min-width */
+        }
+        .right-panel-thales {
+            flex: 1;
+            min-width: 300px;
+            display: flex; /* Keep flex column layout */
+            flex-direction: column;
+            gap: 1.5rem; /* Keep gap */
         }
 
-        .left-panel {
-            flex: 2; /* Changed flex */
-            padding: 1.5rem; /* Changed padding */
-            min-width: 500px; /* Added min-width */
-            background: var(--card-bg); /* Use variable */
-            border-radius: 12px; /* Added border-radius */
-            box-shadow: 0 2px 10px var(--shadow-color); /* Added box-shadow */
-            transition: all 0.3s ease; /* Added transition */
-        }
-        .left-panel:hover {
-             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15); /* Added hover effect */
-        }
-
-        .right-panel {
-            flex: 1; /* Changed flex */
-            min-width: 300px; /* Added min-width */
-            padding: 1.5rem; /* Changed padding */
-            background: var(--card-bg); /* Use variable */
-            border-left: none; /* Removed border */
-            border-radius: 12px; /* Added border-radius */
-            box-shadow: 0 2px 10px var(--shadow-color); /* Added box-shadow */
-            display: flex; /* Added flex */
-            flex-direction: column; /* Added flex-direction */
-            gap: 1.5rem; /* Added gap */
-        }
-
-        /* Keep h1 inside left-panel specific */
-        .left-panel h1 {
+        /* Specific styles for elements within panels */
+        .left-panel-thales h1 { /* Keep specific h1 style */
             color: var(--dark-color);
             text-align: center;
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 10px;
             margin-top: 0;
-            margin-bottom: 1.5rem; /* Added margin */
-            font-size: 1.5rem; /* Adjusted size */
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
         }
 
-        .theorem {
-            background-color: #e8f4fc; /* Keep specific color or use variable */
-            padding: 15px;
-            border-radius: 8px; /* Adjusted */
-            margin-bottom: 0; /* Removed margin, handled by gap */
-            border: 1px solid var(--border-color); /* Added border */
+        /* Style the specific info boxes */
+        .theorem-box, .instructions-box, .properties-box {
+             padding: 15px;
+             border-radius: 8px;
+             border: 1px solid var(--border-color);
+             background-color: var(--card-bg); /* Use card background */
         }
-        .theorem h2 {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
+        .theorem-box { /* Specific background */
+             background-color: #e8f4fc;
         }
+         .instructions-box { /* Specific border */
+             border-left: 4px solid var(--secondary-color);
+         }
 
-        #ggb-container {
-            width: 100%;
-            height: 500px; /* Keep height */
-            margin-bottom: 0; /* Removed margin */
-            border: 1px solid var(--border-color); /* Added border */
-            border-radius: 8px; /* Added radius */
+        .theorem-box h2, .instructions-box h3, .properties-box h3 {
+             margin-bottom: 0.5rem;
+             font-size: 1.2rem;
         }
+         .theorem-box h2 { color: var(--primary-color); }
+         .instructions-box h3 { color: var(--secondary-color); }
+         .properties-box h3 { color: var(--accent-color); }
 
-        .instructions {
-            background-color: var(--card-bg); /* Use variable */
-            padding: 15px;
-            border-left: 4px solid var(--secondary-color); /* Use variable */
-            margin-bottom: 0; /* Removed margin, handled by gap */
-            border-radius: 8px; /* Adjusted */
-            border: 1px solid var(--border-color); /* Added border */
-        }
-        .instructions h3 {
-            color: var(--secondary-color);
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .properties {
-            background-color: var(--card-bg); /* Use variable */
-            padding: 15px;
-            border-radius: 8px; /* Adjusted */
-            margin-top: 0; /* Removed margin, handled by gap */
-            border: 1px solid var(--border-color); /* Added border */
-        }
-        .properties h3 {
-            color: var(--accent-color);
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .property-item {
+        .property-item { /* Style property items */
             margin: 10px 0;
-            padding: 8px 12px; /* Adjusted padding */
-            background-color: var(--light-color); /* Use variable */
+            padding: 8px 12px;
+            background-color: var(--light-color);
             border-radius: 4px;
-            border: 1px solid var(--border-color); /* Added border */
+            border: 1px solid var(--border-color);
         }
 
-        .animation-controls {
+        .animation-controls { /* Style animation controls */
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
 
-        .btn {
-            padding: 0.7rem 1rem; /* Adjusted padding */
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px; /* Adjusted radius */
-            cursor: pointer;
-            flex: 1;
-            transition: all 0.3s; /* Enhanced transition */
-            font-weight: 500;
-            font-size: 0.9rem;
-            display: flex; /* Added for icon alignment */
-            align-items: center; /* Added for icon alignment */
-            justify-content: center; /* Added for icon alignment */
-            gap: 0.5rem; /* Added for icon alignment */
+        /* Ensure ggb-container uses common style */
+        #ggb-container {
+             /* Inherits from .ggb-container in style.css */
+             /* Override height if needed */
+             height: 500px;
         }
 
-        .btn:hover {
-            background-color: #3367d6; /* Darker primary */
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px var(--shadow-color);
-        }
-
-        .btn:disabled {
-            background-color: #95a5a6; /* Keep disabled style */
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-play {
-            background-color: var(--secondary-color); /* Use variable */
-        }
-
-        .btn-play:hover {
-            background-color: #2e8b45; /* Darker secondary */
-        }
-
-        .btn-pause {
-            background-color: var(--accent-color); /* Use variable */
-        }
-
-        .btn-pause:hover {
-            background-color: #d33226; /* Darker accent */
-        }
-
+        /* Responsive adjustments specific to this layout */
         @media (max-width: 900px) {
-            .header h1 {
-                font-size: 1.8rem;
-            }
-            .main-container {
+            .thales-layout {
                 flex-direction: column;
             }
-
-            .left-panel, .right-panel {
-                min-width: 100%; /* Adjusted for column layout */
-                width: auto;
-                border-left: none;
-                border-top: none; /* Removed border */
+            .left-panel-thales, .right-panel-thales {
+                min-width: 100%;
             }
-
             #ggb-container {
-                height: 400px;
+                height: 400px; /* Adjust height for smaller screens */
             }
         }
     </style>
@@ -258,44 +104,55 @@
         <h1><i class="fas fa-drafting-compass"></i> 泰勒斯定理半圆演示</h1>
         <p>直径所对的圆周角恒为直角</p>
     </div>
-    <div class="main-container">
-        <div class="left-panel">
-            <h1>泰勒斯定理半圆演示</h1>
-            <div id="ggb-container"></div>
-        </div>
-
-        <div class="right-panel">
-            <div class="theorem">
-                <h2>泰勒斯定理</h2>
-                <p><strong>定理内容：</strong>直径所对的圆周角恒为直角。</p>
-                <p>本演示中：</p>
-                <ul>
-                    <li>AB为圆的直径</li>
-                    <li>C为半圆上的动点</li>
-                    <li>无论C如何移动，∠ACB始终为90°</li>
-                </ul>
+    <!-- Use main-content-area for centering/padding -->
+    <main class="main-content-area">
+        <!-- Add specific layout class -->
+        <div class="thales-layout">
+            <!-- Add 'card' class and specific panel class -->
+            <div class="left-panel-thales card">
+                <h1>泰勒斯定理半圆演示</h1>
+                <!-- Add 'ggb-container' class -->
+                <div id="ggb-container" class="ggb-container"></div>
             </div>
 
-            <div class="instructions">
-                <h3>操作说明</h3>
-                <p>1. 拖动点C观察角度变化（点C只能沿半圆移动）</p>
-                <p>2. 使用下方按钮控制点C的自动移动</p>
+            <!-- Add 'card' class and specific panel class -->
+            <div class="right-panel-thales card">
+                <!-- Add specific box class -->
+                <div class="theorem-box">
+                    <h2>泰勒斯定理</h2>
+                    <p><strong>定理内容：</strong>直径所对的圆周角恒为直角。</p>
+                    <p>本演示中：</p>
+                    <ul>
+                        <li>AB为圆的直径</li>
+                        <li>C为半圆上的动点</li>
+                        <li>无论C如何移动，∠ACB始终为90°</li>
+                    </ul>
+                </div>
 
-                <div class="animation-controls">
-                    <button id="playBtn" class="btn btn-play" onclick="startAnimation()">▶ 播放</button>
-                    <button id="pauseBtn" class="btn btn-pause" onclick="pauseAnimation()" disabled>⏸ 暂停</button>
-                    <button id="resetBtn" class="btn" onclick="resetView()">↻ 重置</button>
+                <!-- Add specific box class -->
+                <div class="instructions-box">
+                    <h3>操作说明</h3>
+                    <p>1. 拖动点C观察角度变化（点C只能沿半圆移动）</p>
+                    <p>2. 使用下方按钮控制点C的自动移动</p>
+
+                    <div class="animation-controls">
+                        <!-- Buttons already have .btn class -->
+                        <button id="playBtn" class="btn btn-play" onclick="startAnimation()">▶ 播放</button>
+                        <button id="pauseBtn" class="btn btn-pause" onclick="pauseAnimation()" disabled>⏸ 暂停</button>
+                        <button id="resetBtn" class="btn" onclick="resetView()">↻ 重置</button>
+                    </div>
+                </div>
+
+                <!-- Add specific box class -->
+                <div class="properties-box">
+                    <h3>实时属性</h3>
+                    <div class="property-item" id="angle-display">∠ACB: 90°</div>
+                    <div class="property-item" id="point-position">点C坐标: (0, 3)</div>
+                    <div class="property-item" id="animation-status">动画状态: 停止</div>
                 </div>
             </div>
-
-            <div class="properties">
-                <h3>实时属性</h3>
-                <div class="property-item" id="angle-display">∠ACB: 90°</div>
-                <div class="property-item" id="point-position">点C坐标: (0, 3)</div>
-                <div class="property-item" id="animation-status">动画状态: 停止</div>
-            </div>
         </div>
-    </div>
+    </main>
 
     <script>
         // 全局变量

@@ -4,214 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GeoGebra 三角形类型演示</title>
+    <!-- Common Libraries -->
     <script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Link to common stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Page-specific styles -->
     <style>
-        :root {
-            --primary-color: #4285f4;
-            --secondary-color: #34a853;
-            --accent-color: #ea4335;
-            --dark-color: #202124;
-            --light-color: #f8f9fa;
-            --border-color: #dadce0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --card-bg: #ffffff;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
-            opacity: 0.1;
-            pointer-events: none;
-        }
-        
-        .header h1 {
-            font-weight: 700;
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .header p {
-            font-weight: 400;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .main-container {
+        /* Specific layout for this page */
+        .triangle-layout {
             display: flex;
             flex-wrap: wrap;
-            max-width: 1200px;
-            margin: 1rem auto;
-            padding: 0 1rem;
             gap: 1.5rem;
         }
-        
-        .viewer-container {
+        .viewer-container-triangle {
             flex: 2;
             min-width: 500px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            overflow: hidden;
-            transition: all 0.3s ease;
         }
-        
-        .viewer-container:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-        
-        .control-panel {
+        .control-panel-triangle {
             flex: 1;
             min-width: 300px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            padding: 1.0rem;
             display: flex;
             flex-direction: column;
-            gap: 0.6rem;
+            gap: 1.5rem; /* Increased gap */
         }
-        
         #ggb-element {
-            width: 100%;
-            height: 500px;
-            border: none;
+             border: none; /* Override common style if needed */
         }
-        
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-        
-        .control-group h3 {
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: var(--primary-color);
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn-group {
+        .btn-group-triangle { /* Specific button group style */
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.6rem;
+            grid-template-columns: 1fr; /* Stack buttons */
+            gap: 0.8rem; /* Gap between buttons */
         }
-        
-        button {
-            padding: 0.8rem 1.2rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        button i {
-            font-size: 1.1rem;
-        }
-        
-        button.primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        button.primary:hover {
-            background-color: #3367d6;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        button.secondary {
+        .triangle-info { /* Specific info box style */
+            padding: 1rem; /* Adjusted padding */
             background-color: var(--light-color);
-            color: var(--dark-color);
-            border: 1px solid var(--border-color);
-        }
-        
-        button.secondary:hover {
-            background-color: #e8eaed;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .triangle-info {
-            /* margin-top: 1rem; */
-            padding: 0.8rem;
-            background-color: #f8f9fa;
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
-        
-        .info-item {
-            /* margin: 0.5rem 0; */
+        .info-item { /* Specific info item style */
+            margin: 0.5rem 0;
             font-size: 0.95rem;
         }
-        
-        @media (max-width: 900px) {
-            .main-container {
-                flex-direction: column;
-            }
-            
-            .viewer-container, .control-panel {
-                min-width: 100%;
-            }
-            
-            .header h1 {
-                font-size: 1.8rem;
-            }
-        }
-        
-        /* 动画效果 */
+        /* Keep animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+        .control-group {
+             animation: fadeIn 0.4s ease-out forwards;
+        }
         .control-group:nth-child(1) { animation-delay: 0.1s; }
         .control-group:nth-child(2) { animation-delay: 0.2s; }
-        .control-group:nth-child(3) { animation-delay: 0.3s; }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .triangle-layout {
+                flex-direction: column;
+            }
+            .viewer-container-triangle, .control-panel-triangle {
+                min-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -219,47 +74,56 @@
         <h1><i class="fas fa-shapes"></i> 三角形类型演示工具</h1>
         <p>交互式三角形类型可视化教学工具 - 探索不同类型的三角形</p>
     </div>
-    
-    <div class="main-container">
-        <div class="viewer-container">
-            <div id="ggb-element"></div>
-        </div>
-        
-        <div class="control-panel">
-            <div class="control-group">
-                <h3><i class="fas fa-sliders-h"></i> 三角形控制</h3>
-                <div class="btn-group">
-                    <button class="primary" onclick="setEquilateral()">
-                        <i class="fas fa-gem"></i> 等边三角形
-                    </button>
-                    <button class="primary" onclick="setIsosceles()">
-                        <i class="fas fa-triangle"></i> 等腰三角形
-                    </button>
-                    <button class="primary" onclick="setRight()">
-                        <i class="fas fa-square"></i> 直角三角形
-                    </button>
-                    <button class="primary" onclick="setAcute()">
-                        <i class="fas fa-angle-up"></i> 锐角三角形
-                    </button>
-                    <button class="primary" onclick="setObtuse()">
-                        <i class="fas fa-angle-down"></i> 钝角三角形
-                    </button>
+
+    <!-- Use main-content-area for centering/padding -->
+    <main class="main-content-area">
+        <!-- Add specific layout class -->
+        <div class="triangle-layout">
+            <!-- Add 'card' class and specific container class -->
+            <div class="viewer-container-triangle card">
+                <!-- Add 'ggb-container' class -->
+                <div id="ggb-element" class="ggb-container"></div>
+            </div>
+
+            <!-- Add 'card' class and specific panel class -->
+            <div class="control-panel-triangle card">
+                <div class="control-group">
+                    <h3><i class="fas fa-sliders-h"></i> 三角形控制</h3>
+                    <!-- Add specific button group class -->
+                    <div class="btn-group-triangle">
+                        <!-- Add 'btn' class -->
+                        <button class="btn primary" onclick="setEquilateral()">
+                            <i class="fas fa-gem"></i> 等边三角形
+                        </button>
+                        <button class="btn primary" onclick="setIsosceles()">
+                            <i class="fas fa-equals"></i> 等腰三角形 <!-- Changed icon -->
+                        </button>
+                        <button class="btn primary" onclick="setRight()">
+                            <i class="fas fa-drafting-compass"></i> 直角三角形 <!-- Changed icon -->
+                        </button>
+                        <button class="btn primary" onclick="setAcute()">
+                            <i class="fas fa-angle-double-up"></i> 锐角三角形 <!-- Changed icon -->
+                        </button>
+                        <button class="btn primary" onclick="setObtuse()">
+                            <i class="fas fa-angle-double-down"></i> 钝角三角形 <!-- Changed icon -->
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3><i class="fas fa-info-circle"></i> 三角形属性</h3>
+                    <div class="triangle-info">
+                        <div class="info-item" id="angleA">∠A: 计算中...</div>
+                        <div class="info-item" id="angleB">∠B: 计算中...</div>
+                        <div class="info-item" id="angleC">∠C: 计算中...</div>
+                        <div class="info-item" id="sideAB">边AB: 计算中...</div>
+                        <div class="info-item" id="sideBC">边BC: 计算中...</div>
+                        <div class="info-item" id="sideCA">边CA: 计算中...</div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="control-group">
-                <h3><i class="fas fa-info-circle"></i> 三角形属性</h3>
-                <div class="triangle-info">
-                    <div class="info-item" id="angleA">∠A: 计算中...</div>
-                    <div class="info-item" id="angleB">∠B: 计算中...</div>
-                    <div class="info-item" id="angleC">∠C: 计算中...</div>
-                    <div class="info-item" id="sideAB">边AB: 计算中...</div>
-                    <div class="info-item" id="sideBC">边BC: 计算中...</div>
-                    <div class="info-item" id="sideCA">边CA: 计算中...</div>
-                </div>
-            </div>
         </div>
-    </div>
+    </main>
 
     <script>
         var parameters = {

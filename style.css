@@ -1,0 +1,225 @@
+:root {
+    --primary-color: #4285f4;
+    --secondary-color: #34a853;
+    --accent-color: #ea4335;
+    --dark-color: #202124;
+    --light-color: #f8f9fa;
+    --border-color: #dadce0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --card-bg: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    line-height: 1.6;
+}
+
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem; /* Common margin after header */
+}
+
+.header::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="10" height="10" fill="white" fill-opacity="0.1"/></svg>');
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.header h1 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.header p {
+    font-weight: 400;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+
+/* Common container for main content area */
+.main-content-area {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    gap: 1.5rem;
+}
+
+/* Common card styling (can be applied to panels/containers) */
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color); /* Added subtle border */
+}
+
+.card:hover {
+     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Common styles for controls/sliders if applicable */
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.control-group h3 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.slider-container label {
+    font-weight: 500;
+    min-width: 80px;
+}
+
+input[type="range"] {
+    flex-grow: 1;
+    height: 8px;
+    -webkit-appearance: none;
+    background: var(--border-color);
+    border-radius: 4px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    background: var(--secondary-color);
+}
+
+/* Common button styles */
+.btn {
+    padding: 0.7rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.3s;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none; /* For potential <a> tags styled as buttons */
+}
+
+.btn:hover {
+    background-color: #3367d6; /* Darker primary */
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.btn:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn.secondary { /* Style for secondary buttons */
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn.secondary:hover {
+    background-color: #e8eaed;
+}
+
+.btn-play {
+    background-color: var(--secondary-color);
+}
+.btn-play:hover {
+    background-color: #2e8b45;
+}
+
+.btn-pause {
+    background-color: var(--accent-color);
+}
+.btn-pause:hover {
+    background-color: #d33226;
+}
+
+/* Common GeoGebra container style */
+.ggb-container {
+    width: 100%;
+    height: 500px; /* Default height, can be overridden */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden; /* Ensure content stays within bounds */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    .main-content-area {
+        padding: 0 0.5rem; /* Reduce padding on smaller screens */
+    }
+    /* Adjust flex containers for stacking */
+    .flex-container-responsive {
+        flex-direction: column;
+    }
+    .flex-container-responsive > * {
+        min-width: 100%;
+        width: auto;
+    }
+}
