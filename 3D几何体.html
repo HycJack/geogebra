@@ -129,7 +129,7 @@
                         <i class="fas fa-sync-alt"></i> 重置视图
                     </button>
                 </div>
-                <div class="view-controls">
+                <div class="view-controls" style="display: flex;gap: 0.5rem;">
                      <!-- Add 'btn' class -->
                     <button id="frontView" class="btn secondary view-btn">
                         <i class="fas fa-arrow-up"></i> 正视图
@@ -151,7 +151,7 @@
         // 初始化GeoGebra应用
         var parameters = {
             "appName": "3d",
-            "width": "730",
+            "width": "700",
             "height": "500",
             "showToolBar": false,
             "borderColor":"#FFFFFF",
@@ -164,7 +164,7 @@
             "appletOnLoad": function(api) {
                 window.ggbApp = api;
                 ggbApp.evalCommand('SetPerspective("T")');
-                ggbApp.evalCommand(`ShowAxes[3,false]`);
+                // ggbApp.evalCommand(`ShowAxes[3,false]`);
                 ggbApp.setVisible("xOyPlane", false);
                 initializeShape('triangularPrism');
             },
