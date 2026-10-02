@@ -16,22 +16,30 @@
 
 package org.geogebra.web.full.gui.toolbarpanel.spreadsheet;
 
+import org.geogebra.common.gui.FocusableComponent;
 import org.geogebra.common.main.App;
+import org.geogebra.common.main.ScreenReader;
 import org.geogebra.common.main.settings.SpreadsheetSettings;
 import org.geogebra.common.spreadsheet.core.Modifiers;
 import org.geogebra.common.spreadsheet.core.Spreadsheet;
 import org.geogebra.common.spreadsheet.core.SpreadsheetDelegate;
+import org.geogebra.common.spreadsheet.core.SpreadsheetStatisticsView;
 import org.geogebra.common.spreadsheet.core.SpreadsheetStyleBarModel;
 import org.geogebra.common.spreadsheet.core.ViewportAdjusterDelegate;
+import org.geogebra.common.spreadsheet.kernel.KernelSpreadsheetStatistics;
 import org.geogebra.common.util.MouseCursor;
 import org.geogebra.common.util.shape.Rectangle;
 import org.geogebra.common.util.shape.Size;
 import org.geogebra.editor.share.catalog.TemplateCatalog;
+import org.geogebra.editor.share.util.KeyCodes;
 import org.geogebra.editor.web.KeyCodeUtil;
 import org.geogebra.gwtutil.NavigatorUtil;
 import org.geogebra.web.awt.GGraphics2DW;
 import org.geogebra.web.full.gui.view.probcalculator.MathTextFieldW;
-import org.geogebra.web.html5.gui.util.ClickStartHandler;
+import org.geogebra.web.html5.euclidian.ReaderWidget;
+import org.geogebra.web.html5.gui.util.AriaHelper;
+import org.geogebra.web.html5.gui.util.LongTouchManager;
+import org.geogebra.web.html5.gui.util.LongTouchTimer;
 import org.geogebra.web.html5.gui.util.MathKeyboardListener;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.util.GlobalHandlerRegistry;
@@ -45,6 +53,7 @@ import org.gwtproject.event.dom.client.KeyEvent;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.RequiresResize;
 import org.gwtproject.user.client.ui.ScrollPanel;
+import org.jspecify.annotations.NonNull;
 
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.DomGlobal;
@@ -52,12 +61,15 @@ import elemental2.dom.Event;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.KeyboardEvent;
 import elemental2.dom.PointerEvent;
+import elemental2.dom.Touch;
+import elemental2.dom.TouchEvent;
 import jsinterop.base.Js;
 
-public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
+public final class SpreadsheetPanel extends FlowPanel
+		implements RequiresResize, LongTouchTimer.LongTouchHandler {
 
 	public static final int AUTOSCROLL_OFFSET = 30;
-	private final Spreadsheet spreadsheet;
+	private final Spreadsheet<?> spreadsheet;
 	private final GGraphics2DW graphics;
 	private final AppW app;
 
@@ -67,15 +79,19 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 	private final ScrollPanel scrollOverlay;
 	private final MathTextFieldW mathField;
 	private final elemental2.dom.Element spreadsheetElement;
+	private final FocusableComponent focusableComponent;
 	double moveTimeout;
 	int viewportChanges;
 	boolean isPointerDown = false;
+	private boolean focusSpreadsheetOnPointerUp;
 	private FocusCommand focusCommand;
+	private boolean isTouchDragging;
 
 	/**
 	 * @param app application
+	 * @param spreadsheet spreadsheet
 	 */
-	public SpreadsheetPanel(AppW app) {
+	public SpreadsheetPanel(AppW app, @NonNull Spreadsheet<?> spreadsheet) {
 		Canvas spreadsheetWidget = Canvas.createIfSupported();
 		spreadsheetWidget.addStyleName("spreadsheetWidget");
 		graphics = new GGraphics2DW(spreadsheetWidget);
@@ -84,46 +100,61 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 
 		mathField = new MathTextFieldW(app, new TemplateCatalog());
 
-		spreadsheet = app.getSpreadsheet();
-		if (spreadsheet != null) {
-			spreadsheet.setControlsDelegate(initControlsDelegate());
-			spreadsheet.setSpreadsheetDelegate(initSpreadsheetDelegate());
-			spreadsheet.setViewportAdjustmentHandler(createScrollable());
-		}
+		this.spreadsheet = spreadsheet;
+		KernelSpreadsheetStatistics spreadsheetStatistics =
+				new KernelSpreadsheetStatistics(app.getKernel());
+		spreadsheet.setStatisticsViewDelegate(
+				new SpreadsheetStatisticsDelegateW(app, spreadsheet), spreadsheetStatistics);
+		spreadsheet.setControlsDelegate(initControlsDelegate());
+		spreadsheet.setSpreadsheetDelegate(initSpreadsheetDelegate());
+		spreadsheet.setViewportAdjustmentHandler(createScrollable());
 
 		add(spreadsheetWidget);
 		scrollOverlay = new ScrollPanel();
 
 		FlowPanel scrollContent = new FlowPanel();
+		AriaHelper.setRole(scrollContent, "application");
+		AriaHelper.setRoleDescription(
+				scrollContent, app.getLocalization().getMenu("Perspective.Spreadsheet"));
 		scrollOverlay.setWidget(scrollContent);
 		scrollOverlay.setStyleName("spreadsheetScrollOverlay");
 		add(scrollOverlay);
 		spreadsheetElement = Js.uncheckedCast(scrollContent.getElement());
+
+		ReaderWidget screenReader = new ReaderWidget("S", scrollContent.getElement());
+		add(screenReader);
+		spreadsheet.setAccessibilityDelegate(screenReader::readText);
+		spreadsheet.setExpressionReader(ScreenReader.getExpressionReader(app));
 
 		GlobalHandlerRegistry registry = app.getGlobalHandlers();
 
 		registry.addEventListener(spreadsheetElement, "pointerdown", event -> {
 			PointerEvent ptr = Js.uncheckedCast(event);
 			Modifiers modifiers = getModifiers(ptr);
-			spreadsheet.handlePointerDown(getEventX(ptr), getEventY(ptr),
-					modifiers);
+			SpreadsheetStatisticsView<?> statisticsView = spreadsheet.getStatisticsView();
+			focusSpreadsheetOnPointerUp =
+					statisticsView != null && statisticsView.getFocusedDataRange() != null;
+			spreadsheet.handlePointerDown(getEventX(ptr), getEventY(ptr), modifiers);
 			setPointerCapture(event);
 			if (!app.isUnbundled()) {
-				app.getGuiManager()
-						.setActivePanelAndToolbar(App.VIEW_SPREADSHEET);
+				app.getGuiManager().setActivePanelAndToolbar(App.VIEW_SPREADSHEET);
 			}
-			if (modifiers.secondaryButton || spreadsheet.isEditorActive()) {
+			if (modifiers.secondaryButton
+					|| spreadsheet.isEditorActive()
+					|| focusSpreadsheetOnPointerUp) {
 				event.preventDefault();
 			}
 			isPointerDown = true;
-			repaint();
 		});
 		registry.addEventListener(spreadsheetElement, "pointerup", event -> {
 			PointerEvent ptr = Js.uncheckedCast(event);
-			spreadsheet.handlePointerUp(getEventX(ptr), getEventY(ptr),
-					getModifiers(ptr));
+			spreadsheet.handlePointerUp(getEventX(ptr), getEventY(ptr), getModifiers(ptr));
 			if (!spreadsheet.isEditorActive()) {
 				app.hideKeyboard();
+			}
+
+			if (focusSpreadsheetOnPointerUp) {
+				focusSpreadsheetOnPointerUp = false;
 			}
 			isPointerDown = false;
 			repaint();
@@ -139,7 +170,8 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 		registry.addEventListener(DomGlobal.window, "pointerup", event -> {
 			elemental2.dom.Element target = Js.uncheckedCast(event.target);
 			if (target.closest(".spreadsheetScrollOverlay,.gwt-PopupPanel,.iconButton,"
-					+ ".colorChooser,.tabButton,.toolBPanel,.TitleBarPanelContent") != null) {
+							+ ".colorChooser,.tabButton,.toolBPanel,.TitleBarPanelContent")
+					!= null) {
 				return;
 			}
 			spreadsheet.clearSelectionOnly();
@@ -150,41 +182,103 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 		registry.addEventListener(DomGlobal.document.fonts, "loadingdone", ignore -> {
 			repaint();
 		});
+		setupTouchAndMouseEvents(registry, scrollContent);
 
-		ClickStartHandler.initDefaults(scrollContent, false, true);
-		scrollContent.getElement().setTabIndex(0);
-		scrollContent.addDomHandler(evt -> {
-			spreadsheet.handleKeyPressed(KeyCodeUtil.translateGWTCode(
-					evt.getNativeKeyCode()).getJavaKeyCode(),
-					getKey(evt.getNativeEvent()),
-					getKeyboardModifiers(evt));
-			evt.stopPropagation(); // do not let global event handler interfere
-			evt.preventDefault(); // do not scroll the view
-			repaint();
-		}, KeyDownEvent.getType());
+		scrollContent.getElement().setTabIndex(-1);
+		focusableComponent = new SpreadsheetFocusableAdapter(
+				this::isVisibleForTabbing, this::hasSpreadsheetFocus, this::focusSpreadsheetForKeyboard);
+		app.getAccessibilityManager().register(focusableComponent);
+
+		scrollContent.addDomHandler(
+				evt -> {
+					KeyCodes keyCode = KeyCodeUtil.translateGWTCode(evt.getNativeKeyCode());
+					if (keyCode == KeyCodes.TAB && shouldTabLeaveSpreadsheet()) {
+						boolean handled = evt.isShiftKeyDown()
+								? app.getAccessibilityManager().focusPrevious()
+								: app.getAccessibilityManager().focusNext();
+
+						if (handled) {
+							evt.stopPropagation();
+							evt.preventDefault();
+							return;
+						}
+					}
+
+					if (spreadsheet.handleKeyPressed(
+							keyCode.getJavaKeyCode(), getKey(evt.getNativeEvent()), getKeyboardModifiers(evt))) {
+						evt.stopPropagation(); // Do not let global event handler interfere
+					}
+					evt.preventDefault(); // Do not scroll the view
+					repaint();
+				},
+				KeyDownEvent.getType());
 		updateTotalSize();
-		DomGlobal.setInterval((ignore) -> {
-			spreadsheet.scrollForDragIfNeeded();
-		}, 20);
+		DomGlobal.setInterval(
+				(ignore) -> {
+					spreadsheet.scrollForDragIfNeeded();
+				},
+				20);
 		scrollOverlay.addScrollHandler(event -> {
 			updateViewport();
 			repaint();
 		});
-		app.getSettings().getSpreadsheet().addListener(settings -> {
-			SpreadsheetSettings spreadsheetSettings = (SpreadsheetSettings) settings;
-			setScrollingEnabled(spreadsheetSettings.showHScrollBar(),
-					spreadsheetSettings.showVScrollBar());
+		SpreadsheetSettings spreadsheetSettings = app.getSettings().getSpreadsheet();
+		spreadsheetSettings.addListener(
+				settings -> setScrollingEnabled(settings.showHScrollBar(), settings.showVScrollBar()));
+		setScrollingEnabled(spreadsheetSettings.showHScrollBar(), spreadsheetSettings.showVScrollBar());
+	}
+
+	private boolean isVisibleForTabbing() {
+		return isInAppletTabOrder() && spreadsheetIsVisible();
+	}
+
+	private boolean shouldTabLeaveSpreadsheet() {
+		return isInAppletTabOrder() && !spreadsheet.isEditorActive();
+	}
+
+	private boolean isInAppletTabOrder() {
+		return app.isApplet() && !app.showMenuBar();
+	}
+
+	private boolean hasSpreadsheetFocus() {
+		return spreadsheetElement.contains(DomGlobal.document.activeElement);
+	}
+
+	private void focusSpreadsheetForKeyboard() {
+		spreadsheet.handleOnViewAppear();
+		requestFocus();
+	}
+
+	/*
+	 * Actual event handling is done using PointerEvent, mouse and touch events are only used to
+	 * turn touch-dragging on and off and to stop propagation.
+	 */
+	private void setupTouchAndMouseEvents(GlobalHandlerRegistry registry, FlowPanel scrollContent) {
+		registry.addEventListener(scrollContent.getElement(), "touchmove", event -> {
+			Touch touch = ((TouchEvent) event).touches.getAt(0);
+			LongTouchManager.getInstance().cancelIfDragged(touch.clientX, touch.clientY);
+			if (isTouchDragging) {
+				event.preventDefault();
+			}
+		});
+		registry.addEventListener(scrollContent.getElement(), "touchstart", event -> {
+			Touch touch = ((TouchEvent) event).touches.getAt(0);
+			LongTouchManager.getInstance().scheduleTimer(this, touch.clientX, touch.clientY);
+			event.stopPropagation();
+		});
+		registry.addEventListener(scrollContent.getElement(), "mousedown", Event::stopPropagation);
+		registry.addEventListener(scrollContent.getElement(), "touchend", event -> {
+			isTouchDragging = false;
+			LongTouchManager.getInstance().cancelTimer();
 		});
 	}
 
-	private void handlePointerMoved(double offsetX, double offsetY,
-			Modifiers modifiers) {
+	private void handlePointerMoved(double offsetX, double offsetY, Modifiers modifiers) {
 		DomGlobal.clearTimeout(moveTimeout);
 		setCursor(spreadsheet.getCursor(offsetX, offsetY));
 		viewportChanges = 0;
 
-		spreadsheet.handlePointerMove(offsetX, offsetY,
-					modifiers);
+		spreadsheet.handlePointerMove(offsetX, offsetY, modifiers);
 		if (isPointerDown) {
 			repaint();
 		}
@@ -198,7 +292,7 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 
 	private String getKey(NativeEvent nativeEvent) {
 		String key = Js.<KeyboardEvent>uncheckedCast(nativeEvent).key;
-		return key.length() > 1  ? "" : key;
+		return key.length() > 1 ? "" : key;
 	}
 
 	private SpreadsheetControlsDelegateW initControlsDelegate() {
@@ -219,19 +313,21 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 	}
 
 	private Modifiers getKeyboardModifiers(KeyEvent<?> evt) {
-		return new Modifiers(evt.isAltKeyDown(),
+		return new Modifiers(
+				evt.isAltKeyDown(),
 				NavigatorUtil.isMacOS() ? evt.isMetaKeyDown() : evt.isControlKeyDown(),
-				evt.isShiftKeyDown(), false);
+				evt.isShiftKeyDown(),
+				false);
 	}
 
 	private double getEventX(PointerEvent ptr) {
-		return Math.min(ptr.offsetX - scrollOverlay.getElement()
-				.getScrollLeft(), scrollOverlay.getOffsetWidth());
+		return Math.min(
+				ptr.offsetX - scrollOverlay.getElement().getScrollLeft(), scrollOverlay.getOffsetWidth());
 	}
 
 	private double getEventY(PointerEvent ptr) {
-		return Math.min(ptr.offsetY - scrollOverlay.getElement()
-				.getScrollTop(), scrollOverlay.getOffsetHeight());
+		return Math.min(
+				ptr.offsetY - scrollOverlay.getElement().getScrollTop(), scrollOverlay.getOffsetHeight());
 	}
 
 	private void setCursor(MouseCursor cursor) {
@@ -241,7 +337,8 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 	}
 
 	private Modifiers getModifiers(PointerEvent ptr) {
-		return new Modifiers(ptr.altKey,
+		return new Modifiers(
+				ptr.altKey,
 				NavigatorUtil.isMacOS() ? ptr.metaKey : ptr.ctrlKey,
 				ptr.shiftKey,
 				ptr.button == 2 || (NavigatorUtil.isMacOS() && ptr.ctrlKey));
@@ -281,8 +378,8 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 	private void updateViewport() {
 		int scrollTop = scrollOverlay.getElement().getScrollTop();
 		int scrollLeft = scrollOverlay.getElement().getScrollLeft();
-		spreadsheet.setViewport(new Rectangle(scrollLeft, scrollLeft + getWidth(),
-				scrollTop, scrollTop + getHeight()));
+		spreadsheet.setViewport(
+				new Rectangle(scrollLeft, scrollLeft + getWidth(), scrollTop, scrollTop + getHeight()));
 	}
 
 	private int getHeight() {
@@ -300,6 +397,9 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 		return getWidth() - scrollOverlay.getElement().getClientWidth();
 	}
 
+	/**
+	 * @return the keyboard listener of the math field used for cell editing.
+	 */
 	public MathKeyboardListener getKeyboardListener() {
 		return mathField.getKeyboardListener();
 	}
@@ -342,6 +442,9 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 		}
 	}
 
+	/**
+	 * @return the style bar model of the spreadsheet.
+	 */
 	public SpreadsheetStyleBarModel getStyleBarModel() {
 		return spreadsheet.getStyleBarModel();
 	}
@@ -366,9 +469,12 @@ public class SpreadsheetPanel extends FlowPanel implements RequiresResize {
 	}
 
 	private void setScrollingEnabled(boolean horizontal, boolean vertical) {
-		scrollOverlay.getElement().getStyle().setProperty("overflowX",
-				horizontal ? "auto" : "hidden");
-		scrollOverlay.getElement().getStyle().setProperty("overflowY",
-				vertical ? "auto" : "hidden");
+		scrollOverlay.getElement().getStyle().setProperty("overflowX", horizontal ? "auto" : "hidden");
+		scrollOverlay.getElement().getStyle().setProperty("overflowY", vertical ? "auto" : "hidden");
+	}
+
+	@Override
+	public void handleLongTouch(double unusedX, double unusedY) {
+		isTouchDragging = true;
 	}
 }

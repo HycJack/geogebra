@@ -34,6 +34,7 @@ import org.geogebra.common.awt.VectorPatternPaint;
 import org.geogebra.ggbjdk.java.awt.geom.GeneralPath;
 import org.geogebra.ggbjdk.java.awt.geom.Path2D;
 import org.geogebra.ggbjdk.java.awt.geom.Shape;
+import org.geogebra.gwtutil.JsObject;
 import org.gwtproject.canvas.client.Canvas;
 import org.gwtproject.dom.client.Element;
 
@@ -42,6 +43,7 @@ import elemental2.dom.BaseRenderingContext2D;
 import elemental2.dom.CanvasPattern;
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.DOMMatrix;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLCanvasElement;
 import elemental2.dom.HTMLImageElement;
 import jsinterop.base.Js;
@@ -63,7 +65,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 	private double devicePixelRatio = 1;
 
 	private double[] coords = new double[6];
-	private boolean debug = false;
+	private boolean debug = DomGlobal.location.search.contains("GeoGebraDebug=graphics");
 	private boolean setFontFailed = false;
 
 	/**
@@ -77,6 +79,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 		if (context != null) { // check for 3D view
 			this.context.initTransform();
 		}
+		updateCanvasColor();
 		preventContextMenu(canvas.getElement());
 	}
 
@@ -111,7 +114,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 		// canvas.getContext2d() doesn't work with canvas2svg.js
 		try {
 			context.imageSmoothingEnabled = interpolate;
-		} catch (Exception e) {
+		} catch (Exception expected) {
 			// do nothing
 		}
 	}
@@ -142,11 +145,10 @@ public class GGraphics2DW implements GGraphics2DWI {
 	 * @param element element to disable
 	 */
 	public static void preventContextMenu(Element element) {
-		Js.<elemental2.dom.HTMLElement>uncheckedCast(element)
-				.addEventListener("contextmenu", (e) -> {
-					e.preventDefault();
-					e.stopPropagation();
-				});
+		Js.<elemental2.dom.HTMLElement>uncheckedCast(element).addEventListener("contextmenu", (e) -> {
+			e.preventDefault();
+			e.stopPropagation();
+		});
 	}
 
 	@Override
@@ -200,25 +202,23 @@ public class GGraphics2DW implements GGraphics2DWI {
 		while (!it.isDone()) {
 			int cu = it.currentSegment(coords);
 			switch (cu) {
-			default:
-				// do nothing
-				break;
-			case GPathIterator.SEG_MOVETO:
-				context.moveTo(coords[0], coords[1]);
-				break;
-			case GPathIterator.SEG_LINETO:
-				context.lineTo(coords[0], coords[1]);
-				break;
-			case GPathIterator.SEG_CUBICTO:
-				context.bezierCurveTo(coords[0], coords[1], coords[2],
-						coords[3], coords[4], coords[5]);
-				break;
-			case GPathIterator.SEG_QUADTO:
-				context.quadraticCurveTo(coords[0], coords[1], coords[2],
-						coords[3]);
-				break;
-			case GPathIterator.SEG_CLOSE:
-				context.closePath();
+				default:
+					// do nothing
+					break;
+				case GPathIterator.SEG_MOVETO:
+					context.moveTo(coords[0], coords[1]);
+					break;
+				case GPathIterator.SEG_LINETO:
+					context.lineTo(coords[0], coords[1]);
+					break;
+				case GPathIterator.SEG_CUBICTO:
+					context.bezierCurveTo(coords[0], coords[1], coords[2], coords[3], coords[4], coords[5]);
+					break;
+				case GPathIterator.SEG_QUADTO:
+					context.quadraticCurveTo(coords[0], coords[1], coords[2], coords[3]);
+					break;
+				case GPathIterator.SEG_CLOSE:
+					context.closePath();
 			}
 			it.next();
 		}
@@ -238,26 +238,25 @@ public class GGraphics2DW implements GGraphics2DWI {
 		while (!it.isDone()) {
 			int cu = it.currentSegment(coords);
 			switch (cu) {
-			default:
-				// do nothing
-				break;
-			case GPathIterator.SEG_MOVETO:
-				ellipse(coords[0], coords[1], GColor.GREEN);
-				break;
-			case GPathIterator.SEG_LINETO:
-				ellipse(coords[0], coords[1], GColor.BLUE);
-				break;
-			case GPathIterator.SEG_CUBICTO:
-				ellipse(coords[0], coords[1], GColor.YELLOW);
-				ellipse(coords[2], coords[3], GColor.YELLOW);
-				ellipse(coords[4], coords[5], GColor.RED);
-				break;
-			case GPathIterator.SEG_QUADTO:
-				context.quadraticCurveTo(coords[0], coords[1], coords[2],
-						coords[3]);
-				break;
-			case GPathIterator.SEG_CLOSE:
-				context.closePath();
+				default:
+					// do nothing
+					break;
+				case GPathIterator.SEG_MOVETO:
+					ellipse(coords[0], coords[1], GColor.GREEN);
+					break;
+				case GPathIterator.SEG_LINETO:
+					ellipse(coords[0], coords[1], GColor.BLUE);
+					break;
+				case GPathIterator.SEG_CUBICTO:
+					ellipse(coords[0], coords[1], GColor.YELLOW);
+					ellipse(coords[2], coords[3], GColor.YELLOW);
+					ellipse(coords[4], coords[5], GColor.RED);
+					break;
+				case GPathIterator.SEG_QUADTO:
+					context.quadraticCurveTo(coords[0], coords[1], coords[2], coords[3]);
+					break;
+				case GPathIterator.SEG_CLOSE:
+					context.closePath();
 			}
 			it.next();
 		}
@@ -332,13 +331,12 @@ public class GGraphics2DW implements GGraphics2DWI {
 		int height = svgPaint.getHeight();
 		Canvas2Svg canvas2Svg = Js.uncheckedCast(context);
 		try {
-			Canvas2Svg.SVGPattern pattern =
-					canvas2Svg.createPattern(content.getContext(), "repeat");
+			Canvas2Svg.SVGPattern pattern = canvas2Svg.createPattern(content.getContext(), "repeat");
 			elemental2.dom.Element root = pattern.getRoot();
 			if (root != null) {
-				root.setAttribute("viewBox",
-						+ svgPaint.getStartX() + " " + svgPaint.getStartY() + " "
-								+ width + " " + height);
+				root.setAttribute(
+						"viewBox",
+						+svgPaint.getStartX() + " " + svgPaint.getStartY() + " " + width + " " + height);
 				root.setAttribute("width", width);
 				root.setAttribute("height", height);
 			}
@@ -362,11 +360,9 @@ public class GGraphics2DW implements GGraphics2DWI {
 		double startY = pdfPaint.getStartY();
 		Canvas2Pdf.PdfContext canvas2Pdf = Js.uncheckedCast(context);
 		try {
-			Js.asPropertyMap(content.getContext()).set("boundingBox",
-					JsArray.of(startX,
-							startY, startX + width, startY + height));
-			CanvasPattern pattern =
-					canvas2Pdf.createPattern(content.getContext(), "repeat");
+			JsObject.of(content.getContext())
+					.set("boundingBox", JsArray.of(startX, startY, startX + width, startY + height));
+			CanvasPattern pattern = canvas2Pdf.createPattern(content.getContext(), "repeat");
 			canvas2Pdf.fillStyle = BaseRenderingContext2D.FillStyleUnionType.of(pattern);
 		} catch (Exception ex) {
 			Log.debug(ex.getMessage());
@@ -398,10 +394,9 @@ public class GGraphics2DW implements GGraphics2DWI {
 				final GBufferedImageW bi = ((GTexturePaintW) paint).getImg();
 				CanvasPattern ptr;
 				if (bi.hasCanvas()) {
-					ptr = context.createPattern(bi.getCanvasElement(),
-							"repeat");
-					double scale = ((GTexturePaintW) paint).getAnchor()
-							.getWidth() / bi.getCanvasElement().width;
+					ptr = context.createPattern(bi.getCanvasElement(), "repeat");
+					double scale =
+							((GTexturePaintW) paint).getAnchor().getWidth() / bi.getCanvasElement().width;
 
 					scalePattern(ptr, scale);
 
@@ -413,8 +408,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 					color = null;
 				} else {
 					bi.getImageElement().addEventListener("load", (event) -> {
-						CanvasPattern ptr1 = context.createPattern(
-								bi.getImageElement(), "repeat");
+						CanvasPattern ptr1 = context.createPattern(bi.getImageElement(), "repeat");
 						context.setFillStyle(ptr1);
 						color = null;
 					});
@@ -429,7 +423,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 
 	private void scalePattern(CanvasPattern ptr, double scale) {
 		if (scale != 1) {
-			ptr.setTransform(new DOMMatrix(new double[]{scale, 0, 0, scale, 0, 0}));
+			ptr.setTransform(new DOMMatrix(new double[] {scale, 0, 0, scale, 0, 0}));
 		}
 	}
 
@@ -466,8 +460,12 @@ public class GGraphics2DW implements GGraphics2DWI {
 
 	@Override
 	public void transform(GAffineTransform tx) {
-		context.transform2(tx.getScaleX(), tx.getShearY(), tx.getShearX(),
-				tx.getScaleY(), tx.getTranslateX(),
+		context.transform2(
+				tx.getScaleX(),
+				tx.getShearY(),
+				tx.getShearX(),
+				tx.getScaleY(),
+				tx.getTranslateX(),
 				tx.getTranslateY());
 	}
 
@@ -593,11 +591,10 @@ public class GGraphics2DW implements GGraphics2DWI {
 		if (color == null || context == null) {
 			return;
 		}
-		String colorStr = "rgba(" + color.getRed() + "," + color.getGreen()
-				+ "," + color.getBlue() + "," + (color.getAlpha() / 255d) + ")";
+		String colorStr = "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue()
+				+ "," + (color.getAlpha() / 255d) + ")";
 		context.setStrokeStyle(colorStr);
 		context.setFillStyle(colorStr);
-
 	}
 
 	@Override
@@ -694,6 +691,9 @@ public class GGraphics2DW implements GGraphics2DWI {
 		} else {
 			context.fill();
 		}
+		if (debug) {
+			debug(shape);
+		}
 	}
 
 	@Override
@@ -701,7 +701,6 @@ public class GGraphics2DW implements GGraphics2DWI {
 		context.beginPath();
 		context.rect(x, y, width, height);
 		context.stroke();
-
 	}
 
 	@Override
@@ -710,8 +709,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 	}
 
 	@Override
-	public void setClip(double x, double y, double width, double height,
-			boolean saveContext) {
+	public void setClip(double x, double y, double width, double height, boolean saveContext) {
 		GRectangle2D sh = AwtFactory.getPrototype().newRectangle2D();
 		sh.setRect(x, y, width, height);
 		doSetClip(sh, saveContext);
@@ -735,7 +733,9 @@ public class GGraphics2DW implements GGraphics2DWI {
 	public void setPixelSize(int width, int height) {
 		this.canvasWidth = width;
 		this.canvasHeight = height;
-		canvas.setPixelSize(width, height);
+		if (canvas != null) {
+			canvas.setPixelSize(width, height);
+		}
 	}
 
 	@Override
@@ -761,24 +761,23 @@ public class GGraphics2DW implements GGraphics2DWI {
 	}
 
 	@Override
-	public void drawRoundRect(int x, int y, int width, int height,
-			int arcWidth, int arcHeight) {
+	public void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
 		// arcHeight ignored
 		roundRect(x, y, width, height, arcWidth / 2.0);
 		context.stroke();
 	}
 
 	@Override
-	public void drawRoundRect(double x, double y, double width, double height,
-			double arcWidth, double arcHeight) {
+	public void drawRoundRect(
+			double x, double y, double width, double height, double arcWidth, double arcHeight) {
 		// arcHeight ignored
 		roundRect(x, y, width, height, arcWidth / 2.0);
 		context.stroke();
 	}
 
 	@Override
-	public void fillRoundRect(double x, double y, double width, double height,
-			double arcWidth, double arcHeight) {
+	public void fillRoundRect(
+			double x, double y, double width, double height, double arcWidth, double arcHeight) {
 		// arcHeight ignored
 		roundRect(x, y, width, height, arcWidth / 2.0);
 		context.fill();
@@ -809,14 +808,12 @@ public class GGraphics2DW implements GGraphics2DWI {
 
 		context.moveTo(x + r, y);
 		context.lineTo(right - r, y);
-		context.bezierCurveTo(right + r * (K - 1), y, right, y + r * (1 - K),
-				right, y + r);
+		context.bezierCurveTo(right + r * (K - 1), y, right, y + r * (1 - K), right, y + r);
 		context.lineTo(right, bottom - r);
-		context.bezierCurveTo(right, bottom + r * (K - 1), right + r * (K - 1),
-				bottom, right - r, bottom);
+		context.bezierCurveTo(
+				right, bottom + r * (K - 1), right + r * (K - 1), bottom, right - r, bottom);
 		context.lineTo(x + r, bottom);
-		context.bezierCurveTo(x + r * (1 - K), bottom, x, bottom + r * (K - 1),
-				x, bottom - r);
+		context.bezierCurveTo(x + r * (1 - K), bottom, x, bottom + r * (K - 1), x, bottom - r);
 		context.lineTo(x, y + r);
 		context.bezierCurveTo(x, y + r * (1 - K), x + r * (1 - K), y, x + r, y);
 
@@ -824,8 +821,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 	}
 
 	@Override
-	public void fillRoundRect(int x, int y, int width, int height,
-			int arcWidth, int arcHeight) {
+	public void fillRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
 		roundRect(x, y, width, height, arcHeight / 2d);
 		context.fill("evenodd");
 	}
@@ -864,8 +860,11 @@ public class GGraphics2DW implements GGraphics2DWI {
 		context.restoreTransform();
 	}
 
+	/**
+	 * @return device pixel ratio
+	 */
 	public double getScale() {
-		return getDevicePixelRatio();
+		return devicePixelRatio;
 	}
 
 	@Override
@@ -898,13 +897,27 @@ public class GGraphics2DW implements GGraphics2DWI {
 
 				// zero width canvas throws error in FF
 				if (width > 0) {
-					context.drawImage(bi.getCanvasElement(), 0, 0, width, height, x, y,
+					context.drawImage(
+							bi.getCanvasElement(),
+							0,
+							0,
+							width,
+							height,
+							x,
+							y,
 							checkSize(width, bi, getCoordinateSpaceWidth()),
 							checkSize(height, bi, getCoordinateSpaceHeight()));
 				}
 			} else {
-				context.drawImage(bi.getImageElement(), 0, 0, bi.getWidth(),
-						bi.getHeight(), x, y, this.getOffsetWidth(),
+				context.drawImage(
+						bi.getImageElement(),
+						0,
+						0,
+						bi.getWidth(),
+						bi.getHeight(),
+						x,
+						y,
+						this.getOffsetWidth(),
 						this.getOffsetHeight());
 			}
 		} catch (Exception e) {
@@ -912,8 +925,7 @@ public class GGraphics2DW implements GGraphics2DWI {
 		}
 	}
 
-	private static double checkSize(int imgSize, GBufferedImageW bi,
-			int fullSize) {
+	private static double checkSize(int imgSize, GBufferedImageW bi, int fullSize) {
 		double realSize = imgSize / bi.getPixelRatio();
 		if (realSize >= fullSize - 1 && realSize <= fullSize + 1) {
 			return fullSize;
@@ -928,10 +940,9 @@ public class GGraphics2DW implements GGraphics2DWI {
 	}
 
 	@Override
-	public void drawImage(MyImage img, int sx, int sy, int sw, int sh, int dx,
-			int dy, int dw, int dh) {
-		context.drawImage(((MyImageW) img).getImage(), sx, sy, sw, sh, dx, dy,
-				dw, dh);
+	public void drawImage(
+			MyImage img, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh) {
+		context.drawImage(((MyImageW) img).getImage(), sx, sy, sw, sh, dx, dy, dw, dh);
 	}
 
 	@Override
@@ -1024,5 +1035,4 @@ public class GGraphics2DW implements GGraphics2DWI {
 	static boolean isOdd(int i) {
 		return (i % 2) != 0;
 	}
-
 }

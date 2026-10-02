@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -38,7 +38,7 @@ class WindowMenuD extends BaseMenu {
 
 	private AbstractAction newWindowAction;
 
-	public WindowMenuD(AppD app) {
+	WindowMenuD(AppD app) {
 		super(app, "Window");
 
 		// items are added to the menu when it's opened, see BaseMenu:
@@ -49,7 +49,7 @@ class WindowMenuD extends BaseMenu {
 	 * Initialize and update the items.
 	 */
 	@Override
-	public void initItems() {
+	void initItems() {
 		if (!initialized) {
 			return;
 		}
@@ -109,7 +109,6 @@ class WindowMenuD extends BaseMenu {
 
 		// support for right-to-left languages
 		app.setComponentOrientation(this);
-
 	}
 
 	/**
@@ -117,27 +116,24 @@ class WindowMenuD extends BaseMenu {
 	 */
 	@Override
 	protected void initActions() {
-		newWindowAction = new AbstractAction(loc.getMenu("NewWindow"),
-				app.getMenuIcon(GuiResourcesD.DOCUMENT_NEW)) {
-			private static final long serialVersionUID = 1L;
+		newWindowAction =
+				new AbstractAction(loc.getMenu("NewWindow"), app.getMenuIcon(GuiResourcesD.DOCUMENT_NEW)) {
+					private static final long serialVersionUID = 1L;
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Thread runner = new Thread() {
 					@Override
-					public void run() {
-						app.setWaitCursor();
-						app.createNewWindow();
-						app.setDefaultCursor();
+					public void actionPerformed(ActionEvent e) {
+						Thread runner = new Thread(() -> {
+							app.setWaitCursor();
+							app.createNewWindow();
+							app.setDefaultCursor();
+						});
+						runner.start();
 					}
 				};
-				runner.start();
-			}
-		};
 	}
 
 	@Override
-	public void update() {
+	void update() {
 		UIManager.put("MenuItem.acceleratorFont", app.getPlainFont());
 		initItems();
 		if (newWindowAction != null) {
@@ -145,5 +141,4 @@ class WindowMenuD extends BaseMenu {
 		}
 		GeoGebraMenuBar.setMenuFontRecursive(this, app.getPlainFont());
 	}
-
 }

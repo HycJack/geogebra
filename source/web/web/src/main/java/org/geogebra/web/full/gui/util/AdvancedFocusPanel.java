@@ -24,7 +24,7 @@ import org.gwtproject.user.client.DOM;
 import org.gwtproject.user.client.ui.SimplePanel;
 import org.gwtproject.user.client.ui.Widget;
 
-public class AdvancedFocusPanel extends SimplePanel {
+public final class AdvancedFocusPanel extends SimplePanel {
 
 	TextAreaElement focusTextarea;
 	boolean disabledTextarea;
@@ -69,12 +69,11 @@ public class AdvancedFocusPanel extends SimplePanel {
 		// that it will work together well with SimplePanel...
 		// but it turned out that it's Okay (testing)
 		DOM.appendChild(getContainerElement(), focusTextarea);
-
 	}
 
 	/**
 	 * Create new focus panel and set its wrapped widget.
-	 * 
+	 *
 	 * @param widget
 	 *            wrapped widget
 	 */
@@ -89,8 +88,7 @@ public class AdvancedFocusPanel extends SimplePanel {
 	 * @param focus true focus false blur
 	 */
 	public void setFocus(boolean focus) {
-		Element el = this.disabledTextarea ? getContainerElement()
-				: this.focusTextarea;
+		Element el = this.disabledTextarea ? getContainerElement() : this.focusTextarea;
 		if (focus) {
 			el.focus();
 		} else {
@@ -110,19 +108,17 @@ public class AdvancedFocusPanel extends SimplePanel {
 	 * should contain a selection which contains the string to be copied. So as
 	 * to work properly, this string should be continuously updated as the
 	 * spreadsheet view has selected cells
-	 * 
+	 *
 	 * TODO the focus should only be called when we want to copy
-	 * 
+	 *
 	 * @param str
 	 *            string for copying/cutting
 	 */
 	public void setSelectedContent(String str) {
-		if (focusTextarea.getValue().isEmpty()
-				&& (str == null || str.isEmpty())) {
+		if (focusTextarea.getValue().isEmpty() && (str == null || str.isEmpty())) {
 			return;
 		}
 		focusTextarea.setValue(str);
 		focusTextarea.select();
 	}
-
 }

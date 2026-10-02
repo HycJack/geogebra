@@ -19,12 +19,18 @@ package org.geogebra.common.kernel.arithmetic3D.vector;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.printing.printable.vector.PrintableVector;
 import org.geogebra.common.kernel.printing.printer.Printer;
+import org.geogebra.common.main.Localization;
 
 class SphericalPrinter implements Printer {
 
-    @Override
-	public String print(String xCoord, String yCoord, String zCoord,
-			PrintableVector vector, StringTemplate tpl) {
+	@Override
+	public String print(
+			String xCoord,
+			String yCoord,
+			String zCoord,
+			PrintableVector vector,
+			StringTemplate tpl,
+			Localization loc) {
 		if (tpl.getStringType().isGiac()) {
 			return "point(("
 					+ xCoord
@@ -44,12 +50,6 @@ class SphericalPrinter implements Printer {
 					+ zCoord
 					+ "))";
 		}
-        return tpl.leftBracket()
-                + xCoord
-                + "; "
-                + yCoord
-                + "; "
-                + zCoord
-                + tpl.rightBracket();
-    }
+		return tpl.leftBracket(loc) + xCoord + "; " + yCoord + "; " + zCoord + tpl.rightBracket(loc);
+	}
 }

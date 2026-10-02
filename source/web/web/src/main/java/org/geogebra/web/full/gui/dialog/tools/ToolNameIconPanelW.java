@@ -38,24 +38,24 @@ import org.gwtproject.user.client.ui.Image;
  * Panel of Tool Creation Dialog. Contains tool name, command name, help and
  * icon for the tool. It also allows user to add/remove the tool from toolbar.
  */
-public class ToolNameIconPanelW extends FlowPanel {
+public final class ToolNameIconPanelW extends FlowPanel {
 
 	/** With of tool icon in pixels **/
 	public static final int ICON_WIDTH = 32;
 	/** Height of tool icon in pixels **/
 	public static final int ICON_HEIGHT = 32;
 
-	private ComponentInputField tfCmdName;
-	private ComponentInputField tfToolHelp;
-	private ComponentInputField tfToolName;
-	private ComponentCheckbox showTool;
-	private Image icon;
+	private final ComponentInputField tfCmdName;
+	private final ComponentInputField tfToolHelp;
+	private final ComponentInputField tfToolName;
+	private final ComponentCheckbox showTool;
+	private final Image icon;
 	private String iconFileName;
 
 	private AppW app;
 	private Macro macro;
 	private MacroChangeListener listener;
-	
+
 	/**
 	 * Change listener
 	 */
@@ -87,24 +87,22 @@ public class ToolNameIconPanelW extends FlowPanel {
 		Localization loc = app.getLocalization();
 		int n = app.getKernel().getMacroNumber() + 1;
 
-		tfToolName = new ComponentInputField((AppW) app,
-				null, loc.getMenu("ToolName"), null, "");
+		tfToolName = new ComponentInputField((AppW) app, null, loc.getMenu("ToolName"), null, "", null);
 		tfToolName.setInputText(loc.getMenu("Tool") + n);
 		addHandlers(tfToolName);
 
-		tfCmdName = new ComponentInputField((AppW) app,
-				null, loc.getMenu("CommandName"), null, "");
+		tfCmdName =
+				new ComponentInputField((AppW) app, null, loc.getMenu("CommandName"), null, "", null);
 		tfCmdName.setInputText(tfToolName.getText());
 		addHandlers(tfCmdName);
 
-		tfToolHelp =  new ComponentInputField((AppW) app,
-				null, loc.getMenu("ToolHelp"), null, "");
+		tfToolHelp = new ComponentInputField((AppW) app, null, loc.getMenu("ToolHelp"), null, "", null);
 		addHandlers(tfToolHelp);
 
 		FlowPanel iconPanel = new FlowPanel();
 		iconPanel.addStyleName("iconPanel");
-		icon = new NoDragImage(NoDragImage.safeURI(ToolbarSvgResourcesSync.INSTANCE.mode_tool_32()),
-				32);
+		icon =
+				new NoDragImage(NoDragImage.safeURI(ToolbarSvgResourcesSync.INSTANCE.mode_tool_32()), 32);
 		StandardButton labelIcon = new StandardButton(loc.getMenu("Icon") + " ...");
 		labelIcon.addFastClickHandler(event -> {
 			FileUpload uploadButton =
@@ -121,8 +119,8 @@ public class ToolNameIconPanelW extends FlowPanel {
 		iconPanel.add(icon);
 		iconPanel.add(labelIcon);
 
-		showTool = new ComponentCheckbox(app.getLocalization(), false,
-				"ShowInToolBar", selected -> showToolChanged());
+		showTool = new ComponentCheckbox(
+				app.getLocalization(), false, "ShowInToolBar", selected -> showToolChanged());
 		showTool.setSelected(true);
 
 		FlowPanel iconSelectShowPanel = new FlowPanel();
@@ -141,13 +139,13 @@ public class ToolNameIconPanelW extends FlowPanel {
 
 	private void addHandlers(ComponentInputField tf) {
 		add(tf);
-		tf.getTextField().getTextComponent().addBlurHandler(e -> updateCmdName(tf));
-		tf.getTextField().getTextComponent().addKeyUpHandler(e -> onKeyUp(tf));
+		tf.getTextWidget().addBlurHandler(e -> updateCmdName(tf));
+		tf.addInputHandler(() -> onKeyUp(tf));
 	}
 
 	/**
 	 * Sets icon filename and updates thumbnail.
-	 * 
+	 *
 	 * @param fileName
 	 *            Path to new icon file.
 	 * @param imgDataURL the data URL of the image
@@ -170,7 +168,7 @@ public class ToolNameIconPanelW extends FlowPanel {
 
 	/**
 	 * Sets icon filename and updates thumbnail.
-	 * 
+	 *
 	 * @param fileName
 	 *            Path to new icon file.
 	 */
@@ -181,14 +179,13 @@ public class ToolNameIconPanelW extends FlowPanel {
 
 		String imageURL = app.getImageManager().getExternalImageSrc(fileName);
 		if (imageURL != null) {
-			ImageResizer.resizeImage(imageURL, ICON_WIDTH,
-			        ICON_HEIGHT, dImageURL -> {
-						if (!imageURL.equals(dImageURL)) {
-							app.getImageManager().addExternalImage(fileName, dImageURL);
-						}
-						iconFileName = fileName;
-						updateWithIcon(app.getImageManager().getExternalImageSrc(iconFileName));
-					});
+			ImageResizer.resizeImage(imageURL, ICON_WIDTH, ICON_HEIGHT, dImageURL -> {
+				if (!imageURL.equals(dImageURL)) {
+					app.getImageManager().addExternalImage(fileName, dImageURL);
+				}
+				iconFileName = fileName;
+				updateWithIcon(app.getImageManager().getExternalImageSrc(iconFileName));
+			});
 		} else {
 			iconFileName = null;
 			updateWithIcon(NoDragImage.safeURI(ToolbarSvgResourcesSync.INSTANCE.mode_tool_32()));
@@ -257,7 +254,7 @@ public class ToolNameIconPanelW extends FlowPanel {
 
 	/**
 	 * Update panel for given macro.
-	 * 
+	 *
 	 * @param m
 	 *            macro
 	 */
@@ -293,14 +290,12 @@ public class ToolNameIconPanelW extends FlowPanel {
 	}
 
 	private void updateCmdName(Object source) {
-		String cmdName = source == tfToolName ? tfToolName.getText()
-				: tfCmdName.getText();
+		String cmdName = source == tfToolName ? tfToolName.getText() : tfCmdName.getText();
 
 		// remove spaces
 		cmdName = cmdName.replaceAll(" ", "");
 		try {
-			String parsed = app.getKernel().getAlgebraProcessor()
-					.parseLabel(cmdName);
+			String parsed = app.getKernel().getAlgebraProcessor().parseLabel(cmdName);
 			if (!parsed.equals(tfCmdName.getText())) {
 				tfCmdName.setInputText(parsed);
 			}

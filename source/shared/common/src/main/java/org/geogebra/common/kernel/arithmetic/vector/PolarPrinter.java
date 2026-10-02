@@ -19,35 +19,25 @@ package org.geogebra.common.kernel.arithmetic.vector;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.printing.printable.vector.PrintableVector;
 import org.geogebra.common.kernel.printing.printer.Printer;
+import org.geogebra.common.main.Localization;
 
 class PolarPrinter implements Printer {
 
-    @Override
-    public String print(String xCoord, String yCoord, String zCoord,
-            PrintableVector vector, StringTemplate tpl) {
-        if (tpl.getStringType().isGiac()) {
-            return "point(("
-                    + xCoord
-                    + ")*exp(i*("
-                    + yCoord
-                    + ")))";
-        }
-        return printLeftParenthesis(tpl)
-                + xCoord
-                + printDelimiter()
-                + yCoord
-                + printRightParenthesis(tpl);
-    }
+	@Override
+	public String print(
+			String xCoord,
+			String yCoord,
+			String zCoord,
+			PrintableVector vector,
+			StringTemplate tpl,
+			Localization loc) {
+		if (tpl.getStringType().isGiac()) {
+			return "point((" + xCoord + ")*exp(i*(" + yCoord + ")))";
+		}
+		return tpl.leftBracket(loc) + xCoord + printDelimiter() + yCoord + tpl.rightBracket(loc);
+	}
 
-    private String printLeftParenthesis(StringTemplate tpl) {
-        return tpl.leftBracket();
-    }
-
-    private String printRightParenthesis(StringTemplate tpl) {
-        return tpl.rightBracket();
-    }
-
-    private String printDelimiter() {
-        return "; ";
-    }
+	private String printDelimiter() {
+		return "; ";
+	}
 }

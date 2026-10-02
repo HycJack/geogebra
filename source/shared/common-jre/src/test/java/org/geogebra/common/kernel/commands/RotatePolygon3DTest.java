@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -22,9 +22,9 @@ import org.geogebra.common.AppCommonFactory;
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.jre.headless.AppCommon;
 import org.geogebra.common.kernel.geos.GeoPolygon;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RotatePolygon3DTest extends BaseUnitTest {
+class RotatePolygon3DTest extends BaseUnitTest {
 
 	@Override
 	public AppCommon createAppCommon() {
@@ -32,7 +32,7 @@ public class RotatePolygon3DTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void test() {
+	void test() {
 		add("A=(1,0,0)");
 		add("B=(1,0,1)");
 		add("Cube(A,B)");

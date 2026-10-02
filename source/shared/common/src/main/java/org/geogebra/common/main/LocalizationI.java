@@ -19,13 +19,14 @@ package org.geogebra.common.main;
 import java.util.Locale;
 
 import org.geogebra.editor.share.util.Unicode;
+import org.jspecify.annotations.NonNull;
 
 public abstract class LocalizationI {
 
 	/**
 	 * eg Function.sin
 	 */
-	public final static String FUNCTION_PREFIX = "Function.";
+	public static final String FUNCTION_PREFIX = "Function.";
 
 	/**
 	 * Gets the current locale as a well-formed BCP-47 language tag.
@@ -60,15 +61,7 @@ public abstract class LocalizationI {
 	 * @param default0 return this if lookup failed
 	 * @return translation of key
 	 */
-	public String getMenuDefault(String key, String default0) {
-		String ret = getMenu(key);
-
-		if (ret == null || ret.equals(key)) {
-			return default0;
-		}
-
-		return ret;
-	}
+	public abstract String getMenuDefault(String key, String default0);
 
 	/**
 	 * turns eg Function.sin into "sin" or (in Spanish) "sen"
@@ -96,36 +89,23 @@ public abstract class LocalizationI {
 		// change eg asin into sin^{-1}
 		if (changeInverse && key.startsWith("a")) {
 			switch (key) {
-			case "asin":
-				return getFunction("sin")
-						+ Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
-			case "acos":
-				return getFunction("cos")
-						+ Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
-			case "atan":
-				return getFunction("tan")
-						+ Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
-			case "asinh":
-				return getFunction("sinh")
-						+ Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
-			case "acosh":
-				return getFunction("cosh")
-						+ Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
-			case "atanh":
-				return getFunction("tanh")
-						+ Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
+				case "asin":
+					return getFunction("sin") + Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
+				case "acos":
+					return getFunction("cos") + Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
+				case "atan":
+					return getFunction("tan") + Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
+				case "asinh":
+					return getFunction("sinh") + Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
+				case "acosh":
+					return getFunction("cosh") + Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
+				case "atanh":
+					return getFunction("tanh") + Unicode.SUPERSCRIPT_MINUS_ONE_STRING;
 			}
 		}
 
-		String ret = getMenu(FUNCTION_PREFIX + key);
-
-		// make sure we don't get strange function names if the properties
-		// aren't loaded
-		if (ret.startsWith(FUNCTION_PREFIX)) {
-			return ret.substring(FUNCTION_PREFIX.length());
-		}
-
-		return ret;
+		// lookup key is e.g. `Function.sin`, but default value is just `sin`
+		return getMenuDefault(FUNCTION_PREFIX + key, key);
 	}
 
 	/**
@@ -133,7 +113,14 @@ public abstract class LocalizationI {
 	 * @param key key
 	 * @return translation for key
 	 */
-	public abstract String getMenu(String key);
+	public final @NonNull String getMenu(String key) {
+		String value = getMenuDefault(key, "");
+		return value.isEmpty() ? stripPrefix(key) : value;
+	}
+
+	private String stripPrefix(String key) {
+		return key == null ? "" : key.contains(".") ? key.substring(key.indexOf(".") + 1) : key;
+	}
 
 	/** @return true if the localized keyboard has latin characters. */
 	public boolean isLatinKeyboard() {

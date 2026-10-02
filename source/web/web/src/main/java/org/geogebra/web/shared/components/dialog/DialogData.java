@@ -17,7 +17,7 @@
 package org.geogebra.web.shared.components.dialog;
 
 /**
- * object holding the settings of the dialog
+ * Object holding the title, positive and negative button translation keys of the dialog.
  */
 public class DialogData {
 
@@ -27,33 +27,35 @@ public class DialogData {
 	private String positiveBtnTransKey;
 
 	/**
-	 * dialog settings constructor
-	 * @param titleTransKey - ggb trans key for the dialog title
-	 * @param negativeBtnTransKey - negative button trans key
-	 * @param positiveBtnTransKey - positive button trans key
+	 * Dialog settings constructor
+	 * @param titleTransKey ggb trans key for the dialog title
+	 * @param negativeBtnTransKey negative button trans key
+	 * @param positiveBtnTransKey positive button trans key
 	 */
-	public DialogData(String titleTransKey, String negativeBtnTransKey,
-			String positiveBtnTransKey) {
+	public DialogData(String titleTransKey, String negativeBtnTransKey, String positiveBtnTransKey) {
 		setTitleTransKey(titleTransKey);
 		setButtonTransKeys(negativeBtnTransKey, positiveBtnTransKey);
 	}
 
 	/**
-	 * dialog settings constructor
-	 * @param titleTransKey - ggb trans key for the dialog title
-	 * @param subTitleHTML - HTML content of the subtitle
-	 * @param negativeBtnTransKey - negative button trans key
-	 * @param positiveBtnTransKey - positive button trans key
+	 * Dialog settings constructor.
+	 * @param titleTransKey ggb trans key for the dialog title
+	 * @param subTitleHTML HTML content of the subtitle
+	 * @param negativeBtnTransKey negative button trans key
+	 * @param positiveBtnTransKey positive button trans key
 	 */
-	public DialogData(String titleTransKey, String subTitleHTML,
-			String negativeBtnTransKey, String positiveBtnTransKey) {
+	public DialogData(
+			String titleTransKey,
+			String subTitleHTML,
+			String negativeBtnTransKey,
+			String positiveBtnTransKey) {
 		this(titleTransKey, negativeBtnTransKey, positiveBtnTransKey);
 		setSubtitleHTML(subTitleHTML);
 	}
 
 	/**
-	 * dialog with custom title and buttons Cancel and OK
-	 * @param titleTransKey - ggb trans key for the dialog title
+	 * Dialog with custom title and buttons Cancel and OK.
+	 * @param titleTransKey ggb trans key for the dialog title
 	 */
 	public DialogData(String titleTransKey) {
 		this(titleTransKey, "Cancel", "OK");
@@ -67,7 +69,7 @@ public class DialogData {
 	}
 
 	/**
-	 * @param titleTransKey - ggb trans key of the dialog title
+	 * @param titleTransKey ggb trans key of the dialog title
 	 */
 	public void setTitleTransKey(String titleTransKey) {
 		this.titleTransKey = titleTransKey;
@@ -81,16 +83,16 @@ public class DialogData {
 	}
 
 	/**
-	 * @param subtitleHTML - HTML content of the dialog subtitle
+	 * @param subtitleHTML HTML content of the dialog subtitle
 	 */
 	public void setSubtitleHTML(String subtitleHTML) {
 		this.subTitleHTML = subtitleHTML;
 	}
 
 	/**
-	 * setter for the buttons trans key
-	 * @param negativeBtnTransKey - trans key for the negative button (e.g. Cancel)
-	 * @param positiveBtnTransKey - trans key for the positive button (e.g. Insert)
+	 * Setter for the buttons trans key.
+	 * @param negativeBtnTransKey trans key for the negative button (e.g. Cancel)
+	 * @param positiveBtnTransKey trans key for the positive button (e.g. Insert)
 	 */
 	public void setButtonTransKeys(String negativeBtnTransKey, String positiveBtnTransKey) {
 		this.negativeBtnTransKey = negativeBtnTransKey;

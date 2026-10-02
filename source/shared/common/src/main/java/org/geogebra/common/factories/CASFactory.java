@@ -16,6 +16,7 @@
 
 package org.geogebra.common.factories;
 
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.cas.CASparser;
 import org.geogebra.common.kernel.CASGenericInterface;
 import org.geogebra.common.kernel.Kernel;
@@ -23,6 +24,7 @@ import org.geogebra.common.kernel.Kernel;
 /**
  * Factory for CAS engine(s)
  */
+@HasNativeSubclass
 public abstract class CASFactory {
 	private static final Object lock = new Object();
 
@@ -38,6 +40,9 @@ public abstract class CASFactory {
 		return prototype;
 	}
 
+	/**
+	 * @return whether a real CAS prototype (not just the dummy) is set
+	 */
 	public static boolean isInitialized() {
 		return prototype != null && !(prototype instanceof CASFactoryDummy);
 	}
@@ -59,8 +64,7 @@ public abstract class CASFactory {
 	 *            kernel
 	 * @return GIAC instance
 	 */
-	public abstract CASGenericInterface newGiac(CASparser parser,
-			Kernel kernel);
+	public abstract CASGenericInterface newGiac(CASparser parser, Kernel kernel);
 
 	/**
 	 * @return whether this will produce a working CAS

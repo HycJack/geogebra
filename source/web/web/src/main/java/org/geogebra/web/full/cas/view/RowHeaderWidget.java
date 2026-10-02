@@ -31,7 +31,7 @@ import org.gwtproject.user.client.ui.Label;
 /**
  * Row header with marble
  */
-public class RowHeaderWidget extends FlowPanel implements MarbleRenderer {
+public final class RowHeaderWidget extends FlowPanel implements MarbleRenderer {
 	private final Image marble;
 	private boolean oldValue;
 	private final RowHeaderHandler handler;
@@ -96,10 +96,11 @@ public class RowHeaderWidget extends FlowPanel implements MarbleRenderer {
 		if (value == oldValue) {
 			return;
 		}
-		marble.setUrl(value ? AppResources.INSTANCE.shown().getSafeUri().asString()
-				: AppResources.INSTANCE.hidden().getSafeUri().asString());
+		marble.setUrl(
+				value
+						? AppResources.INSTANCE.shown().getSafeUri().asString()
+						: AppResources.INSTANCE.hidden().getSafeUri().asString());
 		oldValue = value;
-
 	}
 
 	@Override
@@ -110,7 +111,7 @@ public class RowHeaderWidget extends FlowPanel implements MarbleRenderer {
 	/**
 	 * Handler for marble
 	 */
-	protected static class MarbleClickHandler implements ClickHandler {
+	private static final class MarbleClickHandler implements ClickHandler {
 		private final GeoCasCell cell;
 		private final RowHeaderWidget rowHeaderWidget;
 
@@ -120,8 +121,7 @@ public class RowHeaderWidget extends FlowPanel implements MarbleRenderer {
 		 * @param rowHeaderWidget
 		 *            row header
 		 */
-		protected MarbleClickHandler(GeoCasCell cell,
-				RowHeaderWidget rowHeaderWidget) {
+		private MarbleClickHandler(GeoCasCell cell, RowHeaderWidget rowHeaderWidget) {
 			this.cell = cell;
 			this.rowHeaderWidget = rowHeaderWidget;
 		}
@@ -138,5 +138,4 @@ public class RowHeaderWidget extends FlowPanel implements MarbleRenderer {
 	private void cancelAnyEditing() {
 		casTable.cancelEditing();
 	}
-
 }

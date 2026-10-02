@@ -17,10 +17,8 @@
 package org.geogebra.common.main;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
@@ -39,7 +37,10 @@ import org.geogebra.common.main.settings.LabelVisibility;
 import org.geogebra.common.main.settings.updater.SettingsUpdater;
 import org.geogebra.common.main.syntax.suggestionfilter.SyntaxFilter;
 import org.geogebra.common.properties.factory.PropertiesFactory;
+import org.geogebra.common.properties.remembered.RememberedPropertyHandler;
 import org.geogebra.common.restrictions.Restrictable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Application configuration.
@@ -149,22 +150,22 @@ public interface AppConfig extends Restrictable, Serializable {
 	boolean isEnableStructures();
 
 	/**
-	 * 
+	 *
 	 * @return the toolbar type of the current app.
 	 */
 	AppType getToolbarType();
 
-    /**
-     *
-     * @return true if grid is shown at start on the active (main) euclidian view
-     */
+	/**
+	 *
+	 * @return true if grid is shown at start on the active (main) euclidian view
+	 */
 	boolean showGridOnFileNew();
 
-    /**
-     *
-     * @return true if axes are shown at start on the active (main) euclidian view
-     */
-    boolean showAxesOnFileNew();
+	/**
+	 *
+	 * @return true if axes are shown at start on the active (main) euclidian view
+	 */
+	boolean showAxesOnFileNew();
 
 	/**
 	 * @return whether table view is available
@@ -194,7 +195,7 @@ public interface AppConfig extends Restrictable, Serializable {
 	/**
 	 * @return algebra style
 	 */
-	@Nonnull AlgebraStyle getDefaultAlgebraStyle();
+	@NonNull AlgebraStyle getDefaultAlgebraStyle();
 
 	/**
 	 * @return search tag for Open Material screen
@@ -209,22 +210,22 @@ public interface AppConfig extends Restrictable, Serializable {
 	/**
 	 * @return the Command filter for the app.
 	 */
-	@CheckForNull CommandFilter getCommandFilter();
+	@Nullable CommandFilter getCommandFilter();
 
 	/**
 	 * @return new command filter for the app.
 	 */
-	@CheckForNull CommandFilter createCommandFilter();
+	@Nullable CommandFilter createCommandFilter();
 
 	/**
 	 * @return the Command Argument filter for the app.
 	 */
-	@CheckForNull CommandArgumentFilter getCommandArgumentFilter();
+	@Nullable CommandArgumentFilter getCommandArgumentFilter();
 
 	/**
 	 * @return command syntax filter
 	 */
-	@CheckForNull SyntaxFilter newCommandSyntaxFilter();
+	@Nullable SyntaxFilter newCommandSyntaxFilter();
 
 	/**
 	 * @return whether the app should show the tools panel or not
@@ -241,13 +242,13 @@ public interface AppConfig extends Restrictable, Serializable {
 	 * @return The sub-app code if exists.
 	 * E.g. in the Suite app the Graphing sub-app has "suite" app code and "graphing" sub-app code.
 	 */
-	@CheckForNull String getSubAppCode();
+	@Nullable String getSubAppCode();
 
 	/**
 	 * @return The sub-app code if exists.
 	 * E.g. in the Suite app the Graphing sub-app has "suite" app code and "graphing" sub-app code.
 	 */
-	@CheckForNull SuiteSubApp getSubApp();
+	@Nullable SuiteSubApp getSubApp();
 
 	/**
 	 * @return creates a settings updater
@@ -276,7 +277,7 @@ public interface AppConfig extends Restrictable, Serializable {
 	 *
 	 * @return operation argument filter
 	 */
-	@CheckForNull ExpressionFilter createExpressionFilter();
+	@Nullable ExpressionFilter createExpressionFilter();
 
 	/**
 	 * Unlike {@link #createExpressionFilter()} this always returns the same instance.
@@ -306,7 +307,7 @@ public interface AppConfig extends Restrictable, Serializable {
 	 * {@code getEnforcedLineEquationForm()}, {@code getEnforcedConicEquationForm()}.
 	 * @return This app config's equation behaviour
 	 */
-	@Nonnull EquationBehaviour getEquationBehaviour();
+	@NonNull EquationBehaviour getEquationBehaviour();
 
 	/**
 	 * Initializes this app config's equation behaviour to its default value
@@ -411,4 +412,12 @@ public interface AppConfig extends Restrictable, Serializable {
 	 * @return whether data import is available in this app
 	 */
 	boolean hasDataImport();
+
+	/**
+	 * Returns the property handlers that store values during the application session.
+	 *
+	 * @return handlers to store property values, or an empty list if property values should not be
+	 *         remembered
+	 */
+	@NonNull List<RememberedPropertyHandler<?>> getRememberedPropertyHandlers();
 }

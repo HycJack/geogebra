@@ -65,6 +65,7 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	 * the same time
 	 */
 	private GPopupMenuW subPopup;
+
 	private final AppW app;
 
 	private boolean horizontal;
@@ -201,8 +202,8 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	 *            coord to show popup
 	 */
 	public void show(Element c, int x, int y) {
-		show((int) (c.getAbsoluteLeft() / getScaleX() + x),
-				(int) (c.getAbsoluteTop() / getScaleY() + y));
+		show((int) (c.getAbsoluteLeft() / getScaleX() + x), (int)
+				(c.getAbsoluteTop() / getScaleY() + y));
 	}
 
 	@Override
@@ -229,9 +230,7 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	 * add separator to menu
 	 */
 	public void addSeparator() {
-		if (!app.isUnbundled()) {
-			popupMenu.addSeparator();
-		}
+		popupMenu.addSeparator();
 	}
 
 	/**
@@ -262,12 +261,14 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	 */
 	public void hideMenu() {
 		popupPanel.hide();
-		hide();
+		if (!hide() && focusAnchor != null) {
+			focusAnchor.focus();
+		}
 	}
 
 	private IconSpec getSubMenuIcon(boolean isRTL) {
-		return app.getGeneralIconResource().getImageResource(isRTL
-			? GeneralIcon.LOCK : GeneralIcon.ARROW_RIGHT);
+		return app.getGeneralIconResource()
+				.getImageResource(isRTL ? GeneralIcon.LOCK : GeneralIcon.ARROW_RIGHT);
 	}
 
 	/**
@@ -359,8 +360,8 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	}
 
 	private int alignPopupToOpenItem() {
-		int absoluteTop = (int) ((openItem.getAbsoluteTop()
-				- getApp().getAppletFrame().getAbsoluteTop()) / getScaleY());
+		int absoluteTop = (int)
+				((openItem.getAbsoluteTop() - getApp().getAppletFrame().getAbsoluteTop()) / getScaleY());
 		return Math.max(SUBMENU_VERTICAL_PADDING, absoluteTop);
 	}
 
@@ -375,8 +376,8 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 		int spaceOnTheRightSide = rightSideMargin - xCoordRightSide;
 
 		int xCoordLeftSide = getLeftSubPopupXCord();
-		int spaceOnTheLeftSide = (int) ((getPopupLeft()
-				- app.getAppletFrame().getAbsoluteLeft()) / getScaleX());
+		int spaceOnTheLeftSide =
+				(int) ((getPopupLeft() - app.getAppletFrame().getAbsoluteLeft()) / getScaleX());
 
 		if (spaceOnTheRightSide >= getSubPopupWidth()) {
 			return xCoordRightSide;
@@ -491,8 +492,7 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	 */
 	public final int getLeftSubPopupXCord() {
 		int xCord;
-		xCord = (int) ((getPopupLeft()
-				- app.getAppletFrame().getAbsoluteLeft()) / getScaleX()
+		xCord = (int) ((getPopupLeft() - app.getAppletFrame().getAbsoluteLeft()) / getScaleX()
 				- getSubPopupWidth());
 		return xCord;
 	}
@@ -512,8 +512,7 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	 * @return submenu's left position in pixels
 	 */
 	public final int getRightSubPopupXCord() {
-		return (int) ((getPopupLeft()
-				- app.getAppletFrame().getAbsoluteLeft()) / getScaleX()
+		return (int) ((getPopupLeft() - app.getAppletFrame().getAbsoluteLeft()) / getScaleX()
 				+ popupPanel.getOffsetWidth());
 	}
 
@@ -528,15 +527,15 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	}
 
 	/**
-	 * hide popup menu
+	 * Hide popup menu.
+	 * @return whether it was hidden by this call
 	 */
-	public final void hide() {
+	public final boolean hide() {
 		if (!popupPanel.isShowing()) {
-			return;
+			return false;
 		}
 
-		AccessibilityManagerInterface am = getApp()
-				.getAccessibilityManager();
+		AccessibilityManagerInterface am = getApp().getAccessibilityManager();
 		FocusableComponent anchor = am.getAnchor();
 		if (subPopup != null && subPopup.isMenuShown()) {
 			removeSubPopup();
@@ -549,6 +548,7 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 		} else {
 			returnFocus(anchor);
 		}
+		return true;
 	}
 
 	/**
@@ -605,7 +605,8 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 	 */
 	public void onArrowKeyPressed(int keyCode) {
 		AriaMenuBar target = popupMenu;
-		if (subPopup != null && subPopup.isMenuShown()
+		if (subPopup != null
+				&& subPopup.isMenuShown()
 				&& subPopup.popupMenu.getSelectedItem() != null) {
 			target = subPopup.popupMenu;
 		}
@@ -615,8 +616,7 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 		} else if (keyCode == JavaKeyCodes.VK_DOWN) {
 			target.moveSelectionDown();
 		} else if (keyCode == JavaKeyCodes.VK_RIGHT) {
-			if (selectedItem != null
-					&& selectedItem.getSubMenu() != null) {
+			if (selectedItem != null && selectedItem.getSubMenu() != null) {
 				openSubmenu(selectedItem);
 				selectedItem.getSubMenu().selectItem(0);
 				selectedItem.getSubMenu().getItemAt(0).addStyleName("fakeFocus");
@@ -644,8 +644,11 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 		Scheduler.get().scheduleDeferred(popupMenu::focus);
 	}
 
-	public void setAnchor(Element inputElement) {
-		this.focusAnchor = inputElement;
+	/**
+	 * @param focusAnchor focus anchor
+	 */
+	public void setAnchor(Element focusAnchor) {
+		this.focusAnchor = focusAnchor;
 	}
 
 	private class PopupMenuBar extends GMenuBar {
@@ -653,12 +656,12 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 		private final Map<AriaMenuItem, GCollapseMenuItem> expandItems = new HashMap<>();
 		private GCollapseMenuItem activeCollapseItem = null;
 
-		public PopupMenuBar(AppW app1) {
+		PopupMenuBar(AppW app1) {
 			super("", app1);
 			setHandleArrows(true);
 		}
 
-		public void addItem(GCollapseMenuItem ci) {
+		void addItem(GCollapseMenuItem ci) {
 			expandItems.put(ci.getMenuItem(), ci);
 		}
 
@@ -689,20 +692,24 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 					hide();
 					event.stopPropagation();
 				} else if (keyCode == KeyCodes.KEY_TAB) {
-					if (event.getShiftKey()) {
-						if (!moveSelectionUp()) {
-							hide();
-						}
-					} else {
-						if (!moveSelectionDown()) {
-							hide();
-						}
-					}
+					handleTab(event.getShiftKey());
 					AriaMenuBar.eatEvent(event);
 					return;
 				}
 			}
 			super.onBrowserEvent(event);
+		}
+
+		private void handleTab(boolean shiftKey) {
+			if (shiftKey) {
+				if (!moveSelectionUp()) {
+					hide();
+				}
+			} else {
+				if (!moveSelectionDown()) {
+					hide();
+				}
+			}
 		}
 
 		@Override
@@ -724,8 +731,7 @@ public class GPopupMenuW implements AttachedToDOM, MenuHoverListener {
 		public boolean moveSelectionUp() {
 			if (activeCollapseItem != null && activeCollapseItem.isExpanded()) {
 				AriaMenuItem mi = activeCollapseItem.getMenuItem();
-				if (getSelectedItem() == mi && activeCollapseItem.getItems()
-						.getSelectedIndex() == -1) {
+				if (getSelectedItem() == mi && activeCollapseItem.getItems().getSelectedIndex() == -1) {
 					activeCollapseItem = null;
 					return super.moveSelectionUp();
 				}

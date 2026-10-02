@@ -16,9 +16,9 @@
 
 package org.geogebra.common.properties.impl.objects;
 
-import java.util.List;
+import static org.geogebra.common.util.Classifier.isSlider;
 
-import javax.annotation.CheckForNull;
+import java.util.List;
 
 import org.geogebra.common.kernel.CircularDefinitionException;
 import org.geogebra.common.kernel.StringTemplate;
@@ -28,10 +28,10 @@ import org.geogebra.common.kernel.arithmetic.ValidExpression;
 import org.geogebra.common.kernel.geos.AbsoluteScreenLocateable;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
-import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.kernel.parser.ParseException;
 import org.geogebra.common.main.Localization;
+import org.geogebra.common.main.MyError;
 import org.geogebra.common.main.error.ErrorHelper;
 import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
@@ -40,6 +40,7 @@ import org.geogebra.common.properties.impl.collections.AbstractPropertyCollectio
 import org.geogebra.common.properties.impl.facade.StringPropertyListFacade;
 import org.geogebra.common.properties.impl.objects.PlacementProperty.Placement;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for changing the absolute position on the screen, one for both axes.
@@ -54,8 +55,14 @@ public class AbsoluteScreenPositionPropertyCollection
 		AbsoluteScreenPositionProperty(Localization localization, GeoElement element, int axis)
 				throws NotApplicablePropertyException {
 			super(localization, axis == 0 ? "x" : "y");
+
+			// numerics that are not sliders don't have placement
+			// on the other hand, angles that are sliders do
+			if (element.isGeoNumeric() && !isSlider(element)) {
+				throw new NotApplicablePropertyException(element);
+			}
 			if (!(element instanceof AbsoluteScreenLocateable)
-					|| element instanceof GeoNumeric && !((GeoNumeric) element).isSlider()) {
+					|| PlacementProperty.isDependentTextCommand(element)) {
 				throw new NotApplicablePropertyException(element);
 			}
 			this.axis = axis;
@@ -64,40 +71,45 @@ public class AbsoluteScreenPositionPropertyCollection
 
 		@SuppressWarnings("CheckResult")
 		@Override
-		public @CheckForNull String validateValue(String value) {
+		public @Nullable String validateValue(String value) {
 			if (value == null || value.isEmpty()) {
 				return "";
 			}
 			try {
-				ValidExpression validExpression = absoluteScreenLocateable.getKernel().getParser()
-						.parseGeoGebraExpression(value);
+				ValidExpression validExpression =
+						absoluteScreenLocateable.getKernel().getParser().parseGeoGebraExpression(value);
 				if (!validExpression.evaluatesToNumber(false)) {
 					return "";
 				}
 				return null;
-			} catch (ParseException parseException) {
-				return parseException.getLocalizedMessage();
+			} catch (ParseException | MyError validationError) {
+				return validationError.getLocalizedMessage();
 			}
 		}
 
 		@Override
 		protected void doSetValue(String value) {
 			MyVecNode positionDefinition = getPositionDefinition(absoluteScreenLocateable);
-			String[] newPositionDefinition = positionDefinition == null ? new String[] {
-					String.valueOf(absoluteScreenLocateable.getAbsoluteScreenLocX()),
-					String.valueOf(absoluteScreenLocateable.getAbsoluteScreenLocY())
-			} : new String [] {
-					positionDefinition.getX().toString(StringTemplate.editTemplate),
-					positionDefinition.getY().toString(StringTemplate.editTemplate)
-			};
+			String[] newPositionDefinition = positionDefinition == null
+					? new String[] {
+						String.valueOf(absoluteScreenLocateable.getAbsoluteScreenLocX()),
+						String.valueOf(absoluteScreenLocateable.getAbsoluteScreenLocY())
+					}
+					: new String[] {
+						positionDefinition.getX().toString(StringTemplate.editTemplate),
+						positionDefinition.getY().toString(StringTemplate.editTemplate)
+					};
 			newPositionDefinition[axis] = value;
-			GeoPointND newPositionPoint = absoluteScreenLocateable.getKernel().getAlgebraProcessor()
-					.evaluateToPoint("(" + String.join(",", newPositionDefinition) + ")",
-							ErrorHelper.silent(), true);
+			GeoPointND newPositionPoint = absoluteScreenLocateable
+					.getKernel()
+					.getAlgebraProcessor()
+					.evaluateToPoint(
+							"(" + String.join(",", newPositionDefinition) + ")", ErrorHelper.silent(), true);
 			if (Inspecting.isDynamicGeoElement(newPositionPoint)) {
 				try {
 					absoluteScreenLocateable.setStartPoint(newPositionPoint);
-				} catch (CircularDefinitionException circularDefinitionException) { }
+				} catch (CircularDefinitionException ignored) {
+				}
 			} else {
 				absoluteScreenLocateable.setAbsoluteScreenLoc(
 						(int) newPositionPoint.getInhomX(), (int) newPositionPoint.getInhomY());
@@ -155,16 +167,20 @@ public class AbsoluteScreenPositionPropertyCollection
 	 * elements
 	 */
 	public AbsoluteScreenPositionPropertyCollection(
-			GeoElementPropertiesFactory propertiesFactory, Localization localization,
-			List<GeoElement> elements) throws NotApplicablePropertyException {
+			GeoElementPropertiesFactory propertiesFactory,
+			Localization localization,
+			List<GeoElement> elements)
+			throws NotApplicablePropertyException {
 		super(localization, "");
-		setProperties(new StringProperty[]{
-				propertiesFactory.createPropertyFacadeThrowing(elements,
-						element -> new AbsoluteScreenPositionProperty(localization, element, 0),
-						StringPropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
-						element -> new AbsoluteScreenPositionProperty(localization, element, 1),
-						StringPropertyListFacade::new)
+		setProperties(new StringProperty[] {
+			propertiesFactory.createPropertyFacadeThrowing(
+					elements,
+					element -> new AbsoluteScreenPositionProperty(localization, element, 0),
+					StringPropertyListFacade::new),
+			propertiesFactory.createPropertyFacadeThrowing(
+					elements,
+					element -> new AbsoluteScreenPositionProperty(localization, element, 1),
+					StringPropertyListFacade::new)
 		});
 	}
 }

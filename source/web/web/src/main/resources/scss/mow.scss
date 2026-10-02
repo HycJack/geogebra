@@ -67,35 +67,6 @@
 	}
 
 /*****************
-*   STYLEBAR with Feature.MOW_COLOR_FILLING_LINE
-******************/
-	.mowDynStyleBar {
-		.btnCrop,.btnBold,.btnItalic,.btnUnderline {
-			border-radius: 2px;
-			margin-left: 0px;
-			margin-right: 8px;
-
-			img {
-				opacity: 0.7;
-			}
-
-			&:hover, &:focus {
-				border: colors.$mow_primary solid 1px !important;
-			}
-
-			&.gwt-ToggleButton-down {
-				border: colors.$mow_primary solid 1px !important;
-			}
-		}
-
-		.matDynStyleContextButton:hover {
-			margin-right: 0px !important;
-			margin-left: 0px !important;
-			border: none !important;
-		}
-	}
-
-/*****************
 *   BURGER MENU
 ******************/
 	.mowMenubar {
@@ -479,5 +450,47 @@
 
 	.infoErrorPanel.browserNotSupported {
 		margin-top: 88px;
+	}
+	.symbolPopup {
+		max-height: 240px;
+		overflow-y: auto;
+
+		.gwt-Label {
+			color: neutral(900);
+		}
+	}
+	.symbolGroup {
+		line-height: 24px;
+		margin-bottom: 4px;
+		margin-top: 16px;
+	}
+	.symbolGroup:nth-child(1) {
+		margin-top: 0;
+	}
+	.buttonRow {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+		max-width: 311px;
+	}
+	.insertSymbolButton {
+		font-size: 12px;
+		border-radius: 8px;
+		box-sizing: border-box;
+		width: 101px;
+		padding: 4px 4px 6px;
+		border: 1px solid neutral(300);
+		&:hover {
+			border-color: neutral(500);
+		}
+
+		.symbol {
+			font-size: 28px;
+			margin-bottom: 2px;
+			text-align: center;
+		}
+		.gwt-Label {
+			text-align: center;
+		}
 	}
 }

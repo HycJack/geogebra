@@ -16,29 +16,28 @@
 
 package org.geogebra.common.euclidian.plot.implicit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.arithmetic.BoundsRectangle;
 import org.geogebra.common.kernel.arithmetic.bernstein.BernsteinPolynomial2D;
 import org.geogebra.common.kernel.arithmetic.bernstein.BernsteinPolynomialConverter;
 import org.geogebra.common.util.debug.Log;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BernsteinPlotCellTest extends BaseUnitTest {
+class BernsteinPlotCellTest extends BaseUnitTest {
 	private BernsteinPlotCell cell;
 	private final BernsteinPolynomialConverter converter = new BernsteinPolynomialConverter();
 
-	//@Ignore
+	// @Ignore
 	@Test
-	public void testSpitCells() {
+	void testSpitCells() {
 		BernsteinPolynomial2D bernstein =
 				converter.bernsteinPolynomial2DFrom(add("x^3 - y^3 - 0.6 = 0"), defaultLimits());
-		cell = new BernsteinPlotCell(getDefaultBoundingBox(),
-				bernstein);
+		cell = new BernsteinPlotCell(getDefaultBoundingBox(), bernstein);
 		BernsteinPlotCell[] splitCells = cell.split();
 
-		for (BernsteinPlotCell plotCell: splitCells)  {
+		for (BernsteinPlotCell plotCell : splitCells) {
 			// plotCell is null if it has no solution.
 			if (plotCell != null) {
 				checkEvalOnContext(bernstein, plotCell);
@@ -63,10 +62,14 @@ public class BernsteinPlotCellTest extends BaseUnitTest {
 		assertSameValue(bernstein2D, offsetX + 0.5, offsetY + 0.5, cell, 1, 1);
 	}
 
-	private static void assertSameValue(BernsteinPolynomial2D bernstein2D, double x0, double y0,
-			BernsteinPlotCell context, double x, double y) {
-		assertEquals(bernstein2D.evaluate(x0, y0), context.polynomial.evaluate(x, y),
-				1E-12);
+	private static void assertSameValue(
+			BernsteinPolynomial2D bernstein2D,
+			double x0,
+			double y0,
+			BernsteinPlotCell context,
+			double x,
+			double y) {
+		assertEquals(bernstein2D.evaluate(x0, y0), context.polynomial.evaluate(x, y), 1E-12);
 	}
 
 	private BernsteinBoundingBox getDefaultBoundingBox() {

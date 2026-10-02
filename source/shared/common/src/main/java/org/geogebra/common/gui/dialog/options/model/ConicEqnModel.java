@@ -18,8 +18,6 @@ package org.geogebra.common.gui.dialog.options.model;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.EquationBehaviour;
 import org.geogebra.common.kernel.QuadraticEquationRepresentable;
 import org.geogebra.common.kernel.geos.GeoConic;
@@ -30,6 +28,7 @@ import org.geogebra.common.kernel.kernelND.GeoQuadricND;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.util.debug.Log;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Equation type setting for quadrics and conics
@@ -38,8 +37,13 @@ import org.geogebra.common.util.debug.Log;
 public class ConicEqnModel extends MultipleOptionsModel {
 
 	private Localization loc;
-	private int implicitIndex, explicitIndex, specificIndex, parametricIndex,
-			userIndex, vertexformIndex, conicformIndex;
+	private int implicitIndex,
+			explicitIndex,
+			specificIndex,
+			parametricIndex,
+			userIndex,
+			vertexformIndex,
+			conicformIndex;
 
 	/**
 	 * @param app
@@ -88,7 +92,7 @@ public class ConicEqnModel extends MultipleOptionsModel {
 	public void updateProperties() {
 		// check if all conics have same type and mode
 		// and if specific, explicit is possible
-		GeoQuadricND temp, geo0 = getConicAt(0);
+		GeoQuadricND geo0 = getConicAt(0);
 		boolean equalType = true;
 		boolean equalMode = true;
 		boolean specificPossible = geo0.isSpecificFormPossible();
@@ -97,7 +101,7 @@ public class ConicEqnModel extends MultipleOptionsModel {
 		boolean vertexformPossible = geo0.isVertexFormPossible();
 		boolean conicformPossible = geo0.isConicFormPossible();
 		for (int i = 1; i < getGeosLength(); i++) {
-			temp = getConicAt(i);
+			GeoQuadricND temp = getConicAt(i);
 			// same type?
 			if (geo0.getType() != temp.getType()) {
 				equalType = false;
@@ -165,7 +169,7 @@ public class ConicEqnModel extends MultipleOptionsModel {
 			getListener().addItem(loc.getMenu("ParametricForm"));
 			this.parametricIndex = ++counter;
 		}
-		@CheckForNull QuadraticEquationRepresentable.Form mode;
+		QuadraticEquationRepresentable.@Nullable Form mode;
 		if (equalMode) {
 			mode = geo0.getEquationForm();
 		} else {
@@ -176,40 +180,40 @@ public class ConicEqnModel extends MultipleOptionsModel {
 			return;
 		}
 		switch (mode) {
-		case SPECIFIC:
-			if (specificIndex > -1) {
-				getListener().setSelectedIndex(specificIndex);
-			}
-			break;
+			case SPECIFIC:
+				if (specificIndex > -1) {
+					getListener().setSelectedIndex(specificIndex);
+				}
+				break;
 
-		case EXPLICIT:
-			if (explicitIndex > -1) {
-				getListener().setSelectedIndex(explicitIndex);
-			}
-			break;
+			case EXPLICIT:
+				if (explicitIndex > -1) {
+					getListener().setSelectedIndex(explicitIndex);
+				}
+				break;
 
-		case IMPLICIT:
-			getListener().setSelectedIndex(implicitIndex);
-			break;
-		case PARAMETRIC:
-			getListener().setSelectedIndex(parametricIndex);
-			break;
-		case USER:
-			getListener().setSelectedIndex(userIndex);
-			break;
-		case VERTEX:
-			if (vertexformIndex > -1) {
-				getListener().setSelectedIndex(vertexformIndex);
-			}
-			break;
-		case CONICFORM:
-			if (conicformIndex > -1) {
-				getListener().setSelectedIndex(conicformIndex);
-			}
-			break;
+			case IMPLICIT:
+				getListener().setSelectedIndex(implicitIndex);
+				break;
+			case PARAMETRIC:
+				getListener().setSelectedIndex(parametricIndex);
+				break;
+			case USER:
+				getListener().setSelectedIndex(userIndex);
+				break;
+			case VERTEX:
+				if (vertexformIndex > -1) {
+					getListener().setSelectedIndex(vertexformIndex);
+				}
+				break;
+			case CONICFORM:
+				if (conicformIndex > -1) {
+					getListener().setSelectedIndex(conicformIndex);
+				}
+				break;
 
-		default:
-			getListener().setSelectedIndex(-1);
+			default:
+				getListener().setSelectedIndex(-1);
 		}
 	}
 
@@ -227,13 +231,11 @@ public class ConicEqnModel extends MultipleOptionsModel {
 	 *            whether to add "Equation"
 	 * @return for quadrics "Expanded Form", for conics "Equation? a x^2 + ... "
 	 */
-	public static String getImplicitEquation(GeoQuadricND geo0,
-			Localization loc2, boolean prefix) {
+	public static String getImplicitEquation(GeoQuadricND geo0, Localization loc2, boolean prefix) {
 		if (geo0 instanceof GeoQuadric3DInterface) {
 			return loc2.getMenu("ExpandedForm");
 		}
-		return (prefix ? loc2.getMenu("Equation") + ' ' : "")
-						+ loc2.getMenu("ImplicitConicEquation");
+		return (prefix ? loc2.getMenu("Equation") + ' ' : "") + loc2.getMenu("ImplicitConicEquation");
 	}
 
 	@Override
@@ -269,5 +271,4 @@ public class ConicEqnModel extends MultipleOptionsModel {
 		// Not used
 		return 0;
 	}
-
 }

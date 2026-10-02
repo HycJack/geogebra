@@ -28,13 +28,13 @@ import org.geogebra.web.shared.components.dialog.DialogData;
  * Dialog for cone given by two points and radius
  *
  */
-public class InputDialogConeTwoPointsRadiusW extends InputDialogRadiusW {
+public final class InputDialogConeTwoPointsRadiusW extends InputDialogRadiusW {
 
 	private GeoPointND a;
 	private GeoPointND b;
 
 	/**
-	 * 
+	 *
 	 * @param app
 	 *            app
 	 * @param data
@@ -48,8 +48,8 @@ public class InputDialogConeTwoPointsRadiusW extends InputDialogRadiusW {
 	 * @param kernel
 	 *            kernel
 	 */
-	public InputDialogConeTwoPointsRadiusW(AppW app, DialogData data,
-			InputHandler handler, GeoPointND a, GeoPointND b, Kernel kernel) {
+	public InputDialogConeTwoPointsRadiusW(
+			AppW app, DialogData data, InputHandler handler, GeoPointND a, GeoPointND b, Kernel kernel) {
 		super(app, data, handler, kernel);
 		this.a = a;
 		this.b = b;
@@ -59,5 +59,4 @@ public class InputDialogConeTwoPointsRadiusW extends InputDialogRadiusW {
 	protected GeoElement createOutput(GeoNumberValue num) {
 		return kernel.getManager3D().coneLimited(null, a, b, num)[0];
 	}
-
 }

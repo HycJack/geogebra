@@ -16,6 +16,7 @@
 
 package org.geogebra.common.properties.impl.objects;
 
+import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.aliases.BooleanProperty;
@@ -27,8 +28,8 @@ import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropert
  * {@code Property} responsible for fixing objects. Counterpart of {@link IsFixedObjectProperty}
  * with changes to meet new settings view requirements without altering the original.
  */
-public class FixObjectProperty extends AbstractValuedProperty<Boolean> implements BooleanProperty,
-		GeoElementDependentProperty {
+public class FixObjectProperty extends AbstractValuedProperty<Boolean>
+		implements BooleanProperty, GeoElementDependentProperty {
 	private final IsFixedObjectDelegate delegate;
 
 	/**
@@ -47,7 +48,9 @@ public class FixObjectProperty extends AbstractValuedProperty<Boolean> implement
 
 	@Override
 	public void doSetValue(Boolean fixObject) {
-		delegate.getElement().setFixed(fixObject);
+		GeoElement element = delegate.getElement();
+		element.setFixed(fixObject);
+		element.updateVisualStyleRepaint(GProperty.COMBINED);
 	}
 
 	@Override

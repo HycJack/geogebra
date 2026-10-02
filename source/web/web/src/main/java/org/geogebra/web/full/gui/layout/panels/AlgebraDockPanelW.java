@@ -16,8 +16,6 @@
 
 package org.geogebra.web.full.gui.layout.panels;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.io.layout.DockPanelData;
 import org.geogebra.common.javax.swing.SwingConstants;
 import org.geogebra.common.main.App;
@@ -31,6 +29,7 @@ import org.geogebra.web.full.gui.view.algebra.AlgebraCanvasExporter;
 import org.geogebra.web.full.gui.view.algebra.AlgebraViewW;
 import org.geogebra.web.full.gui.view.algebra.LatexTreeItemController;
 import org.geogebra.web.full.gui.view.algebra.RadioTreeItem;
+import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.geogebra.web.html5.gui.util.MathKeyboardListener;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.gwtproject.resources.client.ResourcePrototype;
@@ -38,14 +37,14 @@ import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Panel;
 import org.gwtproject.user.client.ui.ScrollPanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 import elemental2.dom.CanvasRenderingContext2D;
 
 /**
  * Classic (no toolbar) dock panel for algebra
  */
-public class AlgebraDockPanelW extends NavigableDockPanelW
-		implements AlgebraPanelInterface {
+public final class AlgebraDockPanelW extends NavigableDockPanelW implements AlgebraPanelInterface {
 
 	private ScrollPanel algebrap;
 	private FlowPanel wrapper;
@@ -53,7 +52,7 @@ public class AlgebraDockPanelW extends NavigableDockPanelW
 
 	private final DockPanelDecorator decorator;
 
-	private @CheckForNull AlgebraViewScroller scroller = null;
+	private @Nullable AlgebraViewScroller scroller = null;
 
 	/**
 	 * Create new dockapanel for algebra
@@ -105,6 +104,7 @@ public class AlgebraDockPanelW extends NavigableDockPanelW
 				algebrap.remove(wrapper);
 			}
 			wrapper = new FlowPanel();
+			AriaHelper.setRole(wrapper, "application");
 			aview = av;
 			wrapper.add(aview);
 			algebrap.add(wrapper);
@@ -120,7 +120,7 @@ public class AlgebraDockPanelW extends NavigableDockPanelW
 	 * @param event
 	 *            click event
 	 */
-	protected void algebraPanelClicked(AlgebraViewW av, ClickEvent event) {
+	private void algebraPanelClicked(AlgebraViewW av, ClickEvent event) {
 		int bt = wrapper.getAbsoluteTop() + wrapper.getOffsetHeight();
 		if (event.getClientY() > bt) {
 			app.getSelectionManager().clearSelectedGeos();
@@ -140,8 +140,7 @@ public class AlgebraDockPanelW extends NavigableDockPanelW
 	public void onResize() {
 		DockSplitPaneW split = getParentSplitPane();
 		if (split != null && split.isForcedLayout()) {
-			if (aview != null
-					&& split.getOrientation() == SwingConstants.HORIZONTAL_SPLIT) {
+			if (aview != null && split.getOrientation() == SwingConstants.HORIZONTAL_SPLIT) {
 				int w = getOffsetWidth();
 				aview.setUserWidth(w);
 			}
@@ -238,8 +237,7 @@ public class AlgebraDockPanelW extends NavigableDockPanelW
 		if (!(ml instanceof RadioTreeItem)) {
 			return ml;
 		}
-		LatexTreeItemController itemController = ((RadioTreeItem) ml)
-				.getLatexController();
+		LatexTreeItemController itemController = ((RadioTreeItem) ml).getLatexController();
 		itemController.initAndShowKeyboard(false);
 		return ml;
 	}
@@ -260,14 +258,13 @@ public class AlgebraDockPanelW extends NavigableDockPanelW
 	}
 
 	@Override
-	public void paintToCanvas(CanvasRenderingContext2D context2d,
-			ViewCounter counter, int left, int top) {
+	public void paintToCanvas(
+			CanvasRenderingContext2D context2d, ViewCounter counter, int left, int top) {
 		drawWhiteBackground(context2d, left, top);
 		context2d.save();
 		context2d.rect(left, top, getOffsetWidth(), getOffsetHeight());
 		context2d.clip();
-		AlgebraCanvasExporter exporter = new AlgebraCanvasExporter(aview, context2d,
-				getOffsetWidth());
+		AlgebraCanvasExporter exporter = new AlgebraCanvasExporter(aview, context2d, getOffsetWidth());
 		exporter.paintToCanvas(left, top);
 		context2d.restore();
 		if (counter != null) {

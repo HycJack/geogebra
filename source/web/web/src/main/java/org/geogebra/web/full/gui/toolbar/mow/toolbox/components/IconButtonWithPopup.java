@@ -23,7 +23,7 @@ import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.main.AppW;
 
-public class IconButtonWithPopup extends ToolIconButton {
+public final class IconButtonWithPopup extends ToolIconButton {
 	private final AppW appW;
 	private final List<Integer> tools;
 	private CategoryPopup categoryPopup;
@@ -36,8 +36,8 @@ public class IconButtonWithPopup extends ToolIconButton {
 	 * @param tools - list of tools
 	 * @param deselectButtons - deselect button callback
 	 */
-	public IconButtonWithPopup(AppW appW, IconSpec icon, String ariaLabel, List<Integer> tools,
-			Runnable deselectButtons) {
+	public IconButtonWithPopup(
+			AppW appW, IconSpec icon, String ariaLabel, List<Integer> tools, Runnable deselectButtons) {
 		super(appW, icon, ariaLabel, ariaLabel, () -> {}, null);
 		this.appW = appW;
 		this.tools = tools;
@@ -88,7 +88,8 @@ public class IconButtonWithPopup extends ToolIconButton {
 	@Override
 	public int getMode() {
 		return categoryPopup != null && categoryPopup.getLastSelectedMode() != -1
-				? categoryPopup.getLastSelectedMode() : tools.get(0);
+				? categoryPopup.getLastSelectedMode()
+				: tools.get(0);
 	}
 
 	@Override

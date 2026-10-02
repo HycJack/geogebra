@@ -25,7 +25,7 @@ import org.geogebra.common.util.debug.Log;
 
 public class PlotterSurfaceElements extends PlotterSurface {
 
-	final private static boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 
 	private int latitudeMin;
 	private int latitude;
@@ -57,7 +57,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 		/**
 		 * compute radius and z for given latitude
-		 * 
+		 *
 		 * @param v
 		 *            current latitude
 		 * @param latitudeLength
@@ -68,13 +68,13 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		void computeRadiusAndZ(int v, int latitudeLength, double[] rz);
 
 		/**
-		 * 
+		 *
 		 * @return true if we draw poles
 		 */
 		boolean drawPoles();
 
 		/**
-		 * 
+		 *
 		 * @param latitudeLength
 		 *            latitude length
 		 * @param longitudeLength
@@ -84,7 +84,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		int initNextJump(int latitudeLength, int longitudeLength);
 
 		/**
-		 * 
+		 *
 		 * @param nextJump
 		 *            current value
 		 * @param latitudeLength
@@ -94,13 +94,13 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		int updateNextJump(int nextJump, int latitudeLength);
 
 		/**
-		 * 
+		 *
 		 * @return true if we draw equator
 		 */
 		boolean drawEquator();
 
 		/**
-		 * 
+		 *
 		 * @param vi
 		 *            latitude index
 		 * @return true if we draw top part at vi (normals and vertices)
@@ -108,7 +108,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		boolean drawTop(int vi);
 
 		/**
-		 * 
+		 *
 		 * @param vi
 		 *            latitude index
 		 * @return true if we draw bottom part at vi (normals and vertices)
@@ -116,11 +116,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		boolean drawBottom(int vi);
 
 		/**
-		 * 
+		 *
 		 * @return north pole
 		 */
 		Coords getNorthPole();
-
 	}
 
 	private final class DrawSphere implements DrawEllipticSurface {
@@ -128,9 +127,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		private PlotterSurface surface;
 		private Coords center;
 		private double radius;
-
-		protected DrawSphere() {
-		}
 
 		void set(PlotterSurface surface, Coords center, double radius) {
 			this.surface = surface;
@@ -187,7 +183,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		public boolean drawBottom(int vi) {
 			return vi < latitudeMaxBottom;
 		}
-
 	}
 
 	private final class DrawEllipsoid implements DrawEllipticSurface {
@@ -205,8 +200,15 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		private Coords n = new Coords(4);
 		private Coords tmpCoords = new Coords(4);
 
-		void set(PlotterSurface surface, Coords center, Coords ev0,
-				Coords ev1, Coords ev2, double r0, double r1, double r2) {
+		void set(
+				PlotterSurface surface,
+				Coords center,
+				Coords ev0,
+				Coords ev1,
+				Coords ev2,
+				double r0,
+				double r1,
+				double r2) {
 			this.surface = surface;
 			this.center = center;
 			this.ev0 = ev0;
@@ -296,7 +298,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		public boolean drawBottom(int vi) {
 			return vi < latitudeMaxBottom;
 		}
-
 	}
 
 	private class DrawHyperboloidOneSheet implements DrawEllipticSurface {
@@ -328,11 +329,17 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		protected double maxFadingStartBottom;
 		protected double maxFadingEndBottom;
 
-		protected DrawHyperboloidOneSheet() {
-		}
+		protected DrawHyperboloidOneSheet() {}
 
-		void set(PlotterSurface surface, Coords center, Coords ev0,
-				Coords ev1, Coords ev2, double r0, double r1, double r2,
+		void set(
+				PlotterSurface surface,
+				Coords center,
+				Coords ev0,
+				Coords ev1,
+				Coords ev2,
+				double r0,
+				double r1,
+				double r2,
 				boolean fading) {
 			this.surface = surface;
 			this.center = center;
@@ -398,11 +405,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 			if (fading) {
 				if (z > middleFading) {
-					manager.texture(0, (z - maxFadingStartTop)
-							/ (maxFadingEndTop - maxFadingStartTop));
+					manager.texture(0, (z - maxFadingStartTop) / (maxFadingEndTop - maxFadingStartTop));
 				} else {
-					manager.texture(0, (z - maxFadingStartBottom)
-							/ (maxFadingEndBottom - maxFadingStartBottom));
+					manager.texture(
+							0, (z - maxFadingStartBottom) / (maxFadingEndBottom - maxFadingStartBottom));
 				}
 			}
 			surface.drawNV(n, c);
@@ -430,11 +436,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 			if (fading) {
 				if (z < middleFading) {
-					manager.texture(0, (z - maxFadingStartBottom)
-							/ (maxFadingEndBottom - maxFadingStartBottom));
+					manager.texture(
+							0, (z - maxFadingStartBottom) / (maxFadingEndBottom - maxFadingStartBottom));
 				} else {
-					manager.texture(0, (z - maxFadingStartTop)
-							/ (maxFadingEndTop - maxFadingStartTop));
+					manager.texture(0, (z - maxFadingStartTop) / (maxFadingEndTop - maxFadingStartTop));
 				}
 			}
 			surface.drawNV(n, c);
@@ -448,8 +453,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		}
 
 		private double computeV(int vi, int latitudeLength) {
-			return min + (double) (latitudeLength - vi - 1)
-					/ (latitudeLength - 2) * (max - min);
+			return min + (double) (latitudeLength - vi - 1) / (latitudeLength - 2) * (max - min);
 		}
 
 		@Override
@@ -513,7 +517,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		public boolean drawBottom(int vi) {
 			return vi >= latitudeMaxBottom;
 		}
-
 	}
 
 	private final class DrawHyperboloidTwoSheets extends DrawHyperboloidOneSheet {
@@ -561,7 +564,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 			// use asymptotic behavior of cosh() for (un)refine radius
 			jump = Math.log(2) / max;
-
 		}
 
 		@Override
@@ -572,8 +574,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		}
 
 		private double computeV(int vi, int latitudeLength) {
-			return min + (double) (latitudeLength - vi) / (latitudeLength - 2)
-					* (max - min);
+			return min + (double) (latitudeLength - vi) / (latitudeLength - 2) * (max - min);
 		}
 
 		@Override
@@ -585,7 +586,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		public Coords getNorthPole() {
 			return Coords.VZ;
 		}
-
 	}
 
 	private final class DrawParaboloid extends DrawHyperboloidOneSheet {
@@ -615,7 +615,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 			// use asymptotic behavior of cosh() for (un)refine radius
 			jump = Math.log(2) / max;
-
 		}
 
 		@Override
@@ -640,11 +639,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 			if (fading) {
 				if (z > middleFading) {
-					manager.texture(0, (z - maxFadingStartTop)
-							/ (maxFadingEndTop - maxFadingStartTop));
+					manager.texture(0, (z - maxFadingStartTop) / (maxFadingEndTop - maxFadingStartTop));
 				} else {
-					manager.texture(0, (z - maxFadingStartBottom)
-							/ (maxFadingEndBottom - maxFadingStartBottom));
+					manager.texture(
+							0, (z - maxFadingStartBottom) / (maxFadingEndBottom - maxFadingStartBottom));
 				}
 			}
 			surface.drawNV(n, c);
@@ -658,8 +656,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		}
 
 		private double computeV(int vi, int latitudeLength) {
-			return min + (double) (latitudeLength - vi) / (latitudeLength - 2)
-					* (max - min);
+			return min + (double) (latitudeLength - vi) / (latitudeLength - 2) * (max - min);
 		}
 
 		@Override
@@ -681,7 +678,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		public boolean drawBottom(int vi) {
 			return false;
 		}
-
 	}
 
 	public PlotterSurfaceElements(Manager manager) {
@@ -689,8 +685,13 @@ public class PlotterSurfaceElements extends PlotterSurface {
 	}
 
 	@Override
-	public void drawSphere(Coords center, double radius, int longitude,
-			double longitudeStart, int longitudeLength, double frustumRadius) {
+	public void drawSphere(
+			Coords center,
+			double radius,
+			int longitude,
+			double longitudeStart,
+			int longitudeLength,
+			double frustumRadius) {
 
 		startGeometry();
 
@@ -707,15 +708,14 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		drawNV(drawSphere, longitude, longitudeStart, longitudeLength);
 
 		setIndices(longitude, longitudeLength, drawSphere);
-
 	}
 
 	private void startGeometry() {
 		manager.startGeometry(Manager.Type.TRIANGLES);
 	}
 
-	private void setLatitudeMinMaxForEllipsoid(Coords center, double radius,
-			int longitude, double frustumRadius) {
+	private void setLatitudeMinMaxForEllipsoid(
+			Coords center, double radius, int longitude, double frustumRadius) {
 
 		latitude = longitude / 4;
 
@@ -766,24 +766,20 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 	}
 
-	private void setLatitudeMinMaxForHyperboloid(double min, double max,
-			DrawHyperboloidOneSheet dhos) {
+	private void setLatitudeMinMaxForHyperboloid(
+			double min, double max, DrawHyperboloidOneSheet dhos) {
 
 		if (min < 0) {
 			if (max > 0) {
 				if (-min > max) { // more bottom than top
-					latitudeMaxTop = (int) (latitude * (1 - max / (-min)));
-					if (latitudeMaxTop == 1) {
-						latitudeMaxTop = 2; // ensure at least a strip is drawn
-					}
+					int steps = (int) (latitude * (1 - max / (-min)));
+					// ensure at least a strip is drawn
+					latitudeMaxTop = steps == 1 ? 2 : steps;
 					latitudeMaxBottom = 0;
 				} else { // more top than bottom
+					int steps = (int) (latitude * (1 - (-min) / max));
 					latitudeMaxTop = 0;
-					latitudeMaxBottom = (int) (latitude * (1 - (-min) / max));
-					if (latitudeMaxBottom == 1) {
-						latitudeMaxBottom = 2; // ensure at least a strip is
-												// drawn
-					}
+					latitudeMaxBottom = steps == 1 ? 2 : steps;
 				}
 				latitudeMax = latitude;
 				latitudeMin = 0;
@@ -811,8 +807,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 	}
 
-	private void setLatitudeMinMaxForParaboloid(double min, double max,
-			DrawParaboloid dp) {
+	private void setLatitudeMinMaxForParaboloid(double min, double max, DrawParaboloid dp) {
 
 		// only top
 		latitudeMaxTop = 0;
@@ -820,11 +815,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		latitudeMax = latitude;
 		latitudeMin = 0;
 		dp.setMinMax(min, max);
-
 	}
 
-	private void drawNV(DrawEllipticSurface dse, int longitude,
-			double longitudeStart, int longitudeLength) {
+	private void drawNV(
+			DrawEllipticSurface dse, int longitude, double longitudeStart, int longitudeLength) {
 
 		// start drawing
 		if (n == null) {
@@ -834,10 +828,9 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		// values for radius and z at each latitude
 		double[] rz = new double[2];
 
-		debug("longitude = " + longitude + " , longitudeLength = "
-				+ longitudeLength);
+		debug("longitude = " + longitude + " , longitudeLength = " + longitudeLength);
 
-		short lastLength, currentLength;
+		short currentLength;
 
 		// ///////////////
 		// draw vertices
@@ -853,7 +846,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 		arrayIndex = 0;
 
-		lastLength = (short) longitudeLength;
 		currentLength = (short) longitudeLength;
 
 		// both = 1 if only drawing up or down, both = 2 if drawing both
@@ -862,16 +854,15 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 		int vi = latitudeMin + 1;
 		int nextJump = dse.initNextJump(latitude, longitude);
-		debug("latitude : " + latitude + " , latitude-nextJump : "
-				+ (latitude - nextJump));
-		int next = 0;
+		debug("latitude : " + latitude + " , latitude-nextJump : " + (latitude - nextJump));
+		int next;
 		int shift = 1;
 
 		do {
 
 			next = Math.min(latitudeMax, latitude - nextJump);
-			debug("latitude : " + latitude + " , latitudeMin : " + latitudeMin
-					+ " , next : " + next + " , latitudeMax : " + latitudeMax);
+			debug("latitude : " + latitude + " , latitudeMin : " + latitudeMin + " , next : " + next
+					+ " , latitudeMax : " + latitudeMax);
 			while (next < latitudeMin + 2 && nextJump != 0) {
 				nextJump = dse.updateNextJump(nextJump, latitude);
 				next = Math.min(latitudeMax, latitude - nextJump);
@@ -897,22 +888,19 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 				debug("vi : " + vi);
 
-				lastLength = currentLength;
-
 				if (drawTop) { // top triangles
 					if (longitudeLength == longitude) {
-						arrayIndex += 6 * lastLength;
+						arrayIndex += 6 * currentLength;
 					} else {
-						arrayIndex += 6 * (lastLength - 1);
+						arrayIndex += 6 * (currentLength - 1);
 					}
-
 				}
 
 				if (drawBottom) { // bottom triangles
 					if (longitudeLength == longitude) {
-						arrayIndex += 6 * lastLength;
+						arrayIndex += 6 * currentLength;
 					} else {
-						arrayIndex += 6 * (lastLength - 1);
+						arrayIndex += 6 * (currentLength - 1);
 					}
 				}
 
@@ -934,7 +922,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 					}
 				}
 
-				lastLength = currentLength;
 				currentLength /= 2;
 
 				if (drawTop) { // top triangles
@@ -959,62 +946,42 @@ public class PlotterSurfaceElements extends PlotterSurface {
 			}
 		} while (next < latitudeMax && nextJump != 0);
 
-		lastLength = currentLength;
+		short lastLength = currentLength;
 
-		if (dse.drawPoles()) {
+		if (dse.drawPoles() && latitudeMax == latitude) {
 			// north pole
-			if (latitudeMax == latitude) {
+			if (drawTop) {
+				dse.drawNCr(dse.getNorthPole());
 
-				if (drawTop) {
-
-					dse.drawNCr(dse.getNorthPole());
-
-					if (longitudeLength == longitude) {
-						arrayIndex += 3 * lastLength;
-					} else {
-						arrayIndex += 3 * (lastLength - 1);
-					}
-
+				if (longitudeLength == longitude) {
+					arrayIndex += 3 * lastLength;
+				} else {
+					arrayIndex += 3 * (lastLength - 1);
 				}
+			}
 
-				// south pole
-				if (drawBottom) {
+			// south pole
+			if (drawBottom) {
+				dse.drawNCrm(dse.getNorthPole());
 
-					dse.drawNCrm(dse.getNorthPole());
-
-					if (longitudeLength == longitude) {
-						arrayIndex += 3 * lastLength;
-					} else {
-						arrayIndex += 3 * (lastLength - 1);
-					}
+				if (longitudeLength == longitude) {
+					arrayIndex += 3 * lastLength;
+				} else {
+					arrayIndex += 3 * (lastLength - 1);
 				}
 			}
 		}
-
 		debug("==== arrayIndex (1) = " + arrayIndex);
-
 	}
 
-	private void setIndices(int longitude, int longitudeLength,
-			DrawEllipticSurface dse) {
-
+	private void setIndices(int longitude, int longitudeLength, DrawEllipticSurface dse) {
 		// ///////////////
 		// set indices
 		arrayI = manager.getCurrentGeometryIndices(arrayIndex);
-
 		arrayIndex = 0;
-
-		short lastStartIndex = 0;
-		short lastLength = (short) longitudeLength;
-		short currentStartIndex = lastStartIndex;
-		short currentLength = (short) longitudeLength;
-
 		// both = 1 if only drawing up or down, both = 2 if drawing both
 		boolean drawTop = true;
 		boolean drawBottom = true;
-		boolean lastDrawTop = true;
-		boolean lastDrawBottom = true;
-		short lastBoth = 1;
 		short both = 2;
 		int vi = latitudeMin + 1;
 		if (dse.drawEquator()) {
@@ -1029,16 +996,18 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				both = 1;
 			}
 		}
+		boolean lastDrawTop = true, lastDrawBottom = true;
 		int nextJump = dse.initNextJump(latitude, longitude);
-		debug("latitude : " + latitude + " , latitude-nextJump : "
-				+ (latitude - nextJump));
-		int next = 0;
-
+		int next;
+		short lastBoth;
+		short lastStartIndex = 0;
+		short currentStartIndex = lastStartIndex;
+		short currentLength = (short) longitudeLength;
 		do {
 
 			next = Math.min(latitudeMax, latitude - nextJump);
-			debug("latitude : " + latitude + " , latitudeMin : " + latitudeMin
-					+ " , next : " + next + " , latitudeMax : " + latitudeMax);
+			debug("latitude : " + latitude + " , latitudeMin : " + latitudeMin + " , next : " + next
+					+ " , latitudeMax : " + latitudeMax);
 			while (next < latitudeMin + 2 && nextJump != 0) {
 				nextJump = dse.updateNextJump(nextJump, latitude);
 				next = Math.min(latitudeMax, latitude - nextJump);
@@ -1065,14 +1034,14 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				debug("vi : " + vi + " -- both : " + both);
 
 				lastStartIndex = currentStartIndex;
-				lastLength = currentLength;
-				currentStartIndex += lastLength * lastBoth;
+				currentStartIndex += currentLength * lastBoth;
 
 				if (lastDrawTop && drawTop) { // top triangles
 					short currentIndex = currentStartIndex;
 					short lastIndex;
-					for (lastIndex = lastStartIndex; lastIndex < currentStartIndex
-							- lastBoth; lastIndex += lastBoth) {
+					for (lastIndex = lastStartIndex;
+							lastIndex < currentStartIndex - lastBoth;
+							lastIndex += lastBoth) {
 
 						arrayI.put(lastIndex);
 						arrayIndex++;
@@ -1106,7 +1075,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 						arrayI.put(currentStartIndex);
 						arrayIndex++;
 					}
-
 				}
 
 				// shift to draw also bottom
@@ -1120,8 +1088,9 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				if (lastDrawBottom && drawBottom) { // bottom triangles
 					short currentIndex = currentStartIndex;
 					short lastIndex;
-					for (lastIndex = lastStartIndex; lastIndex < currentStartIndex
-							- both; lastIndex += lastBoth) {
+					for (lastIndex = lastStartIndex;
+							lastIndex < currentStartIndex - both;
+							lastIndex += lastBoth) {
 						arrayI.put(lastIndex);
 						arrayIndex++;
 						arrayI.put(currentIndex);
@@ -1157,9 +1126,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				}
 
 				// shift back
-				if (lastBoth == 2) {
-					lastStartIndex -= 1;
-				}
 				if (both == 2) {
 					currentStartIndex -= 1;
 				}
@@ -1172,15 +1138,15 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				lastBoth = both;
 
 				lastStartIndex = currentStartIndex;
-				lastLength = currentLength;
-				currentStartIndex += lastLength * lastBoth;
+				currentStartIndex += currentLength * lastBoth;
 				currentLength /= 2;
 
 				if (lastDrawTop && drawTop) { // top triangles
 					short currentIndex = currentStartIndex;
 					short lastIndex;
-					for (lastIndex = lastStartIndex; lastIndex < currentStartIndex
-							- 2 * lastBoth; lastIndex += 2 * lastBoth) {
+					for (lastIndex = lastStartIndex;
+							lastIndex < currentStartIndex - 2 * lastBoth;
+							lastIndex += 2 * lastBoth) {
 
 						arrayI.put(lastIndex);
 						arrayIndex++;
@@ -1204,7 +1170,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 						arrayIndex++;
 
 						currentIndex += both;
-
 					}
 
 					if (longitudeLength == longitude) {
@@ -1234,14 +1199,14 @@ public class PlotterSurfaceElements extends PlotterSurface {
 					// shift for maybe draw bottom
 					lastStartIndex += 1;
 					currentStartIndex += 1;
-
 				}
 
 				if (lastDrawBottom && drawBottom) { // bottom triangles
 					short currentIndex = currentStartIndex;
 					short lastIndex;
-					for (lastIndex = lastStartIndex; lastIndex < currentStartIndex
-							- 2 * lastBoth; lastIndex += 2 * lastBoth) {
+					for (lastIndex = lastStartIndex;
+							lastIndex < currentStartIndex - 2 * lastBoth;
+							lastIndex += 2 * lastBoth) {
 						arrayI.put(lastIndex);
 						arrayIndex++;
 						arrayI.put(currentIndex);
@@ -1264,7 +1229,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 						arrayIndex++;
 
 						currentIndex += both;
-
 					}
 
 					if (longitudeLength == longitude) {
@@ -1290,12 +1254,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 						arrayI.put(currentStartIndex);
 						arrayIndex++;
 					}
-
 				}
 
 				if (drawTop) {
 					// shift back
-					lastStartIndex -= 1;
 					currentStartIndex -= 1;
 				}
 
@@ -1309,65 +1271,62 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		lastBoth = both;
 
 		lastStartIndex = currentStartIndex;
-		lastLength = currentLength;
-		currentStartIndex += lastLength * lastBoth;
+		currentStartIndex += currentLength * lastBoth;
 
-		if (dse.drawPoles()) {
+		if (dse.drawPoles() && latitudeMax == latitude) {
 			// north pole
-			if (latitudeMax == latitude) {
+			if (drawTop) {
 
-				if (drawTop) {
-
-					short lastIndex;
-					for (lastIndex = lastStartIndex; lastIndex < currentStartIndex
-							- lastBoth; lastIndex += lastBoth) {
-						arrayI.put(lastIndex);
-						arrayIndex++;
-						arrayI.put((short) (lastIndex + lastBoth));
-						arrayIndex++;
-						arrayI.put(currentStartIndex);
-						arrayIndex++;
-					}
-
-					if (longitudeLength == longitude) {
-						// close the parallel
-						arrayI.put(lastIndex);
-						arrayIndex++;
-						arrayI.put(lastStartIndex);
-						arrayIndex++;
-						arrayI.put(currentStartIndex);
-						arrayIndex++;
-					}
-
-					// shift for maybe south pole
-					lastStartIndex += 1;
-					currentStartIndex += 1;
+				short lastIndex;
+				for (lastIndex = lastStartIndex;
+						lastIndex < currentStartIndex - lastBoth;
+						lastIndex += lastBoth) {
+					arrayI.put(lastIndex);
+					arrayIndex++;
+					arrayI.put((short) (lastIndex + lastBoth));
+					arrayIndex++;
+					arrayI.put(currentStartIndex);
+					arrayIndex++;
 				}
 
-				// south pole
-				if (drawBottom) {
+				if (longitudeLength == longitude) {
+					// close the parallel
+					arrayI.put(lastIndex);
+					arrayIndex++;
+					arrayI.put(lastStartIndex);
+					arrayIndex++;
+					arrayI.put(currentStartIndex);
+					arrayIndex++;
+				}
 
-					short lastIndex;
-					for (lastIndex = lastStartIndex; lastIndex < currentStartIndex
-							- lastBoth; lastIndex += lastBoth) {
-						arrayI.put(lastIndex);
-						arrayIndex++;
-						arrayI.put(currentStartIndex);
-						arrayIndex++;
-						arrayI.put((short) (lastIndex + lastBoth));
-						arrayIndex++;
-					}
+				// shift for maybe south pole
+				lastStartIndex += 1;
+				currentStartIndex += 1;
+			}
 
-					if (longitudeLength == longitude) {
-						// close the parallel
-						arrayI.put(lastIndex);
-						arrayIndex++;
-						arrayI.put(currentStartIndex);
-						arrayIndex++;
-						arrayI.put(lastStartIndex);
-						arrayIndex++;
-					}
+			// south pole
+			if (drawBottom) {
 
+				short lastIndex;
+				for (lastIndex = lastStartIndex;
+						lastIndex < currentStartIndex - lastBoth;
+						lastIndex += lastBoth) {
+					arrayI.put(lastIndex);
+					arrayIndex++;
+					arrayI.put(currentStartIndex);
+					arrayIndex++;
+					arrayI.put((short) (lastIndex + lastBoth));
+					arrayIndex++;
+				}
+
+				if (longitudeLength == longitude) {
+					// close the parallel
+					arrayI.put(lastIndex);
+					arrayIndex++;
+					arrayI.put(currentStartIndex);
+					arrayIndex++;
+					arrayI.put(lastStartIndex);
+					arrayIndex++;
 				}
 			}
 		}
@@ -1377,12 +1336,18 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		arrayI.rewind();
 
 		manager.endGeometry(arrayIndex, TypeElement.SURFACE);
-
 	}
 
 	@Override
-	public void drawEllipsoid(Coords center, Coords ev0, Coords ev1, Coords ev2,
-			double r0, double r1, double r2, int longitude) {
+	public void drawEllipsoid(
+			Coords center,
+			Coords ev0,
+			Coords ev1,
+			Coords ev2,
+			double r0,
+			double r1,
+			double r2,
+			int longitude) {
 
 		startGeometry();
 
@@ -1390,8 +1355,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		manager.setDummyTexture();
 
 		double r = Math.max(r0, Math.max(r1, r2));
-		setLatitudeMinMaxForEllipsoid(center, r, longitude,
-				manager.getView3D().getFrustumRadius());
+		setLatitudeMinMaxForEllipsoid(center, r, longitude, manager.getView3D().getFrustumRadius());
 
 		if (drawEllipsoid == null) {
 			drawEllipsoid = new DrawEllipsoid();
@@ -1404,9 +1368,18 @@ public class PlotterSurfaceElements extends PlotterSurface {
 	}
 
 	@Override
-	public void drawHyperboloidOneSheet(Coords center, Coords ev0, Coords ev1,
-			Coords ev2, double r0, double r1, double r2, int longitude,
-			double min, double max, boolean fading) {
+	public void drawHyperboloidOneSheet(
+			Coords center,
+			Coords ev0,
+			Coords ev1,
+			Coords ev2,
+			double r0,
+			double r1,
+			double r2,
+			int longitude,
+			double min,
+			double max,
+			boolean fading) {
 
 		startGeometry();
 
@@ -1417,8 +1390,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		if (drawHyperboloidOneSheet == null) {
 			drawHyperboloidOneSheet = new DrawHyperboloidOneSheet();
 		}
-		drawHyperboloidOneSheet.set(this, center, ev0, ev1, ev2, r0, r1, r2,
-				fading);
+		drawHyperboloidOneSheet.set(this, center, ev0, ev1, ev2, r0, r1, r2, fading);
 
 		latitude = 32; // 32 seems to be ok in any case
 
@@ -1430,9 +1402,18 @@ public class PlotterSurfaceElements extends PlotterSurface {
 	}
 
 	@Override
-	public void drawHyperboloidTwoSheets(Coords center, Coords ev0, Coords ev1,
-			Coords ev2, double r0, double r1, double r2, int longitude,
-			double min, double max, boolean fading) {
+	public void drawHyperboloidTwoSheets(
+			Coords center,
+			Coords ev0,
+			Coords ev1,
+			Coords ev2,
+			double r0,
+			double r1,
+			double r2,
+			int longitude,
+			double min,
+			double max,
+			boolean fading) {
 
 		startGeometry();
 
@@ -1443,8 +1424,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		if (drawHyperboloidTwoSheets == null) {
 			drawHyperboloidTwoSheets = new DrawHyperboloidTwoSheets();
 		}
-		drawHyperboloidTwoSheets.set(this, center, ev0, ev1, ev2, r0, r1, r2,
-				fading);
+		drawHyperboloidTwoSheets.set(this, center, ev0, ev1, ev2, r0, r1, r2, fading);
 
 		latitude = 16; // 16 seems to be ok in any case
 
@@ -1456,9 +1436,17 @@ public class PlotterSurfaceElements extends PlotterSurface {
 	}
 
 	@Override
-	public void drawParaboloid(Coords center, Coords ev0, Coords ev1,
-			Coords ev2, double r0, double r1, int longitude, double min,
-			double max, boolean fading) {
+	public void drawParaboloid(
+			Coords center,
+			Coords ev0,
+			Coords ev1,
+			Coords ev2,
+			double r0,
+			double r1,
+			int longitude,
+			double min,
+			double max,
+			boolean fading) {
 
 		startGeometry();
 
@@ -1480,9 +1468,17 @@ public class PlotterSurfaceElements extends PlotterSurface {
 	}
 
 	@Override
-	public void drawParabolicCylinder(Coords center, Coords ev0, Coords ev1,
-			Coords ev2, double r, double min, double max, double lineMin,
-			double lineMax, boolean fading) {
+	public void drawParabolicCylinder(
+			Coords center,
+			Coords ev0,
+			Coords ev1,
+			Coords ev2,
+			double r,
+			double min,
+			double max,
+			double lineMin,
+			double lineMax,
+			boolean fading) {
 
 		center1.setAdd(center, tmpCoords.setMul(ev1, lineMin));
 		center2.setAdd(center, tmpCoords.setMul(ev1, lineMax));
@@ -1542,11 +1538,9 @@ public class PlotterSurfaceElements extends PlotterSurface {
 			double zFading = 0;
 			if (fading) {
 				if (z > middleFading) {
-					zFading = (z - maxFadingStartTop)
-							/ (maxFadingEndTop - maxFadingStartTop);
+					zFading = (z - maxFadingStartTop) / (maxFadingEndTop - maxFadingStartTop);
 				} else {
-					zFading = (z - maxFadingStartBottom)
-							/ (maxFadingEndBottom - maxFadingStartBottom);
+					zFading = (z - maxFadingStartBottom) / (maxFadingEndBottom - maxFadingStartBottom);
 				}
 			}
 
@@ -1605,7 +1599,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				manager.texture(1, zFading);
 			}
 			drawNV(n, m);
-
 		}
 
 		// set indices
@@ -1691,7 +1684,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				arrayI.put((short) (index + 10));
 
 				index += 6;
-
 			}
 		} else {
 			if (min == 0) {
@@ -1731,20 +1723,27 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				arrayI.put((short) (index + 6));
 
 				index += 4;
-
 			}
 		}
 
 		arrayI.rewind();
 
 		manager.endGeometry(arrayIndex, TypeElement.SURFACE);
-
 	}
 
 	@Override
-	public void drawHyperbolicCylinder(Coords center, Coords ev0, Coords ev1,
-			Coords ev2, double r1, double r2, double min0, double max,
-			double lineMin, double lineMax, boolean fading) {
+	public void drawHyperbolicCylinder(
+			Coords center,
+			Coords ev0,
+			Coords ev1,
+			Coords ev2,
+			double r1,
+			double r2,
+			double min0,
+			double max,
+			double lineMin,
+			double lineMax,
+			boolean fading) {
 
 		double min;
 		if (min0 < 0) {
@@ -1822,11 +1821,9 @@ public class PlotterSurfaceElements extends PlotterSurface {
 			double sFading = 0;
 			if (fading) {
 				if (s > middleFading) {
-					sFading = (s - maxFadingStartTop)
-							/ (maxFadingEndTop - maxFadingStartTop);
+					sFading = (s - maxFadingStartTop) / (maxFadingEndTop - maxFadingStartTop);
 				} else {
-					sFading = (s - maxFadingStartBottom)
-							/ (maxFadingEndBottom - maxFadingStartBottom);
+					sFading = (s - maxFadingStartBottom) / (maxFadingEndBottom - maxFadingStartBottom);
 				}
 			}
 
@@ -1885,7 +1882,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				manager.texture(1, sFading);
 			}
 			drawNV(n, m);
-
 		}
 
 		// set indices
@@ -1971,7 +1967,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				arrayI.put((short) (index + 11));
 
 				index += 6;
-
 			}
 		} else {
 			if (min <= 0) {
@@ -2011,20 +2006,27 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				arrayI.put((short) (index + 7));
 
 				index += 4;
-
 			}
 		}
 
 		arrayI.rewind();
 
 		manager.endGeometry(arrayIndex, TypeElement.SURFACE);
-
 	}
 
 	@Override
-	public void drawHyperbolicParaboloid(Coords center, Coords ev0, Coords ev1,
-			Coords ev2, double r0, double r1, double min0, double max0,
-			double min1, double max1, boolean fading) {
+	public void drawHyperbolicParaboloid(
+			Coords center,
+			Coords ev0,
+			Coords ev1,
+			Coords ev2,
+			double r0,
+			double r1,
+			double min0,
+			double max0,
+			double min1,
+			double max1,
+			boolean fading) {
 
 		latitude = 64;
 
@@ -2075,7 +2077,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 				drawNV(n, m);
 			}
-
 		}
 
 		// set indices
@@ -2094,13 +2095,11 @@ public class PlotterSurfaceElements extends PlotterSurface {
 				arrayI.put((short) (uIndex + latitude + 1 + vi + 1));
 			}
 			uIndex += latitude + 1;
-
 		}
 
 		arrayI.rewind();
 
 		manager.endGeometry(arrayIndex, TypeElement.SURFACE);
-
 	}
 
 	@Override
@@ -2113,7 +2112,6 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		arrayIndex = 0;
 
 		arrayI = manager.getCurrentGeometryIndices(size);
-
 	}
 
 	@Override
@@ -2146,5 +2144,4 @@ public class PlotterSurfaceElements extends PlotterSurface {
 			Log.debug(s);
 		}
 	}
-
 }

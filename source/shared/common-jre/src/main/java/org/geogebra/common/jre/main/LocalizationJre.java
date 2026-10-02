@@ -27,16 +27,17 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.common.util.lang.Language;
+import org.jspecify.annotations.NonNull;
 
 /**
  * common jre localization
  */
+@HasNativeSubclass
 public abstract class LocalizationJre extends Localization {
 
 	private ResourceBundle rbmenu;
@@ -48,6 +49,7 @@ public abstract class LocalizationJre extends Localization {
 	private Language tooltipLanguage = null;
 	/** application */
 	protected App app;
+
 	private boolean tooltipFlag = false;
 	// supported GUI languages (from properties files)
 	protected ArrayList<Locale> supportedLocales = null;
@@ -73,7 +75,7 @@ public abstract class LocalizationJre extends Localization {
 	/**
 	 * @param app application
 	 */
-	final public void setApp(App app) {
+	public final void setApp(App app) {
 		this.app = app;
 	}
 
@@ -87,7 +89,7 @@ public abstract class LocalizationJre extends Localization {
 	}
 
 	@Override
-	final public void setTooltipFlag() {
+	public final void setTooltipFlag() {
 		if (tooltipLanguage != null) {
 			tooltipFlag = true;
 		}
@@ -97,12 +99,12 @@ public abstract class LocalizationJre extends Localization {
 	 * Stop forcing usage of tooltip locale for translations
 	 */
 	@Override
-	final public void clearTooltipFlag() {
+	public final void clearTooltipFlag() {
 		tooltipFlag = false;
 	}
 
 	@Override
-	final public String getCommand(String key) {
+	public final String getCommand(String key) {
 
 		app.initTranslatedCommands();
 
@@ -114,7 +116,7 @@ public abstract class LocalizationJre extends Localization {
 	}
 
 	@Override
-	final public @Nonnull String getMenu(String key) {
+	public final @NonNull String getMenuDefault(String key, String fallback) {
 		if (key == null) {
 			return "";
 		}
@@ -130,8 +132,13 @@ public abstract class LocalizationJre extends Localization {
 		try {
 			return rbmenu.getString(key);
 		} catch (Exception e) {
-			return key;
+			reportMissing(key, fallback);
+			return fallback;
 		}
+	}
+
+	protected void reportMissing(String key, String fallback) {
+		// overridden in tests
 	}
 
 	/**
@@ -139,27 +146,27 @@ public abstract class LocalizationJre extends Localization {
 	 * @param locale locale
 	 * @return bundle for key and locale
 	 */
-	abstract protected ResourceBundle createBundle(String key, Locale locale);
+	protected abstract ResourceBundle createBundle(String key, Locale locale);
 
 	/** @return path of Menu bundle */
-	abstract protected String getMenuResourcePath();
+	protected abstract String getMenuResourcePath();
 
 	/** @return path of Command bundle */
-	abstract protected String getCommandResourcePath();
+	protected abstract String getCommandResourcePath();
 
 	/** @return path of Symbol bundle */
-	abstract protected String getSymbolResourcePath();
+	protected abstract String getSymbolResourcePath();
 
 	@Override
-	final public String getMenuTooltip(String key) {
+	public final String getMenuTooltip(String key) {
 
 		if (tooltipLanguage == null) {
 			return getMenu(key);
 		}
 
 		if (rbmenuTT == null) {
-			rbmenuTT = createBundle(getMenuResourcePath(),
-					Locale.forLanguageTag(tooltipLanguage.toLanguageTag()));
+			rbmenuTT = createBundle(
+					getMenuResourcePath(), Locale.forLanguageTag(tooltipLanguage.toLanguageTag()));
 		}
 
 		try {
@@ -170,7 +177,7 @@ public abstract class LocalizationJre extends Localization {
 	}
 
 	@Override
-	final public String getSymbol(int key) {
+	public final String getSymbol(int key) {
 		if (rbsymbol == null) {
 			initSymbolResourceBundle();
 		}
@@ -179,7 +186,7 @@ public abstract class LocalizationJre extends Localization {
 
 		try {
 			ret = rbsymbol.getString("S." + key);
-		} catch (Exception e) {
+		} catch (Exception expected) {
 			// do nothing
 		}
 
@@ -190,7 +197,7 @@ public abstract class LocalizationJre extends Localization {
 	}
 
 	@Override
-	final public Language getLanguage() {
+	public final Language getLanguage() {
 		return Language.getLanguage(getLanguageTag());
 	}
 
@@ -200,7 +207,7 @@ public abstract class LocalizationJre extends Localization {
 	}
 
 	@Override
-	final public String getSymbolTooltip(int key) {
+	public final String getSymbolTooltip(int key) {
 		if (rbsymbol == null) {
 			initSymbolResourceBundle();
 		}
@@ -209,7 +216,7 @@ public abstract class LocalizationJre extends Localization {
 
 		try {
 			ret = rbsymbol.getString("T." + key);
-		} catch (Exception e) {
+		} catch (Exception expected) {
 			// do nothing
 		}
 
@@ -224,14 +231,13 @@ public abstract class LocalizationJre extends Localization {
 	}
 
 	@Override
-	final public void initCommand() {
+	public final void initCommand() {
 		if (rbcommand == null) {
 			rbcommand = createBundle(getCommandResourcePath(), getCommandLocale());
 		}
-
 	}
 
-	final protected void updateResourceBundles() {
+	protected final void updateResourceBundles() {
 		if (rbmenu != null) {
 			rbmenu = createBundle(getMenuResourcePath(), currentLocale);
 		}
@@ -246,7 +252,7 @@ public abstract class LocalizationJre extends Localization {
 	/**
 	 * @return whether properties bundles were initiated (at least plain)
 	 */
-	final public boolean propertiesFilesPresent() {
+	public final boolean propertiesFilesPresent() {
 		return rbmenu != null;
 	}
 
@@ -254,7 +260,7 @@ public abstract class LocalizationJre extends Localization {
 	 * @param ttLanguage language for tooltips
 	 * @return whether the language changed
 	 */
-	final public boolean setTooltipLanguage(Language ttLanguage) {
+	public final boolean setTooltipLanguage(Language ttLanguage) {
 		boolean updateNeeded = rbmenuTT != null;
 
 		rbmenuTT = null;
@@ -272,12 +278,12 @@ public abstract class LocalizationJre extends Localization {
 	/**
 	 * @return tooltip locale
 	 */
-	final public Language getTooltipLanguage() {
+	public final Language getTooltipLanguage() {
 		return tooltipLanguage;
 	}
 
 	@Override
-	final public String getTooltipLanguageString() {
+	public final String getTooltipLanguageString() {
 		if (tooltipLanguage == null) {
 			return null;
 		}
@@ -323,26 +329,25 @@ public abstract class LocalizationJre extends Localization {
 	}
 
 	@Override
-	final protected boolean isCommandChanged() {
+	protected final boolean isCommandChanged() {
 		return rbcommandOld != rbcommand;
 	}
 
 	@Override
-	final protected void setCommandChanged(boolean b) {
+	protected final void setCommandChanged(boolean b) {
 		rbcommandOld = rbcommand;
-
 	}
 
 	@Override
-	final protected boolean isCommandNull() {
+	protected final boolean isCommandNull() {
 		return rbcommand == null;
 	}
 
-	final protected String getLanguage(Locale locale) {
+	protected final String getLanguage(Locale locale) {
 		return locale.getLanguage();
 	}
 
-	final protected String getCountry(Locale locale) {
+	protected final String getCountry(Locale locale) {
 		return locale.getCountry();
 	}
 
@@ -400,7 +405,8 @@ public abstract class LocalizationJre extends Localization {
 					// A closer, more general match found
 					match = language;
 					generalScore = supportedLocaleSubtags.size();
-				} else if (generalScore == 0 && supportedLocaleSubtags.containsAll(subtags)
+				} else if (generalScore == 0
+						&& supportedLocaleSubtags.containsAll(subtags)
 						&& supportedLocaleSubtags.size() < specificScore) {
 					// A closer more specific match found, and no general match found
 					specificScore = supportedLocaleSubtags.size();

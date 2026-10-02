@@ -2,24 +2,24 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.spreadsheet.style;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
@@ -29,17 +29,17 @@ import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SpreadsheetStylingTest extends BaseAppTestSetup {
+class SpreadsheetStylingTest extends BaseAppTestSetup {
 
 	private SpreadsheetStyling styling;
 
 	@BeforeEach
-	public void setup() {
+	void setup() {
 		styling = new SpreadsheetStyling();
 	}
 
 	@Test
-	public void changeShouldApplyToAllCells() {
+	void changeShouldApplyToAllCells() {
 		TabularRange column = new TabularRange(-1, 1, -1, 1);
 		styling.setTextAlignment(SpreadsheetStyling.TextAlignment.CENTERED, List.of(column));
 		TabularRange row = new TabularRange(5, -1, 5, -1);
@@ -57,7 +57,7 @@ public class SpreadsheetStylingTest extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testXml() {
+	void testXml() {
 		TabularRange column = new TabularRange(-1, 1, -1, 1);
 		styling.setTextAlignment(SpreadsheetStyling.TextAlignment.CENTERED, List.of(column));
 
@@ -68,7 +68,7 @@ public class SpreadsheetStylingTest extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testTextColor() {
+	void testTextColor() {
 		List<TabularRange> ranges = List.of(new TabularRange(1, 2));
 		styling.setTextColor(GColor.RED, ranges);
 		assertEquals("2,1,t," + GColor.RED.getARGB(), styling.getCellFormatXml());

@@ -16,18 +16,19 @@
 
 package org.geogebra.web.full.gui.components;
 
-import static org.geogebra.common.properties.PropertyView.*;
+import static org.geogebra.common.properties.PropertyView.ConfigurationUpdateDelegate;
+import static org.geogebra.common.properties.PropertyView.Slider;
 
 import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.main.AppW;
-import org.geogebra.web.html5.util.sliderPanel.SliderPanelW;
+import org.geogebra.web.html5.util.sliderPanel.SliderW;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 
-public class ComponentSlider extends FlowPanel implements ConfigurationUpdateDelegate {
+public final class ComponentSlider extends FlowPanel implements ConfigurationUpdateDelegate {
 	private final AppW appW;
 	private final Slider sliderProperty;
-	private SliderPanelW sliderPanel;
+	private SliderW sliderPanel;
 	private Label displayValue;
 
 	/**
@@ -46,8 +47,8 @@ public class ComponentSlider extends FlowPanel implements ConfigurationUpdateDel
 	private void buildSlider() {
 		Label sliderLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(
 				appW.getLocalization().getMenu(sliderProperty.getLabel()), "sliderLabel");
-		displayValue = BaseWidgetFactory.INSTANCE.newPrimaryText(
-				sliderProperty.getDisplayValue(), "displayValue");
+		displayValue =
+				BaseWidgetFactory.INSTANCE.newPrimaryText(sliderProperty.getDisplayValue(), "displayValue");
 
 		FlowPanel labelDisplayHolder = new FlowPanel();
 		labelDisplayHolder.addStyleName("labelPreviewHolder");
@@ -60,14 +61,12 @@ public class ComponentSlider extends FlowPanel implements ConfigurationUpdateDel
 	}
 
 	private void initSlider() {
-		sliderPanel = new SliderPanelW(sliderProperty.getMin(), sliderProperty.getMax(),
-				appW.getKernel(), false);
+		sliderPanel = new SliderW(sliderProperty.getMin(), sliderProperty.getMax());
 		sliderPanel.setStep(sliderProperty.getStep());
 		sliderPanel.setValue((double) sliderProperty.getValue());
-		sliderPanel.getSlider().addStyleName("slider");
-		sliderPanel.getSlider().addValueChangeHandler(event ->
-				onInputChange(sliderPanel.getValue()));
-		sliderPanel.getSlider().addInputHandler(() -> onInputChange(sliderPanel.getValue()));
+		sliderPanel.addStyleName("slider");
+		sliderPanel.addValueChangeHandler(event -> onInputChange(sliderPanel.getValue()));
+		sliderPanel.addInputHandler(() -> onInputChange(sliderPanel.getValue()));
 	}
 
 	private void onInputChange(double val) {
@@ -78,8 +77,8 @@ public class ComponentSlider extends FlowPanel implements ConfigurationUpdateDel
 	@Override
 	public void configurationUpdated() {
 		sliderPanel.setValue((double) sliderProperty.getValue());
-		sliderPanel.setMinimum(sliderProperty.getMin(), false);
-		sliderPanel.setMaximum(sliderProperty.getMax(), false);
+		sliderPanel.setMinimum(sliderProperty.getMin());
+		sliderPanel.setMaximum(sliderProperty.getMax());
 		sliderPanel.setStep(sliderProperty.getStep());
 		displayValue.setText(sliderProperty.getDisplayValue());
 	}

@@ -22,17 +22,17 @@ import org.geogebra.common.kernel.StringTemplate;
 /**
  * Dummy GeoElement to be used for symbolic variable resolving for the GeoGebra
  * CAS.
- * 
+ *
  * @see org.geogebra.common.kernel.arithmetic.SymbolicMode
  * @author Markus Hohenwarter
  */
 public class GeoDummyVariable extends GeoNumeric {
 
-	private String varName;
+	private final String varName;
 
 	/**
 	 * Creates new dummy variable
-	 * 
+	 *
 	 * @param c
 	 *            construction
 	 * @param varName

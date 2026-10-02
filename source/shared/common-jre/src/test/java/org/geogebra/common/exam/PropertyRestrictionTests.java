@@ -16,74 +16,75 @@
 
 package org.geogebra.common.exam;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.geogebra.common.BaseUnitTest;
+import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.restrictions.PropertyRestriction;
-import org.junit.Test;
+import org.geogebra.test.BaseAppTestSetup;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class PropertyRestrictionTests extends BaseUnitTest {
-    private TestEnumeratedProperty enumeratedProperty;
+class PropertyRestrictionTests extends BaseAppTestSetup {
+	private TestEnumeratedProperty enumeratedProperty;
 
-    @Override
-    public void setup() {
-        super.setup();
-        enumeratedProperty = new TestEnumeratedProperty(getLocalization(),
-                "Test property",
-                List.of("value1", "value2", "value3"));
-    }
+	@BeforeEach
+	void setup() {
+		setupApp(SuiteSubApp.GRAPHING);
+		enumeratedProperty = new TestEnumeratedProperty(
+				getLocalization(), "Test property", List.of("value1", "value2", "value3"));
+	}
 
-    @Test
-    public void testRestrictionWithPropertyFreeze() {
-        PropertyRestriction propertyRestriction = new PropertyRestriction(true, null);
+	@Test
+	void testRestrictionWithPropertyFreeze() {
+		PropertyRestriction propertyRestriction = new PropertyRestriction(true, null);
 
-        propertyRestriction.applyTo(enumeratedProperty);
-        assertTrue(enumeratedProperty.isFrozen());
+		propertyRestriction.applyTo(enumeratedProperty);
+		assertTrue(enumeratedProperty.isFrozen());
 
-        propertyRestriction.removeFrom(enumeratedProperty);
-        assertFalse(enumeratedProperty.isFrozen());
-    }
+		propertyRestriction.removeFrom(enumeratedProperty);
+		assertFalse(enumeratedProperty.isFrozen());
+	}
 
-    @Test
-    public void testRestrictionWithValueFilter() {
-        PropertyRestriction propertyRestriction1 =
-                new PropertyRestriction(false, value -> value != "value1");
-        PropertyRestriction propertyRestriction2 =
-                new PropertyRestriction(false, value -> value != "value2");
+	@Test
+	void testRestrictionWithValueFilter() {
+		PropertyRestriction propertyRestriction1 =
+				new PropertyRestriction(false, value -> value != "value1");
+		PropertyRestriction propertyRestriction2 =
+				new PropertyRestriction(false, value -> value != "value2");
 
-        propertyRestriction1.applyTo(enumeratedProperty);
-        assertEquals(List.of("value2", "value3"), enumeratedProperty.getValues());
+		propertyRestriction1.applyTo(enumeratedProperty);
+		assertEquals(List.of("value2", "value3"), enumeratedProperty.getValues());
 
-        propertyRestriction2.applyTo(enumeratedProperty);
-        assertEquals(List.of("value3"), enumeratedProperty.getValues());
+		propertyRestriction2.applyTo(enumeratedProperty);
+		assertEquals(List.of("value3"), enumeratedProperty.getValues());
 
-        propertyRestriction1.removeFrom(enumeratedProperty);
-        assertEquals(List.of("value1", "value3"), enumeratedProperty.getValues());
+		propertyRestriction1.removeFrom(enumeratedProperty);
+		assertEquals(List.of("value1", "value3"), enumeratedProperty.getValues());
 
-        propertyRestriction2.removeFrom(enumeratedProperty);
-        assertEquals(List.of("value1", "value2", "value3"), enumeratedProperty.getValues());
-    }
+		propertyRestriction2.removeFrom(enumeratedProperty);
+		assertEquals(List.of("value1", "value2", "value3"), enumeratedProperty.getValues());
+	}
 
-    private static final class TestEnumeratedProperty extends AbstractEnumeratedProperty<String> {
-        public TestEnumeratedProperty(Localization localization, String name, List<String> values) {
-            super(localization, name);
-            setValues(values);
-        }
+	private static final class TestEnumeratedProperty extends AbstractEnumeratedProperty<String> {
+		TestEnumeratedProperty(Localization localization, String name, List<String> values) {
+			super(localization, name);
+			setValues(values);
+		}
 
-        @Override
-        protected void doSetValue(String value) {
-            // always ""
-        }
+		@Override
+		protected void doSetValue(String value) {
+			// always ""
+		}
 
-        @Override
-        public String getValue() {
-            return "";
-        }
-    }
+		@Override
+		public String getValue() {
+			return "";
+		}
+	}
 }

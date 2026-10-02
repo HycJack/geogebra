@@ -22,7 +22,7 @@ import org.gwtproject.dom.style.shared.Unit;
 /**
  * Resizing utilities
  */
-public class Resizer {
+public final class Resizer {
 
 	/**
 	 * @param element
@@ -35,5 +35,4 @@ public class Resizer {
 			element.getStyle().setWidth(width, Unit.PX);
 		}
 	}
-
 }

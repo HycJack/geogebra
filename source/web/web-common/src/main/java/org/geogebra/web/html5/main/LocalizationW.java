@@ -17,6 +17,7 @@
 package org.geogebra.web.html5.main;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.gui.SetLabels;
@@ -48,7 +49,7 @@ public final class LocalizationW extends Localization {
 	/**
 	 * Default locale string
 	 */
-	public final static String DEFAULT_LANGUAGE = "en";
+	public static final String DEFAULT_LANGUAGE = "en";
 
 	// must be updated whenever localeStr changes
 	// (cached for speed)
@@ -89,22 +90,22 @@ public final class LocalizationW extends Localization {
 	 * @return translation or English if translation not found; fallback is
 	 *         empty string
 	 */
-	public String getPropertyNative(String language, String key,
-	        String section) {
+	public String getPropertyNative(String language, String key, String section) {
 		// null check needed for tests
-		if (Js.isFalsy(GeoGebraGlobal.__GGB__keysVar)
-			|| GeoGebraGlobal.__GGB__keysVar == null) {
+		if (Js.isFalsy(GeoGebraGlobal.__GGB__keysVar) || GeoGebraGlobal.__GGB__keysVar == null) {
 			return "";
 		}
 
-		if (Js.isTruthy(GeoGebraGlobal.__GGB__keysVar.get(language))) {
-			// translated
-			return GeoGebraGlobal.__GGB__keysVar.get(language).get(section).get(key);
-		} else if (Js.isTruthy(GeoGebraGlobal.__GGB__keysVar.get("en"))) {
-			// translated
-			return GeoGebraGlobal.__GGB__keysVar.get("en").get(section).get(key);
+		JsPropertyMap<JsPropertyMap<String>> dictionary = GeoGebraGlobal.__GGB__keysVar.get(language);
+		if (dictionary != null) {
+			return Objects.requireNonNull(dictionary.get(section)).get(key);
 		} else {
-			return "";
+			JsPropertyMap<JsPropertyMap<String>> enDictionary = GeoGebraGlobal.__GGB__keysVar.get("en");
+			if (enDictionary != null) {
+				return Objects.requireNonNull(enDictionary.get(section)).get(key);
+			} else {
+				return "";
+			}
 		}
 	}
 
@@ -117,8 +118,8 @@ public final class LocalizationW extends Localization {
 		return getPropertyWithFallback(getCommandLocaleString(), key, key, "command");
 	}
 
-	private String getPropertyWithFallback(String lang, String key,
-			String fallback, String category) {
+	private String getPropertyWithFallback(
+			String lang, String key, String fallback, String category) {
 		String ret = getPropertyNative(lang, key, category);
 		if (StringUtil.empty(ret)) {
 			if (GWT.isScript()) { // no error message in test
@@ -150,34 +151,18 @@ public final class LocalizationW extends Localization {
 	 *         items
 	 */
 	@Override
-	public String getMenu(String key) {
-		if ("undefined".equalsIgnoreCase(key)) {
-			Log.error("undefined");
-		}
+	public String getMenuDefault(String key, String fallback) {
 		if (key == null) {
 			return "";
 		}
 
 		String ret = getPropertyNative(languageTag, key, "menu");
 
-		// eg webSimple
-		if (ret == null || "".equals(ret)) {
-			// Log.debug("menu key not found: "+key);
-
-			// eg Symbol.And
-			if (key.startsWith(Localization.SYMBOL_PREFIX)) {
-				return key.substring(Localization.SYMBOL_PREFIX.length());
-			}
-
-			// eg Function.sin
-			if (key.startsWith(Localization.FUNCTION_PREFIX)) {
-				return key.substring(Localization.FUNCTION_PREFIX.length());
-			}
-			return key;
+		if (StringUtil.empty(ret)) {
+			return fallback;
 		}
 
 		return ret;
-
 	}
 
 	@Override
@@ -231,7 +216,8 @@ public final class LocalizationW extends Localization {
 	 */
 	public void setLanguage(String lang0) {
 		// these must be updated whenever language changes
-		lang = StringUtil.empty(lang0) ? Language.English_US
+		lang = StringUtil.empty(lang0)
+				? Language.English_US
 				: Language.fromLanguageTagOrLocaleString(lang0);
 		preferredTag = languageTag = lang.toLanguageTag();
 
@@ -269,22 +255,20 @@ public final class LocalizationW extends Localization {
 	 *            app version
 	 * @return true when available
 	 */
-	static boolean loadPropertiesFromStorage(String lang0,
-			String version) {
+	static boolean loadPropertiesFromStorage(String lang0, String version) {
 		String translationJson = BrowserStorage.LOCAL.getItem("translation");
 		if (Js.isTruthy(translationJson)) {
 			try {
-				JsPropertyMap<Object>
-						storedTranslation = Js.uncheckedCast(Global.JSON.parse(translationJson));
-				if (version.length() > 0 && Js.isTruthy(storedTranslation)
+				JsPropertyMap<Object> storedTranslation =
+						Js.uncheckedCast(Global.JSON.parse(translationJson));
+				if (version.length() > 0
+						&& Js.isTruthy(storedTranslation)
 						&& !version.equals(storedTranslation.get("version"))) {
 					storedTranslation = null;
 				}
-				if (storedTranslation != null
-						&& Js.isTruthy(storedTranslation.get(lang0))) {
+				if (storedTranslation != null && Js.isTruthy(storedTranslation.get(lang0))) {
 					GeoGebraGlobal.__GGB__keysVar = JsPropertyMap.of();
-					GeoGebraGlobal.__GGB__keysVar.set(lang0,
-							Js.uncheckedCast(storedTranslation.get(lang0)));
+					GeoGebraGlobal.__GGB__keysVar.set(lang0, Js.uncheckedCast(storedTranslation.get(lang0)));
 					return true;
 				}
 			} catch (Throwable e) {
@@ -326,8 +310,7 @@ public final class LocalizationW extends Localization {
 	 */
 	public void loadScript(final Language language, final HasLanguage app) {
 		preferredTag = language.toLanguageTag();
-		if (LocalizationW.loadPropertiesFromStorage(preferredTag,
-				GeoGebraConstants.VERSION_STRING)) {
+		if (LocalizationW.loadPropertiesFromStorage(preferredTag, GeoGebraConstants.VERSION_STRING)) {
 			app.doSetLanguage(preferredTag, false);
 		} else {
 			// load keys (into a JavaScript <script> tag)
@@ -362,12 +345,9 @@ public final class LocalizationW extends Localization {
 					canceled = true;
 					preferredTag = languageTag;
 				}
-
 			};
-			JavaScriptInjector.loadJS(url + "js/properties_keys_" + preferredTag + ".js",
-					scriptCallback);
+			JavaScriptInjector.loadJS(url + "js/properties_keys_" + preferredTag + ".js", scriptCallback);
 		}
-
 	}
 
 	private void saveLanguageToSettings(String lang0) {

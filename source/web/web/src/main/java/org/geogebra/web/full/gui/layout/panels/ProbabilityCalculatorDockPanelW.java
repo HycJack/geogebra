@@ -21,15 +21,16 @@ import org.geogebra.web.full.gui.layout.DockPanelW;
 import org.geogebra.web.full.gui.view.probcalculator.ProbabilityCalculatorViewW;
 import org.geogebra.web.full.main.AppWFull;
 import org.gwtproject.resources.client.ResourcePrototype;
+import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Widget;
 
 /**
  * @author gabor
- * 
+ *
  *         ProabilityCalculator dockpanel for Web
  *
  */
-public class ProbabilityCalculatorDockPanelW extends DockPanelW {
+public final class ProbabilityCalculatorDockPanelW extends DockPanelW {
 
 	/**
 	 * default width of this panel
@@ -41,7 +42,8 @@ public class ProbabilityCalculatorDockPanelW extends DockPanelW {
 	 *            App Creates panel
 	 */
 	public ProbabilityCalculatorDockPanelW(AppWFull app) {
-		super(App.VIEW_PROBABILITY_CALCULATOR,
+		super(
+				App.VIEW_PROBABILITY_CALCULATOR,
 				app.isSuite() ? null : "0", // toolbar string - move tool only, force!
 				true);
 
@@ -53,15 +55,17 @@ public class ProbabilityCalculatorDockPanelW extends DockPanelW {
 	public void onResize() {
 		super.onResize();
 		if (app.getGuiManager().hasProbabilityCalculator()) {
-			((ProbabilityCalculatorViewW) app.getGuiManager()
-					.getProbabilityCalculator()).onResize();
+			((ProbabilityCalculatorViewW) app.getGuiManager().getProbabilityCalculator()).onResize();
 		}
 	}
 
 	@Override
 	protected Widget loadComponent() {
-		return ((ProbabilityCalculatorViewW) app.getGuiManager()
-				.getProbabilityCalculator()).getWrapperPanel();
+		if (!app.supportsView(App.VIEW_PROBABILITY_CALCULATOR)) {
+			return new FlowPanel();
+		}
+		return ((ProbabilityCalculatorViewW) app.getGuiManager().getProbabilityCalculator())
+				.getWrapperPanel();
 	}
 
 	@Override
@@ -89,8 +93,8 @@ public class ProbabilityCalculatorDockPanelW extends DockPanelW {
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		if (visible) {
-			((ProbabilityCalculatorViewW) app.getGuiManager()
-					.getProbabilityCalculator()).createGeoElements();
+			((ProbabilityCalculatorViewW) app.getGuiManager().getProbabilityCalculator())
+					.createGeoElements();
 		}
 	}
 }

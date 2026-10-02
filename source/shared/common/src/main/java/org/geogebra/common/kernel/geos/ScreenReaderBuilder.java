@@ -28,7 +28,7 @@ import com.himamis.retex.renderer.share.serialize.TeXAtomSerializer;
 
 /**
  * String builder wrapper for screen reader; avoids double spaces and dots.
- * 
+ *
  * @author Zbynek
  */
 public class ScreenReaderBuilder {
@@ -56,7 +56,7 @@ public class ScreenReaderBuilder {
 
 	/**
 	 * Append string, make sure . is followed by space.
-	 * 
+	 *
 	 * @param o
 	 *            string to be appended
 	 */
@@ -95,7 +95,7 @@ public class ScreenReaderBuilder {
 	protected StringBuilder getStringBuilder() {
 		return sb;
 	}
-	
+
 	/**
 	 *
 	 * @return whether the user is on mobile or desktop
@@ -167,13 +167,13 @@ public class ScreenReaderBuilder {
 	private static void appendNamedPrime(StringBuilder sb, int count, Localization loc) {
 		sb.append(" ");
 		if (count == 2) {
-			sb.append(loc.getMenu("double"));
-			sb.append(" ");
+			sb.append(loc.getMenuDefault("ScreenReader.doublePrime", "double prime"));
 		} else if (count == 3) {
-			sb.append(loc.getMenu("triple"));
-			sb.append(" ");
+			sb.append(loc.getMenuDefault("ScreenReader.triplePrime", "triple prime"));
+		} else {
+			sb.append(getPrime(loc));
 		}
-		sb.append(getPrime(loc));
+		sb.append(" ");
 	}
 
 	private static void appendManyPrimes(StringBuilder sb, int count, Localization loc) {
@@ -181,10 +181,11 @@ public class ScreenReaderBuilder {
 			sb.append(" ");
 			sb.append(getPrime(loc));
 		}
+		sb.append(" ");
 	}
 
 	private static String getPrime(Localization loc) {
-		return loc.getMenu("prime");
+		return loc.getMenuDefault("ScreenReader.prime", "prime");
 	}
 
 	protected void appendDegreeIfNeeded(GeoElementND geo, String valueString) {

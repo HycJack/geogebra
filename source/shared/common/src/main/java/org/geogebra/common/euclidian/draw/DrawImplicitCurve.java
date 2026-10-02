@@ -26,6 +26,7 @@ import org.geogebra.common.euclidian.EuclidianViewBoundsImp;
 import org.geogebra.common.euclidian.plot.GeneralPathClippedForCurvePlotter;
 import org.geogebra.common.euclidian.plot.implicit.BernsteinPlotter;
 import org.geogebra.common.euclidian.plot.implicit.CoordSystemAnimatedPlotter;
+import org.geogebra.common.euclidian.plot.implicit.CurveSignature;
 import org.geogebra.common.kernel.arithmetic.bernstein.BernsteinPolynomialConverter;
 import org.geogebra.common.kernel.implicit.GeoImplicit;
 import org.geogebra.common.main.PreviewFeature;
@@ -38,7 +39,7 @@ public class DrawImplicitCurve extends DrawLocus {
 	private CoordSystemAnimatedPlotter bernsteinPlotter;
 	private final GeoImplicit implicitCurve;
 	private final boolean bernsteinBasedPlotter;
-	private GeneralPathClippedForCurvePlotter gp;
+	GeneralPathClippedForCurvePlotter gp;
 
 	// private int fillSign; //0=>no filling, only curve -1=>fill the negative
 	// part, 1=>fill positive part
@@ -49,8 +50,11 @@ public class DrawImplicitCurve extends DrawLocus {
 	 * @param implicitCurve implicit curve
 	 */
 	public DrawImplicitCurve(EuclidianView view, GeoImplicit implicitCurve) {
-		this(view, implicitCurve, PreviewFeature.isAvailable(IMPLICIT_PLOTTER)
-				&& BernsteinPolynomialConverter.iSupported(implicitCurve.toGeoElement()));
+		this(
+				view,
+				implicitCurve,
+				PreviewFeature.isAvailable(IMPLICIT_PLOTTER)
+						&& BernsteinPolynomialConverter.isSupported(implicitCurve.toGeoElement()));
 	}
 
 	/**
@@ -58,10 +62,9 @@ public class DrawImplicitCurve extends DrawLocus {
 	 * @param view view
 	 * @param implicitCurve implicit curve
 	 */
-	public DrawImplicitCurve(EuclidianView view, GeoImplicit implicitCurve,
-			boolean bernsteinBasedPlotter) {
-		super(view, implicitCurve.getLocus(),
-				implicitCurve.getTransformedCoordSys());
+	public DrawImplicitCurve(
+			EuclidianView view, GeoImplicit implicitCurve, boolean bernsteinBasedPlotter) {
+		super(view, implicitCurve.getLocus(), implicitCurve.getTransformedCoordSys());
 		this.view = view;
 		this.implicitCurve = implicitCurve;
 		this.geo = implicitCurve.toGeoElement();
@@ -69,18 +72,21 @@ public class DrawImplicitCurve extends DrawLocus {
 
 		if (this.bernsteinBasedPlotter) {
 			createBernsteinPlotter();
-		} else {
-			update();
 		}
+		// updating visibility flags, strokes and traces needed with both plotters
+		update();
 	}
 
 	private void createBernsteinPlotter() {
 		gp = new GeneralPathClippedForCurvePlotter(view);
-		bernsteinPlotter = new BernsteinPlotter(geo, new EuclidianViewBoundsImp(view),
-				gp, implicitCurve.getTransformedCoordSys());
+		bernsteinPlotter = new BernsteinPlotter(
+				geo,
+				new EuclidianViewBoundsImp(view),
+				gp,
+				implicitCurve.getTransformedCoordSys(),
+				new CurveSignature(implicitCurve));
 		if (!createdByDrawList()) {
-			view.getEuclidianController()
-					.addZoomerAnimationListener(bernsteinPlotter, geo);
+			view.getEuclidianController().addZoomerAnimationListener(bernsteinPlotter, geo);
 		}
 	}
 

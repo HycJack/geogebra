@@ -27,6 +27,7 @@ public class DefaultSerializationAdapter implements SerializationAdapter {
 		return left + base + right;
 	}
 
+	@Override
 	public String sqrt(String base) {
 		return "sqrt(" + base + ")";
 	}
@@ -44,14 +45,12 @@ public class DefaultSerializationAdapter implements SerializationAdapter {
 
 	@Override
 	public String fraction(String numerator, String denominator) {
-		return "(" + numerator + ")/("
-				+ denominator + ")";
+		return "(" + numerator + ")/(" + denominator + ")";
 	}
 
 	@Override
 	public String nroot(String base, String root) {
-		return "nroot(" + base + ","
-				+ root + ")";
+		return "nroot(" + base + "," + root + ")";
 	}
 
 	@Override
@@ -62,11 +61,12 @@ public class DefaultSerializationAdapter implements SerializationAdapter {
 	@Override
 	public String getLigature(String toString) {
 		switch (toString) {
-		case "\u0338=":
-			return "\u2260";
-		case "\u0338\u2208":
-			return "\u2209";
-		default: return null;
+			case "\u0338=":
+				return "\u2260";
+			case "\u0338\u2208":
+				return "\u2209";
+			default:
+				return null;
 		}
 	}
 
@@ -78,5 +78,45 @@ public class DefaultSerializationAdapter implements SerializationAdapter {
 	@Override
 	public TableAdapter getTableAdapter() {
 		return new TableAdapter();
+	}
+
+	@Override
+	public String segment(String base) {
+		return "Segment " + base;
+	}
+
+	@Override
+	public String vector(String content) {
+		return "vector " + content;
+	}
+
+	@Override
+	public String circled(String serialize) {
+		return "circled " + serialize;
+	}
+
+	@Override
+	public String under(String decoration, String base) {
+		return decoration + " under " + base;
+	}
+
+	@Override
+	public String over(String decoration, String base) {
+		return decoration + " over " + base;
+	}
+
+	@Override
+	public String blank() {
+		return "blank";
+	}
+
+	@Override
+	public String operatorFromTo(String operator, String from, String to) {
+		return operator + " from " + from + " to " + to;
+	}
+
+	@Override
+	public String hyperbolic(String baseName) {
+		return baseName + "h";
 	}
 }

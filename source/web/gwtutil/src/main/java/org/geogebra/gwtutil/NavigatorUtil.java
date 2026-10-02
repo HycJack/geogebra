@@ -21,7 +21,9 @@ import java.util.Locale;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.URLSearchParams;
 
-public class NavigatorUtil {
+public final class NavigatorUtil {
+
+	private NavigatorUtil() {}
 
 	/**
 	 * @return whether app is running in a mobile browser
@@ -91,18 +93,30 @@ public class NavigatorUtil {
 		return new URLSearchParams(DomGlobal.location.search).get(name);
 	}
 
+	/**
+	 * @return window width in pixels
+	 */
 	public static int getWindowWidth() {
 		return DomGlobal.document.documentElement.clientWidth;
 	}
 
+	/**
+	 * @return window height in pixels
+	 */
 	public static int getWindowHeight() {
 		return DomGlobal.document.documentElement.clientHeight;
 	}
 
+	/**
+	 * @return left scroll offset in pixels
+	 */
 	public static int getWindowScrollLeft() {
 		return (int) DomGlobal.document.documentElement.scrollLeft;
 	}
 
+	/**
+	 * @return top scroll offset in pixels
+	 */
 	public static int getWindowScrollTop() {
 		return (int) DomGlobal.document.documentElement.scrollTop;
 	}

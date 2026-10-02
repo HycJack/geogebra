@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -19,21 +19,21 @@ package org.geogebra.common.main;
 import static org.geogebra.common.awt.GColor.BLACK;
 import static org.geogebra.test.OrderingComparison.greaterThan;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.kernel.AutoColor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GColorTest {
+class GColorTest {
 
 	@Test
-	public void colorParserShouldAcceptRGB() {
+	void colorParserShouldAcceptRGB() {
 		GColor color = GColor.parseHexColor("#123");
 		assertEquals(16, color.getRed());
 		assertEquals(32, color.getGreen());
@@ -42,7 +42,7 @@ public class GColorTest {
 	}
 
 	@Test
-	public void colorParserShouldAcceptRGBA() {
+	void colorParserShouldAcceptRGBA() {
 		GColor color = GColor.parseHexColor("#1234");
 		assertEquals(16, color.getRed());
 		assertEquals(32, color.getGreen());
@@ -51,7 +51,7 @@ public class GColorTest {
 	}
 
 	@Test
-	public void colorParserShouldAcceptRRGGBB() {
+	void colorParserShouldAcceptRRGGBB() {
 		GColor color = GColor.parseHexColor("#010203");
 		assertEquals(1, color.getRed());
 		assertEquals(2, color.getGreen());
@@ -60,7 +60,7 @@ public class GColorTest {
 	}
 
 	@Test
-	public void colorParserShouldAcceptRRGGBBAA() {
+	void colorParserShouldAcceptRRGGBBAA() {
 		GColor color = GColor.parseHexColor("#01020304");
 		assertEquals(1, color.getRed());
 		assertEquals(2, color.getGreen());
@@ -69,7 +69,7 @@ public class GColorTest {
 	}
 
 	@Test
-	public void testLuminance() {
+	void testLuminance() {
 		assertEquals(1.0, GColor.WHITE.getLuminance(), 0.01);
 		assertEquals(0, GColor.BLACK.getLuminance(), 0.01);
 		assertEquals(0.0722, GColor.BLUE.getLuminance(), 0.01);
@@ -78,7 +78,7 @@ public class GColorTest {
 	}
 
 	@Test
-	public void testContrast() {
+	void testContrast() {
 		assertEquals(21.0, GColor.WHITE.getContrast(GColor.BLACK), 0.01);
 		assertEquals(21.0, GColor.BLACK.getContrast(GColor.WHITE), 0.01);
 		for (int i = 0; i < 10; i++) {
@@ -88,10 +88,11 @@ public class GColorTest {
 	}
 
 	@Test
-	public void testContrastAll() {
+	void testContrastAll() {
 		double contrast = 10;
 		GColor leastContrast = BLACK;
-		List<String> lines = new ArrayList<>(List.of("<style>",
+		List<String> lines = new ArrayList<>(List.of(
+				"<style>",
 				"div {",
 				"height:30px;",
 				"width:200px;",
@@ -102,7 +103,6 @@ public class GColorTest {
 				"margin: 10px;",
 				"border-radius: 4px;",
 				"}",
-
 				"body {",
 				"display: flex;",
 				"flex-wrap: wrap;",
@@ -116,8 +116,8 @@ public class GColorTest {
 					GColor base = GColor.newColor(r, g, b);
 					GColor border = GColor.getBorderColorFrom(base);
 					double contrast1 = base.getContrast(border);
-					lines.add("<div style=\"background-color:" + base + ";border-color:" + border
-										+ "\">" + contrast1 + "</div>");
+					lines.add("<div style=\"background-color:" + base + ";border-color:" + border + "\">"
+							+ contrast1 + "</div>");
 					if (contrast > contrast1 && BLACK.getContrast(base) > 2.5) {
 						contrast = contrast1;
 						leastContrast = base;
@@ -125,11 +125,12 @@ public class GColorTest {
 				}
 			}
 		}
-		assertTrue(leastContrast + "\n"
-				+ GColor.getBorderColorFrom(leastContrast).toString() + ": " + contrast,
-				contrast >= 2);
+		assertTrue(
+				contrast >= 2,
+				leastContrast + "\n" + GColor.getBorderColorFrom(leastContrast).toString() + ": "
+						+ contrast);
 		assertFalse(String.join("\n", lines).contains("NaN"));
 		// This test can be used to generate a report like this:
-		//Files.writeString(Path.of("build/divs.html"), String.join("\n", lines));
+		// Files.writeString(Path.of("build/divs.html"), String.join("\n", lines));
 	}
 }

@@ -21,10 +21,10 @@ import org.geogebra.common.util.StringUtil;
 /**
  * Input control with more button
  */
-public class InputMoreControl implements InputItemControl {
+public final class InputMoreControl implements InputItemControl {
 
 	private RadioTreeItem item;
-	
+
 	/**
 	 * @param item
 	 *            algebra view item
@@ -48,13 +48,13 @@ public class InputMoreControl implements InputItemControl {
 			item.controls.setMoreButtonVisible(false);
 		}
 	}
-	
+
 	@Override
 	public void ensureControlVisibility() {
 		if (item.controls == null) {
 			return;
 		}
-		
+
 		if (item.isInputTreeItem()) {
 			item.controls.setMoreButtonVisible(false);
 		} else {

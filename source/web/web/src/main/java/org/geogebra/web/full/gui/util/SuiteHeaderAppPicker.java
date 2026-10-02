@@ -27,11 +27,12 @@ import org.geogebra.web.html5.gui.util.NoDragImage;
 import org.geogebra.web.html5.gui.view.button.StandardButton;
 import org.geogebra.web.html5.gui.zoompanel.FocusableWidget;
 import org.geogebra.web.html5.main.AppW;
+import org.geogebra.web.html5.util.TestHarness;
 import org.geogebra.web.shared.GlobalHeader;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.RootPanel;
 
-public class SuiteHeaderAppPicker extends StandardButton {
+public final class SuiteHeaderAppPicker extends StandardButton {
 	private final AppW appW;
 	private AppSwitcherPopup suitePopup;
 
@@ -56,8 +57,8 @@ public class SuiteHeaderAppPicker extends StandardButton {
 		RootPanel appPickerPanel = RootPanel.get("suiteAppPicker");
 		if (appPickerPanel != null) {
 			SuiteHeaderAppPicker suiteHeaderAppPicker = new SuiteHeaderAppPicker(app);
-			new FocusableWidget(AccessibilityGroup.SUBAPP_CHOOSER, null,
-					suiteHeaderAppPicker).attachTo(app);
+			new FocusableWidget(AccessibilityGroup.SUBAPP_CHOOSER, null, suiteHeaderAppPicker)
+					.attachTo(app);
 			appPickerPanel.add(suiteHeaderAppPicker);
 			GlobalHeader.onResize();
 			return suiteHeaderAppPicker;
@@ -68,6 +69,7 @@ public class SuiteHeaderAppPicker extends StandardButton {
 	private void createAppPickerButton(AppW app) {
 		setIconAndLabel(((AppWFull) appW).getInitialSubApp());
 		setStyleName("suiteAppPickerButton");
+		TestHarness.setAttr(this, "appPickerButton");
 		suitePopup = new AppSwitcherPopup((AppWFull) app, this);
 		suitePopup.addCloseHandler(close -> setExpanded(false));
 		addFastClickHandler(event -> {
@@ -99,6 +101,7 @@ public class SuiteHeaderAppPicker extends StandardButton {
 		NoDragImage dropDownImg =
 				new NoDragImage(MaterialDesignResources.INSTANCE.arrow_drop_down(), 24);
 		dropDownImg.setStyleName("dropDownImg");
+		dropDownImg.setAltText("");
 		this.getElement().appendChild(dropDownImg.getElement());
 		btnImage.setPresentation();
 

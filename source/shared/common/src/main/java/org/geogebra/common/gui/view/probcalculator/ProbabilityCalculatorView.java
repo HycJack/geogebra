@@ -17,11 +17,12 @@
 package org.geogebra.common.gui.view.probcalculator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeSet;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.awt.GColor;
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.gui.SetLabels;
 import org.geogebra.common.gui.view.data.PlotSettings;
@@ -72,7 +73,6 @@ import org.geogebra.common.kernel.statistics.CmdRealDistribution2Params;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.common.main.Localization;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.ProbabilityCalculatorSettings;
 import org.geogebra.common.main.settings.ProbabilityCalculatorSettings.Dist;
 import org.geogebra.common.main.settings.SettingListener;
@@ -80,14 +80,17 @@ import org.geogebra.common.plugin.EuclidianStyleConstants;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.common.util.debug.Log;
 import org.geogebra.editor.share.util.Unicode;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Common view for probability calculator
  *
  * @author gabor
  */
+@HasNativeSubclass
 public abstract class ProbabilityCalculatorView
-		implements View, SettingListener, SetLabels {
+		implements View, SettingListener<ProbabilityCalculatorSettings>, SetLabels {
 
 	public static final double PADDING_TOP_PX = 20.0;
 	private final DiscreteDistributionFactory discreteDistributionFactory;
@@ -116,7 +119,7 @@ public abstract class ProbabilityCalculatorView
 
 	private EuclidianView plotPanel;
 
-	private @CheckForNull ProbabilityTable table;
+	private @Nullable ProbabilityTable table;
 	/** enable/disable integral ---- use for testing */
 	protected boolean hasIntegral = true;
 
@@ -129,7 +132,8 @@ public abstract class ProbabilityCalculatorView
 	/**
 	 * maximum number of parameters allowed for a distribution
 	 */
-	public final static int maxParameterCount = 3;
+	public static final int maxParameterCount = 3;
+
 	protected GeoNumberValue[] parameters;
 	protected boolean isCumulative = false;
 
@@ -199,6 +203,16 @@ public abstract class ProbabilityCalculatorView
 	private GeoElement integralLeft;
 	private GeoElement integralRight;
 	private DiscreteTwoTailedGraph discreteTwoTailedGraph;
+	private final Set<Listener> listeners = new HashSet<>();
+
+	/**
+	 * Listener notified when the probability calculator view state changes in a way that may
+	 * affect dependent views.
+	 */
+	public interface Listener {
+		/** Called after the probability calculator view state has changed. */
+		void probabilityCalculatorViewChanged();
+	}
 
 	/**
 	 * @param app application
@@ -209,7 +223,7 @@ public abstract class ProbabilityCalculatorView
 		this.loc = app.getLocalization();
 		kernel = app.getKernel();
 		cons = kernel.getConstruction();
-		low = new GeoNumeric(cons, 0);
+		low = new GeoNumeric(cons, -1);
 		high = new GeoNumeric(cons, 1);
 
 		// Initialize settings and register listener
@@ -221,6 +235,26 @@ public abstract class ProbabilityCalculatorView
 		xAxis = new ProbabilityXAxis(kernel);
 		discreteDistributionFactory = new DiscreteDistributionFactory(cons);
 		updateRoundingFlags();
+	}
+
+	/**
+	 * Registers a listener for probability calculator view changes.
+	 * @param listener listener to add
+	 */
+	public void addListener(@NonNull Listener listener) {
+		listeners.add(listener);
+	}
+
+	/**
+	 * Unregisters a probability calculator view change listener.
+	 * @param listener listener to remove
+	 */
+	public void removeListener(@NonNull Listener listener) {
+		listeners.remove(listener);
+	}
+
+	private void notifyListeners() {
+		listeners.forEach(Listener::probabilityCalculatorViewChanged);
 	}
 
 	/**
@@ -240,8 +274,7 @@ public abstract class ProbabilityCalculatorView
 	 */
 	public int getDiscreteXMax() {
 		if (discreteValueList != null && discreteValueList.size() > 0) {
-			GeoNumeric geo = (GeoNumeric) discreteValueList
-					.get(discreteValueList.size() - 1);
+			GeoNumeric geo = (GeoNumeric) discreteValueList.get(discreteValueList.size() - 1);
 			return (int) geo.getDouble();
 		}
 		return -1;
@@ -282,8 +315,8 @@ public abstract class ProbabilityCalculatorView
 	 */
 	public final void setCumulative(boolean isCumulative) {
 		if (setCumulativeNoFire(isCumulative)) {
-			changeProbabilityType();
 			updateAll(true);
+			notifyListeners();
 		}
 	}
 
@@ -292,11 +325,10 @@ public abstract class ProbabilityCalculatorView
 			return false;
 		}
 		this.isCumulative = isCumulative;
+		setProbabilityMode(probMode);
 		graphType = isCumulative ? graphTypeCDF : graphTypePDF;
 		return true;
 	}
-
-	protected abstract void changeProbabilityType();
 
 	protected void validateLowHigh(int oldProbMode) {
 		if (probMode == PROB_LEFT && oldProbMode == PROB_RIGHT) {
@@ -345,21 +377,21 @@ public abstract class ProbabilityCalculatorView
 	 * @param parameters distribution parameters
 	 * @param isCumulative whether it's cumulative
 	 */
-	public void setProbabilityCalculator(Dist distributionType,
-			GeoNumberValue[] parameters, boolean isCumulative) {
+	public void setProbabilityCalculator(
+			Dist distributionType, GeoNumberValue[] parameters, boolean isCumulative) {
 		setProbabilityCalculatorNoFire(distributionType, parameters, isCumulative);
 		updateAll(true);
+		notifyListeners();
 	}
 
-	protected void setProbabilityCalculatorNoFire(Dist distributionType,
-			GeoNumberValue[] parameters, boolean isCumulative) {
+	protected void setProbabilityCalculatorNoFire(
+			Dist distributionType, GeoNumberValue[] parameters, boolean isCumulative) {
 		this.selectedDist = distributionType;
 		setCumulativeNoFire(isCumulative);
 
 		this.parameters = parameters;
 		if (parameters == null || parameters.length == 0 || parameters[0] == null) {
-			this.parameters = ProbabilityManager
-					.getDefaultParameters(selectedDist, cons);
+			this.parameters = ProbabilityManager.getDefaultParameters(selectedDist, cons);
 		}
 	}
 
@@ -394,9 +426,7 @@ public abstract class ProbabilityCalculatorView
 		if (setDefaultBounds && !isIniting) {
 			setDefaultBounds();
 		}
-		if (getResultPanel() != null) {
-			updateProbabilityType(getResultPanel());
-		}
+		updateProbabilityType(getResultPanel());
 		updateGUI();
 		updateStylebar();
 	}
@@ -404,7 +434,9 @@ public abstract class ProbabilityCalculatorView
 	/**
 	 * @return the result panel
 	 */
-	public abstract ResultPanel getResultPanel();
+	public ResultPanel getResultPanel() {
+		return null;
+	}
 
 	protected abstract void updateOutput(boolean updateDistributionView);
 
@@ -434,6 +466,14 @@ public abstract class ProbabilityCalculatorView
 
 	public boolean isCumulative() {
 		return isCumulative;
+	}
+
+	/**
+	 * @return description of the probability expression being computed
+	 */
+	public @NonNull String getProbabilityExpression() {
+		return loc.getMenu("ProbabilityOf") + "X " + (isCumulative ? Unicode.LESS_EQUAL : "=") + " k"
+				+ loc.getMenu("EndProbabilityOf");
 	}
 
 	// =================================================
@@ -484,18 +524,16 @@ public abstract class ProbabilityCalculatorView
 	private void createCumulativeSegments() {
 		// point on curve
 		GeoFunction f = densityCurve;
-		ExpressionNode highPointX = new ExpressionNode(kernel,
-				xAxis.highPoint(), Operation.XCOORD, null);
-		ExpressionNode curveY = new ExpressionNode(kernel, f,
-				Operation.FUNCTION, highPointX);
+		ExpressionNode highPointX =
+				new ExpressionNode(kernel, xAxis.highPoint(), Operation.XCOORD, null);
+		ExpressionNode curveY = new ExpressionNode(kernel, f, Operation.FUNCTION, highPointX);
 
 		MyVecNode curveVec = new MyVecNode(kernel, highPointX, curveY);
-		ExpressionNode curvePointNode = new ExpressionNode(kernel,
-				curveVec, Operation.NO_OPERATION, null);
+		ExpressionNode curvePointNode =
+				new ExpressionNode(kernel, curveVec, Operation.NO_OPERATION, null);
 		curvePointNode.setForcePoint();
 
-		AlgoDependentPoint pAlgo = new AlgoDependentPoint(cons,
-				curvePointNode, false);
+		AlgoDependentPoint pAlgo = new AlgoDependentPoint(cons, curvePointNode, false);
 		cons.removeFromConstructionList(pAlgo);
 
 		GeoPoint curvePoint = (GeoPoint) pAlgo.getOutput(0);
@@ -506,43 +544,33 @@ public abstract class ProbabilityCalculatorView
 		plotGeoList.add(curvePoint);
 
 		// create vertical line segment
-		ExpressionNode xcoord = new ExpressionNode(kernel, curvePoint,
-				Operation.XCOORD, null);
-		MyVecNode vec = new MyVecNode(kernel, xcoord,
-				new MyDouble(kernel, 0.0));
-		ExpressionNode point = new ExpressionNode(kernel, vec,
-				Operation.NO_OPERATION, null);
+		ExpressionNode xcoord = new ExpressionNode(kernel, curvePoint, Operation.XCOORD, null);
+		MyVecNode vec = new MyVecNode(kernel, xcoord, new MyDouble(kernel, 0.0));
+		ExpressionNode point = new ExpressionNode(kernel, vec, Operation.NO_OPERATION, null);
 		point.setForcePoint();
-		AlgoDependentPoint pointAlgo = new AlgoDependentPoint(cons,
-				point, false);
+		AlgoDependentPoint pointAlgo = new AlgoDependentPoint(cons, point, false);
 		cons.removeFromConstructionList(pointAlgo);
 
-		AlgoJoinPointsSegment seg1 = new AlgoJoinPointsSegment(cons,
-				curvePoint, (GeoPoint) pointAlgo.getOutput(0), null,
-				false);
+		AlgoJoinPointsSegment seg1 =
+				new AlgoJoinPointsSegment(cons, curvePoint, (GeoPoint) pointAlgo.getOutput(0), null, false);
 		GeoElement xSegment = seg1.getOutput(0);
 		xSegment.setObjColor(GeoGebraColorConstants.GEOGEBRA_OBJECT_GREY);
 		xSegment.setLineThickness(4);
-		xSegment.setLineType(
-				EuclidianStyleConstants.LINE_TYPE_DASHED_SHORT);
+		xSegment.setLineType(EuclidianStyleConstants.LINE_TYPE_DASHED_SHORT);
 		xSegment.setEuclidianVisible(showProbGeos);
 		xSegment.setFixed(true);
 		xSegment.setSelectionAllowed(false);
 		plotGeoList.add(xSegment);
 
 		// create horizontal ray
-		ExpressionNode ycoord = new ExpressionNode(kernel, curvePoint,
-				Operation.YCOORD, null);
-		MyVecNode vecy = new MyVecNode(kernel,
-				new MyDouble(kernel, 0.0), ycoord);
-		ExpressionNode pointy = new ExpressionNode(kernel, vecy,
-				Operation.NO_OPERATION, null);
+		ExpressionNode ycoord = new ExpressionNode(kernel, curvePoint, Operation.YCOORD, null);
+		MyVecNode vecy = new MyVecNode(kernel, new MyDouble(kernel, 0.0), ycoord);
+		ExpressionNode pointy = new ExpressionNode(kernel, vecy, Operation.NO_OPERATION, null);
 		pointy.setForcePoint();
 		GeoVector v = new GeoVector(cons);
 		v.setCoords(-1d, 0d, 1d);
 
-		AlgoRayPointVector seg2 = new AlgoRayPointVector(cons,
-				curvePoint, v);
+		AlgoRayPointVector seg2 = new AlgoRayPointVector(cons, curvePoint, v);
 		cons.removeFromConstructionList(seg2);
 		GeoElement ySegment = seg2.getOutput(0);
 		ySegment.setObjColor(GeoGebraColorConstants.GEOGEBRA_OBJECT_RED);
@@ -556,10 +584,8 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	private void createDensityCurve() {
-		densityCurve = buildDensityCurveExpression(selectedDist,
-				isCumulative);
-		if (isCumulative && (selectedDist == Dist.F
-				|| selectedDist == Dist.EXPONENTIAL)) {
+		densityCurve = buildDensityCurveExpression(selectedDist, isCumulative);
+		if (isCumulative && (selectedDist == Dist.F || selectedDist == Dist.EXPONENTIAL)) {
 			pdfCurve = buildDensityCurveExpression(selectedDist, false);
 			cons.removeFromConstructionList(pdfCurve);
 		}
@@ -573,8 +599,7 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	private void createOverlay() {
-		Double[] m = probManager.getDistributionMeasures(selectedDist,
-				parameters);
+		Double[] m = probManager.getDistributionMeasures(selectedDist, parameters);
 		if (m[0] != null && m[1] != null) {
 			normalOverlay = createNormalCurveOverlay(m[0], m[1]);
 			plotGeoList.add(normalOverlay);
@@ -610,10 +635,8 @@ public abstract class ProbabilityCalculatorView
 
 		ExpressionNode low1 = xAxis.getLowExpression();
 		ExpressionNode high1 = xAxis.getHighExpression();
-		ExpressionNode lowPlusOffset = new ExpressionNode(kernel, low1,
-				Operation.PLUS, offset);
-		ExpressionNode highPlusOffset = new ExpressionNode(kernel, high1,
-				Operation.PLUS, offset);
+		ExpressionNode lowPlusOffset = new ExpressionNode(kernel, low1, Operation.PLUS, offset);
+		ExpressionNode highPlusOffset = new ExpressionNode(kernel, high1, Operation.PLUS, offset);
 
 		GeoNumberValue xLow;
 		GeoNumberValue xMin;
@@ -631,13 +654,16 @@ public abstract class ProbabilityCalculatorView
 		}
 
 		if (isTwoTailedMode()) {
-			ExpressionNode xminPlusOne = new ExpressionNode(kernel,
-					xMin, Operation.PLUS, new MyDouble(kernel, 1));
-			ExpressionNode ex = new ExpressionNode(kernel,
-					new MyNumberPair(kernel,
-							new ExpressionNode(kernel,
-									xLow, Operation.EQUAL_BOOLEAN, xHigh.getNumber()),
-							xminPlusOne), Operation.IF_ELSE, xMax);
+			ExpressionNode xminPlusOne =
+					new ExpressionNode(kernel, xMin, Operation.PLUS, new MyDouble(kernel, 1));
+			ExpressionNode ex = new ExpressionNode(
+					kernel,
+					new MyNumberPair(
+							kernel,
+							new ExpressionNode(kernel, xLow, Operation.EQUAL_BOOLEAN, xHigh.getNumber()),
+							xminPlusOne),
+					Operation.IF_ELSE,
+					xMax);
 			AlgoDependentNumber algoDepNumber = getDependentNumber(ex);
 			createTwoTailedDiscreteGraph(capMax(xMin), capMax(algoDepNumber.getNumber()));
 		} else {
@@ -647,8 +673,7 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	protected AlgoDependentNumber getDependentNumber(ExpressionNode expr) {
-		return new AlgoDependentNumber(cons,
-				expr, false, null, false);
+		return new AlgoDependentNumber(cons, expr, false, null, false);
 	}
 
 	private void createSimpleDiscreteGraph(GeoNumberValue xMin, GeoNumberValue xMax) {
@@ -667,8 +692,7 @@ public abstract class ProbabilityCalculatorView
 		discreteTwoTailedGraph.removeFrom(plotGeoList);
 	}
 
-	private void createTwoTailedDiscreteGraph(GeoNumberValue xMin,
-			GeoNumberValue xMax) {
+	private void createTwoTailedDiscreteGraph(GeoNumberValue xMin, GeoNumberValue xMax) {
 		GeoNumeric left = new GeoNumeric(cons, 1);
 		GeoList leftValues = takeSubList(discreteValueList, left, xMin);
 		GeoList rightValues = takeSubList(discreteValueList, xMax, null);
@@ -760,8 +784,7 @@ public abstract class ProbabilityCalculatorView
 		GeoBoolean t = new GeoBoolean(cons);
 		t.setValue(true);
 
-		AlgoStepGraph algoStepGraph = new AlgoStepGraph(cons,
-				discreteValueList, discreteProbList, t);
+		AlgoStepGraph algoStepGraph = new AlgoStepGraph(cons, discreteValueList, discreteProbList, t);
 
 		cons.removeFromConstructionList(algoStepGraph);
 		discreteGraph = algoStepGraph.getOutput(0);
@@ -769,8 +792,7 @@ public abstract class ProbabilityCalculatorView
 
 	private void createBarChart() {
 		GeoNumeric width = new GeoNumeric(cons, graphType == GRAPH_LINE ? 0 : 1);
-		AlgoBarChart algoBarChart = new AlgoBarChart(cons, discreteValueList,
-				discreteProbList, width);
+		AlgoBarChart algoBarChart = new AlgoBarChart(cons, discreteValueList, discreteProbList, width);
 		cons.removeFromConstructionList(algoBarChart);
 		discreteGraph = algoBarChart.getOutput(0);
 	}
@@ -798,7 +820,8 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	private int getDiscreteLineThickness() {
-		return discreteIntervalGraph == null ? discreteTwoTailedGraph.getLineThickness()
+		return discreteIntervalGraph == null
+				? discreteTwoTailedGraph.getLineThickness()
 				: discreteIntervalGraph.getLineThickness();
 	}
 
@@ -855,15 +878,15 @@ public abstract class ProbabilityCalculatorView
 			validateLowHigh(oldProbMode);
 		}
 		updateProbabilityType(getResultPanel());
-		updateResult(getResultPanel());
+		updateResult();
+		notifyListeners();
 	}
 
 	private GeoElement createIntegral(GeoNumberValue low, GeoNumberValue high) {
 		GeoBoolean f = new GeoBoolean(cons);
 		f.setValue(false);
 
-		AlgoIntegralDefinite algoIntegral = new AlgoIntegralDefinite(
-				cons, densityCurve, low, high, f);
+		AlgoIntegralDefinite algoIntegral = new AlgoIntegralDefinite(cons, densityCurve, low, high, f);
 		cons.removeFromConstructionList(algoIntegral);
 
 		GeoElement output = algoIntegral.getOutput(0);
@@ -877,19 +900,20 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	private void setConditionToShow(GeoElement integral) {
-		AlgoDependentBoolean cond = new AlgoDependentBoolean(kernel.getConstruction(),
-				new ExpressionNode(kernel, xAxis.getLowExpression(), Operation.LESS_EQUAL,
-						xAxis.getHighExpression()), false);
+		AlgoDependentBoolean cond = new AlgoDependentBoolean(
+				kernel.getConstruction(),
+				new ExpressionNode(
+						kernel, xAxis.getLowExpression(), Operation.LESS_EQUAL, xAxis.getHighExpression()),
+				false);
 		try {
 			integral.setShowObjectCondition(cond.getGeoBoolean());
-		} catch (CircularDefinitionException e) {
+		} catch (CircularDefinitionException ignored) {
 			// cannot happen because condition is not depending on integral
 		}
 	}
 
 	private GeoNumberValue getXOutputFrom(ExpressionNode pointCoord) {
-		AlgoDependentNumber x = new AlgoDependentNumber(cons, pointCoord,
-				false);
+		AlgoDependentNumber x = new AlgoDependentNumber(cons, pointCoord, false);
 		cons.removeFromConstructionList(x);
 		return (GeoNumberValue) x.getOutput(0);
 	}
@@ -899,8 +923,7 @@ public abstract class ProbabilityCalculatorView
 	// =================================================
 
 	private GeoElementND createGeoFromString(String text) {
-		return kernel.getAlgebraProcessor()
-					.processAlgebraCommandNoExceptions(text, false)[0];
+		return kernel.getAlgebraProcessor().processAlgebraCommandNoExceptions(text, false)[0];
 	}
 
 	private void hideAllGeosFromViews() {
@@ -956,10 +979,8 @@ public abstract class ProbabilityCalculatorView
 
 		// remaining points
 		for (int i = 1; i < n; i++) {
-			points[2 * i - 1] = new GeoPoint(cons, null, xCoords[i],
-					yCoords[i - 1], 1.0);
-			points[2 * i] = new GeoPoint(cons, null, xCoords[i], yCoords[i],
-					1.0);
+			points[2 * i - 1] = new GeoPoint(cons, null, xCoords[i], yCoords[i - 1], 1.0);
+			points[2 * i] = new GeoPoint(cons, null, xCoords[i], yCoords[i], 1.0);
 		}
 
 		cons.setSuppressLabelCreation(suppressLabelCreation);
@@ -973,7 +994,9 @@ public abstract class ProbabilityCalculatorView
 	 * @return normal curve overlay
 	 */
 	public GeoElement createNormalCurveOverlay(double mean, double sigma) {
-		AlgoNormalDF algo = new AlgoNormalDF(cons, new GeoNumeric(cons, mean),
+		AlgoNormalDF algo = new AlgoNormalDF(
+				cons,
+				new GeoNumeric(cons, mean),
 				new GeoNumeric(cons, sigma),
 				new GeoBoolean(cons, isCumulative));
 		cons.removeFromConstructionList(algo);
@@ -997,9 +1020,8 @@ public abstract class ProbabilityCalculatorView
 	 * @return plot width and height
 	 */
 	protected double[] getPlotDimensions() {
-		return probManager.getPlotDimensions(selectedDist, parameters,
-				pdfCurve == null ? densityCurve : pdfCurve, isCumulative);
-
+		return probManager.getPlotDimensions(
+				selectedDist, parameters, pdfCurve == null ? densityCurve : pdfCurve, isCumulative);
 	}
 
 	// ============================================================
@@ -1022,8 +1044,7 @@ public abstract class ProbabilityCalculatorView
 				int decimals = Math.max(printDecimals, 4);
 				stringTemplate = StringTemplate.printDecimals(StringType.GEOGEBRA, decimals, false);
 			} else {
-				stringTemplate =
-						StringTemplate.printFigures(StringType.GEOGEBRA, printFigures, false);
+				stringTemplate = StringTemplate.printFigures(StringType.GEOGEBRA, printFigures, false);
 			}
 		}
 		return stringTemplate;
@@ -1047,7 +1068,7 @@ public abstract class ProbabilityCalculatorView
 		double xMin = d[0];
 		double xMax = d[1];
 		double yMin = d[2];
-		double yMax = d[3] + (d[3] - d[2]) * PADDING_TOP_PX / plotPanel.getHeight() ;
+		double yMax = d[3] + (d[3] - d[2]) * PADDING_TOP_PX / plotPanel.getHeight();
 
 		if (plotSettings == null) {
 			plotSettings = new PlotSettings();
@@ -1213,24 +1234,18 @@ public abstract class ProbabilityCalculatorView
 
 				if (graphType == GRAPH_LINE) {
 					expr = "BarChart["
-							+ discreteValueListCopy
-							.getLabel(StringTemplate.maxPrecision)
-							+ "," + discreteProbListCopy.getLabel(
-							StringTemplate.maxPrecision)
+							+ discreteValueListCopy.getLabel(StringTemplate.maxPrecision)
+							+ "," + discreteProbListCopy.getLabel(StringTemplate.maxPrecision)
 							+ ",0]";
 				} else if (graphType == GRAPH_BAR) {
 					expr = "BarChart["
-							+ discreteValueListCopy
-							.getLabel(StringTemplate.maxPrecision)
-							+ "," + discreteProbListCopy.getLabel(
-							StringTemplate.maxPrecision)
+							+ discreteValueListCopy.getLabel(StringTemplate.maxPrecision)
+							+ "," + discreteProbListCopy.getLabel(StringTemplate.maxPrecision)
 							+ ",1]";
 				} else if (graphType == GRAPH_STEP) {
 					expr = "StepGraph["
-							+ discreteValueListCopy
-							.getLabel(StringTemplate.maxPrecision)
-							+ "," + discreteProbListCopy.getLabel(
-							StringTemplate.maxPrecision)
+							+ discreteValueListCopy.getLabel(StringTemplate.maxPrecision)
+							+ "," + discreteProbListCopy.getLabel(StringTemplate.maxPrecision)
 							+ ",true]";
 				}
 
@@ -1260,8 +1275,7 @@ public abstract class ProbabilityCalculatorView
 							+ intervalProbList1.getLabel(tpl) + ",1]";
 				}
 
-				GeoElementND discreteIntervalGraphCopy = createGeoFromString(
-						expr);
+				GeoElementND discreteIntervalGraphCopy = createGeoFromString(expr);
 				discreteIntervalGraphCopy.setLabel(null);
 				discreteIntervalGraphCopy.setVisualStyle(discreteIntervalGraph);
 				newGeoList.add(discreteIntervalGraphCopy);
@@ -1310,19 +1324,15 @@ public abstract class ProbabilityCalculatorView
 
 			EuclidianView ev = (EuclidianView) app.getEuclidianViewById(euclidianViewID);
 
-			ev.setRealWorldCoordSystem(plotSettings.xMin, plotSettings.xMax,
-					plotSettings.yMin, plotSettings.yMax);
-			ev.setAutomaticAxesNumberingDistance(plotSettings.xAxesIntervalAuto,
-					0);
-			ev.setAutomaticAxesNumberingDistance(plotSettings.yAxesIntervalAuto,
-					1);
+			ev.setRealWorldCoordSystem(
+					plotSettings.xMin, plotSettings.xMax, plotSettings.yMin, plotSettings.yMax);
+			ev.setAutomaticAxesNumberingDistance(plotSettings.xAxesIntervalAuto, 0);
+			ev.setAutomaticAxesNumberingDistance(plotSettings.yAxesIntervalAuto, 1);
 			if (!plotSettings.xAxesIntervalAuto) {
-				ev.setAxesNumberingDistance(
-						new GeoNumeric(cons, plotSettings.xAxesInterval), 0);
+				ev.setAxesNumberingDistance(new GeoNumeric(cons, plotSettings.xAxesInterval), 0);
 			}
 			if (!plotSettings.yAxesIntervalAuto) {
-				ev.setAxesNumberingDistance(
-						new GeoNumeric(cons, plotSettings.yAxesInterval), 1);
+				ev.setAxesNumberingDistance(new GeoNumeric(cons, plotSettings.yAxesInterval), 1);
 			}
 			ev.updateBackground();
 
@@ -1337,11 +1347,12 @@ public abstract class ProbabilityCalculatorView
 		app.setDefaultCursor();
 	}
 
-	private String sublist(GeoElement discreteProbListCopy, GeoPoint lowPointCopy,
-			GeoPoint highPointCopy, StringTemplate tpl) {
-		double offset = 1
-				- discreteValueAt(0)
-				+ 0.5;
+	private String sublist(
+			GeoElement discreteProbListCopy,
+			GeoPoint lowPointCopy,
+			GeoPoint highPointCopy,
+			StringTemplate tpl) {
+		double offset = 1 - discreteValueAt(0) + 0.5;
 		String listLabel = discreteProbListCopy.getLabel(tpl);
 		if (isTwoTailedMode()) {
 			return "Join[First[" + listLabel + ", x("
@@ -1355,21 +1366,32 @@ public abstract class ProbabilityCalculatorView
 		}
 	}
 
-	private void exportIntegral(ArrayList<GeoElementND> newGeoList, GeoElement densityCurveCopy,
-			GeoPoint lowPointCopy, GeoPoint highPointCopy, StringTemplate tpl) {
+	private void exportIntegral(
+			ArrayList<GeoElementND> newGeoList,
+			GeoElement densityCurveCopy,
+			GeoPoint lowPointCopy,
+			GeoPoint highPointCopy,
+			StringTemplate tpl) {
 		if (isTwoTailedMode()) {
-			exportSingleIntegral(newGeoList, densityCurveCopy, "Corner[1]",
-					lowPointCopy.getLabel(tpl), tpl);
-			exportSingleIntegral(newGeoList, densityCurveCopy, highPointCopy.getLabel(tpl),
-					"Corner[3]", tpl);
+			exportSingleIntegral(
+					newGeoList, densityCurveCopy, "Corner[1]", lowPointCopy.getLabel(tpl), tpl);
+			exportSingleIntegral(
+					newGeoList, densityCurveCopy, highPointCopy.getLabel(tpl), "Corner[3]", tpl);
 		} else {
-			exportSingleIntegral(newGeoList, densityCurveCopy, lowPointCopy.getLabel(tpl),
-					highPointCopy.getLabel(tpl), tpl);
+			exportSingleIntegral(
+					newGeoList,
+					densityCurveCopy,
+					lowPointCopy.getLabel(tpl),
+					highPointCopy.getLabel(tpl),
+					tpl);
 		}
 	}
 
-	private void exportSingleIntegral(ArrayList<GeoElementND> newGeoList,
-			GeoElement densityCurveCopy, String lowPointLabel, String highPointLabel,
+	private void exportSingleIntegral(
+			ArrayList<GeoElementND> newGeoList,
+			GeoElement densityCurveCopy,
+			String lowPointLabel,
+			String highPointLabel,
 			StringTemplate tpl) {
 		String expr = "Integral[" + densityCurveCopy.getLabel(tpl) + ", x("
 				+ lowPointLabel + "), x("
@@ -1386,21 +1408,20 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	@Override
-	public void settingsChanged(AbstractSettings settings) {
-		ProbabilityCalculatorSettings pcSettings =
-				(ProbabilityCalculatorSettings) settings;
-		setProbabilityCalculatorNoFire(pcSettings.getDistributionType(),
-				pcSettings.getParameters(), pcSettings.isCumulative());
-		this.probMode = pcSettings.getProbMode();
-		if (pcSettings.isIntervalSet()) {
-			setLow(pcSettings.getLow());
-			setHigh(pcSettings.getHigh());
+	public void settingsChanged(ProbabilityCalculatorSettings settings) {
+		setProbabilityCalculatorNoFire(
+				settings.getDistributionType(), settings.getParameters(), settings.isCumulative());
+		this.probMode = settings.getProbMode();
+		if (settings.isIntervalSet()) {
+			setLow(settings.getLow());
+			setHigh(settings.getHigh());
 		}
-		setShowNormalOverlay(((ProbabilityCalculatorSettings) settings).isOverlayActive());
-		updateAll(!pcSettings.isIntervalSet());
+		setShowNormalOverlay(settings.isOverlayActive());
+		updateAll(!settings.isIntervalSet());
 		if (getStatCalculator() != null) {
 			getStatCalculator().settingsChanged();
 		}
+		notifyListeners();
 	}
 
 	/**
@@ -1498,9 +1519,8 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	protected double intervalProbability(double low, double high) {
-		return probManager.intervalProbability(roundIfDiscrete(low),
-				roundIfDiscrete(high),
-				selectedDist, parameters, probMode);
+		return probManager.intervalProbability(
+				roundIfDiscrete(low), roundIfDiscrete(high), selectedDist, parameters, probMode);
 	}
 
 	private double roundIfDiscrete(double value) {
@@ -1549,9 +1569,7 @@ public abstract class ProbabilityCalculatorView
 					createIntegral();
 				}
 				leftProbability = leftProbability();
-				rightProbability = rightProbability(getLow() == getHigh()
-						? getHigh()
-						: getHigh() - 1);
+				rightProbability = rightProbability(getLow() == getHigh() ? getHigh() : getHigh() - 1);
 				discreteTwoTailedGraph.updateCascade();
 			} else {
 				this.discreteIntervalGraph.updateCascade();
@@ -1573,6 +1591,7 @@ public abstract class ProbabilityCalculatorView
 				this.integral.updateCascade();
 			}
 		}
+		notifyListeners();
 	}
 
 	/**
@@ -1600,48 +1619,46 @@ public abstract class ProbabilityCalculatorView
 
 		boolean isValid = true;
 		switch (selectedDist) {
+			default:
+				Log.debug("Unknown distribution: " + selectedDist);
+				return true;
+			case STUDENT:
+			case CAUCHY:
+			case LOGISTIC:
+			case NORMAL:
+				return true;
+			case BINOMIAL:
+			case HYPERGEOMETRIC:
+				isValid = xLow >= getDiscreteXMin() && xHigh <= getDiscreteXMax();
+				break;
 
-		default:
-			Log.debug("Unknown distribution: " + selectedDist);
-			return true;
-		case STUDENT:
-		case CAUCHY:
-		case LOGISTIC:
-		case NORMAL:
-			return true;
-		case BINOMIAL:
-		case HYPERGEOMETRIC:
-			isValid = xLow >= getDiscreteXMin() && xHigh <= getDiscreteXMax();
-			break;
+			case POISSON:
+			case PASCAL:
+				isValid = xLow >= getDiscreteXMin();
+				break;
 
-		case POISSON:
-		case PASCAL:
-			isValid = xLow >= getDiscreteXMin();
-			break;
-
-		case CHISQUARE:
-		case EXPONENTIAL:
-		case GAMMA:
-		case WEIBULL:
-		case LOGNORMAL:
-			if (probMode != PROB_LEFT) {
-				isValid = xLow >= 0;
-			}
-			break;
-		case BETA:
-			if (probMode != PROB_LEFT) {
-				isValid = xLow >= 0;
-			}
-			if (probMode != PROB_RIGHT) {
-				isValid &= xHigh <= 1;
-			}
-			break;
-		case F:
-			if (probMode != PROB_LEFT) {
-				isValid = xLow > 0;
-			}
-			break;
-
+			case CHISQUARE:
+			case EXPONENTIAL:
+			case GAMMA:
+			case WEIBULL:
+			case LOGNORMAL:
+				if (probMode != PROB_LEFT) {
+					isValid = xLow >= 0;
+				}
+				break;
+			case BETA:
+				if (probMode != PROB_LEFT) {
+					isValid = xLow >= 0;
+				}
+				if (probMode != PROB_RIGHT) {
+					isValid &= xHigh <= 1;
+				}
+				break;
+			case F:
+				if (probMode != PROB_LEFT) {
+					isValid = xLow > 0;
+				}
+				break;
 		}
 
 		return isValid;
@@ -1657,79 +1674,77 @@ public abstract class ProbabilityCalculatorView
 			return false;
 		}
 		switch (selectedDist) {
+			default:
+				Log.debug("Unknown distribution");
+				return true;
+			case NORMAL:
+				return true;
+			case F:
+			case STUDENT:
+			case EXPONENTIAL:
+			case WEIBULL:
+			case POISSON:
+				if (index == 0) {
+					// all parameters must be positive
+					return parameter > 0;
+				}
+				break;
 
-		default:
-			Log.debug("Unknown distribution");
-			return true;
-		case NORMAL:
-			return true;
-		case F:
-		case STUDENT:
-		case EXPONENTIAL:
-		case WEIBULL:
-		case POISSON:
-			if (index == 0) {
-				// all parameters must be positive
-				return parameter > 0;
-			}
-			break;
+			case CAUCHY:
+			case LOGISTIC:
+				if (index == 1) {
+					// scale must be positive
+					return parameter > 0;
+				}
+				break;
 
-		case CAUCHY:
-		case LOGISTIC:
-			if (index == 1) {
-				// scale must be positive
-				return parameter > 0;
-			}
-			break;
+			case CHISQUARE:
+				if (index == 0) {
+					// df >= 1, integer
+					return Math.floor(parameter) == parameter && parameter >= 1;
+				}
+				break;
 
-		case CHISQUARE:
-			if (index == 0) {
-				// df >= 1, integer
-				return Math.floor(parameter) == parameter
-						&& parameter >= 1;
-			}
-			break;
+			case BINOMIAL:
+				if (index == 0) {
+					// n >= 0, integer
+					return Math.floor(parameter) == parameter && parameter >= 0;
+				} else if (index == 1) {
+					// p is probability value
+					return parameter >= 0 && parameter <= 1;
+				}
+				break;
 
-		case BINOMIAL:
-			if (index == 0) {
-				// n >= 0, integer
-				return Math.floor(parameter) == parameter
-						&& parameter >= 0;
-			} else if (index == 1) {
-				// p is probability value
-				return parameter >= 0 && parameter <= 1;
-			}
-			break;
+			case PASCAL:
+				if (index == 0) {
+					// n >= 1, integer
+					return Math.floor(parameter) == parameter && parameter >= 1;
+				} else if (index == 1) {
+					// p is probability value
+					return parameter >= 0 && parameter <= 1;
+				}
+				break;
 
-		case PASCAL:
-			if (index == 0) {
-				// n >= 1, integer
-				return Math.floor(parameter) == parameter
-						&& parameter >= 1;
-			} else if (index == 1) {
-				// p is probability value
-				return parameter >= 0 && parameter <= 1;
-			}
-			break;
+			case HYPERGEOMETRIC:
+				if (index == 0) {
+					// population size: N >= 1, integer
+					return Math.floor(parameter) == parameter && parameter >= 1;
+				} else if (index == 1) {
+					// successes in the population: n >= 0 and <= N, integer
+					return Math.floor(parameter) == parameter
+							&& parameter >= 0
+							&& parameter <= parameters[0].getDouble();
+				} else if (index == 2) {
+					// sample size: s>= 1 and s<= N, integer
+					return Math.floor(parameter) == parameter
+							&& parameter >= 1
+							&& parameter <= parameters[0].getDouble();
+				}
+				break;
 
-		case HYPERGEOMETRIC:
-			if (index == 0) {
-				// population size: N >= 1, integer
-				return Math.floor(parameter) == parameter && parameter >= 1;
-			} else if (index == 1) {
-				// successes in the population: n >= 0 and <= N, integer
-				return Math.floor(parameter) == parameter && parameter >= 0
-						&& parameter <= parameters[0].getDouble();
-			} else if (index == 2) {
-				// sample size: s>= 1 and s<= N, integer
-				return Math.floor(parameter) == parameter && parameter >= 1
-						&& parameter <= parameters[0].getDouble();
-			}
-			break;
-
-		// these distributions have no parameter restrictions
-		// case DIST.NORMAL:
-		// case DIST.LOGNORMAL:
+			// these distributions have no parameter restrictions
+			// case DIST.NORMAL:
+			// case DIST.LOGNORMAL:
 		}
 
 		return true;
@@ -1785,7 +1800,7 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	@Override
-	final public void updateVisualStyle(GeoElement geo, GProperty prop) {
+	public final void updateVisualStyle(GeoElement geo, GProperty prop) {
 		update(geo);
 	}
 
@@ -1840,6 +1855,9 @@ public abstract class ProbabilityCalculatorView
 		return false;
 	}
 
+	/**
+	 * @return whether the probability calculator view is showing
+	 */
 	public boolean isShowing() {
 		return app.showView(App.VIEW_PROBABILITY_CALCULATOR);
 	}
@@ -1850,8 +1868,7 @@ public abstract class ProbabilityCalculatorView
 	 * @param cumulative whether it's cumulative
 	 * @return function
 	 */
-	private GeoFunction buildDensityCurveExpression(Dist type,
-			boolean cumulative) {
+	private GeoFunction buildDensityCurveExpression(Dist type, boolean cumulative) {
 
 		GeoNumberValue param1, param2 = null;
 
@@ -1867,32 +1884,32 @@ public abstract class ProbabilityCalculatorView
 		AlgoDistributionDF ret = null;
 		GeoBoolean cumulativeGeo = new GeoBoolean(cons, cumulative);
 		switch (type) {
-		case NORMAL:
-		case STUDENT:
-		case CHISQUARE:
-		case F:
-		case CAUCHY:
-		case EXPONENTIAL:
-		case BETA:
-		case GAMMA:
-		case WEIBULL:
-			ret = CmdRealDistribution2Params.getAlgoDF(type, param1, param2, cumulativeGeo);
-			break;
-		case LOGNORMAL:
-			ret = new AlgoLogNormalDF(cons, param1, param2, cumulativeGeo);
-			break;
-		case LOGISTIC:
-			ret = new AlgoLogisticDF(cons, param1, param2, cumulativeGeo);
-			break;
+			case NORMAL:
+			case STUDENT:
+			case CHISQUARE:
+			case F:
+			case CAUCHY:
+			case EXPONENTIAL:
+			case BETA:
+			case GAMMA:
+			case WEIBULL:
+				ret = CmdRealDistribution2Params.getAlgoDF(type, param1, param2, cumulativeGeo);
+				break;
+			case LOGNORMAL:
+				ret = new AlgoLogNormalDF(cons, param1, param2, cumulativeGeo);
+				break;
+			case LOGISTIC:
+				ret = new AlgoLogisticDF(cons, param1, param2, cumulativeGeo);
+				break;
 
-		case BINOMIAL:
-		case PASCAL:
-		case POISSON:
-		case HYPERGEOMETRIC:
-			Log.error("Not continuous distribution");
-			break;
-		default:
-			Log.error("Missing case for density curve");
+			case BINOMIAL:
+			case PASCAL:
+			case POISSON:
+			case HYPERGEOMETRIC:
+				Log.error("Not continuous distribution");
+				break;
+			default:
+				Log.error("Missing case for density curve");
 		}
 
 		if (ret != null) {
@@ -1954,14 +1971,15 @@ public abstract class ProbabilityCalculatorView
 
 	protected abstract boolean isDistributionTabOpen();
 
-	protected abstract StatisticsCalculator getStatCalculator();
+	protected StatisticsCalculator getStatCalculator() {
+		return null;
+	}
 
 	/**
 	 * @return information about mean and standard deviation
 	 */
 	public String getMeanSigma() {
-		Double[] val = probManager.getDistributionMeasures(selectedDist,
-				parameters);
+		Double[] val = probManager.getDistributionMeasures(selectedDist, parameters);
 
 		// mean/sigma are undefined for the Cauchy distribution
 		// and F-distribution with certain parameters
@@ -1969,8 +1987,7 @@ public abstract class ProbabilityCalculatorView
 		String mean = val[0] == null ? "?" : format(val[0]);
 		String sigma = val[1] == null ? "?" : format(val[1]);
 
-		return Unicode.mu + " = " + mean + "   " + Unicode.sigma
-				+ " = " + sigma;
+		return Unicode.mu + " = " + mean + "   " + Unicode.sigma + " = " + sigma;
 	}
 
 	public void setHigh(double highValue) {
@@ -2062,20 +2079,30 @@ public abstract class ProbabilityCalculatorView
 		updateOutputForIntervals();
 		if (probMode == PROB_INTERVAL) {
 			xAxis.showBothPoints(showProbGeos);
-			resultPanel.showInterval();
+			if (resultPanel != null) {
+				resultPanel.showInterval();
+			}
 		} else if (probMode == PROB_TWO_TAILED) {
 			xAxis.showBothPoints(showProbGeos);
-			showTwoTailed(resultPanel);
+			if (resultPanel != null) {
+				showTwoTailed(resultPanel);
+			}
 		} else if (probMode == PROB_LEFT) {
-			resultPanel.showLeft();
+			if (resultPanel != null) {
+				resultPanel.showLeft();
+			}
 			switchToLeftProbability(oldProbMode);
 		} else if (probMode == PROB_RIGHT) {
-			resultPanel.showRight();
+			if (resultPanel != null) {
+				resultPanel.showRight();
+			}
 			switchToRightProbability(oldProbMode);
 		}
 
 		// make result field editable for inverse probability calculation
-		resultPanel.setResultEditable(probMode != PROB_INTERVAL && probMode != PROB_TWO_TAILED);
+		if (resultPanel != null) {
+			resultPanel.setResultEditable(probMode != PROB_INTERVAL && probMode != PROB_TWO_TAILED);
+		}
 
 		if (isDiscrete) {
 			setHigh(Math.round(getHigh()));
@@ -2157,8 +2184,7 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	protected void setLowDefault() {
-		setLow(plotSettings.xMin
-				+ 0.4 * (plotSettings.xMax - plotSettings.xMin));
+		setLow(plotSettings.xMin + 0.4 * (plotSettings.xMax - plotSettings.xMin));
 	}
 
 	private void setHighOffscreen() {
@@ -2183,8 +2209,7 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	private double getDefaultHigh() {
-		return plotSettings.xMin
-				+ 0.6 * (plotSettings.xMax - plotSettings.xMin);
+		return plotSettings.xMin + 0.6 * (plotSettings.xMax - plotSettings.xMin);
 	}
 
 	private void showTwoTailed(ResultPanel resultPanel) {
@@ -2218,8 +2243,7 @@ public abstract class ProbabilityCalculatorView
 
 	private void updateTwoTailedResults(ResultPanel resultPanel) {
 		resultPanel.updateTwoTailedResult(
-				getProbabilityText(leftProbability),
-				getProbabilityText(rightProbability));
+				getProbabilityText(leftProbability), getProbabilityText(rightProbability));
 		updateGreaterSign(resultPanel);
 		resultPanel.updateResult(getProbabilityText(leftProbability + rightProbability));
 	}
@@ -2237,12 +2261,13 @@ public abstract class ProbabilityCalculatorView
 	}
 
 	protected void updateLowHigh(ResultPanel resultPanel) {
-		resultPanel.updateLowHigh(format(low), format(high));
+		if (resultPanel != null) {
+			resultPanel.updateLowHigh(format(low), format(high));
+		}
 	}
 
 	private boolean isResultEditable() {
-		return probMode != ProbabilityCalculatorView.PROB_INTERVAL
-				&& !isTwoTailedMode();
+		return probMode != ProbabilityCalculatorView.PROB_INTERVAL && !isTwoTailedMode();
 	}
 
 	/**
@@ -2296,17 +2321,9 @@ public abstract class ProbabilityCalculatorView
 	public void onParameterUpdate() {
 		updateOutput(false);
 		setDefaultBounds();
-		if (getResultPanel() != null) {
-			updateProbabilityType(getResultPanel());
-		}
+		updateProbabilityType(getResultPanel());
 		updateResult();
-	}
-
-	/**
-	 * @param disable whether to disable or not
-	 */
-	public void disableInterval(boolean disable) {
-		// overridden for platform
+		notifyListeners();
 	}
 
 	/**

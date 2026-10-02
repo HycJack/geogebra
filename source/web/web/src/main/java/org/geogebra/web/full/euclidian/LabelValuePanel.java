@@ -29,7 +29,7 @@ import org.gwtproject.event.logical.shared.CloseEvent;
 import org.gwtproject.event.logical.shared.CloseHandler;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-public class LabelValuePanel extends FlowPanel
+public final class LabelValuePanel extends FlowPanel
 		implements CloseHandler<GPopupPanel>, SetLabels {
 	private final AppW appW;
 	private final StringPropertyListFacade<?> nameProperty;
@@ -42,8 +42,8 @@ public class LabelValuePanel extends FlowPanel
 	 * @param appW - application
 	 * @param nameProperty - name property
 	 */
-	public LabelValuePanel(AppW appW, StringPropertyListFacade<?> nameProperty,
-			List<GeoElement> geos) {
+	public LabelValuePanel(
+			AppW appW, StringPropertyListFacade<?> nameProperty, List<GeoElement> geos) {
 		super();
 		this.appW = appW;
 		this.nameProperty = nameProperty;
@@ -53,17 +53,20 @@ public class LabelValuePanel extends FlowPanel
 	}
 
 	private void createDialog() {
-		tfName = new ComponentInputField(appW, null, nameProperty.getRawName(),
-				null, nameProperty.getValue(), null, false);
+		tfName = new ComponentInputField(
+				appW,
+				null,
+				nameProperty.getRawName(),
+				null,
+				nameProperty.getValue(),
+				null,
+				null,
+				false,
+				false);
 		if (geos.size() == 1) {
-			tfName.getTextField().getTextComponent().setAutoComplete(false);
-			tfName.getTextField().getTextComponent().enableGGBKeyboard();
-
-			tfName.getTextField().getTextComponent().addKeyHandler(e -> {
-				if (e.isEnterKey()) {
-					onEnter();
-				}
-			});
+			tfName.getTextWidget().setAutoComplete(false);
+			tfName.getTextWidget().enableGGBKeyboard();
+			tfName.addEnterHandler(text -> onEnter(), true);
 			add(tfName);
 			init();
 		}
@@ -73,7 +76,7 @@ public class LabelValuePanel extends FlowPanel
 	/**
 	 * Submit the change
 	 */
-	protected void onEnter() {
+	private void onEnter() {
 		setNamePropertyValueOrThrowError();
 	}
 
@@ -99,5 +102,4 @@ public class LabelValuePanel extends FlowPanel
 			nameProperty.setValue(tfName.getText());
 		}
 	}
-
 }

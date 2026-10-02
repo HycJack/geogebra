@@ -24,10 +24,9 @@ import org.geogebra.common.util.AsyncOperation;
 /**
  * Callback for shared files that require login
  */
-final class SharedFileOpenCallback
-		implements EventRenderable {
+final class SharedFileOpenCallback implements EventRenderable {
 	private final AsyncOperation<String> onError;
-	private AppWFull app;
+	private final AppWFull app;
 
 	/**
 	 * @param app
@@ -35,18 +34,15 @@ final class SharedFileOpenCallback
 	 * @param onError
 	 *            error handler
 	 */
-	public SharedFileOpenCallback(AppWFull app,
-			AsyncOperation<String> onError) {
+	SharedFileOpenCallback(AppWFull app, AsyncOperation<String> onError) {
 		this.onError = onError;
 		this.app = app;
 	}
 
 	@Override
 	public void renderEvent(BaseEvent event) {
-		if (event instanceof LoginEvent) {
-			LoginEvent loginEvent = (LoginEvent) event;
-			if (!loginEvent.isAutomatic()
-					|| loginEvent.isSuccessful()) {
+		if (event instanceof LoginEvent loginEvent) {
+			if (!loginEvent.isAutomatic() || loginEvent.isSuccessful()) {
 				app.checkOpen(onError, this);
 			}
 		}

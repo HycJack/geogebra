@@ -16,8 +16,6 @@
 
 package org.geogebra.common.main.settings;
 
-//import geogebra.gui.view.probcalculator.ProbabilityManager;
-
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -30,7 +28,8 @@ import org.geogebra.common.kernel.geos.GeoNumeric;
 /**
  * Settings for the probability calculator view.
  */
-public class ProbabilityCalculatorSettings extends AbstractSettings {
+public class ProbabilityCalculatorSettings extends AbstractSettings<ProbabilityCalculatorSettings> {
+
 	/** distributions */
 	public enum Dist {
 		/** normal */
@@ -78,7 +77,9 @@ public class ProbabilityCalculatorSettings extends AbstractSettings {
 		 */
 		public static Dist forInverse(Commands command) {
 			return Arrays.stream(values())
-					.filter(s -> s.inverse == command).findFirst().orElse(null);
+					.filter(s -> s.inverse == command)
+					.findFirst()
+					.orElse(null);
 		}
 
 		/**
@@ -87,18 +88,21 @@ public class ProbabilityCalculatorSettings extends AbstractSettings {
 		 */
 		public static Dist forCommand(Commands command) {
 			return Arrays.stream(values())
-					.filter(s -> s.command == command).findFirst().orElse(null);
+					.filter(s -> s.command == command)
+					.findFirst()
+					.orElse(null);
 		}
 	}
 
 	/** number of distributions */
 	public static final int distCount = Dist.values().length;
 
-	private GeoNumeric[] parameters = { };
+	private boolean enabled = true;
+	private GeoNumeric[] parameters = {};
 	private Dist distributionType = Dist.NORMAL;
 	private boolean isCumulative = false;
 	private boolean intervalSet = false;
-	private boolean  isOverlayActive = false;
+	private boolean isOverlayActive = false;
 
 	private int probMode;
 
@@ -113,7 +117,7 @@ public class ProbabilityCalculatorSettings extends AbstractSettings {
 	 *            listeners
 	 */
 	public ProbabilityCalculatorSettings(
-			LinkedList<SettingListener> listeners) {
+			LinkedList<SettingListener<ProbabilityCalculatorSettings>> listeners) {
 		super(listeners);
 	}
 
@@ -126,7 +130,7 @@ public class ProbabilityCalculatorSettings extends AbstractSettings {
 
 	/**
 	 * Sets the parameter array
-	 * 
+	 *
 	 * @param parameters
 	 *            distribution parameters
 	 */
@@ -144,7 +148,7 @@ public class ProbabilityCalculatorSettings extends AbstractSettings {
 
 	/**
 	 * Sets the distribution type
-	 * 
+	 *
 	 * @param distributionType
 	 *            dist type
 	 */
@@ -166,7 +170,7 @@ public class ProbabilityCalculatorSettings extends AbstractSettings {
 
 	/**
 	 * Sets the cumulative flag
-	 * 
+	 *
 	 * @param isCumulative
 	 *            cumulative flag
 	 */
@@ -242,6 +246,14 @@ public class ProbabilityCalculatorSettings extends AbstractSettings {
 	 */
 	public void setCollection(StatisticsCollection stats) {
 		this.stats = stats;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public boolean isEnabled() {
+		return this.enabled;
 	}
 
 	/**

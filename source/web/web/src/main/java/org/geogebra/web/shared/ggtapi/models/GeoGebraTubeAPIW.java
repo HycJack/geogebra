@@ -18,6 +18,8 @@ package org.geogebra.web.shared.ggtapi.models;
 
 import static elemental2.core.Global.JSON;
 
+import java.util.Objects;
+
 import org.geogebra.common.move.ggtapi.models.ClientInfo;
 import org.geogebra.common.move.ggtapi.models.GeoGebraTubeUser;
 import org.geogebra.common.util.debug.Log;
@@ -29,11 +31,11 @@ import jsinterop.base.JsPropertyMap;
 
 /**
  * API Interface for GeoGebraTube requests and responses
- * 
+ *
  * @author Matthias Meisinger
- * 
+ *
  */
-public class GeoGebraTubeAPIW extends GeoGebraTubeAPIWSimple {
+public final class GeoGebraTubeAPIW extends GeoGebraTubeAPIWSimple {
 
 	/**
 	 * @param beta
@@ -43,27 +45,29 @@ public class GeoGebraTubeAPIW extends GeoGebraTubeAPIWSimple {
 	 * @param articleElement
 	 *            parameters
 	 */
-	public GeoGebraTubeAPIW(ClientInfo client, boolean beta,
-			AppletParameters articleElement) {
+	public GeoGebraTubeAPIW(ClientInfo client, boolean beta, AppletParameters articleElement) {
 		super(beta, articleElement);
 		this.client = client;
 	}
 
 	/**
 	 * Copies the user data from the API response to this user.
-	 * 
+	 *
 	 * @return true if the data could be parsed successfully, false otherwise
 	 */
 	@Override
-	public boolean parseUserDataFromResponse(GeoGebraTubeUser user,
-			String result) {
+	public boolean parseUserDataFromResponse(GeoGebraTubeUser user, String result) {
 		try {
 			JsPropertyMap<Object> parsedResult = Js.asPropertyMap(JSON.parse(result));
-			JsPropertyMap<Object> responses = Js.asPropertyMap(parsedResult.get("responses"));
-
+			JsPropertyMap<Object> responses =
+					parsedResult == null ? null : Js.asPropertyMap(parsedResult.get("responses"));
+			if (responses == null) {
+				return false;
+			}
 			JsPropertyMap<Object> response = Js.asPropertyMap(
-					Js.asArrayLike(responses.get("response")).getAt(0));
-			JsPropertyMap<Object> userinfo = Js.asPropertyMap(response.get("userinfo"));
+					Objects.requireNonNull(Js.asArrayLike(responses.get("response"))).getAt(0));
+			JsPropertyMap<Object> userinfo = Objects.requireNonNull(
+					Js.asPropertyMap(Objects.requireNonNull(response).get("userinfo")));
 
 			user.setUserId(Js.coerceToInt(userinfo.get("user_id")));
 			// "username" is real name by default, uses login as fallback

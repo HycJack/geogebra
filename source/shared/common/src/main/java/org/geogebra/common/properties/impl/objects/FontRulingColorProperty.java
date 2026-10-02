@@ -25,20 +25,19 @@ import org.geogebra.common.euclidian.draw.HasTextFormat;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.HasTextFormatter;
 import org.geogebra.common.main.Localization;
-import org.geogebra.common.properties.aliases.ColorProperty;
 import org.geogebra.common.properties.impl.objects.delegate.FontStyleDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.FontStyleUtil;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 
-public class FontRulingColorProperty extends ElementColorProperty
-		implements ColorProperty {
+public class FontRulingColorProperty extends ElementColorProperty {
 	private final HasTextFormatter element;
 
+	/** Font stripe color. */
 	public enum FontStyle {
-		BLACK("schwarz", GColor.newColorRGB(0x5C6470)),
-		BLUE("tuerkis", GColor.newColorRGB(0x90CBC9)),
-		GREEN("gruen", GColor.newColorRGB(0x6CB672)),
-		ORANGE("orange", GColor.newColorRGB(0xDC7B3A));
+		GRAY("gray", GColor.newColorRGB(0x5C5C5C)),
+		BLUE("blue", GColor.newColorRGB(0x3a6dac)),
+		GREEN("green", GColor.newColorRGB(0x377e22)),
+		RED("red", GColor.newColorRGB(0xbe2d2b));
 
 		private final String fontName;
 		private final GColor fontColor;
@@ -57,15 +56,16 @@ public class FontRulingColorProperty extends ElementColorProperty
 		}
 	}
 
-	private static final List<FontStyle> fontStyles = Arrays.stream(FontStyle.values()).toList();
+	private static final List<FontStyle> fontStyles =
+			Arrays.stream(FontStyle.values()).toList();
 
 	/**
-	 * @param localization - localization
-	 * @param element - element
+	 * @param localization localization
+	 * @param element element
 	 * @throws NotApplicablePropertyException when one of the elements has no color
 	 */
-	public FontRulingColorProperty(Localization localization,
-			GeoElement element) throws NotApplicablePropertyException {
+	public FontRulingColorProperty(Localization localization, GeoElement element)
+			throws NotApplicablePropertyException {
 		super(localization, new FontStyleDelegate(element), "Lineaturfarbe");
 		if (!FontStyleUtil.isFontStyleApplicable(element)) {
 			throw new NotApplicablePropertyException(element);
@@ -78,9 +78,8 @@ public class FontRulingColorProperty extends ElementColorProperty
 	public void doSetValue(GColor value) {
 		HasTextFormat formatter = element.getFormatter();
 		if (formatter != null) {
-			String oldFont = formatter.getFormat("font", "");
-			String newFont = getNewFont(getStringKeyFromColor(value));
-			if (oldFont.startsWith("ByLineatur") && newFont != null) {
+			if (FontStyleUtil.isFontStyleApplicable(element.toGeoElement())) {
+				String newFont = getNewFont(getStringKeyFromColor(value));
 				formatter.format("font", newFont);
 			}
 		}
@@ -91,7 +90,7 @@ public class FontRulingColorProperty extends ElementColorProperty
 		HasTextFormat formatter = element.getFormatter();
 		if (formatter != null) {
 			String font = formatter.getFormat("font", "");
-			if (font.startsWith("ByLineatur")) {
+			if (FontStyleUtil.isFontStyleApplicable(element.toGeoElement())) {
 				for (FontStyle entry : fontStyles) {
 					String fontName = entry.getFontName();
 					if (fontName != null && font.contains(entry.getFontName())) {
@@ -106,8 +105,8 @@ public class FontRulingColorProperty extends ElementColorProperty
 	private String getNewFont(String newColor) {
 		HasTextFormat formatter = element.getFormatter();
 		if (formatter != null) {
-			String font = formatter.getFormat("font", "");
-			if (font.startsWith("ByLineatur")) {
+			if (FontStyleUtil.isFontStyleApplicable(element.toGeoElement())) {
+				String font = formatter.getFormat("font", "");
 				for (FontStyle entry : fontStyles) {
 					if (font.contains(entry.getFontName())) {
 						return font.replace(entry.getFontName(), newColor);
@@ -119,7 +118,10 @@ public class FontRulingColorProperty extends ElementColorProperty
 	}
 
 	private static String getStringKeyFromColor(GColor color) {
-		return fontStyles.stream().filter(font -> font.getFontColor().equals(color))
-				.findAny().map(FontStyle::getFontName).get();
+		return fontStyles.stream()
+				.filter(font -> font.getFontColor().equals(color))
+				.findAny()
+				.map(FontStyle::getFontName)
+				.get();
 	}
 }

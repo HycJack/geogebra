@@ -34,6 +34,7 @@ import org.geogebra.web.html5.event.PointerEvent;
 import org.geogebra.web.html5.gui.util.LongTouchManager;
 import org.geogebra.web.html5.main.AppW;
 import org.gwtproject.user.client.DOM;
+import org.jspecify.annotations.NonNull;
 
 import elemental2.dom.WheelEvent;
 
@@ -41,8 +42,7 @@ import elemental2.dom.WheelEvent;
  * 3D euclidian controller
  *
  */
-public class EuclidianController3DW extends EuclidianController3D implements
-		IsEuclidianController {
+public class EuclidianController3DW extends EuclidianController3D implements IsEuclidianController {
 
 	private MouseTouchGestureControllerW mtg;
 	/**
@@ -80,7 +80,7 @@ public class EuclidianController3DW extends EuclidianController3D implements
 	}
 
 	@Override
-	public void handleLongTouch(int x, int y) {
+	public void handleLongTouch(double x, double y) {
 		if (!draggingOccurred) {
 			mtg.handleLongTouch(x, y);
 		}
@@ -95,8 +95,7 @@ public class EuclidianController3DW extends EuclidianController3D implements
 	@Override
 	public void onPointerEventStart(AbstractEvent event) {
 		if (app.getGuiManager() != null) {
-			((GuiManagerW) app.getGuiManager())
-					.setActivePanelAndToolbar(App.VIEW_EUCLIDIAN3D);
+			((GuiManagerW) app.getGuiManager()).setActivePanelAndToolbar(App.VIEW_EUCLIDIAN3D);
 		} else {
 			setMode(EuclidianConstants.MODE_MOVE, ModeSetter.DOCK_PANEL);
 		}
@@ -143,8 +142,7 @@ public class EuclidianController3DW extends EuclidianController3D implements
 		}
 
 		// check center difference
-		double centerDiff = MyMath.length(oldCenterX3D - centerX, oldCenterY3D
-				- centerY);
+		double centerDiff = MyMath.length(oldCenterX3D - centerX, oldCenterY3D - centerY);
 		if (centerDiff <= MouseTouchGestureController.MIN_MOVE) {
 			centerDiff = 0;
 		}
@@ -152,9 +150,9 @@ public class EuclidianController3DW extends EuclidianController3D implements
 		// process highest difference
 		if (2 * centerDiff > zoomDiff) {
 			getView().rememberOrigins();
-			getView().setCoordSystemFromMouseMove(centerX - oldCenterX3D,
-					centerY
-					- oldCenterY3D, MoveMode.ROTATE_VIEW);
+			getView()
+					.setCoordSystemFromMouseMove(
+							centerX - oldCenterX3D, centerY - oldCenterY3D, MoveMode.ROTATE_VIEW);
 			viewRotationOccurred = true;
 			getView().repaintView();
 
@@ -182,7 +180,7 @@ public class EuclidianController3DW extends EuclidianController3D implements
 	}
 
 	@Override
-	protected void processMouseMoved(AbstractEvent e) {
+	protected void processMouseMoved(@NonNull AbstractEvent e) {
 		super.processMouseMoved(e);
 		processMouseMoved();
 	}

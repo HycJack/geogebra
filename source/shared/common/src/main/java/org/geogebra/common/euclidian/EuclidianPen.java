@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import org.geogebra.common.awt.GBasicStroke;
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.awt.GGraphics2D;
-import org.geogebra.common.awt.GPoint;
+import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.common.euclidian.event.AbstractEvent;
+import org.geogebra.common.euclidian.event.PointerEventType;
 import org.geogebra.common.euclidian.measurement.MeasurementController;
+import org.geogebra.common.factories.UtilFactory;
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.MyPoint;
 import org.geogebra.common.kernel.algos.AlgoLocusStroke;
@@ -36,7 +38,6 @@ import org.geogebra.common.kernel.matrix.Coords;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.settings.PenToolsSettings;
 import org.geogebra.common.plugin.ActionType;
-import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.common.util.GTimer;
 import org.geogebra.common.util.GTimerListener;
 
@@ -65,14 +66,12 @@ public class EuclidianPen implements GTimerListener {
 
 	private AlgoLocusStroke lastAlgo = null;
 	/** points created by pen */
-	protected ArrayList<GPoint> penPoints = new ArrayList<>();
-
-	// segment
-	private final static int PEN_SIZE_FACTOR = 2;
+	protected ArrayList<GPoint2D> penPoints = new ArrayList<>();
 	/** skip intermediate points on segments longer than this */
 	private static final double MAX_POINT_DIST = 30;
 	/** ignore consecutive pen points closer than this */
 	private static final double MIN_POINT_DIST = 3;
+
 	private static final double MAX_POINT_COS = Math.cos(Math.PI / 36);
 
 	private boolean startNewStroke = false;
@@ -90,7 +89,7 @@ public class EuclidianPen implements GTimerListener {
 	private final GTimer timer;
 	private final MeasurementController measurementController;
 	private final PenPreviewLine penPreviewLine;
-	protected final ArrayList<GPoint> previewPoints = new ArrayList<>();
+	protected final ArrayList<GPoint2D> previewPoints = new ArrayList<>();
 
 	/************************************************
 	 * Construct EuclidianPen
@@ -105,7 +104,7 @@ public class EuclidianPen implements GTimerListener {
 		this.view = view;
 		this.app = app;
 		this.penPreviewLine = view.newPenPreview();
-		timer = app.newTimer(this, 1500);
+		timer = UtilFactory.getPrototype().newTimer(this, 1500);
 		this.measurementController = measurementController;
 
 		@WeakOuter PenStrokeAdapter line = new PenStrokeAdapter(app);
@@ -114,10 +113,21 @@ public class EuclidianPen implements GTimerListener {
 	}
 
 	/**
-	 * @return pen size
+	 * @return pen size as saved in file, in half-pixels
 	 */
 	public int getPenSize() {
 		return defaultPenLine.getLineThickness();
+	}
+
+	/**
+	 * @return pen size as drawn on screen, in pixels
+	 */
+	public double getScaledPenSize() {
+		double zoom = view.getXscale() / EuclidianView.SCALE_STANDARD;
+		double scaledThickness = view.getSettings().getLineThicknessScaled()
+				? defaultPenLine.getLineThickness() * zoom
+				: defaultPenLine.getLineThickness();
+		return scaledThickness / 2;
 	}
 
 	/**
@@ -135,7 +145,7 @@ public class EuclidianPen implements GTimerListener {
 
 	/**
 	 * @param penSize
-	 *            pen size
+	 *            pen size in half-pixels
 	 */
 	public void setPenSize(int penSize) {
 		defaultPenLine.setLineThickness(penSize);
@@ -176,6 +186,9 @@ public class EuclidianPen implements GTimerListener {
 		return defaultPenLine.getObjectColor();
 	}
 
+	/**
+	 * @return pen color with opacity applied
+	 */
 	public GColor getPenColorWithOpacity() {
 		return getPenColor().deriveWithAlpha(defaultPenLine.getLineOpacity());
 	}
@@ -206,8 +219,12 @@ public class EuclidianPen implements GTimerListener {
 	/**
 	 * Make sure we start using a new polyline
 	 */
-	public void resetPenOffsets() {
+	public void resetPenState() {
 		lastAlgo = null;
+		resetInitialPoint();
+		penPoints.clear();
+		previewPoints.clear();
+		timer.stop();
 	}
 
 	// ===========================================
@@ -222,8 +239,7 @@ public class EuclidianPen implements GTimerListener {
 	 */
 	public void handleMouseDraggedForPenMode(AbstractEvent e) {
 		if (isErasingEvent(e)) {
-			view.getEuclidianController().getDeleteMode()
-					.handleMouseDraggedForDelete(e, true);
+			view.getEuclidianController().getDeleteMode().handleMouseDraggedForDelete(e, true);
 			app.getKernel().notifyRepaint();
 		} else {
 			// drawing in progress, so we need repaint
@@ -251,7 +267,7 @@ public class EuclidianPen implements GTimerListener {
 	 *            event
 	 */
 	public void addPointPenMode(AbstractEvent e) {
-		GPoint newPoint = new GPoint(e.getX(), e.getY());
+		GPoint2D newPoint = new GPoint2D(e.getX(), e.getY());
 		if (measurementController != null
 				&& measurementController.applyTransformer(view, newPoint, previewPoints)) {
 			penPoints.clear();
@@ -266,28 +282,25 @@ public class EuclidianPen implements GTimerListener {
 
 	/**
 	 * Append point to the list
-	 * 
+	 *
 	 * @param newPoint
 	 *            new point
 	 */
-	protected void addPointPenMode(GPoint newPoint) {
+	protected void addPointPenMode(GPoint2D newPoint) {
 		if (penPoints.isEmpty()) {
 			if (initialPoint != null) {
 				// also add the coordinates of the initialPoint to the penPoints
 				Coords coords = initialPoint.getCoords();
 				// calculate the screen coordinates
-				int locationX = (int) (view.getXZero()
-						+ (coords.getX() / view.getInvXscale()));
-				int locationY = (int) (view.getYZero()
-						- (coords.getY() / view.getInvYscale()));
-
-				GPoint p = new GPoint(locationX, locationY);
+				double locationX = view.toScreenCoordXd(coords.getX());
+				double locationY = view.toScreenCoordYd(coords.getY());
+				GPoint2D p = new GPoint2D(locationX, locationY);
 				penPoints.add(p);
 				previewPoints.add(0, p);
 			}
 			penPoints.add(newPoint);
 		} else {
-			GPoint p1 = penPoints.get(penPoints.size() - 1);
+			GPoint2D p1 = penPoints.get(penPoints.size() - 1);
 			double dist = p1.distance(newPoint);
 			if (isFreehand()) {
 				if (dist > MIN_POINT_DIST) {
@@ -295,9 +308,8 @@ public class EuclidianPen implements GTimerListener {
 				}
 				return;
 			}
-			GPoint p2 = penPoints.size() >= 2
-					? penPoints.get(penPoints.size() - 2) : null;
-			GPoint p3 = tailStart(newPoint);
+			GPoint2D p2 = penPoints.size() >= 2 ? penPoints.get(penPoints.size() - 2) : null;
+			GPoint2D p3 = tailStart(newPoint);
 			if (dist > MIN_POINT_DIST) {
 				if (dist > MAX_POINT_DIST || p3 == null || p2 == null) {
 					penPoints.add(newPoint);
@@ -309,19 +321,17 @@ public class EuclidianPen implements GTimerListener {
 				}
 			}
 		}
-
 	}
 
-	private GPoint tailStart(GPoint newPoint) {
+	private GPoint2D tailStart(GPoint2D newPoint) {
 		for (int i = 3; i < penPoints.size(); i++) {
-			GPoint current = penPoints.get(penPoints.size() - i);
+			GPoint2D current = penPoints.get(penPoints.size() - i);
 			if (current.distance(newPoint) > 2 * MAX_POINT_DIST) {
 				return null;
 			}
 			boolean anglesOK = true;
 			for (int j = 1; j < i; j++) {
-				if (angle(newPoint, penPoints.get(penPoints.size() - j),
-						current, MAX_POINT_COS)) {
+				if (angle(newPoint, penPoints.get(penPoints.size() - j), current)) {
 					anglesOK = false;
 				}
 			}
@@ -332,7 +342,7 @@ public class EuclidianPen implements GTimerListener {
 		return null;
 	}
 
-	private static boolean angle(GPoint a, GPoint b, GPoint c, double max) {
+	private static boolean angle(GPoint2D a, GPoint2D b, GPoint2D c) {
 		if (a == null || b == null || c == null) {
 			return true;
 		}
@@ -340,9 +350,8 @@ public class EuclidianPen implements GTimerListener {
 		double dx2 = c.x - b.x;
 		double dy1 = a.y - b.y;
 		double dy2 = c.y - b.y;
-		double ret = Math.abs(dx1 * dx2 + dy1 * dy2) / Math.hypot(dx1, dy1)
-				/ Math.hypot(dx2, dy2);
-		return Double.isNaN(ret) || ret < max;
+		double ret = Math.abs(dx1 * dx2 + dy1 * dy2) / Math.hypot(dx1, dy1) / Math.hypot(dx2, dy2);
+		return Double.isNaN(ret) || ret < EuclidianPen.MAX_POINT_COS;
 	}
 
 	/**
@@ -357,8 +366,8 @@ public class EuclidianPen implements GTimerListener {
 	 * @param isPinchZooming whether we're currently pinch-zooming
 	 *
 	 */
-	public void handleMouseReleasedForPenMode(boolean right, int x, int y,
-			boolean isPinchZooming) {
+	public void handleMouseReleasedForPenMode(
+			boolean right, int x, int y, boolean isPinchZooming, PointerEventType eventType) {
 		if (right || penPoints.isEmpty()) {
 			return;
 		}
@@ -367,6 +376,13 @@ public class EuclidianPen implements GTimerListener {
 			penPoints.clear();
 		}
 
+		finishStrokePart();
+	}
+
+	/**
+	 * Add current points to the stroke.
+	 */
+	public void finishStrokePart() {
 		timer.start();
 		String oldXML = null;
 		if (lastAlgo != null && !startNewStroke) {
@@ -385,8 +401,11 @@ public class EuclidianPen implements GTimerListener {
 		if (oldXML == null) {
 			app.getUndoManager().storeAddGeo(lastAlgo.getOutput(0));
 		} else {
-			app.getUndoManager().buildAction(ActionType.UPDATE, lastAlgo.getXML())
-					.withUndo(ActionType.UPDATE, oldXML).withLabels(label).storeAndNotifyUnsaved();
+			app.getUndoManager()
+					.buildAction(ActionType.UPDATE, lastAlgo.getXML())
+					.withUndo(ActionType.UPDATE, oldXML)
+					.withLabels(label)
+					.storeAndNotifyUnsaved();
 		}
 	}
 
@@ -407,7 +426,7 @@ public class EuclidianPen implements GTimerListener {
 		this.initialPoint = null;
 	}
 
-	private void addPointsToPolyLine(ArrayList<GPoint> penPoints) {
+	private void addPointsToPolyLine(ArrayList<GPoint2D> penPoints) {
 		Construction cons = app.getKernel().getConstruction();
 		if (startNewStroke) {
 			lastAlgo = null;
@@ -415,27 +434,26 @@ public class EuclidianPen implements GTimerListener {
 		}
 
 		ArrayList<MyPoint> newPts = new ArrayList<>(penPoints.size());
-		for (GPoint p : penPoints) {
+		/*for (GPoint2D p : penPoints) {
 			double x = view.toRealWorldCoordX(p.getX());
 			double y = view.toRealWorldCoordY(p.getY());
 
 			// change -2.4600000000000004 to -2.46 for smaller XML
 			newPts.add(new MyPoint(DoubleUtil.checkDecimalFraction(x),
 					DoubleUtil.checkDecimalFraction(y)));
-		}
+		}*/
 
 		// don't set label
 		if (lastAlgo != null) {
-			lastAlgo.getPenStroke().appendPointArray(newPts);
+			lastAlgo.getPenStroke().appendPointArray(penPoints, view);
 			lastAlgo.getOutput(0).updateRepaint();
 			return;
 		}
 
 		lastAlgo = new AlgoLocusStroke(cons, newPts);
-
+		lastAlgo.getPenStroke().appendPointArray(penPoints, view);
 		GeoElement stroke = lastAlgo.getOutput(0);
-
-		stroke.setLineThickness(getPenSize() * PEN_SIZE_FACTOR);
+		stroke.setLineThickness(getPenSize());
 		stroke.setLineType(getPenLineStyle());
 		stroke.setLineOpacity(defaultPenLine.getLineOpacity());
 		stroke.setObjColor(getPenColor());
@@ -468,7 +486,7 @@ public class EuclidianPen implements GTimerListener {
 
 	/**
 	 * Update state of the pen after geo is removed
-	 * 
+	 *
 	 * @param geo
 	 *            removed element
 	 */
@@ -476,7 +494,6 @@ public class EuclidianPen implements GTimerListener {
 		if (geo.getParentAlgorithm() == this.lastAlgo) {
 			lastAlgo = null;
 		}
-
 	}
 
 	@Override
@@ -497,20 +514,20 @@ public class EuclidianPen implements GTimerListener {
 	 */
 	public void setStyleAndRepaint(GGraphics2D g2) {
 		if (!previewPoints.isEmpty()) {
-			g2.setStroke(EuclidianStatic.getStroke(getPenSize(),
-					getPenLineStyle(), GBasicStroke.JOIN_ROUND));
+			g2.setStroke(EuclidianStatic.getStroke(
+					getScaledPenSize(), getPenLineStyle(), GBasicStroke.JOIN_ROUND));
 			g2.setColor(getPenColorWithOpacity());
 		}
 		repaintIfNeeded(g2);
 	}
 
 	/**
-	 * Paint on graphics if needed
+	 * Paint on graphics if needed, assumes stroke was set previously on {@code g2}.
 	 * @param g2 graphics
 	 */
 	public void repaintIfNeeded(GGraphics2D g2) {
-		if (!previewPoints.isEmpty()) {
-			penPreviewLine.drawPolyline(previewPoints, g2);
+		if (!penPoints.isEmpty()) {
+			penPreviewLine.drawPolyline(penPoints, g2);
 		}
 	}
 

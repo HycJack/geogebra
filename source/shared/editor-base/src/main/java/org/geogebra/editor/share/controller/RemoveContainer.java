@@ -44,8 +44,7 @@ public class RemoveContainer {
 			removeFunction(currentNode, editorState);
 		} else if (isParentEmptyArray(currentNode)) {
 			deleteContainer(editorState, parent, ((ArrayNode) parent).getChild(0));
-		} else if (is1DArrayWithCursorInIt(currentNode.getParent(),
-				currentNode.getParentIndex())) {
+		} else if (is1DArrayWithCursorInIt(currentNode.getParent(), currentNode.getParentIndex())) {
 			deleteFromRowSequence(editorState);
 		}
 	}
@@ -57,15 +56,13 @@ public class RemoveContainer {
 		if (Tag.FRAC == function.getName()) {
 
 			// if second operand is empty sequence
-			if (currentNode.getParentIndex() == 1
-					&& currentNode.size() == 0) {
+			if (currentNode.getParentIndex() == 1 && currentNode.size() == 0) {
 				int size = function.getChild(0).size();
 				deleteContainer(editorState, function, function.getChild(0));
 				// move after included characters
 				editorState.addCurrentOffset(size);
 				// if first operand is empty sequence
-			} else if (currentNode.getParentIndex() == 1
-					&& function.getChild(0).size() == 0) {
+			} else if (currentNode.getParentIndex() == 1 && function.getChild(0).size() == 0) {
 				deleteContainer(editorState, function, currentNode);
 			}
 
@@ -78,18 +75,16 @@ public class RemoveContainer {
 			if (currentNode.getParentIndex() == 1) {
 				removeParenthesesOfFunction(function, editorState);
 			} else if (currentNode.getParentIndex() > 1) {
-				SequenceNode prev = function
-						.getChild(currentNode.getParentIndex() - 1);
+				SequenceNode prev = function.getChild(currentNode.getParentIndex() - 1);
 				int len = prev.size();
-				for (Node child: currentNode) {
+				for (Node child : currentNode) {
 					prev.addChild(child);
 				}
 				function.removeChild(currentNode.getParentIndex());
 				editorState.setCurrentNode(prev);
 				editorState.setCurrentOffset(len);
 			} else if (CursorController.prevCharacter(editorState)) {
-				new InputController(editorState.getCatalog())
-						.bkspCharacter(editorState);
+				new InputController(editorState.getCatalog()).bkspCharacter(editorState);
 				fuseMathFunction(editorState, function);
 			}
 		}
@@ -108,8 +103,7 @@ public class RemoveContainer {
 		ArrayList<CharacterNode> nodes = new ArrayList<>();
 		SequenceNode currentNode = editorState.getCurrentNode();
 		int currentOffset = editorState.getCurrentOffset() - 1;
-		while (currentOffset >= 0 && currentNode.getChild(
-				currentOffset) instanceof CharacterNode) {
+		while (currentOffset >= 0 && currentNode.getChild(currentOffset) instanceof CharacterNode) {
 			CharacterNode character = (CharacterNode) currentNode.getChild(currentOffset);
 			if (!character.isLetter()) {
 				break;
@@ -134,16 +128,8 @@ public class RemoveContainer {
 	}
 
 	private static boolean isParentEmptyArray(SequenceNode currentField) {
-		return isParentAnArray(currentField)
+		return currentField.getParent() instanceof ArrayNode
 				&& currentField.getParent().size() == 1;
-	}
-
-	/**
-	 * @param sequence sequence node
-	 * @return if sequence is an array
-	 */
-	static boolean isParentAnArray(SequenceNode sequence) {
-		return sequence.getParent() instanceof ArrayNode;
 	}
 
 	// if parent is 1DArray or Vector and cursor is at the beginning of
@@ -153,9 +139,7 @@ public class RemoveContainer {
 			return false;
 		}
 		ArrayNode array = (ArrayNode) container;
-		return (array.is1DArray() || array.isVector())
-				&& parentIndex > 0
-				&& !ArrayNode.isLocked(array);
+		return (array.is1DArray() || array.isVector()) && parentIndex > 0 && !ArrayNode.isLocked(array);
 	}
 
 	private static void deleteFromRowSequence(EditorState editorState) {
@@ -176,8 +160,7 @@ public class RemoveContainer {
 		editorState.setCurrentOffset(size);
 	}
 
-	private static void removeParenthesesOfFunction(FunctionNode function,
-			EditorState editorState) {
+	private static void removeParenthesesOfFunction(FunctionNode function, EditorState editorState) {
 		SequenceNode functionName = function.getChild(0);
 		int offset = function.getParentIndex() + functionName.size();
 		deleteContainer(editorState, function, functionName);
@@ -192,15 +175,13 @@ public class RemoveContainer {
 		SequenceNode currentField = editorState.getCurrentNode();
 
 		// if parent is function (cursor is at the end of the field)
-		if (currentField.getParent() instanceof FunctionNode) {
-			FunctionNode parent = (FunctionNode) currentField.getParent();
+		if (currentField.getParent() instanceof FunctionNode parent) {
 
 			// fraction has operator like behavior
-			if (Tag.FRAC.equals(parent.getName())) {
+			if (Tag.FRAC == parent.getName()) {
 
 				// first operand is current, second operand is empty sequence
-				if (currentField.getParentIndex() == 0
-						&& parent.getChild(1).size() == 0) {
+				if (currentField.getParentIndex() == 0 && parent.getChild(1).size() == 0) {
 					int size = parent.getChild(0).size();
 					deleteContainer(editorState, parent, currentField);
 					// move after included characters
@@ -208,17 +189,15 @@ public class RemoveContainer {
 
 					// first operand is current, and first operand is empty
 					// sequence
-				} else if (currentField.getParentIndex() == 0
-						&& currentField.size() == 0) {
+				} else if (currentField.getParentIndex() == 0 && currentField.size() == 0) {
 					deleteContainer(editorState, parent, parent.getChild(1));
 				}
 			}
 
 			// if parent are empty braces
-		} else if (isParentAnArray(currentField)
+		} else if (currentField.getParent() instanceof ArrayNode parent
 				&& currentField.getParent().size() == 1
 				&& currentField.size() == 0) {
-			ArrayNode parent = (ArrayNode) currentField.getParent();
 			int size = parent.getChild(0).size();
 			deleteContainer(editorState, parent, parent.getChild(0));
 			// move after included characters
@@ -226,33 +205,31 @@ public class RemoveContainer {
 
 			// if parent is 1DArray or Vector and cursor is at the end of the
 			// field
-		} else if (isParentAnArray(currentField)
-				&& (((ArrayNode) currentField.getParent()).is1DArray()
-				|| ((ArrayNode) currentField.getParent()).isVector())
-				&& currentField.getParentIndex() + 1 < currentField.getParent()
-				.size()) {
+		} else {
+			if (currentField.getParent() instanceof ArrayNode parent
+					&& (parent.is1DArray() || parent.isVector())
+					&& currentField.getParentIndex() + 1 < currentField.getParent().size()) {
 
-			int index = currentField.getParentIndex();
-			ArrayNode parent = (ArrayNode) currentField.getParent();
-			SequenceNode field = parent.getChild(index + 1);
-			int size = currentField.size();
-			while (currentField.size() > 0) {
+				int index = currentField.getParentIndex();
+				SequenceNode field = parent.getChild(index + 1);
+				int size = currentField.size();
+				while (currentField.size() > 0) {
 
-				Node node = currentField.getChild(0);
-				currentField.deleteChild(0);
-				field.addChild(field.size(), node);
+					Node node = currentField.getChild(0);
+					currentField.deleteChild(0);
+					field.addChild(field.size(), node);
+				}
+				parent.deleteChild(index);
+				editorState.setCurrentNode(field);
+				editorState.setCurrentOffset(size);
 			}
-			parent.deleteChild(index);
-			editorState.setCurrentNode(field);
-			editorState.setCurrentOffset(size);
 		}
 	}
 
-	private static void deleteContainer(EditorState editorState,
-			InternalNode container, SequenceNode operand) {
-		if (container.getParent() instanceof SequenceNode) {
+	private static void deleteContainer(
+			EditorState editorState, InternalNode container, SequenceNode operand) {
+		if (container.getParent() instanceof SequenceNode parent) {
 			// when parent is sequence
-			SequenceNode parent = (SequenceNode) container.getParent();
 			int offset = container.getParentIndex();
 			// delete container
 			parent.deleteChild(offset);
@@ -261,8 +238,7 @@ public class RemoveContainer {
 				int lastArgumentIndex = operand.size() - 1;
 				Node element = operand.getChild(lastArgumentIndex);
 				operand.deleteChild(lastArgumentIndex);
-				if (!editorState.getRootNode().isProtected()
-						|| !",".equals(element.toString())) {
+				if (!editorState.getRootNode().isProtected() || !",".equals(element.toString())) {
 					parent.addChild(offset, element);
 				}
 			}

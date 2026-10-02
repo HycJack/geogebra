@@ -63,15 +63,16 @@ public class DrawInlineTable extends Drawable implements DrawInline {
 			double contentWidth = table.getContentWidth();
 			double contentHeight = table.getContentHeight();
 			tableController.update();
-			tableController.setTransform(table.getAngle(),
-					table.getWidth() / contentWidth, table.getHeight() / contentHeight);
+			tableController.setTransform(
+					table.getAngle(), table.getWidth() / contentWidth, table.getHeight() / contentHeight);
 		}
 	}
 
 	@Override
 	public void draw(GGraphics2D g2) {
-		if (geo.isEuclidianVisible() && tableController != null
-			&& rectangle.getDirectTransform() != null) {
+		if (geo.isEuclidianVisible()
+				&& tableController != null
+				&& rectangle.getDirectTransform() != null) {
 			GAffineTransform tr =
 					rectangle.scaleForZoom(table.getContentWidth(), table.getContentHeight());
 			tableController.draw(g2, tr);
@@ -128,6 +129,9 @@ public class DrawInlineTable extends Drawable implements DrawInline {
 		tableController.removeFromDom();
 	}
 
+	/**
+	 * @return whether the table is currently being edited
+	 */
 	public boolean isInEditMode() {
 		return tableController != null && tableController.isInEditMode();
 	}
@@ -137,6 +141,11 @@ public class DrawInlineTable extends Drawable implements DrawInline {
 		if (tableController != null) {
 			tableController.updateContent();
 		}
+	}
+
+	@Override
+	public boolean hasContent() {
+		return true;
 	}
 
 	@Override
@@ -152,9 +161,9 @@ public class DrawInlineTable extends Drawable implements DrawInline {
 	}
 
 	@Override
-	public void toBackground() {
+	public void toBackground(DrawInline.SuspensionTrigger trigger) {
 		if (tableController != null) {
-			tableController.toBackground();
+			tableController.toBackground(trigger);
 		}
 	}
 

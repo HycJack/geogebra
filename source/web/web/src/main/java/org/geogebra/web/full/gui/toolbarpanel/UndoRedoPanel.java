@@ -23,15 +23,15 @@ import org.geogebra.web.html5.util.PersistablePanel;
 /**
  * Undo/redo panel for graphics view
  */
-public class UndoRedoPanel extends PersistablePanel {
+public final class UndoRedoPanel extends PersistablePanel {
 	private final UndoRedoProvider undoRedoProvider;
 
 	/**
 	 * @param app application
 	 */
 	public UndoRedoPanel(AppW app) {
-		undoRedoProvider = new UndoRedoProvider(app, AccessibilityGroup.UNDO_GRAPHICS,
-				AccessibilityGroup.REDO_GRAPHICS);
+		undoRedoProvider = new UndoRedoProvider(
+				app, AccessibilityGroup.UNDO_GRAPHICS, AccessibilityGroup.REDO_GRAPHICS);
 		addStyleName("undoRedoPanel");
 		buildPanel();
 	}
@@ -46,9 +46,5 @@ public class UndoRedoPanel extends PersistablePanel {
 	 */
 	public void updateUndoRedoActions() {
 		undoRedoProvider.updateUndoRedoActions();
-	}
-
-	protected void setLabels() {
-		undoRedoProvider.setLabels();
 	}
 }

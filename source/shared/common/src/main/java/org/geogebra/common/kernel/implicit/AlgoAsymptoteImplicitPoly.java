@@ -31,7 +31,7 @@ import org.geogebra.common.util.DoubleUtil;
 
 /**
  * Find asymptotes of ImplicitCurves
- * 
+ *
  * @author Darko Drakulic
  */
 public class AlgoAsymptoteImplicitPoly extends AlgoElement {
@@ -49,8 +49,7 @@ public class AlgoAsymptoteImplicitPoly extends AlgoElement {
 	 * @param ip
 	 *            implicit polynomial
 	 */
-	public AlgoAsymptoteImplicitPoly(Construction c, String label,
-			GeoImplicit ip) {
+	public AlgoAsymptoteImplicitPoly(Construction c, String label, GeoImplicit ip) {
 		super(c);
 		this.ip = ip;
 		solver = getKernel().getEquationSolver();
@@ -63,7 +62,6 @@ public class AlgoAsymptoteImplicitPoly extends AlgoElement {
 		compute();
 
 		g.setLabel(label);
-
 	}
 
 	@Override
@@ -153,17 +151,16 @@ public class AlgoAsymptoteImplicitPoly extends AlgoElement {
 			if (!DoubleUtil.isEqual(last, roots[i])) {
 				int r = Integer.MAX_VALUE;
 				ArrayList<Double> p = new ArrayList<>();
-				double[] divisor = new double[] { -roots[i], 1 };
+				double[] divisor = new double[] {-roots[i], 1};
 				double rk = Double.NaN;
 				for (int k = 0; k <= r; k++) {
-					double[] pk = null;
+					double[] pk;
 					if (homogenPolys.size() > k) {
 						pk = homogenPolys.get(k);
 					} else {
 						double[] c = new double[deg - k + 1];
 						for (int j = 0; j <= deg - k; j++) {
-							if (coeff.length > j
-									&& coeff[j].length > deg - j - k) {
+							if (coeff.length > j && coeff[j].length > deg - j - k) {
 								c[j] = coeff[j][deg - j - k];
 							} else {
 								c[j] = 0;
@@ -193,15 +190,14 @@ public class AlgoAsymptoteImplicitPoly extends AlgoElement {
 								rk = 0;
 								break;
 							}
-							pk = PolynomialUtils.polynomialDivision(pk,
-									divisor);
+							pk = PolynomialUtils.polynomialDivision(pk, divisor);
 							l++;
 							ev = PolynomialUtils.eval(pk, roots[i]);
 							rk = ((deg - k + l) & 1) == 0 ? ev : -ev; // division
-																		// reduces
-																		// degree
-																		// by
-																		// one
+							// reduces
+							// degree
+							// by
+							// one
 						}
 					}
 					if (r == Integer.MAX_VALUE) {
@@ -247,7 +243,7 @@ public class AlgoAsymptoteImplicitPoly extends AlgoElement {
 					p.add(pk[deg - k]);
 					break;
 				}
-				int l = 0;
+				int l;
 				int d = PolynomialUtils.getDegree(pk);
 				if (d < deg - r) {
 					l = r - k;

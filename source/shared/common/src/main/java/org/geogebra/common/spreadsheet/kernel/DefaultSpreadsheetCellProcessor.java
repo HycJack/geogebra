@@ -21,8 +21,6 @@ import static org.geogebra.editor.share.util.Unicode.ASSIGN_STRING;
 
 import java.util.Arrays;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.gui.inputfield.InputHelper;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.arithmetic.ValidExpression;
@@ -34,6 +32,7 @@ import org.geogebra.common.kernel.geos.GeoElementSpreadsheet;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.kernel.parser.ParseException;
 import org.geogebra.common.kernel.parser.TokenMgrException;
+import org.geogebra.common.main.MyError;
 import org.geogebra.common.main.error.ErrorHandler;
 import org.geogebra.common.main.error.ErrorHelper;
 import org.geogebra.common.main.error.ErrorLogger;
@@ -41,6 +40,7 @@ import org.geogebra.common.spreadsheet.core.SpreadsheetCellProcessor;
 import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.common.util.debug.Log;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Sends spreadsheet cell editor input towards the AlgebraProcessor.
@@ -56,7 +56,7 @@ public class DefaultSpreadsheetCellProcessor implements SpreadsheetCellProcessor
 	 * Constructor.
 	 * @param algebraProcessor {@link AlgebraProcessor}
 	 */
-	public DefaultSpreadsheetCellProcessor(@Nonnull AlgebraProcessor algebraProcessor) {
+	public DefaultSpreadsheetCellProcessor(@NonNull AlgebraProcessor algebraProcessor) {
 		this.algebraProcessor = algebraProcessor;
 	}
 
@@ -70,7 +70,10 @@ public class DefaultSpreadsheetCellProcessor implements SpreadsheetCellProcessor
 	@Override
 	public void process(String input, int row, int column) {
 		String cellName = GeoElementSpreadsheet.getSpreadsheetCellName(column, row);
-		algebraProcessor.getKernel().getApplication().getAsyncManager()
+		algebraProcessor
+				.getKernel()
+				.getApplication()
+				.getAsyncManager()
 				.scheduleCallback(() -> process(input, cellName));
 	}
 
@@ -98,13 +101,12 @@ public class DefaultSpreadsheetCellProcessor implements SpreadsheetCellProcessor
 			return;
 		}
 		try {
-			processInput(buildProperInput(input, cellName), this,
-					(geos) -> {
-						if (geos != null && geos.length > 0 && geos[0] != null) {
-							Arrays.stream(geos).forEach(this::setInitialProperties);
-							kernel.getApplication().storeUndoInfo();
-						}
-					});
+			processInput(buildProperInput(input, cellName), this, (geos) -> {
+				if (geos != null && geos.length > 0 && geos[0] != null) {
+					Arrays.stream(geos).forEach(this::setInitialProperties);
+					kernel.getApplication().storeUndoInfo();
+				}
+			});
 		} catch (Exception e) {
 			Log.debug("error " + e.getLocalizedMessage());
 		}
@@ -118,11 +120,10 @@ public class DefaultSpreadsheetCellProcessor implements SpreadsheetCellProcessor
 	private boolean checkCircularDefinition(String input, Kernel kernel) {
 		try {
 			ValidExpression parsed = kernel.getParser().parseGeoGebraExpression(input);
-			if (parsed.any(v -> v instanceof Variable
-					&& cellName.equals(((Variable) v).getName()))) {
+			if (parsed.any(v -> v instanceof Variable && cellName.equals(((Variable) v).getName()))) {
 				return true;
 			}
-		} catch (ParseException | TokenMgrException e) {
+		} catch (ParseException | TokenMgrException | MyError expected) {
 			// continue
 		}
 		return false;
@@ -159,12 +160,11 @@ public class DefaultSpreadsheetCellProcessor implements SpreadsheetCellProcessor
 		sb.append("\"");
 	}
 
-	private void processInput(String command, ErrorHandler handler, AsyncOperation<GeoElementND[]>
-			callback) {
-		EvalInfo info = algebraProcessor.getEvalInfo(false,
-				false).withSpreadsheet();
-		algebraProcessor.processAlgebraCommandNoExceptionHandling(command, false,
-				handler, info, callback);
+	private void processInput(
+			String command, ErrorHandler handler, AsyncOperation<GeoElementND[]> callback) {
+		EvalInfo info = algebraProcessor.getEvalInfo(false, false).withSpreadsheet();
+		algebraProcessor.processAlgebraCommandNoExceptionHandling(
+				command, false, handler, info, callback);
 	}
 
 	private static boolean isCommand(String input) {

@@ -21,19 +21,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.App;
 import org.geogebra.common.util.debug.Log;
+import org.jspecify.annotations.NonNull;
 
 import com.google.j2objc.annotations.Weak;
 
+@HasNativeSubclass
 public abstract class ScriptManager implements EventListener {
 
 	@Weak
 	protected App app;
+
 	protected boolean jsEnabled = true;
 	// maps between GeoElement and JavaScript function names
 	protected HashMap<GeoElement, JsReference> updateListenerMap;
@@ -51,23 +53,28 @@ public abstract class ScriptManager implements EventListener {
 	private final HashMap<String, JsReference> nameToScript = new HashMap<>();
 
 	private ArrayList<JsReference>[] listenerLists() {
-		return new ArrayList[] { addListeners, storeUndoListeners,
-				removeListeners, renameListeners, updateListeners,
-				clickListeners, clearListeners, clientListeners };
+		return new ArrayList[] {
+			addListeners,
+			storeUndoListeners,
+			removeListeners,
+			renameListeners,
+			updateListeners,
+			clickListeners,
+			clearListeners,
+			clientListeners
+		};
 	}
 
 	/**
 	 * For tests only.
 	 */
-	ScriptManager() {
-
-	}
+	ScriptManager() {}
 
 	/**
 	 * @param app
 	 *            application
 	 */
-	public ScriptManager(@Nonnull App app) {
+	public ScriptManager(@NonNull App app) {
 		this.app = app;
 		app.getEventDispatcher().addEventListener(this);
 	}
@@ -75,35 +82,37 @@ public abstract class ScriptManager implements EventListener {
 	@Override
 	public void sendEvent(Event evt) {
 		switch (evt.type) {
-		case CLICK:
-			callListeners(clickListeners, evt);
-			if (clickListenerMap != null) {
-				callListener(clickListenerMap.get(evt.target), evt);
-			}
-			break;
-		case UPDATE:
-			callListeners(updateListeners, evt);
-			if (updateListenerMap != null) {
-				callListener(updateListenerMap.get(evt.target), evt);
-			}
-			break;
-		case ADD:
-			callListeners(addListeners, evt);
-			break;
-		case STOREUNDO:
-			callListeners(storeUndoListeners, evt);
-			break;
-		case REMOVE:
-			callListeners(removeListeners, evt);
-			break;
-		case RENAME:
-			callListeners(renameListeners, evt);
-			break;
-		case CLEAR:
-			callListeners(clearListeners, evt);
-			break;
-		default:
-			callClientListeners(clientListeners, evt);
+			case CLICK:
+				callListeners(clickListeners, evt);
+				if (clickListenerMap != null) {
+					callListener(clickListenerMap.get(evt.target), evt);
+				}
+				break;
+			case UPDATE:
+				callListeners(updateListeners, evt);
+				if (updateListenerMap != null) {
+					callListener(updateListenerMap.get(evt.target), evt);
+				}
+				break;
+			case ADD:
+				callListeners(addListeners, evt);
+				break;
+			case STOREUNDO:
+				callListeners(storeUndoListeners, evt);
+				break;
+			case REMOVE:
+				callListeners(removeListeners, evt);
+				break;
+			case RENAME:
+				callListeners(renameListeners, evt);
+				break;
+			case CLEAR:
+				callListeners(clearListeners, evt);
+				break;
+			default:
+				if (!clientListeners.isEmpty()) {
+					callClientListeners(clientListeners, evt);
+				}
 		}
 	}
 
@@ -153,6 +162,10 @@ public abstract class ScriptManager implements EventListener {
 		// implemented in web and desktop
 	}
 
+	/**
+	 * @param listeners non-empty list of listeners
+	 * @param evt event
+	 */
 	protected void callClientListeners(List<JsReference> listeners, Event evt) {
 		// implemented in web and desktop
 	}
@@ -220,8 +233,7 @@ public abstract class ScriptManager implements EventListener {
 		storeUndoListeners.remove(fromNative(JSFunctionName));
 	}
 
-	private void registerGlobalListener(ArrayList<JsReference> listenerList,
-			Object jsFunctionName) {
+	private void registerGlobalListener(ArrayList<JsReference> listenerList, Object jsFunctionName) {
 		if (jsFunctionName == null || isEmptyString(jsFunctionName)) {
 			return;
 		}
@@ -233,13 +245,12 @@ public abstract class ScriptManager implements EventListener {
 	}
 
 	private boolean isEmptyString(Object jsFunctionName) {
-		return jsFunctionName instanceof String
-				&& ((String) jsFunctionName).length() == 0;
+		return jsFunctionName instanceof String && ((String) jsFunctionName).length() == 0;
 	}
 
 	/**
 	 * Removes a previously registered add listener
-	 * 
+	 *
 	 * @see #registerAddListener(Object)
 	 */
 	public synchronized void unregisterAddListener(Object JSFunctionName) {
@@ -258,7 +269,7 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Removes a previously registered remove listener
-	 * 
+	 *
 	 * @see #registerRemoveListener(Object)
 	 */
 	public synchronized void unregisterRemoveListener(Object jsFunction) {
@@ -277,11 +288,11 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Removes a previously registered clear listener
-	 * 
+	 *
 	 * @see #registerClearListener(Object)
 	 */
 	public synchronized void unregisterClearListener(Object JSFunctionName) {
-			clearListeners.remove(fromNative(JSFunctionName));
+		clearListeners.remove(fromNative(JSFunctionName));
 	}
 
 	/**
@@ -296,7 +307,7 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Removes a previously registered rename listener.
-	 * 
+	 *
 	 * @see #registerRenameListener(Object)
 	 */
 	public synchronized void unregisterRenameListener(Object JSFunctionName) {
@@ -315,7 +326,7 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Removes a previously registered update listener.
-	 * 
+	 *
 	 * @see #registerRemoveListener(Object)
 	 */
 	public synchronized void unregisterUpdateListener(Object JSFunctionName) {
@@ -334,7 +345,7 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Removes a previously registered click listener.
-	 * 
+	 *
 	 * @see #registerRemoveListener(Object)
 	 */
 	public synchronized void unregisterClickListener(Object JSFunctionName) {
@@ -343,7 +354,7 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Registers a JS function to be notified of client events.
-	 * 
+	 *
 	 * @param jsFunctionName
 	 *            client listener name
 	 */
@@ -367,8 +378,7 @@ public abstract class ScriptManager implements EventListener {
 	 * replaced.
 	 */
 	private synchronized HashMap<GeoElement, JsReference> registerObjectListener(
-			HashMap<GeoElement, JsReference> map0, String objName,
-			Object JSFunctionName) {
+			HashMap<GeoElement, JsReference> map0, String objName, Object JSFunctionName) {
 		if (JSFunctionName == null || isEmptyString(JSFunctionName)) {
 			return map0;
 		}
@@ -401,20 +411,19 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Register a JavaScript function that will run when an object is updated
-	 * 
+	 *
 	 * @param objName
 	 *            the name of the target object
 	 * @param fName
 	 *            the name of the JavaScript function
 	 */
 	public void registerObjectUpdateListener(String objName, Object fName) {
-		updateListenerMap = registerObjectListener(updateListenerMap, objName,
-				fName);
+		updateListenerMap = registerObjectListener(updateListenerMap, objName, fName);
 	}
 
 	/**
 	 * Unregister any JavaScript function that runs when an object is updated
-	 * 
+	 *
 	 * @param objName
 	 *            the name of the target object
 	 */
@@ -424,20 +433,19 @@ public abstract class ScriptManager implements EventListener {
 
 	/**
 	 * Register a JavaScript function that will run when an object is clicked
-	 * 
+	 *
 	 * @param objName
 	 *            the name of the target object
 	 * @param fName
 	 *            the name of the JavaScript function
 	 */
 	public void registerObjectClickListener(String objName, Object fName) {
-		clickListenerMap = registerObjectListener(clickListenerMap, objName,
-				fName);
+		clickListenerMap = registerObjectListener(clickListenerMap, objName, fName);
 	}
 
 	/**
 	 * Unregister any JavaScript function that runs when an object is clicked
-	 * 
+	 *
 	 * @param objName
 	 *            the name of the target object
 	 */
@@ -556,7 +564,7 @@ public abstract class ScriptManager implements EventListener {
 	}
 
 	private void rebuildListenerMap() {
-		clickListenerMap =  rebuildListenerMap(clickListenerMap);
+		clickListenerMap = rebuildListenerMap(clickListenerMap);
 		updateListenerMap = rebuildListenerMap(updateListenerMap);
 	}
 
@@ -568,7 +576,7 @@ public abstract class ScriptManager implements EventListener {
 		}
 
 		HashMap<GeoElement, JsReference> map = new HashMap<>();
-		for (Map.Entry<GeoElement, JsReference> entry: listenerMap.entrySet()) {
+		for (Map.Entry<GeoElement, JsReference> entry : listenerMap.entrySet()) {
 			GeoElement oldGeo = entry.getKey();
 			GeoElement newGeo = app.getKernel().lookupLabel(oldGeo.getLabelSimple());
 			if (newGeo != null) {
@@ -613,4 +621,10 @@ public abstract class ScriptManager implements EventListener {
 		return alias;
 	}
 
+	/**
+	 * Discard objects created by running global JS.
+	 */
+	public void clearGlobalObjects() {
+		// only in JRE
+	}
 }

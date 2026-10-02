@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -17,10 +17,10 @@
 package org.geogebra.common.spreadsheet.kernel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.cas.MockedCasGiac;
@@ -30,22 +30,22 @@ import org.geogebra.common.kernel.geos.GeoElementSpreadsheet;
 import org.geogebra.common.spreadsheet.core.CellDragPasteHandler;
 import org.geogebra.common.spreadsheet.core.TabularRange;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
+class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 
 	private CellDragPasteHandler cellDragPasteHandler;
 	private KernelTabularDataAdapter tabularData;
 
-	@Override
-	public void setup() {
-		super.setup();
+	@BeforeEach
+	void setup() {
 		tabularData = new KernelTabularDataAdapter(getApp());
 		cellDragPasteHandler = new KernelCellDragPasteHandler(tabularData, getKernel());
 	}
 
 	@Test
-	public void testPasteSingleCell1() {
+	void testPasteSingleCell1() {
 		tabularData.setContent(0, 0, add("=12"));
 		setRangeToCopy(0, 0, 0, 0);
 		assertTrue(pasteToDestination(0, 1));
@@ -53,7 +53,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteSingleCell2() {
+	void testPasteSingleCell2() {
 		tabularData.setContent(1, 1, add("1 + 3"));
 		setRangeToCopy(1, 1, 1, 1);
 		pasteToDestination(2, 2);
@@ -61,7 +61,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteSingleCell3() {
+	void testPasteSingleCell3() {
 		tabularData.setContent(1, 1, add("123"));
 		tabularData.setContent(1, 2, add("456"));
 		setRangeToCopy(1, 1, 1, 1);
@@ -70,7 +70,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteSingleCell4() {
+	void testPasteSingleCell4() {
 		tabularData.setContent(0, 0, add("\"=12\""));
 		tabularData.setContent(0, 1, add("\"=A1\""));
 		setRangeToCopy(0, 0, 1, 1);
@@ -80,14 +80,14 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-6628")
-	public void testPasteSingleCellEmpty() {
+	void testPasteSingleCellEmpty() {
 		tabularData.setContent(0, 0, null);
 		setRangeToCopy(0, 0, 0, 0);
 		assertFalse(pasteToDestination(0, 1));
 	}
 
 	@Test
-	public void testPasteMultipleCells1() {
+	void testPasteMultipleCells1() {
 		tabularData.setContent(1, 1, add("123"));
 		tabularData.setContent(1, 2, add("456"));
 		setRangeToCopy(1, 1, 1, 2);
@@ -97,7 +97,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteMultipleCells2() {
+	void testPasteMultipleCells2() {
 		tabularData.setContent(3, 3, add("\"Sample Text\""));
 		tabularData.setContent(4, 3, add("1 / 2"));
 		setRangeToCopy(3, 4, 3, 3);
@@ -107,7 +107,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteMultiplceCells3() {
+	void testPasteMultiplceCells3() {
 		tabularData.setContent(0, 0, add("7 - 3"));
 		setRangeToCopy(0, 0, 0, 0);
 		pasteToDestination(2, 0);
@@ -116,7 +116,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteColumn() {
+	void testPasteColumn() {
 		tabularData.setContent(2, 2, add("3 * 4"));
 		tabularData.setContent(4, 2, add("123"));
 		setRangeToCopy(-1, -1, 2, 2);
@@ -126,7 +126,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteMultipleColumns() {
+	void testPasteMultipleColumns() {
 		tabularData.setContent(1, 2, add("12"));
 		tabularData.setContent(2, 3, add("14 + 2"));
 		setRangeToCopy(-1, -1, 2, 3);
@@ -136,7 +136,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteRow() {
+	void testPasteRow() {
 		tabularData.setContent(1, 2, add("\"Test\""));
 		tabularData.setContent(1, 3, add("pi"));
 		setRangeToCopy(1, 1, -1, -1);
@@ -146,7 +146,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPasteMultipleRows() {
+	void testPasteMultipleRows() {
 		tabularData.setContent(2, 3, add("13"));
 		tabularData.setContent(3, 3, add("1 + 2 + 3"));
 		setRangeToCopy(2, 3, -1, -1);
@@ -156,28 +156,28 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInvalidDestination1() {
+	void testInvalidDestination1() {
 		setRangeToCopy(1, 1, 1, 1);
 		cellDragPasteHandler.setDestinationForPaste(1, 1);
 		assertNull(cellDragPasteHandler.getDragPasteDestinationRange());
 	}
 
 	@Test
-	public void testInvalidDestination2() {
+	void testInvalidDestination2() {
 		setRangeToCopy(-1, -1, 2, 2);
 		cellDragPasteHandler.setDestinationForPaste(15, 2);
 		assertNull(cellDragPasteHandler.getDragPasteDestinationRange());
 	}
 
 	@Test
-	public void testInvalidDestination3() {
+	void testInvalidDestination3() {
 		setRangeToCopy(2, 4, -1, -1);
 		cellDragPasteHandler.setDestinationForPaste(3, 0);
 		assertNull(cellDragPasteHandler.getDragPasteDestinationRange());
 	}
 
 	@Test
-	public void testLinearPattern1() {
+	void testLinearPattern1() {
 		tabularData.setContent(1, 1, add("=12"));
 		tabularData.setContent(2, 1, add("=15"));
 		setRangeToCopy(1, 2, 1, 1);
@@ -189,7 +189,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testLinearPattern2() {
+	void testLinearPattern2() {
 		tabularData.setContent(2, 5, add("=4"));
 		tabularData.setContent(2, 4, add("=1"));
 		setRangeToCopy(2, 2, 4, 5);
@@ -199,7 +199,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testLinearPattern3() {
+	void testLinearPattern3() {
 		tabularData.setContent(4, 1, add("=1"));
 		tabularData.setContent(5, 1, add("=7"));
 		tabularData.setContent(4, 2, add("=3"));
@@ -213,7 +213,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testLinearPatternCAS() {
+	void testLinearPatternCAS() {
 		getApp().setCasConfig();
 		getApp().getKernel().setSymbolicMode(SymbolicMode.SYMBOLIC_AV);
 		MockedCasGiac mockedCasGiac = new MockedCasGiac();
@@ -236,9 +236,9 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-5987")
-	public void testDragPasteShouldResultInNonEmptySpreadsheetCells1() {
-		DefaultSpreadsheetCellProcessor processor
-				= new DefaultSpreadsheetCellProcessor(getAlgebraProcessor());
+	void testDragPasteShouldResultInNonEmptySpreadsheetCells1() {
+		DefaultSpreadsheetCellProcessor processor =
+				new DefaultSpreadsheetCellProcessor(getAlgebraProcessor());
 		getKernel().attach(tabularData);
 		processor.process("=3", 0, 0);
 		processor.process("=A2", 0, 1);
@@ -256,11 +256,11 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-5987")
-	public void testDragPasteShouldResultInNonEmptySpreadsheetCells2() {
+	void testDragPasteShouldResultInNonEmptySpreadsheetCells2() {
 		getApp().setCasConfig();
 		getKernel().setSymbolicMode(SymbolicMode.SYMBOLIC_AV);
-		DefaultSpreadsheetCellProcessor processor
-				= new DefaultSpreadsheetCellProcessor(getAlgebraProcessor());
+		DefaultSpreadsheetCellProcessor processor =
+				new DefaultSpreadsheetCellProcessor(getAlgebraProcessor());
 		getKernel().attach(tabularData);
 
 		processor.process("=3", 0, 0);
@@ -277,8 +277,7 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 	}
 
 	private void setRangeToCopy(int fromRow, int toRow, int fromColumn, int toColumn) {
-		cellDragPasteHandler.setRangeToCopy(
-				TabularRange.range(fromRow, toRow, fromColumn, toColumn));
+		cellDragPasteHandler.setRangeToCopy(new TabularRange(fromRow, fromColumn, toRow, toColumn));
 	}
 
 	private boolean pasteToDestination(int destinationRow, int destinationColumn) {
@@ -286,17 +285,21 @@ public class KernelCellDragPasteHandlerTest extends BaseUnitTest {
 		return cellDragPasteHandler.pasteToDestination();
 	}
 
-	private void assertCellContentIsEqual(int originRow, int originColumn,
-		int destinationRow, int destinationColumn) {
-		assertEquals(String.format("The content of cell (%d, %d) should be equal to the content "
-								+ "of cell (%d, %d)!", originRow, originColumn, destinationRow,
-						destinationColumn), getValueStringForCell(originRow, originColumn),
-				getValueStringForCell(destinationRow, destinationColumn));
+	private void assertCellContentIsEqual(
+			int originRow, int originColumn, int destinationRow, int destinationColumn) {
+		assertEquals(
+				getValueStringForCell(originRow, originColumn),
+				getValueStringForCell(destinationRow, destinationColumn),
+				String.format(
+						"The content of cell (%d, %d) should be equal to the content " + "of cell (%d, %d)!",
+						originRow, originColumn, destinationRow, destinationColumn));
 	}
 
 	private void assertCellContentEquals(String expected, int row, int column) {
-		assertEquals(String.format("The content of cell (%d, %d) is expected to be %s!",
-						row, column, expected), expected, getValueStringForCell(row, column));
+		assertEquals(
+				expected,
+				getValueStringForCell(row, column),
+				String.format("The content of cell (%d, %d) is expected to be %s!", row, column, expected));
 	}
 
 	private String getValueStringForCell(int row, int column) {

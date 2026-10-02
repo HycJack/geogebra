@@ -23,10 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.arithmetic.filter.OperationFilter;
 import org.geogebra.common.plugin.Operation;
+import org.jspecify.annotations.Nullable;
 
 class FunctionReferences {
 
@@ -71,8 +70,11 @@ class FunctionReferences {
 		return reservedFunctions.contains(s);
 	}
 
-	void getCompletions(String prefix, Set<String> completions, Set<Operation> ops,
-			@CheckForNull OperationFilter operationFilter) {
+	void getCompletions(
+			String prefix,
+			Set<String> completions,
+			Set<Operation> ops,
+			@Nullable OperationFilter operationFilter) {
 		for (OperationSyntax operationSyntax : syntaxes) {
 			if (operationFilter != null && !operationFilter.isAllowed(operationSyntax.operation)) {
 				continue;
@@ -88,9 +90,9 @@ class FunctionReferences {
 		final Operation operation;
 		final String syntax;
 
-        private OperationSyntax(Operation operation, String syntax) {
-            this.operation = operation;
-            this.syntax = syntax;
-        }
-    }
+		private OperationSyntax(Operation operation, String syntax) {
+			this.operation = operation;
+			this.syntax = syntax;
+		}
+	}
 }

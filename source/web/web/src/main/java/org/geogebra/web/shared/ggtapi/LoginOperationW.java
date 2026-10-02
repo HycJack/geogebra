@@ -24,9 +24,12 @@ import org.geogebra.common.move.ggtapi.operations.BackendAPI;
 import org.geogebra.common.move.ggtapi.operations.LogInOperation;
 import org.geogebra.common.move.views.EventRenderable;
 import org.geogebra.common.util.StringUtil;
+import org.geogebra.common.util.debug.AccessibilityAnalytics;
+import org.geogebra.common.util.debug.AccessibilityAnalyticsContext;
 import org.geogebra.common.util.debug.Log;
 import org.geogebra.common.util.debug.analytics.LoginAnalytics;
 import org.geogebra.gwtutil.Cookies;
+import org.geogebra.gwtutil.JsObject;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.ggtapi.models.AuthenticationModelW;
 
@@ -39,10 +42,10 @@ import jsinterop.base.JsPropertyMap;
 /**
  * The web version of the login operation. uses an own AuthenticationModel and
  * an own implementation of the API
- * 
+ *
  * @author stefan
  */
-public class LoginOperationW extends LogInOperation {
+public final class LoginOperationW extends LogInOperation {
 	private final AppW app;
 	private BackendAPIFactory apiFactory;
 
@@ -60,7 +63,7 @@ public class LoginOperationW extends LogInOperation {
 	/**
 	 * Initializes the SignInOperation for Web by creating the corresponding
 	 * model and view classes
-	 * 
+	 *
 	 * @param appWeb
 	 *            application
 	 */
@@ -68,7 +71,7 @@ public class LoginOperationW extends LogInOperation {
 		super();
 		this.app = appWeb;
 		getView().add(new LanguageLoginCallback());
-		getView().add(new LoginAnalytics());
+		getView().add(new LoginAnalytics(app::getAccessibilityAnalyticsContext));
 		AuthenticationModelW model = new AuthenticationModelW(appWeb);
 		setModel(model);
 
@@ -81,28 +84,24 @@ public class LoginOperationW extends LogInOperation {
 	 * {action:"logintoken", msg:token}
 	 */
 	private void iniNativeEvents(AppW app) {
-		app.getGlobalHandlers().addEventListener(DomGlobal.window,
-						"message",
-						event -> {
-							MessageEvent<?> message = Js.uncheckedCast(event);
-							Object data = message.data;
-							// later if event.origin....
-							if ("string".equals(Js.typeof(data))) {
-								try {
-									JsPropertyMap<Object> dataObject =
-											Js.asPropertyMap(Global.JSON.parse((String) data));
+		app.getGlobalHandlers().addEventListener(DomGlobal.window, "message", event -> {
+			MessageEvent<?> message = Js.uncheckedCast(event);
+			Object data = message.data;
+			// later if event.origin....
+			if ("string".equals(Js.typeof(data))) {
+				try {
+					JsPropertyMap<Object> dataObject = JsObject.of(Global.JSON.parse((String) data));
 
-									Object action = dataObject.get("action");
-									if ("logintoken".equals(action)) {
-										Log.debug("Login token sent via message");
-										performTokenLogin((String) dataObject.get("msg"), false);
-									}
-								} catch (Throwable err) {
-									Log.debug("error occurred while logging: \n"
-											+ err.getMessage() + " " + data);
-								}
-							}
-						});
+					Object action = dataObject.get("action");
+					if ("logintoken".equals(action)) {
+						Log.debug("Login token sent via message");
+						performTokenLogin((String) dataObject.get("msg"), false);
+					}
+				} catch (Throwable err) {
+					Log.debug("error occurred while logging: \n" + err.getMessage() + " " + data);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -128,8 +127,8 @@ public class LoginOperationW extends LogInOperation {
 
 	@Override
 	protected String getURLClientInfo() {
-		return Global.encodeURIComponent("GeoGebra Web Application V"
-				+ GeoGebraConstants.VERSION_STRING);
+		return Global.encodeURIComponent(
+				"GeoGebra Web Application V" + GeoGebraConstants.VERSION_STRING);
 	}
 
 	@Override
@@ -143,13 +142,21 @@ public class LoginOperationW extends LogInOperation {
 
 	@Override
 	public void showLoginDialog() {
+		registerLoginShown();
 		app.getSignInController().login();
+	}
+
+	private void registerLoginShown() {
+		AccessibilityAnalyticsContext context = app.getAccessibilityAnalyticsContext();
+		AccessibilityAnalytics.logLoginShown(context.getTrigger(), context.getFlow());
 	}
 
 	@Override
 	public void showLogoutUI() {
 		if (!StringUtil.empty(app.getAppletParameters().getParamLogoutURL())) {
-			DomGlobal.window.open(app.getAppletParameters().getParamLogoutURL(), "_blank",
+			DomGlobal.window.open(
+					app.getAppletParameters().getParamLogoutURL(),
+					"_blank",
 					"menubar=off,width=450,height=350");
 		}
 	}

@@ -55,9 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.contextmenu.ContextMenuItemFilter;
 import org.geogebra.common.euclidian.EuclidianConstants;
 import org.geogebra.common.exam.restrictions.cvte.CvteAlgebraOutputFilter;
@@ -101,6 +98,8 @@ import org.geogebra.common.properties.impl.objects.QuadraticEquationFormProperty
 import org.geogebra.common.restrictions.FeatureRestriction;
 import org.geogebra.common.restrictions.PropertyRestriction;
 import org.geogebra.common.restrictions.Restrictions;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class CvteExamRestrictions extends Restrictions {
 
@@ -108,7 +107,8 @@ public final class CvteExamRestrictions extends Restrictions {
 
 	/** Constructs the restrictions for CVTE exam. */
 	public CvteExamRestrictions() {
-		super(Set.of(CAS, G3D, GEOMETRY, PROBABILITY, SCIENTIFIC),
+		super(
+				Set.of(CAS, G3D, GEOMETRY, PROBABILITY, SCIENTIFIC),
 				GRAPHING,
 				createFeatureRestrictions(),
 				createInputExpressionFilters(),
@@ -129,7 +129,7 @@ public final class CvteExamRestrictions extends Restrictions {
 	}
 
 	@Override
-	public void applyTo(@Nonnull ContextDependencies cd) {
+	public void applyTo(@NonNull ContextDependencies cd) {
 		if (cd.settings() != null) {
 			casEnabled = cd.settings().getCasSettings().isEnabled();
 			// Note: The effect we want to achieve here is disable the symbolic versions of the
@@ -146,7 +146,7 @@ public final class CvteExamRestrictions extends Restrictions {
 	}
 
 	@Override
-	public void removeFrom(@Nonnull ContextDependencies cd) {
+	public void removeFrom(@NonNull ContextDependencies cd) {
 		super.removeFrom(cd);
 		if (cd.settings() != null) {
 			cd.settings().getCasSettings().setEnabled(casEnabled);
@@ -163,9 +163,11 @@ public final class CvteExamRestrictions extends Restrictions {
 	}
 
 	private static Set<CommandFilter> createCommandFilters() {
-		// Source: https://docs.google.com/spreadsheets/d/1xUnRbtDPGtODKcYhM4tx-uD4G8B1wcpGgSkT4iX8BJA/edit?gid=215139506#gid=215139506
+		// Source:
+		// https://docs.google.com/spreadsheets/d/1xUnRbtDPGtODKcYhM4tx-uD4G8B1wcpGgSkT4iX8BJA/edit?gid=215139506#gid=215139506
 		// note: this is the set of *allowed* commands
-		CommandNameFilter nameFilter = new CommandNameFilter(false,
+		CommandNameFilter nameFilter = new CommandNameFilter(
+				false,
 				Commands.BinomialCoefficient,
 				Commands.Circle,
 				Commands.CurveCartesian,
@@ -226,9 +228,28 @@ public final class CvteExamRestrictions extends Restrictions {
 
 	private static OperationFilter createOperationFilter() {
 		Set<Operation> restrictedOperations = Set.of(
-				CONJUGATE, FRACTIONAL_PART, GAMMA, GAMMA_INCOMPLETE, GAMMA_INCOMPLETE_REGULARIZED,
-				POLYGAMMA, RANDOM, NPR, PRODUCT, VECTORPRODUCT, ARG, ALT, BETA, BETA_INCOMPLETE,
-				BETA_INCOMPLETE_REGULARIZED, ERF, PSI, SI, CI, EI, ZETA, LAMBERTW);
+				CONJUGATE,
+				FRACTIONAL_PART,
+				GAMMA,
+				GAMMA_INCOMPLETE,
+				GAMMA_INCOMPLETE_REGULARIZED,
+				POLYGAMMA,
+				RANDOM,
+				NPR,
+				PRODUCT,
+				VECTORPRODUCT,
+				ARG,
+				ALT,
+				BETA,
+				BETA_INCOMPLETE,
+				BETA_INCOMPLETE_REGULARIZED,
+				ERF,
+				PSI,
+				SI,
+				CI,
+				EI,
+				ZETA,
+				LAMBERTW);
 		return operation -> !restrictedOperations.contains(operation);
 	}
 
@@ -238,7 +259,8 @@ public final class CvteExamRestrictions extends Restrictions {
 	}
 
 	private static ToolCollectionFilter createToolsFilter() {
-		// Source: https://docs.google.com/spreadsheets/d/1xUnRbtDPGtODKcYhM4tx-uD4G8B1wcpGgSkT4iX8BJA/edit?gid=1199288464#gid=1199288464
+		// Source:
+		// https://docs.google.com/spreadsheets/d/1xUnRbtDPGtODKcYhM4tx-uD4G8B1wcpGgSkT4iX8BJA/edit?gid=1199288464#gid=1199288464
 		// note: this is the set of *excluded* tools
 		return new ToolCollectionSetFilter(
 				EuclidianConstants.MODE_POINT,
@@ -295,8 +317,7 @@ public final class CvteExamRestrictions extends Restrictions {
 				EuclidianConstants.MODE_RELATION,
 				EuclidianConstants.MODE_BUTTON_ACTION,
 				EuclidianConstants.MODE_SHOW_HIDE_CHECKBOX,
-				EuclidianConstants.MODE_TEXTFIELD_ACTION
-		);
+				EuclidianConstants.MODE_TEXTFIELD_ACTION);
 	}
 
 	private static Set<ExpressionFilter> createInputExpressionFilters() {
@@ -355,7 +376,7 @@ public final class CvteExamRestrictions extends Restrictions {
 	private static final class AllowedExplicitEquationVisibilityRestriction
 			implements VisibilityRestriction {
 		@Override
-		public @Nonnull Effect getEffect(GeoElement geoElement) {
+		public @NonNull Effect getEffect(GeoElement geoElement) {
 			return isExplicitEquation(geoElement) ? ALLOW : IGNORE;
 		}
 	}
@@ -371,9 +392,8 @@ public final class CvteExamRestrictions extends Restrictions {
 	private static final class AllowedCenterAndRadiusCircleCommandVisibilityRestriction
 			implements VisibilityRestriction {
 		@Override
-		public @Nonnull Effect getEffect(GeoElement geoElement) {
-			return geoElement.getParentAlgorithm() instanceof AlgoCirclePointRadius
-					? ALLOW : IGNORE;
+		public @NonNull Effect getEffect(GeoElement geoElement) {
+			return geoElement.getParentAlgorithm() instanceof AlgoCirclePointRadius ? ALLOW : IGNORE;
 		}
 	}
 
@@ -392,7 +412,7 @@ public final class CvteExamRestrictions extends Restrictions {
 	private static final class AllowedLinearEquationVisibilityRestriction
 			implements VisibilityRestriction {
 		@Override
-		public @Nonnull Effect getEffect(GeoElement geoElement) {
+		public @NonNull Effect getEffect(GeoElement geoElement) {
 			return isLinearEquation(geoElement) ? ALLOW : IGNORE;
 		}
 	}
@@ -407,10 +427,9 @@ public final class CvteExamRestrictions extends Restrictions {
 	 *     <li>Circle((0, 0), 2)</li>
 	 * </ul>
 	 */
-	private static final class HiddenConicVisibilityRestriction
-			implements VisibilityRestriction {
+	private static final class HiddenConicVisibilityRestriction implements VisibilityRestriction {
 		@Override
-		public @Nonnull Effect getEffect(GeoElement geoElement) {
+		public @NonNull Effect getEffect(GeoElement geoElement) {
 			return geoElement.isGeoConic() ? HIDE : IGNORE;
 		}
 	}
@@ -434,22 +453,21 @@ public final class CvteExamRestrictions extends Restrictions {
 	 *     <li>x^2 / 9 + x^2 / 4 = 1</li>
 	 * </ul>
 	 */
-	private static final class HiddenEquationVisibilityRestriction
-			implements VisibilityRestriction {
+	private static final class HiddenEquationVisibilityRestriction implements VisibilityRestriction {
 		@Override
-		public @Nonnull Effect getEffect(GeoElement geoElement) {
+		public @NonNull Effect getEffect(GeoElement geoElement) {
 			return isEquation(geoElement) ? HIDE : IGNORE;
 		}
 	}
 
-	private static @CheckForNull String unwrapVariable(ExpressionValue expressionValue) {
+	private static @Nullable String unwrapVariable(ExpressionValue expressionValue) {
 		if (expressionValue instanceof FunctionVariable) {
 			return ((FunctionVariable) expressionValue).getSetVarString();
 		}
 		return null;
 	}
 
-	private static @CheckForNull Equation unwrapEquation(GeoElement geoElement) {
+	private static @Nullable Equation unwrapEquation(GeoElement geoElement) {
 		ExpressionNode definition = geoElement.getDefinition();
 		if (definition != null && definition.unwrap() instanceof Equation) {
 			return (Equation) definition.unwrap();

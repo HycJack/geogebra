@@ -16,13 +16,12 @@
 
 package org.geogebra.common.main;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
+import org.jspecify.annotations.Nullable;
 
 /**
- * 
+ *
  * @author Markus
  */
 public class MyError extends Error {
@@ -31,10 +30,11 @@ public class MyError extends Error {
 	private static final long serialVersionUID = 1L;
 	/** application */
 	protected Localization loc;
+
 	protected String commandName = null;
 	private String[] strs;
 	// Used for localization
-	private Errors message;
+	private Errors messageKey;
 	// Used for identification
 	private Errors errorType;
 
@@ -78,9 +78,8 @@ public class MyError extends Error {
 	 *            cause
 	 * @return command error
 	 */
-	public static MyError forCommand(Localization loc0, String errorName,
-			String commandName,
-			Throwable cause) {
+	public static MyError forCommand(
+			Localization loc0, String errorName, String commandName, Throwable cause) {
 		return forCommand(loc0, errorName, commandName, cause, null);
 	}
 
@@ -97,10 +96,12 @@ public class MyError extends Error {
 	 *            type of the error
 	 * @return command error
 	 */
-	public static MyError forCommand(Localization loc0, String errorName,
+	public static MyError forCommand(
+			Localization loc0,
+			String errorName,
 			String commandName,
 			Throwable cause,
-			@CheckForNull Errors errorType) {
+			@Nullable Errors errorType) {
 		// set localized message
 		MyError ret = new MyError(errorName, cause);
 		ret.loc = loc0;
@@ -120,7 +121,7 @@ public class MyError extends Error {
 	public MyError(Localization loc0, Errors message0, String... strs0) {
 		super(message0.key);
 		this.loc = loc0;
-		this.message = message0;
+		this.messageKey = message0;
 		this.strs = strs0;
 	}
 
@@ -135,7 +136,7 @@ public class MyError extends Error {
 	public MyError(Localization loc0, Throwable cause, Errors message0, String... strs0) {
 		super(message0.key, cause);
 		this.loc = loc0;
-		this.message = message0;
+		this.messageKey = message0;
 		this.strs = strs0;
 	}
 
@@ -151,11 +152,11 @@ public class MyError extends Error {
 	 * @param rt
 	 *            right expression
 	 */
-	public MyError(Localization loc0, Errors message0, ExpressionValue lt, String opname,
-			ExpressionValue rt) {
+	public MyError(
+			Localization loc0, Errors message0, ExpressionValue lt, String opname, ExpressionValue rt) {
 		super(message0.key);
 		this.loc = loc0;
-		this.message = message0;
+		this.messageKey = message0;
 
 		strs = new String[3];
 		strs[0] = toErrorString(lt);
@@ -187,7 +188,7 @@ public class MyError extends Error {
 	/**
 	 * @return associated command name
 	 */
-	public String getcommandName() {
+	public String getCommandName() {
 		return commandName;
 	}
 
@@ -200,13 +201,13 @@ public class MyError extends Error {
 	}
 
 	@Override
-	public String getLocalizedMessage() {
+	public String getMessage() {
 		StringBuilder sb = new StringBuilder();
 		// space needed in case error is displayed on one line
 		sb.append(getError());
 
 		// only needed for old "string" errors, not new enum errors
-		if (message == null && strs != null) {
+		if (messageKey == null && strs != null) {
 			sb.append(" \n");
 			for (String part : strs) {
 				sb.append(part);
@@ -217,66 +218,38 @@ public class MyError extends Error {
 	}
 
 	private String getError() {
-		
+
 		// using new Errors enum
-		if (message != null) {
-			String ret = message.getError(loc, strs);
-			return ret;
+		if (messageKey != null) {
+			return messageKey.getError(loc, strs);
 		}
-		
+
 		// using old string method
-		return getError(getMessage());
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(getClass().toString());
-		sb.append(": ");
-		sb.append(getError());
-		if (strs != null) {
-			for (int i = 0; i < strs.length; i++) {
-				sb.append(" : ");
-				sb.append(getError(strs[i]));
-			}
-		}
-		return sb.toString();
+		return super.getMessage();
 	}
 
 	/**
-	 * @param s
-	 *            key
-	 * @return localized error
-	 */
-	private String getError(String s) {
-		String ret = loc == null ? s : loc.getError(s);
-		return ret;
-	}
-
-	/**
-	 * 
+	 *
 	 * Errors and default translations
-	 * 
+	 *
 	 * (defaults needed eg in webSimple)
 	 *
 	 */
 	public enum Errors {
-
 		FrameLoadError("FrameLoadError", "This web page does not support embedding."),
 
-		CASGeneralErrorMessage("CAS.GeneralErrorMessage",
-				"Sorry, something went wrong. Please check your input"),
+		CASGeneralErrorMessage(
+				"CAS.GeneralErrorMessage", "Sorry, something went wrong. Please check your input"),
 
 		CASInvalidReferenceError("CAS.InvalidReferenceError", "One or more references are invalid"),
 
-		CASSelectionStructureError("CAS.SelectionStructureError",
-				"Please check the structure of your selection"),
+		CASSelectionStructureError(
+				"CAS.SelectionStructureError", "Please check the structure of your selection"),
 
 		CASTimeoutError("CAS.TimeoutError", "Calculation took too long and was aborted"),
 
-		CASVariableIsDynamicReference("CAS.VariableIsDynamicReference",
-				"Attempt to assign dynamic reference"),
+		CASVariableIsDynamicReference(
+				"CAS.VariableIsDynamicReference", "Attempt to assign dynamic reference"),
 
 		UndefinedVariable("UndefinedVariable", "Undefined variable"),
 
@@ -307,7 +280,7 @@ public class MyError extends Error {
 		UnbalancedBrackets("UnbalancedBrackets", "Unbalanced brackets"),
 
 		ReplaceFailed("ReplaceFailed", "Redefinition failed"),
-		
+
 		CircularDefinition("CircularDefinition", "Circular Definition"),
 
 		LoadFileFailed("LoadFileFailed", "Opening file failed"),
@@ -320,7 +293,8 @@ public class MyError extends Error {
 
 		ToolCreationFailed("Tool.CreationFailed", "Tool could not be created"),
 
-		ToolDeleteUsed("Tool.DeleteUsed",
+		ToolDeleteUsed(
+				"Tool.DeleteUsed",
 				"Following tools were used to create selected objects and cannot be deleted:"),
 
 		DeleteFailed("DeleteFailed", "Delete failed"),
@@ -334,20 +308,21 @@ public class MyError extends Error {
 		NumberExpected("NumberExpected", "Number expected"),
 
 		FunctionExpected("FunctionExpected", "Function expected"),
-		InvalidEquation("InvalidEquation",
-				"Invalid equation:\nPlease enter a polynomial equation in x and y"),
-		InvalidFunction("InvalidFunction",
-				"Invalid function:\nPlease enter an explicit function in x"),
+		InvalidEquation(
+				"InvalidEquation", "Invalid equation:\nPlease enter a polynomial equation in x and y"),
+		InvalidFunction("InvalidFunction", "Invalid function:\nPlease enter an explicit function in x"),
 
 		UnknownCommand("UnknownCommand", "Unknown command"),
 		NameUsed("NameUsed", "This label is already in use"),
+		LabelAlreadyUsed("LabelAlreadyUsed", "This label is already used."),
 		ChangeDependent("ChangeDependent", "Dependent objects may not be changed"),
+		IncompleteEquation("IncompleteEquation", "Incomplete equation"),
 
 		// IllegalArgumentAinCustomToolB("IllegalArgumentAinCustomToolB", "Illegal
 		// Argument %0 in Custom Tool %1"),
 
-		InvalidFunctionA("InvalidFunctionA",
-				"Invalid function:\nPlease enter an explicit function in %0") {
+		InvalidFunctionA(
+				"InvalidFunctionA", "Invalid function:\nPlease enter an explicit function in %0") {
 
 			@Override
 			public String getError(Localization loc, String... strs) {
@@ -386,7 +361,6 @@ public class MyError extends Error {
 
 				return ret;
 			}
-
 		};
 
 		final String key;
@@ -406,7 +380,7 @@ public class MyError extends Error {
 
 		/**
 		 * Builds error message from current key and given arguments
-		 * 
+		 *
 		 * @param loc
 		 *            localization
 		 * @param strs
@@ -422,7 +396,6 @@ public class MyError extends Error {
 			if (sb.length() == 0 || sb.toString().equals(key)) {
 				sb.setLength(0);
 				sb.append(defaultTranslation);
-
 			}
 
 			if (strs != null && strs.length > 0) {
@@ -433,16 +406,16 @@ public class MyError extends Error {
 					sb.append(" ");
 				}
 			}
-			
+
 			return sb.toString();
 		}
 
 		/**
 		 * remove null: as label eg 3/(x^2=1) gives Illegal division 3 / null:
 		 * (-x - 1) (-x + 1) = 0
-		 * 
+		 *
 		 * if label really is null, doesn't matter if removed
-		 * 
+		 *
 		 * @param s
 		 *            input
 		 * @return input with "null:" / "undefined:" removed
@@ -459,13 +432,11 @@ public class MyError extends Error {
 		}
 
 		/**
-		 * 
+		 *
 		 * @return ggbtrans translation key eg "LoadFileFailed"
 		 */
 		public String getKey() {
 			return key;
 		}
-
 	}
-
 }

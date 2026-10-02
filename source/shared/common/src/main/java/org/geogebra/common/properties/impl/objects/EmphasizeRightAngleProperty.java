@@ -24,8 +24,8 @@ import org.geogebra.common.properties.aliases.BooleanProperty;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 
-public class EmphasizeRightAngleProperty extends AbstractValuedProperty<Boolean> implements
-		BooleanProperty {
+public class EmphasizeRightAngleProperty extends AbstractValuedProperty<Boolean>
+		implements BooleanProperty {
 	private final GeoAngle element;
 
 	/**
@@ -35,6 +35,9 @@ public class EmphasizeRightAngleProperty extends AbstractValuedProperty<Boolean>
 	public EmphasizeRightAngleProperty(Localization localization, GeoElement element)
 			throws NotApplicablePropertyException {
 		super(localization, "EmphasizeRightAngle");
+		if (element instanceof GeoAngle angle && angle.isSlider()) {
+			throw new NotApplicablePropertyException(element); // don't show for angle sliders
+		}
 		if (!(element instanceof GeoAngle)) {
 			throw new NotApplicablePropertyException(element);
 		}

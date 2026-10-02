@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -29,13 +29,18 @@ import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.IN
 import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.INSERT_ROW_ABOVE;
 import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.INSERT_ROW_BELOW;
 import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.PASTE;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_FREQUENCY_TABLE;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_ONE_VARIABLE;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_REGRESSION;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_TWO_VARIABLES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,17 +49,17 @@ import org.geogebra.common.spreadsheet.TestTabularData;
 import org.geogebra.common.spreadsheet.core.ContextMenuItem.ActionableItem;
 import org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier;
 import org.geogebra.common.spreadsheet.style.SpreadsheetStyling;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public final class ContextMenuBuilderTest {
+final class ContextMenuBuilderTest {
 	private ContextMenuBuilder builder;
-	private SpreadsheetController controller;
+	private SpreadsheetController<String> controller;
 	private TabularData<String> data;
 	private TestClipboard clipboard;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		setupWithSize(100, 100);
 	}
 
@@ -62,11 +67,10 @@ public final class ContextMenuBuilderTest {
 		data = new TestTabularData(rows, columns);
 		fillTestData();
 		clipboard = new TestClipboard();
-		controller = new SpreadsheetController(data, new SpreadsheetStyling());
+		controller = new SpreadsheetController<>(data, new SpreadsheetStyling());
 		builder = new ContextMenuBuilder(controller);
-		CopyPasteCutTabularDataImpl<?> copyPasteCut =
-				new CopyPasteCutTabularDataImpl<>(data, clipboard, controller.getLayout(),
-						new SpreadsheetSelectionController());
+		CopyPasteCutTabularDataImpl<?> copyPasteCut = new CopyPasteCutTabularDataImpl<>(
+				data, clipboard, controller.getLayout(), new SpreadsheetSelectionController());
 		controller.setCopyPasteCut(copyPasteCut);
 	}
 
@@ -83,11 +87,62 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testCellMenuOrder() {
-		testMenuOrder(1, 1,
-				List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER,
-						INSERT_ROW_ABOVE, INSERT_ROW_BELOW, INSERT_COLUMN_LEFT,
-						INSERT_COLUMN_RIGHT, DIVIDER, DELETE_ROW, DELETE_COLUMN));
+	void testCellMenuOrder() {
+		testMenuOrder(
+				1,
+				1,
+				List.of(
+						CUT,
+						COPY,
+						PASTE,
+						DIVIDER,
+						CALCULATE,
+						CREATE_CHART,
+						DIVIDER,
+						INSERT_ROW_ABOVE,
+						INSERT_ROW_BELOW,
+						INSERT_COLUMN_LEFT,
+						INSERT_COLUMN_RIGHT,
+						DIVIDER,
+						DELETE_ROW,
+						DELETE_COLUMN));
+	}
+
+	@Test
+	void testCellMenuOrderWithStatistics() {
+		builder.setSpreadsheetStatisticsDelegate(() -> {});
+		testMenuOrder(
+				1,
+				1,
+				List.of(
+						CUT,
+						COPY,
+						PASTE,
+						DIVIDER,
+						CALCULATE,
+						STATISTICS,
+						CREATE_CHART,
+						DIVIDER,
+						INSERT_ROW_ABOVE,
+						INSERT_ROW_BELOW,
+						INSERT_COLUMN_LEFT,
+						INSERT_COLUMN_RIGHT,
+						DIVIDER,
+						DELETE_ROW,
+						DELETE_COLUMN));
+	}
+
+	@Test
+	void testStatisticsMenuOrder() {
+		builder.setSpreadsheetStatisticsDelegate(() -> {});
+
+		assertEquals(
+				List.of(
+						STATISTICS_ONE_VARIABLE,
+						STATISTICS_TWO_VARIABLES,
+						STATISTICS_FREQUENCY_TABLE,
+						STATISTICS_REGRESSION),
+				getIdentifiers(builder.getStatisticsItems()));
 	}
 
 	private void testMenuOrder(int row, int column, List<Identifier> expected) {
@@ -96,59 +151,105 @@ public final class ContextMenuBuilderTest {
 	}
 
 	private List<Identifier> getIdentifiers(List<ContextMenuItem> menuItems) {
-		return menuItems.stream().map(ContextMenuItem::getIdentifier)
-				.collect(Collectors.toList());
+		return menuItems.stream().map(ContextMenuItem::getIdentifier).collect(Collectors.toList());
 	}
 
 	@Test
-	public void testRowMenuOrder() {
-		testMenuOrder(1, HEADER_INDEX,
-				List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER,
-						INSERT_ROW_ABOVE, INSERT_ROW_BELOW, DIVIDER, DELETE_ROW));
+	void testRowMenuOrder() {
+		testMenuOrder(
+				1,
+				HEADER_INDEX,
+				List.of(
+						CUT,
+						COPY,
+						PASTE,
+						DIVIDER,
+						CALCULATE,
+						CREATE_CHART,
+						DIVIDER,
+						INSERT_ROW_ABOVE,
+						INSERT_ROW_BELOW,
+						DIVIDER,
+						DELETE_ROW));
 	}
 
 	@Test
-	public void testRowMenuOrderFull() {
+	void testRowMenuOrderFull() {
 		List<ContextMenuItem> menuItems = builder.build(0, 99, HEADER_INDEX, HEADER_INDEX);
-		assertEquals(List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER,
-						INSERT_ROW_ABOVE, INSERT_ROW_BELOW),
+		assertEquals(
+				List.of(
+						CUT,
+						COPY,
+						PASTE,
+						DIVIDER,
+						CALCULATE,
+						CREATE_CHART,
+						DIVIDER,
+						INSERT_ROW_ABOVE,
+						INSERT_ROW_BELOW),
 				getIdentifiers(menuItems));
 	}
 
 	@Test
-	public void testRowMenuOrderMaxSize() {
+	void testRowMenuOrderMaxSize() {
 		setupWithSize(Spreadsheet.MAX_ROWS, 7);
-		testMenuOrder(1, HEADER_INDEX,
-				List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER,
-						DIVIDER, DELETE_ROW));
+		testMenuOrder(
+				1,
+				HEADER_INDEX,
+				List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER, DIVIDER, DELETE_ROW));
 	}
 
 	@Test
-	public void testColumnMenuOrder() {
-		testMenuOrder(HEADER_INDEX, 1,
-				List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER,
-						INSERT_COLUMN_LEFT, INSERT_COLUMN_RIGHT, DIVIDER, DELETE_COLUMN));
+	void testColumnMenuOrder() {
+		testMenuOrder(
+				HEADER_INDEX,
+				1,
+				List.of(
+						CUT,
+						COPY,
+						PASTE,
+						DIVIDER,
+						CALCULATE,
+						CREATE_CHART,
+						DIVIDER,
+						INSERT_COLUMN_LEFT,
+						INSERT_COLUMN_RIGHT,
+						DIVIDER,
+						DELETE_COLUMN));
 	}
 
 	@Test
-	public void testColumnMenuOrderFull() {
+	void testColumnMenuOrderFull() {
 		List<ContextMenuItem> menuItems = builder.build(HEADER_INDEX, HEADER_INDEX, 0, 99);
-		assertEquals(List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER,
-						INSERT_COLUMN_LEFT, INSERT_COLUMN_RIGHT),
+		assertEquals(
+				List.of(
+						CUT,
+						COPY,
+						PASTE,
+						DIVIDER,
+						CALCULATE,
+						CREATE_CHART,
+						DIVIDER,
+						INSERT_COLUMN_LEFT,
+						INSERT_COLUMN_RIGHT),
 				getIdentifiers(menuItems));
 	}
 
 	@Test
-	public void testColumnMenuOrderMaxSize() {
+	void testColumnMenuOrderMaxSize() {
 		setupWithSize(7, Spreadsheet.MAX_COLUMNS);
-		testMenuOrder(HEADER_INDEX, 1,
-				List.of(CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER,
-						DIVIDER, DELETE_COLUMN));
+		testMenuOrder(
+				HEADER_INDEX,
+				1,
+				List.of(
+						CUT, COPY, PASTE, DIVIDER, CALCULATE, CREATE_CHART, DIVIDER, DIVIDER, DELETE_COLUMN));
 	}
 
 	private void runItemAt(int row, int column, Identifier id) {
 		ContextMenuItem contextMenuItem = builder.build(row, column).stream()
-				.filter(item -> item.getIdentifier().equals(id)).findAny().orElse(null);
+				.filter(item -> item.getIdentifier().equals(id))
+				.findAny()
+				.orElse(null);
 		if (contextMenuItem == null) {
 			fail("No such menu item at (" + row + ", " + column + "): " + id);
 		}
@@ -159,13 +260,13 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testDeleteSingleRow() {
+	void testDeleteSingleRow() {
 		runItemAt(4, HEADER_INDEX, DELETE_ROW);
 		checkRowReplaced(4, 5);
 	}
 
 	@Test
-	public void testDeleteSelectedRows() {
+	void testDeleteSelectedRows() {
 		selectRows(3, 6);
 		runItemAt(3, HEADER_INDEX, DELETE_ROW);
 		checkRowReplaced(3, 7);
@@ -186,7 +287,7 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testDeleteSingleColumn() {
+	void testDeleteSingleColumn() {
 		runItemAt(HEADER_INDEX, 4, DELETE_COLUMN);
 		checkColumnReplaced(4, 5);
 	}
@@ -202,7 +303,7 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testDeleteSelectedColumns() {
+	void testDeleteSelectedColumns() {
 		selectColumns(2, 6);
 		runItemAt(HEADER_INDEX, 4, DELETE_COLUMN);
 		checkColumnReplaced(2, 7);
@@ -213,7 +314,7 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testInsertRowAbove() {
+	void testInsertRowAbove() {
 		runItemAt(3, HEADER_INDEX, DELETE_ROW);
 		assertThat(data.numberOfRows(), equalTo(99));
 		runItemAt(5, HEADER_INDEX, INSERT_ROW_ABOVE);
@@ -232,7 +333,7 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testInsertRowBelow() {
+	void testInsertRowBelow() {
 		runItemAt(4, HEADER_INDEX, DELETE_ROW);
 		assertThat(data.numberOfRows(), equalTo(99));
 		runItemAt(5, HEADER_INDEX, INSERT_ROW_BELOW);
@@ -241,10 +342,10 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testInsertColumnLeft() {
+	void testInsertColumnLeft() {
 		runItemAt(HEADER_INDEX, 3, DELETE_COLUMN);
 		assertThat(data.numberOfColumns(), equalTo(99));
-		runItemAt(HEADER_INDEX, 5,  INSERT_COLUMN_LEFT);
+		runItemAt(HEADER_INDEX, 5, INSERT_COLUMN_LEFT);
 		checkNewColumnAt(5);
 		assertThat(data.numberOfColumns(), equalTo(100));
 	}
@@ -260,47 +361,46 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testInsertColumnRight() {
+	void testInsertColumnRight() {
 		runItemAt(HEADER_INDEX, 4, DELETE_COLUMN);
 		assertThat(data.numberOfColumns(), equalTo(99));
-		runItemAt(HEADER_INDEX, 5,  INSERT_COLUMN_RIGHT);
+		runItemAt(HEADER_INDEX, 5, INSERT_COLUMN_RIGHT);
 		checkNewColumnAt(6);
 		assertThat(data.numberOfColumns(), equalTo(100));
 	}
 
 	@Test
-	public void testCopySingleCell() {
+	void testCopySingleCell() {
 		runItemAt(1, 1, COPY);
 		assertEquals("cell11", clipboard.getContent());
 	}
 
 	@Test
-	public void testCopyCellSelection() {
+	void testCopyCellSelection() {
 		selectCells(1, 1, 4, 2);
 		runItemAt(1, 1, COPY);
-		assertEquals("cell11\tcell12\ncell21\tcell22\ncell31\tcell32\ncell41\tcell42",
-				clipboard.getContent());
+		assertEquals(
+				"cell11\tcell12\ncell21\tcell22\ncell31\tcell32\ncell41\tcell42", clipboard.getContent());
 	}
 
 	private void selectCells(int fromRow, int fromColumn, int toRow, int toColumn) {
-		controller.selectionController.select(new Selection(
-						new TabularRange(fromRow, fromColumn, toRow, toColumn)),
-				false, false);
+		controller.selectionController.select(
+				new Selection(new TabularRange(fromRow, fromColumn, toRow, toColumn)), false, false);
 	}
 
 	@Test
-	public void testCutSingleCell() {
+	void testCutSingleCell() {
 		runItemAt(1, 1, CUT);
 		assertEquals("cell11", clipboard.getContent());
 		assertNull(data.contentAt(1, 1));
 	}
 
 	@Test
-	public void testCutCellSelection() {
+	void testCutCellSelection() {
 		selectCells(1, 1, 4, 2);
 		runItemAt(1, 1, CUT);
-		assertEquals("cell11\tcell12\ncell21\tcell22\ncell31\tcell32\ncell41\tcell42",
-				clipboard.getContent());
+		assertEquals(
+				"cell11\tcell12\ncell21\tcell22\ncell31\tcell32\ncell41\tcell42", clipboard.getContent());
 		TabularRange range = new TabularRange(1, 1, 4, 2);
 		for (int row = range.getFromRow(); row < range.getToRow() + 1; row++) {
 			for (int column = range.getFromColumn(); column < range.getToColumn() + 1; column++) {
@@ -310,14 +410,14 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testPasteSingleCell() {
+	void testPasteSingleCell() {
 		runItemAt(1, 1, COPY);
 		runItemAt(2, 2, PASTE);
 		assertEquals("cell11", data.contentAt(2, 2));
 	}
 
 	@Test
-	public void testPasteCellSelection() {
+	void testPasteCellSelection() {
 		selectCells(1, 1, 2, 2);
 		runItemAt(1, 1, COPY);
 		controller.selectionController.clearSelections();
@@ -329,7 +429,7 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testPasteCellsToSmallerSelection() {
+	void testPasteCellsToSmallerSelection() {
 		selectCells(1, 1, 1, 4);
 		runItemAt(1, 1, COPY);
 		selectCells(10, 1, 10, 2);
@@ -341,7 +441,7 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testPasteCellsToBiggerSelection() {
+	void testPasteCellsToBiggerSelection() {
 		selectCells(1, 1, 2, 2);
 		runItemAt(1, 1, COPY);
 		selectCells(10, 1, 14, 5);
@@ -375,26 +475,30 @@ public final class ContextMenuBuilderTest {
 	}
 
 	@Test
-	public void testSelectingAllCellsDisablesDeletingColumn() {
+	void testSelectingAllCellsDisablesDeletingColumn() {
 		controller.selectAll();
-		assertThrows("The DELETE_COLUMN item should not pop up if all cells are selected!",
-				AssertionError.class, () -> runItemAt(1, 1, DELETE_COLUMN));
+		assertThrows(
+				AssertionError.class,
+				() -> runItemAt(1, 1, DELETE_COLUMN),
+				"The DELETE_COLUMN item should not pop up if all cells are selected!");
 	}
 
 	@Test
-	public void testSelectingAllCellsDisablesDeletingRows() {
+	void testSelectingAllCellsDisablesDeletingRows() {
 		controller.selectAll();
-		assertThrows("The DELETE_ROW item should not pop up if all cells are selected!",
-				AssertionError.class, () -> runItemAt(1, 1, DELETE_ROW));
+		assertThrows(
+				AssertionError.class,
+				() -> runItemAt(1, 1, DELETE_ROW),
+				"The DELETE_ROW item should not pop up if all cells are selected!");
 	}
 
 	@Test
-	public void testClickingOnCellWithRowsAndColumnsSelectedEnablesInsertingRow() {
+	void testClickingOnCellWithRowsAndColumnsSelectedEnablesInsertingRow() {
 		controller.selectRow(1, false, false);
 		controller.selectColumn(2, false, true);
 		List<ContextMenuItem> contextMenuItems = builder.build(1, 2);
-		assertTrue(contextMenuItems.stream().anyMatch(
-				item -> item.getIdentifier() == INSERT_ROW_ABOVE));
+		assertTrue(
+				contextMenuItems.stream().anyMatch(item -> item.getIdentifier() == INSERT_ROW_ABOVE));
 	}
 
 	private void shouldStayDefault(int row, int column) {

@@ -24,9 +24,9 @@ import jsinterop.annotations.JsType;
 import jsinterop.base.JsPropertyMap;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "window")
-public class GoogleApi {
+public final class GoogleApi {
 
-	protected GoogleApi() {
+	private GoogleApi() {
 		// use GoogleApi.get() instead, may return null
 	}
 

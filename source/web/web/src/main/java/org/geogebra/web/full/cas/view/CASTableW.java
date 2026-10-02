@@ -41,11 +41,12 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  * CAS table
  */
-public class CASTableW extends Grid implements CASTable {
+public final class CASTableW extends Grid implements CASTable {
 	/** column index of content */
 	public static final int COL_CAS_CELLS_WEB = 1;
 	/** column index of marbles */
 	public static final int COL_CAS_HEADER = 0;
+
 	private CASLaTeXEditor editor;
 	private CASTableCellW editing;
 	private AppW app;
@@ -61,8 +62,7 @@ public class CASTableW extends Grid implements CASTable {
 	 * @param casViewW
 	 *            view
 	 */
-	public CASTableW(AppW app, CASTableControllerW controller,
-			CASViewW casViewW) {
+	public CASTableW(AppW app, CASTableControllerW controller, CASViewW casViewW) {
 		super(0, 2);
 		this.app = app;
 		this.ml = controller;
@@ -111,8 +111,7 @@ public class CASTableW extends Grid implements CASTable {
 		// update keys (rows) in arbitrary constant table
 		view.updateAfterInsertArbConstTable(rows);
 		CASTableCellW cellWidget = new CASTableCellW(casCell, app);
-		Widget rowHeader = new RowHeaderWidget(this, n + 1, casCell,
-				(AppW) getApplication());
+		Widget rowHeader = new RowHeaderWidget(this, n + 1, casCell, (AppW) getApplication());
 
 		addOutputListener(cellWidget);
 
@@ -204,8 +203,7 @@ public class CASTableW extends Grid implements CASTable {
 			editing = (CASTableCellW) w;
 			getEditor().resetInput();
 			getEditor()
-					.setAutocomplete(editing.getCASCell() == null
-							|| !editing.getCASCell().isUseAsText());
+					.setAutocomplete(editing.getCASCell() == null || !editing.getCASCell().isUseAsText());
 			editing.startEditing(getEditor(), newText, asText);
 		}
 	}
@@ -229,36 +227,30 @@ public class CASTableW extends Grid implements CASTable {
 
 	/**
 	 * Updates arbitraryConstantTable in construction.
-	 * 
+	 *
 	 * @param row
 	 *            row index (starting from 0) where cell is deleted
 	 */
 	private void updateAfterDeleteArbConstTable(int row) {
-		ArbitraryConstantRegistry arbConst = app.getKernel().getConstruction()
-				.getArbitraryConsTable().remove(row);
+		ArbitraryConstantRegistry arbConst =
+				app.getKernel().getConstruction().getArbitraryConsTable().remove(row);
 		if (arbConst != null) {
 			for (GeoNumeric geoNum : arbConst.getConstList()) {
-				app.getKernel().getConstruction()
-						.removeFromConstructionList(geoNum);
+				app.getKernel().getConstruction().removeFromConstructionList(geoNum);
 				app.getKernel().getConstruction().removeLabel(geoNum);
 				app.getKernel().notifyRemove(geoNum);
 			}
 		}
-		if (app.getKernel().getConstruction().getArbitraryConsTable()
-				.size() > 0) {
+		if (app.getKernel().getConstruction().getArbitraryConsTable().size() > 0) {
 			// find last row number
-			Integer max = Collections.max(app.getKernel().getConstruction()
-				.getArbitraryConsTable().keySet());
+			Integer max = Collections.max(
+					app.getKernel().getConstruction().getArbitraryConsTable().keySet());
 			for (int key = row + 1; key <= max; key++) {
-				ArbitraryConstantRegistry myArbConst = app.getKernel()
-						.getConstruction()
-					.getArbitraryConsTable().get(key);
+				ArbitraryConstantRegistry myArbConst =
+						app.getKernel().getConstruction().getArbitraryConsTable().get(key);
 				if (myArbConst != null) {
-					app.getKernel().getConstruction().getArbitraryConsTable()
-						.remove(key);
-					app.getKernel().getConstruction().getArbitraryConsTable()
-						.put(key - 1,
-						myArbConst);
+					app.getKernel().getConstruction().getArbitraryConsTable().remove(key);
+					app.getKernel().getConstruction().getArbitraryConsTable().put(key - 1, myArbConst);
 				}
 			}
 		}
@@ -277,8 +269,7 @@ public class CASTableW extends Grid implements CASTable {
 		}
 
 		CASTableCellW cellWidget = new CASTableCellW(casCell, app);
-		Widget rowHeader = new RowHeaderWidget(this, rowNumber + 1, casCell,
-				(AppW) getApplication());
+		Widget rowHeader = new RowHeaderWidget(this, rowNumber + 1, casCell, (AppW) getApplication());
 
 		addOutputListener(cellWidget);
 
@@ -292,11 +283,9 @@ public class CASTableW extends Grid implements CASTable {
 
 	private void setRowSelected(int rowNumber, boolean selected) {
 		if (selected) {
-			getCellFormatter().getElement(rowNumber, COL_CAS_HEADER)
-					.addClassName("selected");
+			getCellFormatter().getElement(rowNumber, COL_CAS_HEADER).addClassName("selected");
 		} else {
-			getCellFormatter().getElement(rowNumber, COL_CAS_HEADER)
-					.removeClassName("selected");
+			getCellFormatter().getElement(rowNumber, COL_CAS_HEADER).removeClassName("selected");
 		}
 	}
 
@@ -307,7 +296,7 @@ public class CASTableW extends Grid implements CASTable {
 
 	/**
 	 * Convert event into cell coordinates
-	 * 
+	 *
 	 * @param event
 	 *            mouse / touch event
 	 * @return (column, row)
@@ -318,8 +307,7 @@ public class CASTableW extends Grid implements CASTable {
 			return null;
 		}
 
-		int row = TableRowElement.as(td.getParentElement())
-				.getSectionRowIndex();
+		int row = TableRowElement.as(td.getParentElement()).getSectionRowIndex();
 		int column = TableCellElement.as(td).getCellIndex();
 		return new GPoint(column, row);
 	}
@@ -418,11 +406,9 @@ public class CASTableW extends Grid implements CASTable {
 	public void setFirstRowFront(boolean value) {
 		CellFormatter cellFormatter = getCellFormatter();
 		if (value) {
-			cellFormatter.addStyleName(0, COL_CAS_CELLS_WEB,
-					"CAS_table_first_row_selected");
+			cellFormatter.addStyleName(0, COL_CAS_CELLS_WEB, "CAS_table_first_row_selected");
 		} else {
-			cellFormatter.removeStyleName(0, COL_CAS_CELLS_WEB,
-					"CAS_table_first_row_selected");
+			cellFormatter.removeStyleName(0, COL_CAS_CELLS_WEB, "CAS_table_first_row_selected");
 		}
 	}
 
@@ -437,8 +423,7 @@ public class CASTableW extends Grid implements CASTable {
 			return null;
 		}
 
-		int row = TableRowElement.as(td.getParentElement())
-				.getSectionRowIndex();
+		int row = TableRowElement.as(td.getParentElement()).getSectionRowIndex();
 		int column = TableCellElement.as(td).getCellIndex();
 		Widget widget = getWidget(row, column);
 		if (!(widget instanceof CASTableCellW)) {
@@ -447,6 +432,10 @@ public class CASTableW extends Grid implements CASTable {
 		return (CASTableCellW) widget;
 	}
 
+	/**
+	 * @return the text of the cell being edited before editing started,
+	 *     or {@code null} if no cell is being edited
+	 */
 	public String getTextBeforeEdit() {
 		return editing == null ? null : editing.getTextBeforeEdit();
 	}
@@ -454,7 +443,7 @@ public class CASTableW extends Grid implements CASTable {
 	/**
 	 * Return value for {@link HTMLTable#getCellForEvent}.
 	 */
-	public class CellCoordinates extends HTMLTable.Cell {
+	public final class CellCoordinates extends HTMLTable.Cell {
 		/**
 		 * @param rowIndex
 		 *            row
@@ -470,7 +459,7 @@ public class CASTableW extends Grid implements CASTable {
 	 * Given a click event, return the Cell that was clicked or touched, or null
 	 * if the event did not hit this table. The cell can also be null if the
 	 * click event does not occur on a specific cell.
-	 * 
+	 *
 	 * @param event
 	 *            A click event of indeterminate origin
 	 * @return The appropriate cell, or null
@@ -481,8 +470,7 @@ public class CASTableW extends Grid implements CASTable {
 			return null;
 		}
 
-		int row = TableRowElement.as(td.getParentElement())
-				.getSectionRowIndex();
+		int row = TableRowElement.as(td.getParentElement()).getSectionRowIndex();
 		int column = TableCellElement.as(td).getCellIndex();
 		return new CellCoordinates(row, column);
 	}

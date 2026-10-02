@@ -25,15 +25,10 @@ import org.gwtproject.user.client.ui.DeckPanel;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Widget;
 
-public class MultiRowsTabPanel extends Composite
-		implements HasSelectionHandlers<Integer> {
+public final class MultiRowsTabPanel extends Composite implements HasSelectionHandlers<Integer> {
 
 	MultiRowsTabBar tabBar;
 	DeckPanel deck = new DeckPanel();
-
-	public MultiRowsTabPanel() {
-		this("propertiesPanel propView_deckPanel");
-	}
 
 	/**
 	 * Create new tab panel.
@@ -52,8 +47,7 @@ public class MultiRowsTabPanel extends Composite
 	}
 
 	@Override
-	public HandlerRegistration addSelectionHandler(
-			SelectionHandler<Integer> selectionHandler) {
+	public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> selectionHandler) {
 		return addHandler(selectionHandler, SelectionEvent.getType());
 	}
 
@@ -105,5 +99,4 @@ public class MultiRowsTabPanel extends Composite
 	public Widget getWidget(int i) {
 		return deck.getWidget(i);
 	}
-
 }

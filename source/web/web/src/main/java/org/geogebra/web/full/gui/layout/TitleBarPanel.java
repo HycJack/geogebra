@@ -32,25 +32,27 @@ import org.gwtproject.event.dom.client.DomEvent;
 import org.gwtproject.resources.client.ResourcePrototype;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
-public class TitleBarPanel extends FlowPanel implements DockControlPanel {
+public final class TitleBarPanel extends FlowPanel implements DockControlPanel {
 	private final AppW app;
 	private final DockPanelW dockPanel;
-	protected FlowPanel titleBarPanelContent;
+	private final FlowPanel titleBarPanelContent;
 	private FlowPanel dragPanel;
 	/**
 	 * Style bar component.
 	 */
-	Widget styleBar;
+	private @Nullable Widget styleBar;
 	/**
 	 * Panel for the styling bar if one is available.
 	 */
 	private final FlowPanel styleBarPanel;
 	/** button to collapse / expand stylebar */
-	protected StandardButton toggleStyleBarButton;
+	private StandardButton toggleStyleBarButton;
+
 	private final FlowPanel closeButtonPanel;
 
-	protected TitleBarPanel(AppW app, DockPanelW parent) {
+	TitleBarPanel(AppW app, DockPanelW parent) {
 		this.app = app;
 		this.dockPanel = parent;
 		titleBarPanelContent = new FlowPanel();
@@ -58,10 +60,8 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 		styleBarPanel.setStyleName("StyleBarPanel_");
 		updateStyles();
 		add(titleBarPanelContent);
-		StandardButton closeButton = new StandardButton(MaterialDesignResources.INSTANCE.clear(),
-				24);
-		closeButton.addFastClickHandler(event ->
-				app.getGuiManager().setShowView(false, dockPanel.id));
+		StandardButton closeButton = new StandardButton(MaterialDesignResources.INSTANCE.clear(), 24);
+		closeButton.addFastClickHandler(event -> app.getGuiManager().setShowView(false, dockPanel.id));
 		closeButtonPanel = new FlowPanel();
 		closeButtonPanel.setStyleName("closeButtonPanel");
 		closeButtonPanel.setVisible(dockPanel.isStyleBarEmpty());
@@ -83,14 +83,12 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 	}
 
 	private void updateStyles() {
-		titleBarPanelContent.setStyleName("TitleBarPanelContent",
-					true);
+		titleBarPanelContent.setStyleName("TitleBarPanelContent", true);
 	}
 
 	private void initToggleButton() {
-		// always show the view-icon; othrwise use showStylebar as parameter
-		toggleStyleBarButton = new StandardButton(getToggleImage(false), null,
-				32, 24);
+		// always show the view-icon; otherwise use showStylebar as parameter
+		toggleStyleBarButton = new StandardButton(getToggleImage(false), null, 32, 24);
 		toggleStyleBarButton.addStyleName("toggleStyleBar");
 
 		if (!dockPanel.showStyleBar && dockPanel.viewImage != null) {
@@ -110,7 +108,7 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 		titleBarPanelContent.add(toggleStyleBarButton);
 	}
 
-	protected void enableDragging(boolean drag) {
+	void enableDragging(boolean drag) {
 		if (dragPanel == null) {
 			return;
 		}
@@ -152,17 +150,15 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 		if (dragPanel == null) {
 			dragPanel = new FlowPanel();
 			dragPanel.setStyleName("dragPanel");
-			app.getGlobalHandlers().add(ClickStartHandler.init(dragPanel,
-					new ClickStartHandler(true, false) {
+			app.getGlobalHandlers()
+					.add(ClickStartHandler.init(dragPanel, new ClickStartHandler(true, false) {
 						@Override
-						public void onClickStart(int x, int y,
-								PointerEventType type) {
+						public void onClickStart(int x, int y, PointerEventType type) {
 							dockPanel.startDragging();
 						}
 					}));
 			dragPanel.setVisible(false);
-			NoDragImage dragIcon = new NoDragImage(MaterialDesignResources.INSTANCE.move_canvas(),
-					30);
+			NoDragImage dragIcon = new NoDragImage(MaterialDesignResources.INSTANCE.move_canvas(), 30);
 			/*
 			 * Prevent default image drag from interfering with view drag --
 			 * needed for IE
@@ -193,10 +189,9 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 
 		styleBarPanel.setVisible(dockPanel.isStyleBarVisible());
 		if (dockPanel.isStyleBarVisible()) {
-			setStylebar();
+			setStyleBar();
 			if (styleBar != null) {
-				styleBar.setVisible(
-						dockPanel.showStyleBar && !app.getGuiManager().isDraggingViews());
+				styleBar.setVisible(dockPanel.showStyleBar && !app.getGuiManager().isDraggingViews());
 			}
 		}
 		if (styleBar instanceof SpreadsheetStyleBar
@@ -206,21 +201,22 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 		}
 	}
 
-	protected void setCloseButtonVisible(boolean isVisible) {
+	void setCloseButtonVisible(boolean isVisible) {
 		closeButtonPanel.setVisible(isVisible);
 	}
 
 	@Override
 	public void setLabels() {
 		if (toggleStyleBarButton != null) {
-			toggleStyleBarButton
-					.setTitle(app.getLocalization().getMenu("ToggleStyleBar"));
+			toggleStyleBarButton.setTitle(app.getLocalization().getMenu("ToggleStyleBar"));
 		}
 	}
 
-	private void setStylebar() {
+	private void setStyleBar() {
 		styleBar = dockPanel.loadStyleBar();
-		styleBarPanel.add(styleBar);
+		if (styleBar != null) {
+			styleBarPanel.add(styleBar);
+		}
 	}
 
 	/**
@@ -233,8 +229,7 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 	 */
 	private void setStyleBarLongVisibility(boolean value) {
 		// in applets title bar may be null and view menu still enabled
-		if (app.allowStylebar()
-				&& getLayoutData() != null) {
+		if (app.allowStylebar() && getLayoutData() != null) {
 			dockPanel.dockPanel.setWidgetSize(this, value ? 44 : 0);
 			setStyleName("TitleBarPanel-open", value);
 			dockPanel.setLongStyleBar(value);
@@ -246,7 +241,7 @@ public class TitleBarPanel extends FlowPanel implements DockControlPanel {
 	public void setLayout() {
 		if (dockPanel.isStyleBarVisible()) {
 			dockPanel.buildGUIIfNecessary(false);
-			setStylebar();
+			setStyleBar();
 		}
 		if (styleBar instanceof StyleBarW) {
 			((StyleBarW) styleBar).setOpen(dockPanel.showStyleBar);

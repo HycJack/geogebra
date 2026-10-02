@@ -62,8 +62,8 @@ public abstract class CardRenameDialog extends ComponentDialog {
 
 	private void buildContent() {
 		FlowPanel contentPanel = new FlowPanel();
-		inputField = new ComponentInputField((AppW) app, "",
-				app.getLocalization().getMenu("Rename"), "", "");
+		inputField = new ComponentInputField(
+				(AppW) app, "", app.getLocalization().getMenu("Rename"), "", "", null);
 		contentPanel.add(inputField);
 		initInputFieldActions();
 		setPosBtnDisabled(true);
@@ -76,16 +76,14 @@ public abstract class CardRenameDialog extends ComponentDialog {
 
 	private void initInputFieldActions() {
 		inputField.addInputHandler(this::validate);
-		Scheduler.get().scheduleDeferred(() -> inputField.getTextField()
-				.getTextComponent().setFocus(true));
+		Scheduler.get().scheduleDeferred(inputField::focus);
 	}
 
 	/**
 	 * Enable or disable
 	 */
 	protected void validate() {
-		inputChanged = inputChanged
-				|| !getInputText().equals(getCardTitle());
+		inputChanged = inputChanged || !getInputText().equals(getCardTitle());
 		setPosBtnDisabled(isTextLengthInvalid() || !inputChanged);
 	}
 
@@ -99,6 +97,6 @@ public abstract class CardRenameDialog extends ComponentDialog {
 	@Override
 	public void show() {
 		super.show();
-		Scheduler.get().scheduleDeferred(() -> inputField.getTextField().setFocusAndSelectAll());
+		Scheduler.get().scheduleDeferred(inputField::focusAndSelectAll);
 	}
 }

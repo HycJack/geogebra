@@ -103,13 +103,13 @@ public abstract class Submenu extends GMenuBar {
 	 * @return reference to menu item
 	 */
 	public AriaMenuItem addItem(String transKey, MenuAction<AppWFull> action, IconSpec icon) {
-		return addItem(
-				MainMenu.getMenuBarItem(icon,
+		return addItem(MainMenu.getMenuBarItem(
+				icon,
 				getApp().getLocalization().getMenu(transKey),
 				new MenuCommand(getApp()) { // Close
 
 					@Override
-					public void doExecute() {
+					void doExecute() {
 						action.execute((AppWFull) getApp());
 					}
 				}));

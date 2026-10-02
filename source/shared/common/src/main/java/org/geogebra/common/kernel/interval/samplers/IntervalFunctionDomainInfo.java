@@ -60,7 +60,10 @@ public class IntervalFunctionDomainInfo {
 	 * @param domain former domain
 	 */
 	public void update(Interval domain) {
-		domainBefore = domain;
+		if (domain == null) {
+			throw new IllegalArgumentException("domain is null");
+		}
+		domainBefore = new Interval(domain);
 	}
 
 	/**
@@ -72,6 +75,9 @@ public class IntervalFunctionDomainInfo {
 		return domainBefore.contains(domain.getLow()) || domain.contains(domainBefore.getLow());
 	}
 
+	/**
+	 * @return length of the former domain
+	 */
 	public double getLength() {
 		return domainBefore.getLength();
 	}

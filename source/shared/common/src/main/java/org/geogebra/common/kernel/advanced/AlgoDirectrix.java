@@ -131,21 +131,17 @@ public class AlgoDirectrix extends AlgoElement {
 
 			double py = b.getY() + eigenvec[0].getY() * a / e;
 			double px = b.getX() + eigenvec[0].getX() * a / e;
-			double py2 = b.getY() - eigenvec[0].getY() * a / e;
-			double px2 = b.getX() - eigenvec[0].getX() * a / e;
-
 			directrix.x = -eigenvec[1].getY();
 			directrix.y = eigenvec[1].getX();
 			directrix.z = -(directrix.x * px + directrix.y * py);
-
 			P.setCoords(px, py, 1.0);
 
+			double py2 = b.getY() - eigenvec[0].getY() * a / e;
+			double px2 = b.getX() - eigenvec[0].getX() * a / e;
 			directrix2.x = -eigenvec[1].getY();
 			directrix2.y = eigenvec[1].getX();
 			directrix2.z = -(directrix.x * px2 + directrix.y * py2);
-
 			P2.setCoords(px2, py2, 1.0);
-
 		} else {
 			directrix.setUndefined();
 			directrix2.setUndefined();
@@ -153,11 +149,9 @@ public class AlgoDirectrix extends AlgoElement {
 	}
 
 	@Override
-	final public String toString(StringTemplate tpl) {
+	public final String toString(StringTemplate tpl) {
 		// Michael Borcherds 2008-03-30
 		// simplified to allow better Chinese translation
-		return getLoc().getPlainDefault("DirectrixOfA", "Directrix of %0",
-				c.getLabel(tpl));
+		return getLoc().getPlainDefault("DirectrixOfA", "Directrix of %0", c.getLabel(tpl));
 	}
-
 }

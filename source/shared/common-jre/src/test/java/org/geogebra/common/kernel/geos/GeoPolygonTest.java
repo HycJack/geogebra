@@ -2,31 +2,31 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.geos;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.BaseUnitTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GeoPolygonTest extends BaseUnitTest {
+class GeoPolygonTest extends BaseUnitTest {
 
 	@Test
-	public void testMaskProperties() {
+	void testMaskProperties() {
 		add("A=(-1,1)");
 		add("B=(-1,-1)");
 		add("C=(1,-1)");
@@ -44,7 +44,7 @@ public class GeoPolygonTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPointOnPathWithoutSegments() {
+	void testPointOnPathWithoutSegments() {
 		add("A=(0, 5)");
 		add("B=(-5, 0)");
 		add("C=(5, 2.5)");

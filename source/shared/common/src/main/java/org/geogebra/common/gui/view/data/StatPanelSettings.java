@@ -20,9 +20,9 @@ import org.geogebra.common.gui.view.data.DataVariable.GroupType;
 
 /**
  * @author G. Sturr
- * 
+ *
  *         Settings for DataAnalysisView displays
- * 
+ *
  */
 public class StatPanelSettings extends PlotSettings {
 
@@ -63,7 +63,10 @@ public class StatPanelSettings extends PlotSettings {
 	 * Moodes of coordinate transformations.
 	 */
 	public enum CoordMode {
-		STANDTOSTAND(0), LOGTOSTAND(1), STANDTOLOG(2), LOGTOLOG(3);
+		STANDTOSTAND(0),
+		LOGTOSTAND(1),
+		STANDTOLOG(2),
+		LOGTOLOG(3);
 		private final int mode;
 
 		CoordMode(int mode) {
@@ -100,10 +103,16 @@ public class StatPanelSettings extends PlotSettings {
 		return dataSource.getGroupType();
 	}
 
+	/**
+	 * @return whether the data source holds numeric data
+	 */
 	public boolean isNumericData() {
 		return dataSource.isNumericData();
 	}
 
+	/**
+	 * @return whether the data source holds a list of points
+	 */
 	public boolean isPointList() {
 		return dataSource.isPointData();
 	}
@@ -120,6 +129,9 @@ public class StatPanelSettings extends PlotSettings {
 		return isCumulative;
 	}
 
+	/**
+	 * @param isCumulative whether to use cumulative chart
+	 */
 	public void setCumulative(boolean isCumulative) {
 		this.isCumulative = isCumulative;
 	}
@@ -140,6 +152,9 @@ public class StatPanelSettings extends PlotSettings {
 		this.hasOverlayNormal = hasOverlayNormal;
 	}
 
+	/**
+	 * @return whether the overlay is enabled
+	 */
 	public boolean isOverlayEnabled() {
 		return getFrequencyType() == TYPE_NORMALIZED && !isCumulative;
 	}
@@ -156,6 +171,9 @@ public class StatPanelSettings extends PlotSettings {
 		return isAutomaticWindow;
 	}
 
+	/**
+	 * @param isAutomaticWindow whether window zoom is automatic
+	 */
 	public void setAutomaticWindow(boolean isAutomaticWindow) {
 		this.isAutomaticWindow = isAutomaticWindow;
 	}
@@ -180,6 +198,9 @@ public class StatPanelSettings extends PlotSettings {
 		return isLeftRule;
 	}
 
+	/**
+	 * @param isLeftRule left class rule
+	 */
 	public void setLeftRule(boolean isLeftRule) {
 		this.isLeftRule = isLeftRule;
 	}
@@ -204,6 +225,9 @@ public class StatPanelSettings extends PlotSettings {
 		return isAutomaticBarWidth;
 	}
 
+	/**
+	 * @param isAutomaticBarWidth whether bar width is automatic
+	 */
 	public void setAutomaticBarWidth(boolean isAutomaticBarWidth) {
 		this.isAutomaticBarWidth = isAutomaticBarWidth;
 	}
@@ -255,27 +279,26 @@ public class StatPanelSettings extends PlotSettings {
 	public void setCoordMode(CoordMode coordMode) {
 		this.coordMode = coordMode;
 		switch (coordMode) {
-		case STANDTOSTAND:
-			this.logXAxis = false;
-			this.logYAxis = false;
-			break;
-		case LOGTOSTAND:
-			this.logXAxis = true;
-			this.logYAxis = false;
-			break;
-		case STANDTOLOG:
-			this.logXAxis = false;
-			this.logYAxis = true;
-			break;
-		case LOGTOLOG:
-			this.logXAxis = true;
-			this.logYAxis = true;
-			break;
+			case STANDTOSTAND:
+				this.logXAxis = false;
+				this.logYAxis = false;
+				break;
+			case LOGTOSTAND:
+				this.logXAxis = true;
+				this.logYAxis = false;
+				break;
+			case STANDTOLOG:
+				this.logXAxis = false;
+				this.logYAxis = true;
+				break;
+			case LOGTOLOG:
+				this.logXAxis = true;
+				this.logYAxis = true;
+				break;
 		}
 	}
 
 	public CoordMode getCoordMode() {
 		return coordMode;
 	}
-
 }

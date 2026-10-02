@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,12 +16,12 @@
 
 package org.geogebra.common.scientific;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.gui.view.table.ScientificDataTableController;
@@ -32,17 +32,17 @@ import org.geogebra.common.kernel.geos.GeoFunction;
 import org.geogebra.common.kernel.geos.LabelManager;
 import org.geogebra.common.main.MyError;
 import org.geogebra.common.main.undo.UndoManager;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public final class ScientificDataTableControllerTests extends BaseUnitTest {
+final class ScientificDataTableControllerTests extends BaseUnitTest {
 
 	private TableValuesView tableValuesView;
 	private ScientificDataTableController controller;
 	private UndoManager undoManager;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		Kernel kernel = getKernel();
 		activateUndo();
 		undoManager = kernel.getConstruction().getUndoManager();
@@ -55,7 +55,7 @@ public final class ScientificDataTableControllerTests extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInitialSetup() {
+	void testInitialSetup() {
 		assertNull(controller.getDefinitionOfF());
 		assertFalse(controller.isFDefined());
 		assertNull(controller.getDefinitionOfG());
@@ -65,7 +65,7 @@ public final class ScientificDataTableControllerTests extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInitialSetupWithExistingFunction() {
+	void testInitialSetupWithExistingFunction() {
 		Kernel kernel = getKernel();
 		Construction construction = kernel.getConstruction();
 		construction.clearConstruction();
@@ -81,12 +81,13 @@ public final class ScientificDataTableControllerTests extends BaseUnitTest {
 		assertNotNull(controller.getFunctionF());
 		add(LabelManager.HIDDEN_PREFIX + "f:3x");
 		MyError error = assertThrows(MyError.class, () -> controller.setup(tableValuesView));
-		assertEquals("NameUsed", error.getMessage());
-		assertTrue(error.toString().contains("This label is already in use"));
+		assertTrue(
+				error.getMessage().startsWith("This label is already in use"),
+				"Unexpected message " + error.getMessage());
 	}
 
 	@Test
-	public void testDefineFunctions() {
+	void testDefineFunctions() {
 		// define f
 		assertTrue(controller.defineFunctions("x", null));
 		assertFalse(controller.hasFDefinitionErrorOccurred());
@@ -103,7 +104,7 @@ public final class ScientificDataTableControllerTests extends BaseUnitTest {
 	}
 
 	@Test
-	public void testRedefineF() {
+	void testRedefineF() {
 		// define f
 		controller.defineFunctions("x", null);
 		assertEquals(1, getUndoHistorySize());
@@ -122,7 +123,7 @@ public final class ScientificDataTableControllerTests extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInvalidInput() {
+	void testInvalidInput() {
 		controller.defineFunctions("abc", null);
 		assertTrue(controller.hasFDefinitionErrorOccurred());
 		assertFalse(controller.hasGDefinitionErrorOccurred());
@@ -130,7 +131,7 @@ public final class ScientificDataTableControllerTests extends BaseUnitTest {
 	}
 
 	@Test
-	public void testUndo() {
+	void testUndo() {
 		assertFalse(undoManager.undoPossible());
 
 		// define f

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,11 +16,11 @@
 
 package org.geogebra.common.gui.view.table.importer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,7 +29,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.geogebra.common.BaseUnitTest;
+import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.gui.view.table.TableValuesPointsImpl;
 import org.geogebra.common.gui.view.table.TableValuesView;
 import org.geogebra.common.gui.view.table.regression.RegressionSpecification;
@@ -38,9 +38,13 @@ import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoList;
-import org.junit.Test;
+import org.geogebra.common.main.UndoRedoMode;
+import org.geogebra.test.BaseAppTestSetup;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class DataImporterTests extends BaseUnitTest implements DataImporterDelegate {
+class DataImporterTests extends BaseAppTestSetup implements DataImporterDelegate {
 
 	private TableValuesView tableValuesView;
 	private TableValuesPointsImpl tableValuesPoints;
@@ -53,17 +57,18 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	private int cancelValidationAfterRow;
 	private int cancelImportAfterRow;
 
-	@Override
-	public void setup() {
-		super.setup();
+	@BeforeEach
+	void setup() {
+		setupApp(SuiteSubApp.GRAPHING);
 
 		Kernel kernel = getKernel();
 		tableValuesView = new TableValuesView(kernel);
 		kernel.attach(tableValuesView);
-		tableValuesPoints = TableValuesPointsImpl.create(kernel, kernel.getConstruction(),
-				tableValuesView);
+		tableValuesPoints =
+				TableValuesPointsImpl.create(kernel, kernel.getConstruction(), tableValuesView);
 		kernel.notifyAddAll(tableValuesView);
-		activateUndo();
+		getApp().setUndoRedoMode(UndoRedoMode.GUI);
+		getApp().setUndoActive(true);
 
 		dataImporter = new DataImporter(tableValuesView, this);
 		currentRow = -1;
@@ -75,17 +80,15 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 		cancelImportAfterRow = -1;
 	}
 
-	@Override
-	public void teardown() {
+	@AfterEach
+	void teardown() {
 		Kernel kernel = getKernel();
 		kernel.detach(tableValuesView);
 		tableValuesView = null;
-
-		super.teardown();
 	}
 
 	@Test
-	public void testImportCSVDiscardingHeader() {
+	void testImportCSVDiscardingHeader() {
 		Reader reader = loadSample("integers-comma-header.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -103,7 +106,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVNotDiscardingHeader() {
+	void testImportCSVNotDiscardingHeader() {
 		Reader reader = loadSample("integers-comma-header.csv");
 		dataImporter.setsDiscardHeader(false);
 		boolean success = dataImporter.importCSV(reader, '.');
@@ -117,14 +120,14 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 		assertEquals("A", tableValuesView.getTableValuesModel().getHeaderAt(0));
 		// The column names for the other columns are not yet used, this will need further
 		// work if we want to support importing column names into the TableValuesView/Model.
-		assertEquals("y_{1}"/*"B"*/, tableValuesView.getTableValuesModel().getHeaderAt(1));
+		assertEquals("y_{1}" /*"B"*/, tableValuesView.getTableValuesModel().getHeaderAt(1));
 		// no points should be created during import
 		assertFalse(tableValuesPoints.arePointsVisible(0));
 		assertFalse(tableValuesPoints.arePointsVisible(1));
 	}
 
 	@Test
-	public void testImportCSVNoHeader() {
+	void testImportCSVNoHeader() {
 		assertEquals("x", tableValuesView.getTableValuesModel().getHeaderAt(0));
 
 		Reader reader = loadSample("integers-comma-noheader.csv");
@@ -144,7 +147,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVSingleColumn() {
+	void testImportCSVSingleColumn() {
 		Reader reader = loadSample("integers-noheader.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -157,7 +160,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithInconsistentSeparator() {
+	void testImportCSVWithInconsistentSeparator() {
 		Reader reader = loadSample("inconsistent-separator.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertFalse(success);
@@ -168,7 +171,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVEmptyValues() {
+	void testImportCSVEmptyValues() {
 		Reader reader = loadSample("integers-empty-comma-header.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -186,7 +189,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithCorrectDecimalSeparator1() {
+	void testImportCSVWithCorrectDecimalSeparator1() {
 		Reader reader = loadSample("dotdecimals-comma-header.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -201,7 +204,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithCorrectDecimalSeparator2() {
+	void testImportCSVWithCorrectDecimalSeparator2() {
 		Reader reader = loadSample("dotdecimals-semicolon-header.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -215,7 +218,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithWrongSeparator1() {
+	void testImportCSVWithWrongSeparator1() {
 		Reader reader = loadSample("dotdecimals-semicolon-header.csv"); // e.g. "1.1"
 		// using wrong decimal separator, but (default) dot separator should still
 		// give correct results
@@ -231,7 +234,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithWrongSeparator2() {
+	void testImportCSVWithWrongSeparator2() {
 		Reader reader = loadSample("commadecimals-semicolon-header.csv"); // e.g. "1,1"
 		// using wrong decimal separator, decimal parsing should fail
 		boolean success = dataImporter.importCSV(reader, '.');
@@ -247,7 +250,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithHeaderWithDataSizeLimits() {
+	void testImportCSVWithHeaderWithDataSizeLimits() {
 		Reader reader = loadSample("integers-strings-comma-noheader.csv");
 		dataImporter.setDataSizeLimits(3, 2);
 		dataImporter.setsDiscardHeader(false);
@@ -262,7 +265,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithDataSizeLimits() {
+	void testImportCSVWithDataSizeLimits() {
 		Reader reader = loadSample("integers-comma-noheader.csv");
 		dataImporter.setDataSizeLimits(2, 10);
 		boolean success = dataImporter.importCSV(reader, '.');
@@ -274,7 +277,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithStrings() {
+	void testImportCSVWithStrings() {
 		Reader reader = loadSample("strings-comma-noheader.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -294,7 +297,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testImportCSVWithIntegersAndStrings() {
+	void testImportCSVWithIntegersAndStrings() {
 		Reader reader = loadSample("integers-strings-comma-noheader.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -317,7 +320,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testCancelCSVValidation() {
+	void testCancelCSVValidation() {
 		Reader reader = loadSample("integers-comma-noheader.csv");
 		cancelValidationAfterRow = 2;
 		boolean success = dataImporter.importCSV(reader, '.');
@@ -329,7 +332,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testCancelCSVImport() {
+	void testCancelCSVImport() {
 		Reader reader = loadSample("integers-comma-noheader.csv");
 		cancelImportAfterRow = 3;
 		boolean success = dataImporter.importCSV(reader, '.');
@@ -341,7 +344,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testUndoRedoImportCSV() {
+	void testUndoRedoImportCSV() {
 		// the model will have an empty column at this point (no label yet, the header
 		// for the x column is overridden to "x" by default)
 		assertEquals(1, tableValuesView.getTableValuesModel().getColumnCount());
@@ -368,8 +371,8 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testOverwriteExistingData() {
-		inputData(new String[]{"1", "2", "3"}, new String[]{"1", "2", "3"});
+	void testOverwriteExistingData() {
+		inputData(new String[] {"1", "2", "3"}, new String[] {"1", "2", "3"});
 		assertEquals(3, tableValuesView.getTableValuesModel().getRowCount());
 		assertEquals(2, tableValuesView.getTableValuesModel().getColumnCount());
 
@@ -387,8 +390,8 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testOverwriteExistingDataWithTheSameDimensions() {
-		inputData(new String[]{"1", "3", "5", "7", "9"}, new String[]{"2", "4", "6", "8", "10"});
+	void testOverwriteExistingDataWithTheSameDimensions() {
+		inputData(new String[] {"1", "3", "5", "7", "9"}, new String[] {"2", "4", "6", "8", "10"});
 		assertEquals(5, tableValuesView.getTableValuesModel().getRowCount());
 		assertEquals(2, tableValuesView.getTableValuesModel().getColumnCount());
 
@@ -407,7 +410,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testOverwriteImportedDataWhileShowingTableValuePoints() {
+	void testOverwriteImportedDataWhileShowingTableValuePoints() {
 		Reader reader = loadSample("strings-comma-noheader.csv");
 		boolean success = dataImporter.importCSV(reader, '.');
 		assertTrue(success);
@@ -439,8 +442,8 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void testReloadRegression() {
-		inputData(new String[]{"1", "2", "3"}, new String[]{"2", "4", "6"});
+	void testReloadRegression() {
+		inputData(new String[] {"1", "2", "3"}, new String[] {"2", "4", "6"});
 		assertEquals(3, tableValuesView.getTableValuesModel().getRowCount());
 		assertEquals(2, tableValuesView.getTableValuesModel().getColumnCount());
 
@@ -449,13 +452,13 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 		tableValuesView.plotRegression(1, specificationList.get(0));
 		GeoElement f = lookup("f");
 		assertEquals("2x", f.toValueString(StringTemplate.defaultTemplate));
-		reload();
+		getApp().setXML(getApp().getXML(), true);
 		f = lookup("f");
 		assertEquals("2x", f.toValueString(StringTemplate.defaultTemplate));
 	}
 
 	@Test
-	public void testReloadRegressionAfterImport() {
+	void testReloadRegressionAfterImport() {
 		Reader reader = loadSample("integers-comma-noheader.csv");
 		dataImporter.importCSV(reader, '.');
 		assertEquals(10, tableValuesView.getValues().size());
@@ -463,17 +466,17 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 		assertEquals(10, tableValuesView.getTableValuesModel().getRowCount());
 		assertEquals(2, tableValuesView.getTableValuesModel().getColumnCount());
 
-		tableValuesView.plotRegression(1,
-				new RegressionSpecificationBuilder().getForListSize(10).get(0));
+		tableValuesView.plotRegression(
+				1, new RegressionSpecificationBuilder().getForListSize(10).get(0));
 		GeoElement f = lookup("f");
 		assertEquals("2x", f.toValueString(StringTemplate.defaultTemplate));
-		reload();
+		getApp().setXML(getApp().getXML(), true);
 		f = lookup("f");
 		assertEquals("2x", f.toValueString(StringTemplate.defaultTemplate));
 	}
 
 	@Test
-	public void importedListsShouldBeAuxiliary() {
+	void importedListsShouldBeAuxiliary() {
 		Reader reader = new StringReader("1,2");
 		dataImporter.setsDiscardHeader(false);
 		dataImporter.importCSV(reader, '.');
@@ -482,7 +485,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 	}
 
 	@Test
-	public void afterDataImportTVPointsShouldBeInitializedAndNotBeVisible() {
+	void afterDataImportTVPointsShouldBeInitializedAndNotBeVisible() {
 		Reader reader = loadSample("integers-empty-comma-header.csv");
 		dataImporter.importCSV(reader, '.');
 		assertFalse(tableValuesPoints.arePointsVisible(1));
@@ -508,7 +511,7 @@ public class DataImporterTests extends BaseUnitTest implements DataImporterDeleg
 		}
 
 		if (yValues != null) {
-			GeoList yColumn = new GeoList(getConstruction());
+			GeoList yColumn = new GeoList(getKernel().getConstruction());
 			tableValuesView.addAndShow(yColumn);
 			for (int index = 0; index < yValues.length; index++) {
 				tableValuesView.getProcessor().processInput(yValues[index], yColumn, index);

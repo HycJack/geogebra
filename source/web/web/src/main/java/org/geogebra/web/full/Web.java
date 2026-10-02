@@ -16,9 +16,12 @@
 
 package org.geogebra.web.full;
 
+import java.util.Objects;
+
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.kernel.parser.Parser;
 import org.geogebra.gwtutil.JsConsumer;
+import org.geogebra.gwtutil.JsObject;
 import org.geogebra.web.full.gui.applet.AppletFactory;
 import org.geogebra.web.full.gui.applet.GeoGebraFrameFull;
 import org.geogebra.web.full.gui.laf.BundleLookAndFeel;
@@ -38,7 +41,6 @@ import com.google.gwt.core.client.EntryPoint;
 
 import elemental2.core.JsArray;
 import elemental2.dom.HTMLCollection;
-import jsinterop.base.Js;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -52,8 +54,7 @@ public abstract class Web implements EntryPoint {
 	@Override
 	public void onModuleLoad() {
 		if (RootPanel.getBodyElement().getAttribute("data-param-laf") != null
-				&& !"".equals(RootPanel.getBodyElement().getAttribute(
-						"data-param-laf"))) {
+				&& !"".equals(RootPanel.getBodyElement().getAttribute("data-param-laf"))) {
 			// loading touch, ignore.
 			return;
 		}
@@ -70,8 +71,8 @@ public abstract class Web implements EntryPoint {
 	public void loadAppletAsync() {
 		removeBackingObject(Parser.getLookaheadSuccess());
 		removeBackingObject(org.geogebra.editor.share.io.latex.Parser.getLookaheadSuccess());
-		GeoGebraFrameFull.main(GeoGebraElement.getGeoGebraMobileTags(),
-				getAppletFactory(), getLAF(), null);
+		GeoGebraFrameFull.main(
+				GeoGebraElement.getGeoGebraMobileTags(), getAppletFactory(), getLAF(), null);
 	}
 
 	/**
@@ -79,9 +80,9 @@ public abstract class Web implements EntryPoint {
 	 * By removing the backing object's stacktrace we make sure it has no link to Web either.
 	 */
 	private void removeBackingObject(Throwable t) {
-		Object back  = Js.asPropertyMap(t).get("backingJsObject");
-		if (Js.isTruthy(back)) {
-			Js.asPropertyMap(back).set("stack", JsArray.of());
+		Object back = JsObject.of(t).get("backingJsObject");
+		if (back != null) {
+			JsObject.of(back).set("stack", JsArray.of());
 		}
 	}
 
@@ -103,8 +104,8 @@ public abstract class Web implements EntryPoint {
 	 *            callback
 	 */
 	public void renderArticleElement(Object options, JsConsumer<Object> clb) {
-		GeoGebraFrameFull.renderArticleElement(AttributeProvider.as(options), getAppletFactory(),
-				getLAF(), clb);
+		GeoGebraFrameFull.renderArticleElement(
+				AttributeProvider.as(options), getAppletFactory(), getLAF(), clb);
 	}
 
 	protected abstract AppletFactory getAppletFactory();
@@ -116,18 +117,18 @@ public abstract class Web implements EntryPoint {
 		HTMLCollection<elemental2.dom.Element> nodes =
 				Dom.getElementsByClassName(GeoGebraConstants.GGM_CLASS_NAME);
 		for (int i = 0; i < nodes.getLength(); i++) {
-			String laf = nodes.getAt(i).getAttribute("data-param-laf");
+			String laf = Objects.requireNonNull(nodes.getAt(i)).getAttribute("data-param-laf");
 			switch (laf) {
-			case "smart":
-				return new SmartLookAndFeel();
-			case "office":
-				return new OfficeLookAndFeel();
-			case "bundle":
-				return new BundleLookAndFeel();
-			case "mebis":
-				return new MebisLookAndFeel();
-			case "chrome":
-				return new ChromeLookAndFeel();
+				case "smart":
+					return new SmartLookAndFeel();
+				case "office":
+					return new OfficeLookAndFeel();
+				case "bundle":
+					return new BundleLookAndFeel();
+				case "mebis":
+					return new MebisLookAndFeel();
+				case "chrome":
+					return new ChromeLookAndFeel();
 			}
 		}
 

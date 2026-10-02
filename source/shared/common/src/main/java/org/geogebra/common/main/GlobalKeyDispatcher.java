@@ -103,22 +103,21 @@ public abstract class GlobalKeyDispatcher {
 		}
 
 		switch (fkey) {
-		default:
-			// do nothing
-			break;
-		case 3: // F3 key: copy definition to input field
-			app.getGuiManager().setInputText(geo.getDefinitionForInputBar());
-			break;
+			default:
+				// do nothing
+				break;
+			case 3: // F3 key: copy definition to input field
+				app.getGuiManager().setInputText(geo.getDefinitionForInputBar());
+				break;
 
-		case 4: // F4 key: copy value to input field
-			app.getGuiManager().replaceInputSelection(
-					" " + geo.getValueForInputBar() + " ");
-			break;
+			case 4: // F4 key: copy value to input field
+				app.getGuiManager().replaceInputSelection(" " + geo.getValueForInputBar() + " ");
+				break;
 
-		case 5: // F5 key: copy name to input field
-			app.getGuiManager().replaceInputSelection(
-					" " + geo.getLabel(StringTemplate.defaultTemplate) + " ");
-			break;
+			case 5: // F5 key: copy name to input field
+				app.getGuiManager()
+						.replaceInputSelection(" " + geo.getLabel(StringTemplate.defaultTemplate) + " ");
+				break;
 		}
 	}
 
@@ -169,21 +168,21 @@ public abstract class GlobalKeyDispatcher {
 		}
 
 		switch (ch) {
-		case '/':
-			toggleSelectionVisibility();
-			return true;
+			case '/':
+				toggleSelectionVisibility();
+				return true;
 
-		case '\n':
-		case '\r':
-			startEdit(geo);
-			return true;
+			case '\n':
+			case '\r':
+				startEdit(geo);
+				return true;
 
-		case '.':
-			openSettingsInAV(geo);
-			return true;
-		default:
-			// No action for other keys
-			break;
+			case '.':
+				openSettingsInAV(geo);
+				return true;
+			default:
+				// No action for other keys
+				break;
 		}
 
 		// don't instantiate: could steal focus
@@ -215,8 +214,7 @@ public abstract class GlobalKeyDispatcher {
 
 	private void toggleSelectionVisibility() {
 		int selSize = selection.selectedGeosSize();
-		if (selSize > 0 && app.getGuiManager() != null
-				&& app.getGuiManager().hasAlgebraView()) {
+		if (selSize > 0 && app.getGuiManager() != null && app.getGuiManager().hasAlgebraView()) {
 			for (int i = 0; i < selSize; i++) {
 				GeoElement geo1 = selection.getSelectedGeos().get(i);
 				geo1.setEuclidianVisible(!geo1.isSetEuclidianVisible());
@@ -226,8 +224,7 @@ public abstract class GlobalKeyDispatcher {
 		}
 	}
 
-	private boolean handleUpDownArrowsForDropdown(List<GeoElement> geos,
-			boolean down) {
+	private boolean handleUpDownArrowsForDropdown(List<GeoElement> geos, boolean down) {
 		if (geos.size() == 1 && geos.get(0).isGeoList()) {
 			DrawDropDownList dl = DrawDropDownList.asDrawable(app, geos.get(0));
 			if (dl == null || !((GeoList) geos.get(0)).drawAsComboBox()) {
@@ -243,8 +240,7 @@ public abstract class GlobalKeyDispatcher {
 		return false;
 	}
 
-	private boolean handleLeftRightArrowsForDropdown(List<GeoElement> geos,
-			boolean left) {
+	private boolean handleLeftRightArrowsForDropdown(List<GeoElement> geos, boolean left) {
 		if (geos.size() == 1 && geos.get(0).isGeoList()) {
 			DrawDropDownList dl = DrawDropDownList.asDrawable(app, geos.get(0));
 			if (dl == null) {
@@ -262,7 +258,6 @@ public abstract class GlobalKeyDispatcher {
 			} else {
 				return handleUpDownArrowsForDropdown(geos, left);
 			}
-
 		}
 		return false;
 	}
@@ -303,70 +298,68 @@ public abstract class GlobalKeyDispatcher {
 			double yGrid = app.getActiveEuclidianView().getGridDistances(1);
 
 			switch (app.getActiveEuclidianView().getGridType()) {
-			case EuclidianView.GRID_CARTESIAN:
-			case EuclidianView.GRID_CARTESIAN_WITH_SUBGRID:
-			case EuclidianView.GRID_DOTS:
-				diff[0] = MyMath.signedNextMultiple(diff[0], xGrid);
-				diff[1] = MyMath.signedNextMultiple(diff[1], yGrid);
-				break;
-
-			case EuclidianView.GRID_ISOMETRIC:
-				double sin60 = Math.sqrt(3) / 2;
-				double cos60 = 0.5;
-
-				if (DoubleUtil.isZero(diff[0])) {
+				case EuclidianView.GRID_CARTESIAN:
+				case EuclidianView.GRID_CARTESIAN_WITH_SUBGRID:
+				case EuclidianView.GRID_DOTS:
+					diff[0] = MyMath.signedNextMultiple(diff[0], xGrid);
 					diff[1] = MyMath.signedNextMultiple(diff[1], yGrid);
-				} else {
-					diff[0] = MyMath.signedNextMultiple(diff[0], xGrid * sin60);
-					diff[1] = MyMath.signedNextMultiple(diff[1], yGrid * cos60);
-				}
+					break;
 
-				break;
+				case EuclidianView.GRID_ISOMETRIC:
+					double sin60 = Math.sqrt(3) / 2;
+					double cos60 = 0.5;
 
-			case EuclidianView.GRID_POLAR:
-				if (geos.size() != 1) {
-					diff[0] = diff[1] = 0;
-				}
-
-				double posX = geo.getLabelPosition().getX();
-				double posY = geo.getLabelPosition().getY();
-
-				double angle = Math.atan2(posY, posX);
-				double radius = Math.hypot(posX, posY);
-
-				if (DoubleUtil.isZero(diff[0])) {
-
-					double radiusIncrement = diff[1] > 0 ? xGrid : -xGrid;
-
-					if (DoubleUtil.isZero(radius)) {
-						diff[0] = radiusIncrement;
-						diff[1] = 0;
+					if (DoubleUtil.isZero(diff[0])) {
+						diff[1] = MyMath.signedNextMultiple(diff[1], yGrid);
 					} else {
-						diff[0] = radiusIncrement * Math.cos(angle);
-						diff[1] = radiusIncrement * Math.sin(angle);
+						diff[0] = MyMath.signedNextMultiple(diff[0], xGrid * sin60);
+						diff[1] = MyMath.signedNextMultiple(diff[1], yGrid * cos60);
 					}
 
-				} else {
-					double angleIncrement = Math.signum(diff[0])
-							* app.getActiveEuclidianView().getGridDistances(2);
+					break;
 
-					diff[0] = radius * Math.cos(angle - angleIncrement) - posX;
-					diff[1] = radius * Math.sin(angle - angleIncrement) - posY;
-				}
-				break;
+				case EuclidianView.GRID_POLAR:
+					if (geos.size() != 1) {
+						diff[0] = diff[1] = 0;
+					}
 
-			default:
+					double posX = geo.getLabelPosition().getX();
+					double posY = geo.getLabelPosition().getY();
+
+					double angle = Math.atan2(posY, posX);
+					double radius = Math.hypot(posX, posY);
+
+					if (DoubleUtil.isZero(diff[0])) {
+
+						double radiusIncrement = diff[1] > 0 ? xGrid : -xGrid;
+
+						if (DoubleUtil.isZero(radius)) {
+							diff[0] = radiusIncrement;
+							diff[1] = 0;
+						} else {
+							diff[0] = radiusIncrement * Math.cos(angle);
+							diff[1] = radiusIncrement * Math.sin(angle);
+						}
+
+					} else {
+						double angleIncrement =
+								Math.signum(diff[0]) * app.getActiveEuclidianView().getGridDistances(2);
+
+						diff[0] = radius * Math.cos(angle - angleIncrement) - posX;
+						diff[1] = radius * Math.sin(angle - angleIncrement) - posY;
+					}
+					break;
+
+				default:
 				// do nothing
 			}
 		}
 		tempVec.set(diff);
 
 		// move objects
-		boolean moved = MoveGeos.moveObjects(geos, tempVec, null, null,
-				app.getActiveEuclidianView());
+		boolean moved = MoveGeos.moveObjects(geos, tempVec, null, null, app.getActiveEuclidianView());
 		if (app.getActiveEuclidianView() != null) {
-			app.getActiveEuclidianView().getEuclidianController()
-					.onArrowKeyTyped();
+			app.getActiveEuclidianView().getEuclidianController().onArrowKeyTyped();
 		}
 
 		if (app.isEuclidianView3Dinited()) {
@@ -409,8 +402,12 @@ public abstract class GlobalKeyDispatcher {
 	 * @param fromEuclidianView whether this event comes from EV
 	 * @return if key was consumed
 	 */
-	protected boolean handleGeneralKeys(KeyCodes key, boolean isShiftDown,
-			boolean isControlDown, boolean isAltDown, boolean fromSpreadsheet,
+	protected boolean handleGeneralKeys(
+			KeyCodes key,
+			boolean isShiftDown,
+			boolean isControlDown,
+			boolean isAltDown,
+			boolean fromSpreadsheet,
 			boolean fromEuclidianView) {
 
 		// eventually make an undo point (e.g. after zooming)
@@ -420,462 +417,455 @@ public abstract class GlobalKeyDispatcher {
 
 		// ESC and function keys
 		switch (key) {
-		default:
-			// do nothing
-			break;
-		case ESCAPE:
+			default:
+				// do nothing
+				break;
+			case ESCAPE:
 
-			// ESC: set move mode
-			handleEscForDropdown();
-			if (!app.isApplet() || app.showToolBar()) {
-				app.setMoveMode();
-			}
-			consumed = true;
-			break;
-
-		case ENTER:
-			if (app.getAccessibilityManager().handlesEnterInComposite()) {
-				return false;
-			}
-			// check not spreadsheet
-			if (!fromSpreadsheet) {
-				// ENTER: set focus to input field
-				consumed = handleEnter();
-
-			}
-			break;
-
-		// toggle boolean or run script when Spacebar pressed
-		case SPACE:
-			// check not spreadsheet
-			updateKeyDownFlags(false, isControlDown, isShiftDown);
-			if (!fromSpreadsheet) {
-				consumed = app.handleSpaceKey();
-			}
-
-			break;
-		case SHIFT:
-			updateKeyDownFlags(spaceDown, isControlDown, false);
-			break;
-		case TAB:
-			if (app.isDesktop()) {
-				consumed = handleTabDesktop(isControlDown, isShiftDown);
-			}
-
-			break;
-
-		// open Tool Help
-		case F1:
-			app.getDialogManager().openToolHelp();
-			return true;
-
-		// F9 updates construction
-		// cmd-f9 on Mac OS
-		case F9:
-			if (!app.isApplet() || keyboardShortcutsEnabled()) {
-				app.getKernel().updateConstruction(true);
-				app.setUnsaved();
-				consumed = true;
-			}
-			break;
-
-		case CONTEXT_MENU:
-		case F10: // <Shift>F10 -> Right-click
-			if ((isShiftDown || key == KeyCodes.CONTEXT_MENU)
-					&& keyboardShortcutsEnabled()) {
-				if (app.getGuiManager() != null) {
-
-					EuclidianView view = app.getActiveEuclidianView();
-
-					ArrayList<GeoElement> selectedGeos = app
-							.getSelectionManager().getSelectedGeos();
-					if (selectedGeos != null && !selectedGeos.isEmpty()) {
-
-						GeoElement geo = selectedGeos.get(0);
-						DrawableND drawable = view.getDrawableFor(geo);
-						GRectangle2D bounds;
-						if (drawable != null) {
-
-							bounds = drawable.getBoundsForStylebarPosition();
-
-						} else {
-							// probably 3D, just open in corner
-							bounds = AwtFactory.getPrototype().newRectangle2D();
-						}
-						if (bounds != null) {
-							GPoint p = new GPoint((int) bounds.getMinX(),
-									(int) bounds.getMinY());
-
-							GuiManagerInterface guiManager = app.getGuiManager();
-							if (isFocusOnAlgebraView()) {
-								guiManager.openMenuInAVFor(geo);
-							} else {
-								guiManager.showPopupChooseGeo(
-										selectedGeos,
-										app.getSelectionManager().getSelectedGeoList(),
-										app.getActiveEuclidianView(), p);
-							}
-						}
-					} else {
-						// open in corner
-						app.getGuiManager().showDrawingPadPopup(
-								app.getActiveEuclidianView(), new GPoint(0, 0));
-
-					}
+				// ESC: set move mode
+				handleEscForDropdown();
+				if (!app.isApplet() || app.showToolBar()) {
+					app.setMoveMode();
 				}
+				consumed = true;
+				break;
+
+			case ENTER:
+				if (app.getAccessibilityManager().handlesEnterInComposite()) {
+					return false;
+				}
+				// check not spreadsheet
+				if (!fromSpreadsheet) {
+					// ENTER: set focus to input field
+					consumed = handleEnter();
+				}
+				break;
+
+			// toggle boolean or run script when Spacebar pressed
+			case SPACE:
+				// check not spreadsheet
+				updateKeyDownFlags(false, isControlDown, isShiftDown);
+				if (!fromSpreadsheet) {
+					consumed = app.handleSpaceKey();
+				}
+
+				break;
+			case SHIFT:
+				updateKeyDownFlags(spaceDown, isControlDown, false);
+				break;
+			case TAB:
+				if (app.isDesktop()) {
+					consumed = handleTabDesktop(isControlDown, isShiftDown);
+				}
+
+				break;
+
+			// open Tool Help
+			case F1:
+				app.getDialogManager().openToolHelp();
 				return true;
-			}
-			break;
+
+			// F9 updates construction
+			// cmd-f9 on Mac OS
+			case F9:
+				if (!app.isApplet() || keyboardShortcutsEnabled()) {
+					app.getKernel().updateConstruction(true);
+					app.setUnsaved();
+					consumed = true;
+				}
+				break;
+
+			case CONTEXT_MENU:
+			case F10: // <Shift>F10 -> Right-click
+				if ((isShiftDown || key == KeyCodes.CONTEXT_MENU) && keyboardShortcutsEnabled()) {
+					if (app.getGuiManager() != null) {
+
+						EuclidianView view = app.getActiveEuclidianView();
+
+						ArrayList<GeoElement> selectedGeos = app.getSelectionManager().getSelectedGeos();
+						if (selectedGeos != null && !selectedGeos.isEmpty()) {
+							showContextMenu(selectedGeos, view);
+						} else {
+							// open in corner
+							app.getGuiManager()
+									.showDrawingPadPopup(app.getActiveEuclidianView(), new GPoint(0, 0));
+						}
+					}
+					return true;
+				}
+				break;
 		}
 
 		// Ctrl key down (and not Alt, so that AltGr works for special
 		// characters)
 		if (isControlDown && !isAltDown) {
-			consumed = consumed || handleCtrlKey(key, isShiftDown,
-					fromSpreadsheet, fromEuclidianView);
-
+			consumed = consumed || handleCtrlKey(key, isShiftDown, fromSpreadsheet, fromEuclidianView);
 		}
 
 		return consumed;
 	}
 
+	private void showContextMenu(ArrayList<GeoElement> selectedGeos, EuclidianView view) {
+		GeoElement geo = selectedGeos.get(0);
+		DrawableND drawable = view.getDrawableFor(geo);
+		GRectangle2D bounds;
+		if (drawable != null) {
+			bounds = drawable.getBoundsForStylebarPosition();
+		} else {
+			// probably 3D, just open in corner
+			bounds = AwtFactory.getPrototype().newRectangle2D();
+		}
+		if (bounds != null) {
+			GPoint p = new GPoint((int) bounds.getMinX(), (int) bounds.getMinY());
+
+			GuiManagerInterface guiManager = app.getGuiManager();
+			if (isFocusOnAlgebraView()) {
+				guiManager.openMenuInAVFor(geo);
+			} else {
+				guiManager.showPopupChooseGeo(
+						selectedGeos,
+						app.getSelectionManager().getSelectedGeoList(),
+						app.getActiveEuclidianView(),
+						p);
+			}
+		}
+	}
+
 	private boolean isFocusOnAlgebraView() {
-		return app.getGuiManager().getLayout().getDockManager().getFocusedViewId()
-				== App.VIEW_ALGEBRA;
+		return app.getGuiManager().getLayout().getDockManager().getFocusedViewId() == App.VIEW_ALGEBRA;
 	}
 
 	protected boolean handleTabDesktop(boolean isControlDown, boolean isShiftDown) {
 		return false; // overridden in desktop
 	}
 
-	protected boolean handleCtrlKey(KeyCodes key, boolean isShiftDown,
-			boolean fromSpreadsheet, boolean fromEuclidianView) {
+	protected boolean handleCtrlKey(
+			KeyCodes key, boolean isShiftDown, boolean fromSpreadsheet, boolean fromEuclidianView) {
 		return false;
 	}
 
-	protected boolean handleCtrlKeys(KeyCodes key, boolean isShiftDown,
-			boolean fromSpreadsheet, boolean fromEuclidianView) {
+	protected boolean handleCtrlKeys(
+			KeyCodes key, boolean isShiftDown, boolean fromSpreadsheet, boolean fromEuclidianView) {
 		boolean consumed = false;
 		// Only zoom, undo, redo available in simple applets, subject to enableShiftDragZoom and
 		// enableUndoRedo flags
-		if (!keyboardShortcutsEnabled() && key != KeyCodes.M
-				&& key != KeyCodes.Y && key != KeyCodes.Z && key != KeyCodes.SUBTRACT
-				&& key != KeyCodes.PLUS && key != KeyCodes.MINUS && key != KeyCodes.EQUALS) {
+		if (!keyboardShortcutsEnabled()
+				&& key != KeyCodes.M
+				&& key != KeyCodes.Y
+				&& key != KeyCodes.Z
+				&& key != KeyCodes.SUBTRACT
+				&& key != KeyCodes.PLUS
+				&& key != KeyCodes.MINUS
+				&& key != KeyCodes.EQUALS) {
 			return false;
 		}
 		switch (key) {
-		case K1:
-		case NUMPAD1:
-			// event.isShiftDown() doesn't work if NumLock on
-			// however .isAltDown() stops AltGr-1 from working (| on some
-			// keyboards)
-			if (isShiftDown && initialViewState.hasGraphicsView1()) {
-				if (app.isUnbundled()) {
-					toggleUnbundledGraphicsView1();
-				} else {
-					toggleView(App.VIEW_EUCLIDIAN);
+			case K1:
+			case NUMPAD1:
+				// event.isShiftDown() doesn't work if NumLock on
+				// however .isAltDown() stops AltGr-1 from working (| on some
+				// keyboards)
+				if (isShiftDown && initialViewState.hasGraphicsView1()) {
+					if (app.isUnbundled()) {
+						toggleUnbundledGraphicsView1();
+					} else {
+						toggleView(App.VIEW_EUCLIDIAN);
+						consumed = true;
+					}
+				} else { // make sure not triggered on
+					// AltGr
+					// Ctrl-1: set objects back to the default size (for font
+					// size 12)
+					changeFontsAndGeoElements(app, 12, false, false);
 					consumed = true;
 				}
-			} else { // make sure not triggered on
-				// AltGr
-				// Ctrl-1: set objects back to the default size (for font
-				// size 12)
-				changeFontsAndGeoElements(app, 12, false, false);
-				consumed = true;
-			}
-			break;
+				break;
 
-		case NUMPAD2:
-		case K2:
-			// event.isShiftDown() doesn't work if NumLock on
-			// however .isAltDown() stops AltGr-2 from working (superscript
-			// 2 on some keyboards)
-			if (isShiftDown && initialViewState.hasGraphicsView2()) {
-				toggleView(App.VIEW_EUCLIDIAN2);
-			} else { // make sure not triggered on
+			case NUMPAD2:
+			case K2:
+				// event.isShiftDown() doesn't work if NumLock on
+				// however .isAltDown() stops AltGr-2 from working (superscript
+				// 2 on some keyboards)
+				if (isShiftDown && initialViewState.hasGraphicsView2()) {
+					toggleView(App.VIEW_EUCLIDIAN2);
+				} else { // make sure not triggered on
 					// AltGr
 					// Ctrl-2: large font size and thicker lines for projectors
 					// etc
 					int fontSize = Math.min(32, app.getFontSize() + 4);
 					changeFontsAndGeoElements(app, fontSize, false, true);
-			}
-			consumed = true;
-			break;
-
-		case NUMPAD3:
-		case K3:
-			// event.isShiftDown() doesn't work if NumLock on
-			// however .isAltDown() stops AltGr-3 from working (^ on
-			// Croatian keyboard)
-			if (!app.isUnbundledOrWhiteboard()) {
-				if (isShiftDown && app.getGuiManager() != null
-						&& app.supportsView(App.VIEW_EUCLIDIAN3D)) {
-					app.getGuiManager().setShowView(
-							!app.getGuiManager().showView(App.VIEW_EUCLIDIAN3D),
-							App.VIEW_EUCLIDIAN3D);
-
-					consumed = true;
-
-				} else { // make sure not triggered on
-					// AltGr
-					// Ctrl-3: set black/white mode printing and visually
-					// impaired users
-					changeFontsAndGeoElements(app, app.getFontSize(), true, true);
-					consumed = true;
 				}
-			}
-			break;
-
-		case A:
-			if (isShiftDown) {
-				if (initialViewState.hasAlgebra()) {
-					toggleAlgebraView();
-					consumed = true;
-				}
-			} else {
-				selection.selectAll(-1);
 				consumed = true;
-			}
-			break;
+				break;
 
-		case K:
-			if (isShiftDown) {
-				if (initialViewState.hasCas()) {
-					toggleView(App.VIEW_CAS);
+			case NUMPAD3:
+			case K3:
+				// event.isShiftDown() doesn't work if NumLock on
+				// however .isAltDown() stops AltGr-3 from working (^ on
+				// Croatian keyboard)
+				if (!app.isUnbundledOrWhiteboard()) {
+					if (isShiftDown
+							&& app.getGuiManager() != null
+							&& app.supportsView(App.VIEW_EUCLIDIAN3D)) {
+						app.getGuiManager()
+								.setShowView(
+										!app.getGuiManager().showView(App.VIEW_EUCLIDIAN3D), App.VIEW_EUCLIDIAN3D);
+
+						consumed = true;
+
+					} else { // make sure not triggered on
+						// AltGr
+						// Ctrl-3: set black/white mode printing and visually
+						// impaired users
+						changeFontsAndGeoElements(app, app.getFontSize(), true, true);
+						consumed = true;
+					}
+				}
+				break;
+
+			case A:
+				if (isShiftDown) {
+					if (initialViewState.hasAlgebra()) {
+						toggleAlgebraView();
+						consumed = true;
+					}
+				} else {
+					selection.selectAll(-1);
 					consumed = true;
 				}
-			}
-			break;
+				break;
 
-		case L:
-			if (isShiftDown) {
-				if (initialViewState.hasConstructionProtocol()) {
-					toggleView(App.VIEW_CONSTRUCTION_PROTOCOL);
+			case K:
+				if (isShiftDown) {
+					if (initialViewState.hasCas()) {
+						toggleView(App.VIEW_CAS);
+						consumed = true;
+					}
+				}
+				break;
+
+			case L:
+				if (isShiftDown) {
+					if (initialViewState.hasConstructionProtocol()) {
+						toggleView(App.VIEW_CONSTRUCTION_PROTOCOL);
+						consumed = true;
+					}
+				}
+				break;
+
+			case O: // File -> Open
+				if (!isShiftDown && app.getGuiManager() != null) {
+					app.getGuiManager().openFile();
 					consumed = true;
 				}
-			}
-			break;
-
-		case O: // File -> Open
-			if (!isShiftDown && app.getGuiManager() != null) {
-				app.getGuiManager().openFile();
-				consumed = true;
-			}
-			break;
-		case P:
-			if (isShiftDown) {
-				if (initialViewState.hasProbability()) {
-					toggleView(App.VIEW_PROBABILITY_CALCULATOR);
+				break;
+			case P:
+				if (isShiftDown) {
+					if (initialViewState.hasProbability()) {
+						toggleDistributionView();
+						consumed = true;
+					}
+				} else {
+					showPrintPreview(app);
+					consumed = true;
 				}
-			} else {
-				showPrintPreview(app);
-			}
-			consumed = true;
 
-			break;
-		case W: // File -> Export -> Webpage
-			if (isShiftDown && app.getGuiManager() != null) {
-				app.getGuiManager().showWebpageExport();
-				consumed = true;
-			} else {
-				// File -> Close (under Mac: Command-W)
-				app.exitAll();
-				// Under Ubuntu/Unity this will close all windows.
-				consumed = true;
-			}
-			break;
-		case F4: // File -> Exit
-			if (!isShiftDown) {
-				app.exitAll();
-				consumed = true;
-			}
-			break;
+				break;
+			case W: // File -> Export -> Webpage
+				if (isShiftDown && app.getGuiManager() != null) {
+					app.getGuiManager().showWebpageExport();
+					consumed = true;
+				} else {
+					// File -> Close (under Mac: Command-W)
+					app.exitAll();
+					// Under Ubuntu/Unity this will close all windows.
+					consumed = true;
+				}
+				break;
+			case F4: // File -> Exit
+				if (!isShiftDown) {
+					app.exitAll();
+					consumed = true;
+				}
+				break;
 
-		case F10: // <Shift>F10 -> Right-click
-			if (isShiftDown) {
-				Log.error("shift f10");
-				consumed = true;
-			}
-			break;
+			case F10: // <Shift>F10 -> Right-click
+				if (isShiftDown) {
+					Log.error("shift f10");
+					consumed = true;
+				}
+				break;
 
-		case I: // Edit -> Invert Selection
-			if (!isShiftDown) {
-				selection.invertSelection();
-				consumed = true;
-			}
-			break;
-		case X:
-			// Ctrl-shift-c: copy graphics view to clipboard
-			// should also work in applets with no menubar
+			case I: // Edit -> Invert Selection
+				if (!isShiftDown) {
+					selection.invertSelection();
+					consumed = true;
+				}
+				break;
+			case X:
+				// Ctrl-shift-c: copy graphics view to clipboard
+				// should also work in applets with no menubar
 
-			// check not spreadsheet
-			if (!fromSpreadsheet) {
-				handleCopyCut(true);
-			}
-
-			break;
-		case C:
-			// Ctrl-shift-c: copy graphics view to clipboard
-			// should also work in applets with no menubar
-			if (isShiftDown) {
-				app.copyGraphicsViewToClipboard();
-				consumed = true;
-			} else {
 				// check not spreadsheet
 				if (!fromSpreadsheet) {
-					handleCopyCut(false);
+					handleCopyCut(true);
 				}
 
-			}
-			break;
-		case M:
-			if (isShiftDown && keyboardShortcutsEnabled()) {
-				app.copyFullHTML5ExportToClipboard();
-				consumed = true;
-			} else if (app.isShiftDragZoomEnabled()) {
-				// Ctrl-M: standard view
-				app.setStandardView();
-			}
-			break;
-
-		case B:
-			// copy base64 string to clipboard
-			if (isShiftDown) {
-				app.copyBase64ToClipboard();
-				consumed = true;
-			}
-			break;
-
-		// Ctrl + H / G: Show Hide objects (labels)
-		case G:
-		case H:
-			if (isShiftDown) {
-				selection.showHideSelectionLabels();
-			} else {
-				selection.showHideSelection();
-			}
-			consumed = true;
-			break;
-
-		// Ctrl + E: open object properties (needed here for spreadsheet)
-		case E:
-			if (initialViewState.hasProperties()) {
-				app.getDialogManager().togglePropertiesView();
-			}
-			consumed = true;
-			break;
-
-		// Ctrl + F: refresh views
-		case F:
-			app.refreshViews();
-			consumed = true;
-			break;
-
-		/*
-		 * send next instance to front (alt - last)
-		 */
-		case N:
-			if (isShiftDown) {
-				handleCtrlShiftN(false);
-			} else {
-				createNewWindow();
-			}
-			break;
-
-		// needed for detached views and MacOS
-		// Ctrl + Z: Undo
-		case Z:
-			if (isUndoRedoEnabled()) {
-				app.setWaitCursor();
+				break;
+			case C:
+				// Ctrl-shift-c: copy graphics view to clipboard
+				// should also work in applets with no menubar
 				if (isShiftDown) {
-					app.getKernel().redo();
+					app.copyGraphicsViewToClipboard();
+					consumed = true;
 				} else {
-					app.getKernel().undo();
-				}
-				app.setDefaultCursor();
-			}
-			consumed = true;
-			break;
-		case U:
-			if (isShiftDown && app.getGuiManager() != null) {
-				if (!app.isUnbundledOrWhiteboard()) {
-					app.getGuiManager().showGraphicExport();
-					consumed = true;
-				} else if (initialViewState.hasTableOfValues()) {
-					toggleTableView();
-					consumed = true;
-				}
-			}
-			break;
-		case V:
-			// check not spreadsheet, not inputbar
-			if (!fromSpreadsheet) {
-				handleCtrlV();
-			}
-			break;
-
-		// ctrl-R updates construction
-		// make sure it works in applets without a menubar
-		case R:
-			app.getKernel().updateConstruction(true);
-			app.setUnsaved();
-			consumed = true;
-			break;
-
-		// ctrl-shift-s (toggle spreadsheet)
-		case S:
-			if (isShiftDown) {
-				if (initialViewState.hasSpreadsheet()) {
-					if (!app.isUnbundledOrWhiteboard()) {
-						boolean spVisible
-								= !app.getGuiManager().showView(App.VIEW_SPREADSHEET);
-						app.getGuiManager().setShowView(
-								spVisible,
-								App.VIEW_SPREADSHEET);
-					} else {
-						toggleSpreadsheetView();
+					// check not spreadsheet
+					if (!fromSpreadsheet) {
+						handleCopyCut(false);
 					}
+				}
+				break;
+			case M:
+				if (isShiftDown && keyboardShortcutsEnabled()) {
+					app.copyFullHTML5ExportToClipboard();
+					consumed = true;
+				} else if (app.isShiftDragZoomEnabled()) {
+					// Ctrl-M: standard view
+					app.setStandardView();
+				}
+				break;
+
+			case B:
+				// copy base64 string to clipboard
+				if (isShiftDown) {
+					app.copyBase64ToClipboard();
 					consumed = true;
 				}
-			} else if (app.getGuiManager() != null) {
-				app.getGuiManager().save();
+				break;
+
+			// Ctrl + H / G: Show Hide objects (labels)
+			case G:
+			case H:
+				if (isShiftDown) {
+					selection.showHideSelectionLabels();
+				} else {
+					selection.showHideSelection();
+				}
 				consumed = true;
-			}
-			break;
+				break;
 
-		case Y:
-			if (!isShiftDown && isUndoRedoEnabled()) {
-				// needed for detached views and MacOS
-				// Cmd + Y: Redo
-				app.setWaitCursor();
-				app.getKernel().redo();
-				app.setDefaultCursor();
+			// Ctrl + E: open object properties (needed here for spreadsheet)
+			case E:
+				if (initialViewState.hasProperties()) {
+					app.getDialogManager().togglePropertiesView();
+				}
 				consumed = true;
-			}
-			break;
+				break;
 
-		// Ctrl-(shift)-Q (deprecated - doesn't work on MacOS)
-		// Ctrl-(shift)-J
-		case J:
-		case Q:
-			if (isShiftDown) {
-				selection.selectAllDescendants();
-			} else {
-				selection.selectAllPredecessors();
-			}
-			consumed = true;
-			break;
+			// Ctrl + F: refresh views
+			case F:
+				app.refreshViews();
+				consumed = true;
+				break;
 
-		// Ctrl + "+", Ctrl + "-" zooms in or out in graphics view
-		case PLUS:
-		case ADD:
-		case SUBTRACT:
-		case MINUS:
-		case EQUALS:
-			// disable zooming in PEN mode
-			if (!EuclidianView
-					.isPenMode(app.getActiveEuclidianView().getMode())) {
+			/*
+			 * send next instance to front (alt - last)
+			 */
+			case N:
+				if (isShiftDown) {
+					handleCtrlShiftN(false);
+				} else {
+					createNewWindow();
+				}
+				break;
 
+			// needed for detached views and MacOS
+			// Ctrl + Z: Undo
+			case Z:
+				if (isUndoRedoEnabled()) {
+					app.setWaitCursor();
+					if (isShiftDown) {
+						app.getKernel().redo();
+					} else {
+						app.getKernel().undo();
+					}
+					app.setDefaultCursor();
+				}
+				consumed = true;
+				break;
+			case U:
+				if (isShiftDown && app.getGuiManager() != null) {
+					if (!app.isUnbundledOrWhiteboard()) {
+						app.getGuiManager().showGraphicExport();
+						consumed = true;
+					} else if (initialViewState.hasTableOfValues()) {
+						toggleTableView();
+						consumed = true;
+					}
+				}
+				break;
+			case V:
+				// check not spreadsheet, not inputbar
+				if (!fromSpreadsheet) {
+					handleCtrlV();
+				}
+				break;
+
+			// ctrl-R updates construction
+			// make sure it works in applets without a menubar
+			case R:
+				app.getKernel().updateConstruction(true);
+				app.setUnsaved();
+				consumed = true;
+				break;
+
+			// ctrl-shift-s (toggle spreadsheet)
+			case S:
+				if (isShiftDown) {
+					if (initialViewState.hasSpreadsheet()) {
+						if (!app.isUnbundledOrWhiteboard()) {
+							boolean spVisible = !app.getGuiManager().showView(App.VIEW_SPREADSHEET);
+							app.getGuiManager().setShowView(spVisible, App.VIEW_SPREADSHEET);
+						} else {
+							toggleSpreadsheetView();
+						}
+						consumed = true;
+					}
+				} else if (app.getGuiManager() != null) {
+					app.getGuiManager().save();
+					consumed = true;
+				}
+				break;
+
+			case Y:
+				if (!isShiftDown && isUndoRedoEnabled()) {
+					// needed for detached views and MacOS
+					// Cmd + Y: Redo
+					app.setWaitCursor();
+					app.getKernel().redo();
+					app.setDefaultCursor();
+					consumed = true;
+				}
+				break;
+
+			// Ctrl-(shift)-Q (deprecated - doesn't work on MacOS)
+			// Ctrl-(shift)-J
+			case J:
+			case Q:
+				if (isShiftDown) {
+					selection.selectAllDescendants();
+				} else {
+					selection.selectAllPredecessors();
+				}
+				consumed = true;
+				break;
+
+			// Ctrl + "+", Ctrl + "-" zooms in or out in graphics view
+			case PLUS:
+			case ADD:
+			case SUBTRACT:
+			case MINUS:
+			case EQUALS:
 				boolean spanish = app.getLocalization().languageIs("es");
 
 				// AltGr+ on Spanish keyboard is ] so
@@ -891,78 +881,72 @@ public abstract class GlobalKeyDispatcher {
 					app.setUnsaved();
 					consumed = true;
 				}
-			}
-			break;
+				break;
 
-		// Ctrl + D: toggles algebra style: value, definition, description, linear notation
-		case D:
-		case BACK_QUOTE:
-			if (!isShiftDown) {
-				toggleAlgebraStyle(app);
-				consumed = true;
-			} else {
+			// Ctrl + D: toggles algebra style: value, definition, description, linear notation
+			case D:
+			case BACK_QUOTE:
+				if (!isShiftDown) {
+					toggleAlgebraStyle(app);
+					consumed = true;
+				} else {
 
-				// Ctrl-Shift-D
-				// toggle "selection allowed" for all objects
-				// except visible sliders, unfixed points, buttons,
-				// checkboxes, InputBoxes, drop-down lists
+					// Ctrl-Shift-D
+					// toggle "selection allowed" for all objects
+					// except visible sliders, unfixed points, buttons,
+					// checkboxes, InputBoxes, drop-down lists
 
-				// what to set all objects to
-				boolean selectionAllowed = false;
+					// what to set all objects to
+					boolean selectionAllowed = false;
 
-				// check if any geos already have selectionAllowed = false
-				// if so then we will set all to be true
-				TreeSet<GeoElement> objects = app.getKernel().getConstruction()
-						.getGeoSetConstructionOrder();
-				Iterator<GeoElement> it = objects.iterator();
-				while (it.hasNext()) {
-					GeoElement geo = it.next();
-					if (!geo.isSelectionAllowed(app.getActiveEuclidianView())) {
-						selectionAllowed = true;
-						break;
-					}
-				}
-
-				it = objects.iterator();
-				while (it.hasNext()) {
-					GeoElement geo = it.next();
-
-					if ((geo instanceof AbsoluteScreenLocateable
-							&& ((AbsoluteScreenLocateable) geo).isFurniture())
-							|| (geo.isGeoNumeric() && geo.isIndependent())
-							|| geo.isGeoBoolean()
-							|| (geo.isGeoPoint() && !geo.isLocked())) {
-
-						geo.setSelectionAllowed(true);
-
-						// fix/unfix sliders
-						if (geo.isGeoNumeric() && geo.isIndependent()) {
-							((GeoNumeric) geo)
-									.setSliderFixed(!selectionAllowed);
+					// check if any geos already have selectionAllowed = false
+					// if so then we will set all to be true
+					TreeSet<GeoElement> objects =
+							app.getKernel().getConstruction().getGeoSetConstructionOrder();
+					Iterator<GeoElement> it = objects.iterator();
+					while (it.hasNext()) {
+						GeoElement geo = it.next();
+						if (!geo.isSelectionAllowed(app.getActiveEuclidianView())) {
+							selectionAllowed = true;
+							break;
 						}
+					}
 
-					} else {
-						geo.setSelectionAllowed(selectionAllowed);
+					it = objects.iterator();
+					while (it.hasNext()) {
+						GeoElement geo = it.next();
+
+						if ((geo instanceof AbsoluteScreenLocateable
+										&& ((AbsoluteScreenLocateable) geo).isFurniture())
+								|| (geo.isGeoNumeric() && geo.isIndependent())
+								|| geo.isGeoBoolean()
+								|| (geo.isGeoPoint() && !geo.isLocked())) {
+
+							geo.setSelectionAllowed(true);
+
+							// fix/unfix sliders
+							if (geo.isGeoNumeric() && geo.isIndependent()) {
+								((GeoNumeric) geo).setSliderFixed(!selectionAllowed);
+							}
+
+						} else {
+							geo.setSelectionAllowed(selectionAllowed);
+						}
 					}
 				}
-
-			}
-			break;
+				break;
 		}
 		return consumed;
 	}
 
 	private void toggleUnbundledGraphicsView1() {
 		int viewID = App.VIEW_EUCLIDIAN;
-		if ((Perspective.GRAPHER_3D + "").equals(
-				app.getConfig().getForcedPerspective())) {
+		if ((Perspective.GRAPHER_3D + "").equals(app.getConfig().getForcedPerspective())) {
 			viewID = App.VIEW_EUCLIDIAN3D;
 		}
 		boolean showsEuclidianView = app.getGuiManager().showView(viewID);
 		if (showsEuclidianView) {
-			app.getGuiManager().setShowView(
-					!app.getGuiManager().showView(viewID),
-					viewID);
+			app.getGuiManager().setShowView(!app.getGuiManager().showView(viewID), viewID);
 			app.getAlgebraView().setFocus(true);
 		} else {
 			app.getGuiManager().closeFullscreenView();
@@ -970,7 +954,7 @@ public abstract class GlobalKeyDispatcher {
 		}
 	}
 
-	private void toggleAlgebraView() {
+	protected void toggleAlgebraView() {
 		// if there is no EV we cannot really close the side panel
 		if (app.getConfig().hasEuclidianView()) {
 			toggleView(App.VIEW_ALGEBRA);
@@ -987,6 +971,10 @@ public abstract class GlobalKeyDispatcher {
 
 	protected void toggleSpreadsheetView() {
 		// web only
+	}
+
+	protected void toggleDistributionView() {
+		toggleView(App.VIEW_PROBABILITY_CALCULATOR);
 	}
 
 	private boolean isUndoRedoEnabled() {
@@ -1052,7 +1040,7 @@ public abstract class GlobalKeyDispatcher {
 
 	/**
 	 * Opens print preview dialog
-	 * 
+	 *
 	 * @param app2
 	 *            application
 	 */
@@ -1085,7 +1073,7 @@ public abstract class GlobalKeyDispatcher {
 	/**
 	 * Changes the font size of the user interface and construction element
 	 * styles (thickness, size) for a given fontSize.
-	 * 
+	 *
 	 * @param app
 	 *            application
 	 * @param fontSize
@@ -1096,8 +1084,8 @@ public abstract class GlobalKeyDispatcher {
 	 *            force bold / not bold
 	 * @return whether change was performed
 	 */
-	public static boolean changeFontsAndGeoElements(App app, int fontSize,
-			boolean blackWhiteMode, boolean makeAxesBold) {
+	public static boolean changeFontsAndGeoElements(
+			App app, int fontSize, boolean blackWhiteMode, boolean makeAxesBold) {
 		if (app.isApplet()) {
 			return false;
 		}
@@ -1127,11 +1115,10 @@ public abstract class GlobalKeyDispatcher {
 		int incr = getPointSizeInc(oldFontSize, fontSize);
 
 		// construction defaults
-		ConstructionDefaults cd = app.getKernel().getConstruction()
-				.getConstructionDefaults();
+		ConstructionDefaults cd = app.getKernel().getConstruction().getConstructionDefaults();
 		cd.setDefaultLineThickness(cd.getDefaultLineThickness() + incr);
-		cd.setDefaultPointSize(cd.getDefaultPointSize() + incr,
-				cd.getDefaultDependentPointSize() + incr);
+		cd.setDefaultPointSize(
+				cd.getDefaultPointSize() + incr, cd.getDefaultDependentPointSize() + incr);
 		cd.setDefaultAngleSize(cd.getDefaultAngleSize() + angleSizeIncr);
 		// blackWhiteMode: set defaults for new GeoElements
 		cd.setBlackWhiteMode(blackWhiteMode);
@@ -1143,11 +1130,10 @@ public abstract class GlobalKeyDispatcher {
 		}
 
 		// apply styles to to selected or all geos
-		Iterator<GeoElement> it = null;
+		Iterator<GeoElement> it;
 		if (app.getSelectionManager().getSelectedGeos().size() == 0) {
 			// change all geos
-			it = app.getKernel().getConstruction().getGeoSetConstructionOrder()
-					.iterator();
+			it = app.getKernel().getConstruction().getGeoSetConstructionOrder().iterator();
 		} else {
 			// just change selected geos
 			it = app.getSelectionManager().getSelectedGeos().iterator();
@@ -1173,7 +1159,7 @@ public abstract class GlobalKeyDispatcher {
 
 		int left = Math.min(oldFontSize, newFontSize);
 		int right = Math.max(oldFontSize, newFontSize);
-		int[] borders = { 16, 22, 28 };
+		int[] borders = {16, 22, 28};
 		int incr = 0;
 		for (int i = 0; i < borders.length; i++) {
 			if (left < borders[i] && borders[i] <= right) {
@@ -1184,16 +1170,19 @@ public abstract class GlobalKeyDispatcher {
 		return incr * 2;
 	}
 
-	private static void setGeoProperties(GeoElement geo, int lineThicknessIncr,
-			int pointSizeIncr, int angleSizeIncr, boolean blackWhiteMode) {
+	private static void setGeoProperties(
+			GeoElement geo,
+			int lineThicknessIncr,
+			int pointSizeIncr,
+			int angleSizeIncr,
+			boolean blackWhiteMode) {
 
 		if (!geo.isGeoText() && !geo.isGeoImage() && !geo.isGeoPolygon()) { // affects
 			// bounding
 			// box
 			int geoLineThickness = geo.getLineThickness();
 			if (geoLineThickness != 0) {
-				int lineThickness = Math.max(2,
-						geoLineThickness + lineThicknessIncr);
+				int lineThickness = Math.max(2, geoLineThickness + lineThicknessIncr);
 				geo.setLineThickness(lineThickness);
 			}
 		}
@@ -1218,7 +1207,7 @@ public abstract class GlobalKeyDispatcher {
 
 	/**
 	 * Handle pressed key for selected GeoElements
-	 * 
+	 *
 	 * @param key
 	 *            key code
 	 * @param geos
@@ -1231,16 +1220,17 @@ public abstract class GlobalKeyDispatcher {
 	 *            whether alt is down
 	 * @param fromSpreadsheet
 	 *            whether this event comes from spreadsheet
-	 * 
+	 *
 	 * @return if key was consumed
 	 */
-	protected boolean handleSelectedGeosKeys(KeyCodes key,
-			List<GeoElement> geos, boolean isShiftDown,
-			boolean isControlDown, boolean isAltDown, boolean fromSpreadsheet) {
+	protected boolean handleSelectedGeosKeys(
+			KeyCodes key,
+			List<GeoElement> geos,
+			boolean isShiftDown,
+			boolean isControlDown,
+			boolean isAltDown,
+			boolean fromSpreadsheet) {
 		// SPECIAL KEYS
-		double changeValX = 0; // later: changeVal = base or -base
-		double changeValY = 0; // later: changeVal = base or -base
-		double changeValZ = 0; // later: changeVal = base or -base
 		// Shift : base = 0.1
 		// Default : base = 1
 		// Ctrl : base = 10
@@ -1263,165 +1253,171 @@ public abstract class GlobalKeyDispatcher {
 
 		// FUNCTION and DELETE keys
 		switch (key) {
-		case F3:
-			// F3 key: copy definition to input field
-			if (geos.size() == 1) {
-				handleFunctionKeyForAlgebraInput(3, geos.get(0));
-			} else {
-				// F3 key: copy definitions to input field as list
-				copyDefinitionsToInputBarAsList(geos);
+			case F3:
+				// F3 key: copy definition to input field
+				if (geos.size() == 1) {
+					handleFunctionKeyForAlgebraInput(3, geos.get(0));
+				} else {
+					// F3 key: copy definitions to input field as list
+					copyDefinitionsToInputBarAsList(geos);
+					break;
+				}
+				return true;
+
+			case F1:
+				app.getDialogManager().openToolHelp();
+				return true;
+
+			case F4:
+				// F4 key: copy value to input field
+				handleFunctionKeyForAlgebraInput(4, geos.get(0));
+				return true;
+
+			case F5:
+				// F5 key: copy label to input field
+				handleFunctionKeyForAlgebraInput(5, geos.get(0));
+				return true;
+
+			case DELETE:
+				if (isSpreadsheetFocused()) {
+					return false;
+				}
+				// DELETE selected objects
+				if (!app.isApplet() || keyboardShortcutsEnabled()) {
+					app.splitAndDeleteSelectedObjects();
+					return true;
+				}
+
+			case BACKSPACE:
+				if (isSpreadsheetFocused()) {
+					return false;
+				}
+				// DELETE selected objects
+				// Note: ctrl-h generates a KeyEvent.VK_BACK_SPACE event, so check
+				// for ctrl too
+				if (!isControlDown && (!app.isApplet() || keyboardShortcutsEnabled())) {
+					app.splitAndDeleteSelectedObjects();
+					return true;
+				}
 				break;
-			}
-			return true;
 
-		case F1:
-			app.getDialogManager().openToolHelp();
-			return true;
-
-		case F4:
-			// F4 key: copy value to input field
-			handleFunctionKeyForAlgebraInput(4, geos.get(0));
-			return true;
-
-		case F5:
-			// F5 key: copy label to input field
-			handleFunctionKeyForAlgebraInput(5, geos.get(0));
-			return true;
-
-		case DELETE:
-			if (isSpreadsheetFocused()) {
-				return false;
-			}
-			// DELETE selected objects
-			if (!app.isApplet() || keyboardShortcutsEnabled()) {
-				app.splitAndDeleteSelectedObjects();
-				return true;
-			}
-
-		case BACKSPACE:
-			if (isSpreadsheetFocused()) {
-				return false;
-			}
-			// DELETE selected objects
-			// Note: ctrl-h generates a KeyEvent.VK_BACK_SPACE event, so check
-			// for ctrl too
-			if (!isControlDown
-					&& (!app.isApplet() || keyboardShortcutsEnabled())) {
-				app.splitAndDeleteSelectedObjects();
-				return true;
-			}
-			break;
-
-		case CONTEXT_MENU:
-		case F10:
-			if ((isShiftDown || key == KeyCodes.CONTEXT_MENU) && keyboardShortcutsEnabled()
-					&& app.isAlgebraViewFocused()) {
-				app.getGuiManager().openMenuInAVFor(geos.get(0));
-				return true;
-			}
-			break;
+			case CONTEXT_MENU:
+			case F10:
+				if ((isShiftDown || key == KeyCodes.CONTEXT_MENU)
+						&& keyboardShortcutsEnabled()
+						&& app.isAlgebraViewFocused()) {
+					app.getGuiManager().openMenuInAVFor(geos.get(0));
+					return true;
+				}
+				break;
 		}
 
 		// ignore key events coming from tables like the spreadsheet to
 		// allow start editing, moving etc
 		if (fromSpreadsheet || isSpreadsheetFocused()) {
-				return false;
+			return false;
 		}
 
 		// check for arrow keys: try to move objects accordingly
 		boolean moved = false;
-		boolean isometric = app.getActiveEuclidianView().getGridType()
-				== EuclidianView.GRID_ISOMETRIC;
+		boolean isometric = app.getActiveEuclidianView().getGridType() == EuclidianView.GRID_ISOMETRIC;
+		double changeValX = 0; // later: changeVal = base or -base
+		double changeValY = 0; // later: changeVal = base or -base
+		double changeValZ = 0; // later: changeVal = base or -base
 		switch (key) {
-		default:
-			// do nothing
-			break;
-		case UP:
-			// make sure arrow keys work in menus
-			if (app.getGuiManager() != null && app.isUsingFullGui()
-					&& !app.getGuiManager().noMenusOpen()) {
-				return false;
-			}
+			default:
+				// do nothing
+				break;
+			case UP:
+				// make sure arrow keys work in menus
+				if (app.getGuiManager() != null
+						&& app.isUsingFullGui()
+						&& !app.getGuiManager().noMenusOpen()) {
+					return false;
+				}
 
-			if (handleUpDownArrowsForDropdown(geos, false)) {
-				return true;
-			}
-			changeValY = base;
-			break;
-
-		case DOWN:
-
-			// make sure arrow keys work in menus
-			if (app.getGuiManager() != null && app.isUsingFullGui()
-					&& !app.getGuiManager().noMenusOpen()) {
-				return false;
-			}
-
-			if (handleUpDownArrowsForDropdown(geos, true)) {
-				return true;
-			}
-			changeValY = -base;
-			break;
-
-		case RIGHT:
-
-			// make sure arrow keys work in menus
-			if (app.getGuiManager() != null && app.isUsingFullGui()
-					&& !app.getGuiManager().noMenusOpen()) {
-				return false;
-			}
-
-			if (handleLeftRightArrowsForDropdown(geos, true)) {
-				return true;
-			}
-			changeValX = base;
-			if (isometric) {
+				if (handleUpDownArrowsForDropdown(geos, false)) {
+					return true;
+				}
 				changeValY = base;
-			}
-			break;
+				break;
 
-		case LEFT:
+			case DOWN:
 
-			// make sure arrow keys work in menus
-			if (app.getGuiManager() != null && app.isUsingFullGui()
-					&& !app.getGuiManager().noMenusOpen()) {
-				return false;
-			}
+				// make sure arrow keys work in menus
+				if (app.getGuiManager() != null
+						&& app.isUsingFullGui()
+						&& !app.getGuiManager().noMenusOpen()) {
+					return false;
+				}
 
-			if (handleLeftRightArrowsForDropdown(geos, false)) {
-				return true;
-			}
-
-			changeValX = -base;
-			if (isometric) {
+				if (handleUpDownArrowsForDropdown(geos, true)) {
+					return true;
+				}
 				changeValY = -base;
-			}
-			break;
+				break;
 
-		case PLUS:
-		case ADD:
-		case EQUALS:
-			if (isometric) {
-				changeValX = -base;
-				changeValY = base;
-			}
-			break;
+			case RIGHT:
 
-		case MINUS:
-		case SUBTRACT:
-			if (isometric) {
+				// make sure arrow keys work in menus
+				if (app.getGuiManager() != null
+						&& app.isUsingFullGui()
+						&& !app.getGuiManager().noMenusOpen()) {
+					return false;
+				}
+
+				if (handleLeftRightArrowsForDropdown(geos, true)) {
+					return true;
+				}
 				changeValX = base;
-				changeValY = -base;
-			}
-			break;
+				if (isometric) {
+					changeValY = base;
+				}
+				break;
 
-		case PAGEUP:
-			changeValZ = base;
-			break;
+			case LEFT:
 
-		case PAGEDOWN:
-			changeValZ = -base;
-			break;
+				// make sure arrow keys work in menus
+				if (app.getGuiManager() != null
+						&& app.isUsingFullGui()
+						&& !app.getGuiManager().noMenusOpen()) {
+					return false;
+				}
+
+				if (handleLeftRightArrowsForDropdown(geos, false)) {
+					return true;
+				}
+
+				changeValX = -base;
+				if (isometric) {
+					changeValY = -base;
+				}
+				break;
+
+			case PLUS:
+			case ADD:
+			case EQUALS:
+				if (isometric) {
+					changeValX = -base;
+					changeValY = base;
+				}
+				break;
+
+			case MINUS:
+			case SUBTRACT:
+				if (isometric) {
+					changeValX = base;
+					changeValY = -base;
+				}
+				break;
+
+			case PAGEUP:
+				changeValZ = base;
+				break;
+
+			case PAGEDOWN:
+				changeValZ = -base;
+				break;
 		}
 
 		boolean arrowsUsed = changeValX != 0 || changeValY != 0 || changeValZ != 0;
@@ -1445,63 +1441,63 @@ public abstract class GlobalKeyDispatcher {
 		double changeVal = 0;
 		// F2, PLUS, MINUS keys
 		switch (key) {
-		default:
-			// do nothing
-			break;
-		case F2:
-			// handle F2 key to start editing first selected element
-			if (app.isUsingFullGui() && app.getGuiManager() != null) {
-				app.getGuiManager().startEditing(geos.get(0));
-				return true;
-			}
-			break;
+			default:
+				// do nothing
+				break;
+			case F2:
+				// handle F2 key to start editing first selected element
+				if (app.isUsingFullGui() && app.getGuiManager() != null) {
+					app.getGuiManager().startEditing(geos.get(0));
+					return true;
+				}
+				break;
 
-		case PLUS:
-		case ADD: // can be own key on some keyboard
-		case EQUALS: // same key as plus (on most keyboards)
-			changeVal = base;
-			index = 2;
-			break;
-		case UP:
-			changeVal = base;
-			index = 0;
-			break;
-		case RIGHT:
-			changeVal = base;
-			index = 1;
-			break;
+			case PLUS:
+			case ADD: // can be own key on some keyboard
+			case EQUALS: // same key as plus (on most keyboards)
+				changeVal = base;
+				index = 2;
+				break;
+			case UP:
+				changeVal = base;
+				index = 0;
+				break;
+			case RIGHT:
+				changeVal = base;
+				index = 1;
+				break;
 
-		case MINUS:
-		case SUBTRACT:
-			changeVal = -base;
-			index = 2;
-			break;
-		case HOME:
-			// got to start of slider
-			changeVal = Double.NEGATIVE_INFINITY;
-			index = 0;
-			break;
-		case END:
-			// got to end of slider
-			changeVal = Double.POSITIVE_INFINITY;
-			index = 0;
-			break;
-		case PAGEDOWN:
-			changeVal = -10 * base;
-			index = 0;
-			break;
-		case PAGEUP:
-			changeVal = 10 * base;
-			index = 0;
-			break;
-		case DOWN:
-			changeVal = -base;
-			index = 0;
-			break;
-		case LEFT:
-			changeVal = -base;
-			index = 1;
-			break;
+			case MINUS:
+			case SUBTRACT:
+				changeVal = -base;
+				index = 2;
+				break;
+			case HOME:
+				// got to start of slider
+				changeVal = Double.NEGATIVE_INFINITY;
+				index = 0;
+				break;
+			case END:
+				// got to end of slider
+				changeVal = Double.POSITIVE_INFINITY;
+				index = 0;
+				break;
+			case PAGEDOWN:
+				changeVal = -10 * base;
+				index = 0;
+				break;
+			case PAGEUP:
+				changeVal = 10 * base;
+				index = 0;
+				break;
+			case DOWN:
+				changeVal = -base;
+				index = 0;
+				break;
+			case LEFT:
+				changeVal = -base;
+				index = 1;
+				break;
 		}
 
 		// change all geoelements
@@ -1515,8 +1511,8 @@ public abstract class GlobalKeyDispatcher {
 				if (geo.isPointOnPath() && arrowsUsed) {
 					continue;
 				}
-				changed = moveSliderPointOrRandomGeo(geo, changeVal, !multipleSliders || index == i)
-						|| changed;
+				changed =
+						moveSliderPointOrRandomGeo(geo, changeVal, !multipleSliders || index == i) || changed;
 			}
 
 			// update all geos together
@@ -1532,8 +1528,7 @@ public abstract class GlobalKeyDispatcher {
 	}
 
 	private boolean isSpreadsheetFocused() {
-		return app.getGuiManager() != null
-				&& app.getGuiManager().isSpreadsheetFocused();
+		return app.getGuiManager() != null && app.getGuiManager().isSpreadsheetFocused();
 	}
 
 	/**
@@ -1542,7 +1537,8 @@ public abstract class GlobalKeyDispatcher {
 	 * (or GeoNumerics whose value can be changed using arrow / plus / minus / ... keys) selected.
 	 */
 	private boolean hasMultipleSlidersSelected(List<GeoElement> geos) {
-		return geos.size() > 1 && geos.size() < 4
+		return geos.size() > 1
+				&& geos.size() < 4
 				&& geos.stream().allMatch(this::canChangeValueUsingKeys);
 	}
 
@@ -1557,15 +1553,16 @@ public abstract class GlobalKeyDispatcher {
 	}
 
 	private void readMovedPoints(List<GeoElement> geos) {
-		for (GeoElement geo: geos) {
+		for (GeoElement geo : geos) {
 			if (geo.isPointerChangeable() && geo.isPointOnPath()) {
 				ScreenReader.readGeoMoved(geo);
 			}
 		}
 	}
 
-	private boolean moveSliderPointOrRandomGeo(GeoElement geo,
-			double changeVal, boolean activeSlider) {
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
+	private boolean moveSliderPointOrRandomGeo(
+			GeoElement geo, double changeVal, boolean activeSlider) {
 		boolean changed = false;
 		if (geo.isPointerChangeable()) {
 
@@ -1591,8 +1588,7 @@ public abstract class GlobalKeyDispatcher {
 		else if (!geo.isIndependent()) {
 			// update labeled random number
 			AlgoElement parentAlgorithm = geo.getParentAlgorithm();
-			if (geo.isLabelSet()
-					&& (geo.isRandomGeo() || parentAlgorithm instanceof SetRandomValue)) {
+			if (geo.isLabelSet() && (geo.isRandomGeo() || parentAlgorithm instanceof SetRandomValue)) {
 				parentAlgorithm.updateUnlabeledRandomGeos();
 				geo.updateRandomGeo();
 				changed = true;
@@ -1621,6 +1617,7 @@ public abstract class GlobalKeyDispatcher {
 		}
 	}
 
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
 	private boolean moveCoordSystem(KeyCodes key, double base, boolean isShiftDown) {
 		// Get the EuclidianView which has the focus
 		EuclidianViewInterfaceCommon ev = app.getActiveEuclidianView();
@@ -1628,107 +1625,95 @@ public abstract class GlobalKeyDispatcher {
 		int height = ev.getHeight();
 		if (ev.hasFocus() && app.isShiftDragZoomEnabled()) {
 			switch (key) {
+				case PAGEUP:
+					ev.rememberOrigins();
+					ev.pageUpDownTranslateCoordSystem((int) (height * base));
+					return true;
+				case PAGEDOWN:
+					ev.rememberOrigins();
+					ev.pageUpDownTranslateCoordSystem(-(int) (height * base));
+					return true;
+				case INSERT:
+					ev.rememberOrigins();
+					ev.translateCoordSystemInPixels((int) (height * base), 0, 0);
+					return true;
+				case HOME:
+					ev.rememberOrigins();
+					ev.translateCoordSystemInPixels(-(int) (height * base), 0, 0);
+					return true;
+				case DOWN:
+					if (app.isUsingFullGui()
+							&& app.getGuiManager() != null
+							&& app.getGuiManager().noMenusOpen()) {
+						if (isShiftDown) {
+							EuclidianViewInterfaceCommon view = app.getActiveEuclidianView();
+							if (!view.isLockedAxesRatio()) {
+								view.setCoordSystem(
+										view.getXZero(), view.getYZero(), view.getXscale(), view.getYscale() * 0.9);
+							}
 
-			case PAGEUP:
-				ev.rememberOrigins();
-				ev.pageUpDownTranslateCoordSystem((int) (height * base));
-				return true;
-			case PAGEDOWN:
-				ev.rememberOrigins();
-				ev.pageUpDownTranslateCoordSystem(-(int) (height * base));
-				return true;
-			case INSERT:
-				ev.rememberOrigins();
-				ev.translateCoordSystemInPixels((int) (height * base), 0, 0);
-				return true;
-			case HOME:
-				ev.rememberOrigins();
-				ev.translateCoordSystemInPixels(-(int) (height * base), 0, 0);
-				return true;
-			case DOWN:
-
-				if (app.isUsingFullGui() && app.getGuiManager() != null
-						&& app.getGuiManager().noMenusOpen()) {
-					if (isShiftDown) {
-						EuclidianViewInterfaceCommon view = app
-								.getActiveEuclidianView();
-						if (!view.isLockedAxesRatio()) {
-							view.setCoordSystem(view.getXZero(),
-									view.getYZero(), view.getXscale(),
-									view.getYscale() * 0.9);
+						} else {
+							ev.rememberOrigins();
+							ev.translateCoordSystemInPixels(0, (int) (height / 100.0 * base), 0);
 						}
+						return true;
+					}
 
-					} else {
-						ev.rememberOrigins();
-						ev.translateCoordSystemInPixels(0,
-								(int) (height / 100.0 * base), 0);
+					break;
+
+				case UP:
+					if (app.isUsingFullGui()
+							&& app.getGuiManager() != null
+							&& app.getGuiManager().noMenusOpen()) {
+						if (isShiftDown) {
+							EuclidianViewInterfaceCommon view = app.getActiveEuclidianView();
+							if (!view.isLockedAxesRatio()) {
+								view.setCoordSystem(
+										view.getXZero(), view.getYZero(), view.getXscale(), view.getYscale() / 0.9);
+							}
+
+						} else {
+							ev.rememberOrigins();
+							ev.translateCoordSystemInPixels(0, -(int) (height / 100.0 * base), 0);
+						}
+						return true;
+					}
+					break;
+
+				case LEFT:
+					if (app.isUsingFullGui()
+							&& app.getGuiManager() != null
+							&& app.getGuiManager().noMenusOpen()) {
+						if (isShiftDown) {
+							EuclidianViewInterfaceCommon view = app.getActiveEuclidianView();
+							if (!view.isLockedAxesRatio()) {
+								view.setCoordSystem(
+										view.getXZero(), view.getYZero(), view.getXscale() * 0.9, view.getYscale());
+							}
+						} else {
+							ev.rememberOrigins();
+							ev.translateCoordSystemInPixels(-(int) (width / 100.0 * base), 0, 0);
+						}
+						return true;
+					}
+					break;
+
+				case RIGHT:
+					if (app.isUsingFullGui()
+							&& app.getGuiManager() != null
+							&& app.getGuiManager().noMenusOpen()) {
+						if (isShiftDown) {
+							EuclidianViewInterfaceCommon view = app.getActiveEuclidianView();
+							if (!view.isLockedAxesRatio()) {
+								view.setCoordSystem(
+										view.getXZero(), view.getYZero(), view.getXscale() / 0.9, view.getYscale());
+							}
+						} else {
+							ev.rememberOrigins();
+							ev.translateCoordSystemInPixels((int) (width / 100.0 * base), 0, 0);
+						}
 					}
 					return true;
-				}
-
-				break;
-
-			case UP:
-
-				if (app.isUsingFullGui() && app.getGuiManager() != null
-						&& app.getGuiManager().noMenusOpen()) {
-					if (isShiftDown) {
-						EuclidianViewInterfaceCommon view = app
-								.getActiveEuclidianView();
-						if (!view.isLockedAxesRatio()) {
-							view.setCoordSystem(view.getXZero(),
-									view.getYZero(), view.getXscale(),
-									view.getYscale() / 0.9);
-						}
-
-					} else {
-						ev.rememberOrigins();
-						ev.translateCoordSystemInPixels(0,
-								-(int) (height / 100.0 * base), 0);
-					}
-					return true;
-				}
-				break;
-
-			case LEFT:
-				if (app.isUsingFullGui() && app.getGuiManager() != null
-						&& app.getGuiManager().noMenusOpen()) {
-					if (isShiftDown) {
-						EuclidianViewInterfaceCommon view = app
-								.getActiveEuclidianView();
-						if (!view.isLockedAxesRatio()) {
-							view.setCoordSystem(view.getXZero(),
-									view.getYZero(), view.getXscale() * 0.9,
-									view.getYscale());
-						}
-					} else {
-						ev.rememberOrigins();
-						ev.translateCoordSystemInPixels(
-								-(int) (width / 100.0 * base), 0, 0);
-					}
-					return true;
-
-				}
-				break;
-
-			case RIGHT:
-				if (app.isUsingFullGui() && app.getGuiManager() != null
-						&& app.getGuiManager().noMenusOpen()) {
-					if (isShiftDown) {
-						EuclidianViewInterfaceCommon view = app
-								.getActiveEuclidianView();
-						if (!view.isLockedAxesRatio()) {
-							view.setCoordSystem(view.getXZero(),
-									view.getYZero(), view.getXscale() / 0.9,
-									view.getYscale());
-						}
-					} else {
-						ev.rememberOrigins();
-						ev.translateCoordSystemInPixels(
-								(int) (width / 100.0 * base), 0, 0);
-					}
-				}
-				return true;
 			}
 		}
 
@@ -1737,16 +1722,14 @@ public abstract class GlobalKeyDispatcher {
 
 	private boolean changeSliderValue(GeoNumeric num, double changeVal) {
 		double numStep = getAnimationStep(num);
-		double newValue = num.getValue()
-				+ changeVal * numStep;
+		double newValue = num.getValue() + changeVal * numStep;
 		if ((num.getValue() == num.getIntervalMax() && changeVal > 0)
 				|| (num.getValue() == num.getIntervalMin() && changeVal < 0)) {
 			return false;
 		}
 		// HOME / END keys
 		if (Double.isInfinite(changeVal)) {
-			newValue = changeVal > 0 ? num.getIntervalMax()
-					: num.getIntervalMin();
+			newValue = changeVal > 0 ? num.getIntervalMax() : num.getIntervalMin();
 		}
 
 		if (numStep > Kernel.MIN_PRECISION) {
@@ -1754,12 +1737,9 @@ public abstract class GlobalKeyDispatcher {
 			// 2.8
 			if (num.isGeoAngle()) {
 				newValue = Kernel.PI_180
-						* DoubleUtil.checkDecimalFraction(
-						newValue * Kernel.CONST_180_PI,
-						1 / numStep);
+						* DoubleUtil.checkDecimalFraction(newValue * Kernel.CONST_180_PI, 1 / numStep);
 			} else {
-				newValue = DoubleUtil.checkDecimalFraction(newValue,
-						1 / numStep);
+				newValue = DoubleUtil.checkDecimalFraction(newValue, 1 / numStep);
 			}
 		}
 		// stop all animation if slider dragged
@@ -1773,8 +1753,7 @@ public abstract class GlobalKeyDispatcher {
 
 	private double[] getIncrement(List<? extends GeoElementND> geos) {
 		GeoElementND geo = geos.get(0);
-		double[] increment = {geo.getAnimationStep(), geo.getAnimationStep(),
-				geo.getAnimationStep()};
+		double[] increment = {geo.getAnimationStep(), geo.getAnimationStep(), geo.getAnimationStep()};
 		if (geo.isGeoPoint()) {
 			NumberValue verticalIncrement = ((GeoPointND) geo).getVerticalIncrement();
 			if (verticalIncrement != null) {
@@ -1785,30 +1764,27 @@ public abstract class GlobalKeyDispatcher {
 		// use increment of A
 		if (!geo.isGeoNumeric() && !geo.isGeoPoint()) {
 
-			ArrayList<GeoElementND> freeInputPoints = geo
-					.getFreeInputPoints(app.getActiveEuclidianView());
+			ArrayList<GeoElementND> freeInputPoints =
+					geo.getFreeInputPoints(app.getActiveEuclidianView());
 
 			if (freeInputPoints != null && freeInputPoints.size() > 0) {
 				return getIncrement(freeInputPoints);
 			}
-
 		}
 		return increment;
 	}
 
 	private static double getAnimationStep(GeoNumeric num) {
-		return num.isAutoStep() ? num.getAnimationStep() * AUTOSTEPS_PER_KEY
-				: num.getAnimationStep();
+		return num.isAutoStep() ? num.getAnimationStep() * AUTOSTEPS_PER_KEY : num.getAnimationStep();
 	}
 
 	/**
 	 * Copies definitions of geos to input bar and wraps them in a list
-	 * 
+	 *
 	 * @param geos
 	 *            list of geos
 	 */
-	protected abstract void copyDefinitionsToInputBarAsList(
-			List<GeoElement> geos);
+	protected abstract void copyDefinitionsToInputBarAsList(List<GeoElement> geos);
 
 	/**
 	 * @return handles enter
@@ -1816,16 +1792,15 @@ public abstract class GlobalKeyDispatcher {
 	protected boolean handleEnter() {
 		if (selection.getSelectedGeos().size() == 1) {
 			GeoElement geo = selection.getSelectedGeos().get(0);
-			if (geo.isGeoList()) {
+			if (geo instanceof GeoList list) {
 				DrawDropDownList dropdown = DrawDropDownList.asDrawable(app, geo);
 				if (dropdown != null) {
 					dropdown.handleEnter();
-					ScreenReader.readDropDownItemSelected(geo);
+					ScreenReader.readDropDownItemSelected(list);
 					return true;
 				}
 			} else if (geo.isGeoInputBox() && geo.isEuclidianVisible()) {
-				app.getActiveEuclidianView()
-						.focusAndShowTextField((GeoInputBox) geo);
+				app.getActiveEuclidianView().focusAndShowTextField((GeoInputBox) geo);
 			}
 		}
 		return false;
@@ -1850,8 +1825,7 @@ public abstract class GlobalKeyDispatcher {
 	 * @param isCtrlDown whether ctrl is pressed (for overrides only)
 	 * @param isShiftDown whether shift is pressed (for overrides only)
 	 */
-	protected void updateKeyDownFlags(boolean isSpaceDown, boolean isCtrlDown,
-			boolean isShiftDown) {
+	protected void updateKeyDownFlags(boolean isSpaceDown, boolean isCtrlDown, boolean isShiftDown) {
 		setSpaceDown(isSpaceDown);
 	}
 

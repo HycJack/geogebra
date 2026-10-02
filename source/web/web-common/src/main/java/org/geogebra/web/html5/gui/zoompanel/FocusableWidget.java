@@ -16,30 +16,52 @@
 
 package org.geogebra.web.html5.gui.zoompanel;
 
-import javax.annotation.CheckForNull;
+import java.util.List;
 
 import org.geogebra.common.euclidian.event.PointerEventType;
 import org.geogebra.common.gui.AccessibilityGroup;
 import org.geogebra.common.gui.FocusableComponent;
 import org.geogebra.gwtutil.NavigatorUtil;
+import org.geogebra.web.html5.gui.accessibility.HasFocus;
 import org.geogebra.web.html5.gui.util.ClickStartHandler;
 import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.main.AppW;
+import org.gwtproject.dom.client.Element;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
+
+import elemental2.dom.CSSStyleDeclaration;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.ViewCSS;
+import jsinterop.base.Js;
 
 public class FocusableWidget implements FocusableComponent {
 
-	private final Widget[] btns;
+	private final List<Widget> btns;
 	private final AccessibilityGroup accessibilityGroup;
-	private final @CheckForNull AccessibilityGroup.ViewControlId subgroup;
+	private final AccessibilityGroup.@Nullable ViewControlId subgroup;
 
 	/**
 	 * @param btns button
 	 * @param accessibilityGroup accessibility group
 	 * @param subgroup subgroup
 	 */
-	public FocusableWidget(AccessibilityGroup accessibilityGroup,
-			@CheckForNull AccessibilityGroup.ViewControlId subgroup, Widget... btns) {
+	public FocusableWidget(
+			AccessibilityGroup accessibilityGroup,
+			AccessibilityGroup.@Nullable ViewControlId subgroup,
+			Widget... btns) {
+		this(accessibilityGroup, subgroup, List.of(btns));
+	}
+
+	/**
+	 * @param btns button
+	 * @param accessibilityGroup accessibility group
+	 * @param subgroup subgroup
+	 */
+	public FocusableWidget(
+			AccessibilityGroup accessibilityGroup,
+			AccessibilityGroup.@Nullable ViewControlId subgroup,
+			List<Widget> btns) {
 		this.btns = btns;
 		this.accessibilityGroup = accessibilityGroup;
 		this.subgroup = subgroup;
@@ -47,7 +69,7 @@ public class FocusableWidget implements FocusableComponent {
 			int subgroupOrdinal = subgroup == null ? 0 : subgroup.ordinal();
 			int maxGroupSize = AccessibilityGroup.ViewControlId.values().length;
 			int tabIndex = 1 + accessibilityGroup.ordinal() * maxGroupSize + subgroupOrdinal;
-			for (Widget btn: btns) {
+			for (Widget btn : btns) {
 				btn.getElement().setTabIndex(tabIndex);
 			}
 		}
@@ -55,52 +77,81 @@ public class FocusableWidget implements FocusableComponent {
 
 	@Override
 	public boolean focusIfVisible(boolean reverse) {
-		Widget btn = getFirstFocusableWidget();
-		if (Dom.isAttachedAndVisible(btn)
-				&& notAriaHidderOrAriaDisabled(btn)
-				&& isButtonNotHidden(btn)
-				&& isParentVisible(btn)) {
-			if (reverse) {
-				focus(btns[btns.length - 1]);
-			} else {
-				focus(btn);
-			}
+		Widget btn;
+		if (reverse) {
+			btn = getLastFocusableWidget();
+		} else {
+			btn = getFirstFocusableWidget();
+		}
+		if (btn != null) {
+			focus(btn);
 			return true;
 		}
-
 		return false;
 	}
 
-	private boolean notAriaHidderOrAriaDisabled(Widget btn) {
+	private CSSStyleDeclaration getComputedStyle(Element element) {
+		ViewCSS view = Js.cast(DomGlobal.window);
+		return view.getComputedStyle(Js.uncheckedCast(element));
+	}
+
+	private boolean notAriaHiddenOrAriaDisabled(Widget btn) {
 		return !"true".equals(btn.getElement().getAttribute("aria-hidden"))
 				&& !"true".equals(btn.getElement().getAttribute("aria-disabled"));
 	}
 
-	private boolean isButtonNotHidden(Widget btn) {
-		return !btn.getElement().hasClassName("hideButton")
-				&& !btn.getElement().getStyle().getVisibility().equals("hidden");
+	private boolean isElementNotHidden(Element element) {
+		return !element.hasClassName("hideButton")
+				&& !"true".equals(element.getAttribute("aria-hidden"))
+				&& !getComputedStyle(element).visibility.equals("hidden")
+				&& !element.getStyle().getDisplay().equals("none")
+				&& !getComputedStyle(element).display.equals("none");
 	}
 
-	private boolean isParentVisible(Widget btn) {
-		if (btn.getParent() == null) {
-			return true;
-		} else {
-			return !btn.getParent().getElement().getStyle().getVisibility().equals("hidden")
-					&& !btn.getParent().getElement().getStyle().getDisplay().equals("none");
+	private boolean areParentsVisible(Widget btn) {
+		Element parent = btn.getElement().getParentElement();
+		while (parent != null) {
+			if (!isElementNotHidden(parent)) {
+				return false;
+			}
+			parent = parent.getParentElement();
 		}
+		return true;
 	}
 
-	private Widget getFirstFocusableWidget() {
+	private boolean isVisibleAndFocusable(Widget btn) {
+		return Dom.isAttachedAndVisible(btn)
+				&& notAriaHiddenOrAriaDisabled(btn)
+				&& isElementNotHidden(btn.getElement())
+				&& areParentsVisible(btn)
+				&& isFocusable(btn);
+	}
+
+	private @Nullable Widget getFirstFocusableWidget() {
 		for (Widget w : btns) {
-			if (w.getElement().getTabIndex() > -1) {
+			if (isVisibleAndFocusable(w)) {
 				return w;
 			}
 		}
-		return btns[0];
+		return null;
+	}
+
+	private @Nullable Widget getLastFocusableWidget() {
+		for (int i = btns.size() - 1; i >= 0; i--) {
+			Widget widget = btns.get(i);
+			if (isVisibleAndFocusable(widget)) {
+				return widget;
+			}
+		}
+		return null;
 	}
 
 	protected void focus(Widget btn) {
-		btn.getElement().focus();
+		if (btn instanceof HasFocus focusable) {
+			focusable.focus();
+		} else {
+			btn.getElement().focus();
+		}
 		btn.addStyleName("keyboardFocus");
 	}
 
@@ -116,20 +167,23 @@ public class FocusableWidget implements FocusableComponent {
 
 	private boolean moveFocus(int offset) {
 		int index = findFocus() + offset;
-		if (index >= 0 && index < btns.length) {
-			if (btns[index].getElement().getTabIndex() == -1) {
-				return false;
+		while (index >= 0 && index < btns.size()) {
+			if (isVisibleAndFocusable(btns.get(index))) {
+				focus(btns.get(index));
+				return true;
 			}
-
-			focus(btns[index]);
-			return true;
+			index += offset;
 		}
 		return false;
 	}
 
+	private boolean isFocusable(Widget btn) {
+		return btn.getElement().getTabIndex() >= 0 || (btn instanceof HasFocus);
+	}
+
 	private int findFocus() {
 		int index = 0;
-		for (Widget btn: btns) {
+		for (Widget btn : btns) {
 			if (btn.getElement().isOrHasChild(Dom.getActiveElement())) {
 				return index;
 			}
@@ -154,7 +208,7 @@ public class FocusableWidget implements FocusableComponent {
 	 */
 	public void attachTo(AppW app) {
 		app.getAccessibilityManager().register(this);
-		for (Widget btn: btns) {
+		for (Widget btn : btns) {
 			final Widget current = btn;
 			ClickStartHandler.init(btn, new ClickStartHandler() {
 				@Override
@@ -174,8 +228,7 @@ public class FocusableWidget implements FocusableComponent {
 	}
 
 	@Override
-	public @CheckForNull AccessibilityGroup.ViewControlId getViewControlId() {
+	public AccessibilityGroup.@Nullable ViewControlId getViewControlId() {
 		return subgroup;
 	}
-
 }

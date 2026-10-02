@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -18,7 +18,10 @@ package org.geogebra.common.main.localization;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -43,83 +46,105 @@ import org.geogebra.common.main.settings.config.AppConfigGraphing;
 import org.geogebra.common.main.settings.config.AppConfigUnrestrictedGraphing;
 import org.geogebra.common.main.syntax.suggestionfilter.GraphingSyntaxFilter;
 import org.geogebra.common.main.syntax.suggestionfilter.SyntaxFilter;
-import org.junit.Before;
-import org.junit.Test;
+import org.geogebra.common.util.MatchedString;
+import org.geogebra.test.annotation.Issue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class AutocompleteProviderTest extends BaseUnitTest {
+class AutocompleteProviderTest extends BaseUnitTest {
 
 	private AutocompleteProvider provider;
 
-	@Before
-	public void setupProvider() {
+	@BeforeEach
+	void setupProvider() {
 		provider = new AutocompleteProvider(getApp(), false);
 	}
 
 	@Test
-	public void functionSuggestionTest() {
+	void functionSuggestionTest() {
 		List<AutocompleteProvider.Completion> completionList = getCompletions("sin");
 		assertEquals("sin", completionList.get(0).getCommand());
 		assertEquals(Collections.singletonList("sin( <x> )"), completionList.get(0).syntaxes);
 	}
 
 	@Test
-	public void functionSuggestionShouldBeCaseSensitive() {
+	void functionSuggestionShouldBeCaseSensitive() {
 		List<String> completionList = getStringCompletions("Sin");
 		assertThat(completionList, equalTo(Arrays.asList("FitSin", "IsInRegion", "IsInteger")));
 	}
 
 	@Test
-	public void initialMatchesShouldComeFirst() {
-		List<String> completionList = getStringCompletions("Row");
-		assertThat(completionList, equalTo(Arrays.asList("Row", "FillRow", "FitGrowth",
-				"ReducedRowEchelonForm")));
+	@Issue("APPS-7764")
+	void functionSuggestionShouldHandleUnevenBrackets() {
+		List<AutocompleteProvider.Completion> completionList = getCompletions("sin(");
+		assertFalse(completionList.isEmpty());
+		MatchedString match = completionList.get(0).getMatch();
+		assertDoesNotThrow(match::getParts);
 	}
 
 	@Test
-	public void commandSuggestionTest() {
+	@Issue("APPS-7764")
+	void functionSuggestionShouldHandleSingleBracket() {
+		List<AutocompleteProvider.Completion> completionList = getCompletions("(");
+		assertTrue(completionList.isEmpty());
+	}
+
+	@Test
+	void initialMatchesShouldComeFirst() {
+		List<String> completionList = getStringCompletions("Row");
+		assertThat(
+				completionList,
+				equalTo(Arrays.asList("Row", "FillRow", "FitGrowth", "ReducedRowEchelonForm")));
+	}
+
+	@Test
+	void commandSuggestionTest() {
 		List<AutocompleteProvider.Completion> completionList = getCompletions("int");
 		assertEquals("Integral", completionList.get(0).getCommand());
-		assertEquals(Arrays.asList("Integral( <Function> )", "Integral( <Function>, <Variable> )"),
+		assertEquals(
+				Arrays.asList("Integral( <Function> )", "Integral( <Function>, <Variable> )"),
 				completionList.get(0).syntaxes.subList(0, 2));
 	}
 
 	@Test
-	public void testCommandWithoutSyntaxIsNotReturned() {
+	void testCommandWithoutSyntaxIsNotReturned() {
 		AppConfig config = Mockito.spy(new AppConfigGraphing());
 		SyntaxFilter commandSyntax = Mockito.spy(new GraphingSyntaxFilter());
 		// Filter every syntax for InverseBinomial
-		when(commandSyntax.getFilteredSyntax(
-				eq(Commands.InverseBinomial.name()), anyString())).thenReturn("");
+		when(commandSyntax.getFilteredSyntax(eq(Commands.InverseBinomial.name()), anyString()))
+				.thenReturn("");
 		when(config.newCommandSyntaxFilter()).thenReturn(commandSyntax);
 
-		assertEquals(0, getExactSyntaxMatchOf(config, Commands.InverseBinomial.name())
-						.count());
+		assertEquals(
+				0, getExactSyntaxMatchOf(config, Commands.InverseBinomial.name()).count());
 	}
 
 	@Test
-	public void shouldShowCasSpecific() {
+	void shouldShowCasSpecific() {
 		AutocompleteProvider casProvider = new AutocompleteProvider(getApp(), true);
 		assertEquals(3, casProvider.getCompletions("Groebner").count());
 		assertEquals(0, casProvider.getCompletions("ExpSimplify").count());
 	}
 
-	private Stream<AutocompleteProvider.Completion> getExactSyntaxMatchOf(AppConfig config,
-			String name) {
+	private Stream<AutocompleteProvider.Completion> getExactSyntaxMatchOf(
+			AppConfig config, String name) {
 		App app = AppCommonFactory.create(config);
 		AutocompleteProvider provider = new AutocompleteProvider(app, false);
 		return provider.getCompletions(name).filter(c -> Objects.equals(c.match.content, name));
 	}
 
 	@Test
-	public void shouldUpdateOnAppSwitch() {
-		getApp().getKernel().getAlgebraProcessor().addCommandFilter(
-				cmd -> !cmd.name().startsWith("Bezier"));
+	void shouldUpdateOnAppSwitch() {
+		getApp()
+				.getKernel()
+				.getAlgebraProcessor()
+				.addCommandFilter(cmd -> !cmd.name().startsWith("Bezier"));
 		shouldUpdateOnAppSwitch("en", "Curve");
 	}
 
 	@Test
-	public void shouldUpdateOnAppSwitchDE() {
+	void shouldUpdateOnAppSwitchDE() {
 		shouldUpdateOnAppSwitch("de", "Kurve");
 	}
 
@@ -143,8 +168,7 @@ public class AutocompleteProviderTest extends BaseUnitTest {
 	}
 
 	private void swapConfig(AppConfig config) {
-		CommandDispatcher commandDispatcher =
-				getKernel().getAlgebraProcessor().getCommandDispatcher();
+		CommandDispatcher commandDispatcher = getKernel().getAlgebraProcessor().getCommandDispatcher();
 		CommandFilter commandFilter = getApp().getConfig().getCommandFilter();
 		if (commandFilter != null) {
 			commandDispatcher.removeCommandFilter(commandFilter);
@@ -158,7 +182,7 @@ public class AutocompleteProviderTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void graphingSuiteShouldHaveCasCommands() {
+	void graphingSuiteShouldHaveCasCommands() {
 		AutocompleteProvider provider = new AutocompleteProvider(getApp(), false);
 		AppConfigUnrestrictedGraphing graphingSuiteConfig = new AppConfigUnrestrictedGraphing();
 
@@ -177,7 +201,9 @@ public class AutocompleteProviderTest extends BaseUnitTest {
 	}
 
 	private List<String> getStringCompletions(String sin) {
-		return provider.getCompletions(sin)
-				.map(AutocompleteProvider.Completion::getCommand).collect(Collectors.toList());
+		return provider
+				.getCompletions(sin)
+				.map(AutocompleteProvider.Completion::getCommand)
+				.collect(Collectors.toList());
 	}
 }

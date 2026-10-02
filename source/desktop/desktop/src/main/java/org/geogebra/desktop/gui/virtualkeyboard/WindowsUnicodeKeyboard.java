@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -19,6 +19,8 @@ package org.geogebra.desktop.gui.virtualkeyboard;
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
+
+import org.geogebra.desktop.awt.Log;
 
 //
 /**
@@ -61,51 +63,49 @@ public class WindowsUnicodeKeyboard extends Keyboard {
 				typeNumPad(digit);
 				typeNumPad(unicodeDigits);
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				Log.debug(ex);
 			}
 
 			windowsRobot.keyRelease(KeyEvent.VK_ALT);
-
 		}
 	}
 
 	private void typeNumPad(int digit) {
 		switch (digit) {
-		default:
-			// do nothing
-			break;
-		case 0:
-			doType(KeyEvent.VK_NUMPAD0);
-			break;
-		case 1:
-			doType(KeyEvent.VK_NUMPAD1);
-			break;
-		case 2:
-			doType(KeyEvent.VK_NUMPAD2);
-			break;
-		case 3:
-			doType(KeyEvent.VK_NUMPAD3);
-			break;
-		case 4:
-			doType(KeyEvent.VK_NUMPAD4);
-			break;
-		case 5:
-			doType(KeyEvent.VK_NUMPAD5);
-			break;
-		case 6:
-			doType(KeyEvent.VK_NUMPAD6);
-			break;
-		case 7:
-			doType(KeyEvent.VK_NUMPAD7);
-			break;
-		case 8:
-			doType(KeyEvent.VK_NUMPAD8);
-			break;
-		case 9:
-			doType(KeyEvent.VK_NUMPAD9);
-			break;
+			default:
+				// do nothing
+				break;
+			case 0:
+				doType(KeyEvent.VK_NUMPAD0);
+				break;
+			case 1:
+				doType(KeyEvent.VK_NUMPAD1);
+				break;
+			case 2:
+				doType(KeyEvent.VK_NUMPAD2);
+				break;
+			case 3:
+				doType(KeyEvent.VK_NUMPAD3);
+				break;
+			case 4:
+				doType(KeyEvent.VK_NUMPAD4);
+				break;
+			case 5:
+				doType(KeyEvent.VK_NUMPAD5);
+				break;
+			case 6:
+				doType(KeyEvent.VK_NUMPAD6);
+				break;
+			case 7:
+				doType(KeyEvent.VK_NUMPAD7);
+				break;
+			case 8:
+				doType(KeyEvent.VK_NUMPAD8);
+				break;
+			case 9:
+				doType(KeyEvent.VK_NUMPAD9);
+				break;
 		}
 	}
-
 }
 // */

@@ -29,35 +29,38 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class TextColorPropertyTests extends BaseAppTestSetup {
+class TextColorPropertyTests extends BaseAppTestSetup {
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"\"abc\"",
-			"Button(\"Press\")",
-	})
-	public void testApplicableGeoElements(String expression) {
+	@ValueSource(
+			strings = {
+				"\"abc\"",
+				"Button(\"Press\")",
+			})
+	void testApplicableGeoElements(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertDoesNotThrow(() ->
-				new TextColorProperty(getLocalization(), evaluateGeoElement(expression)));
+		assertDoesNotThrow(
+				() -> new TextColorProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)",
-			"a = Slider(-5, 5, 1)",
-	})
-	public void testNonApplicableGeoElements(String expression) {
+	@ValueSource(
+			strings = {
+				"(1, 2)",
+				"a = Slider(-5, 5, 1)",
+			})
+	void testNonApplicableGeoElements(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new TextColorProperty(getLocalization(), evaluateGeoElement(expression)));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new TextColorProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@Test
-	public void testChangingTextColor() {
+	void testChangingTextColor() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoText geoText = evaluateGeoElement("\"abc\"");
-		TextColorProperty textColorProperty = assertDoesNotThrow(() ->
-				new TextColorProperty(getLocalization(), geoText));
+		TextColorProperty textColorProperty =
+				assertDoesNotThrow(() -> new TextColorProperty(getLocalization(), geoText));
 
 		textColorProperty.setValue(GColor.BLACK);
 		assertEquals(GColor.BLACK, textColorProperty.getValue());

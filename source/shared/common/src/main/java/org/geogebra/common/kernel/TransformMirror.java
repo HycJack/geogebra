@@ -26,9 +26,9 @@ import org.geogebra.common.kernel.kernelND.GeoPointND;
 
 /**
  * Mirror
- * 
+ *
  * @author Zbynek
- * 
+ *
  */
 public class TransformMirror extends Transform {
 
@@ -81,7 +81,7 @@ public class TransformMirror extends Transform {
 
 	@Override
 	protected AlgoTransformation getTransformAlgo(GeoElement geo) {
-		AlgoMirror algo = null;
+		AlgoMirror algo;
 		if (mirror.isGeoLine()) {
 			algo = new AlgoMirror(cons, geo, (GeoLine) mirror);
 		} else if (mirror.isGeoPoint()) {
@@ -101,5 +101,4 @@ public class TransformMirror extends Transform {
 	public boolean changesOrientation() {
 		return mirror.isGeoLine() || mirror.isGeoConic();
 	}
-
 }

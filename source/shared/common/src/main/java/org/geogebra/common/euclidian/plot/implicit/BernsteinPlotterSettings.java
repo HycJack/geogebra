@@ -20,9 +20,10 @@ package org.geogebra.common.euclidian.plot.implicit;
  * Bernstein polynomial plotter settings.
  */
 public final class BernsteinPlotterSettings {
-	private boolean visualDebug;
-	private boolean updateEnabled;
-	private int minCellSizeInPixels;
+	public static final int MARGIN_IN_PX = 100;
+	private final boolean visualDebug;
+	private final boolean updateEnabled;
+	private final int minCellSizeInPixels;
 
 	/**
 	 * Constructor with default settings.
@@ -37,8 +38,8 @@ public final class BernsteinPlotterSettings {
 	 * @param visualDebug if plotter should display additional info like borders of the cells
 	 * @param minCellSizeInPixels the smallest cell the algorithm splits cells into
 	 */
-	public BernsteinPlotterSettings(boolean updateEnabled, boolean visualDebug,
-			int minCellSizeInPixels) {
+	public BernsteinPlotterSettings(
+			boolean updateEnabled, boolean visualDebug, int minCellSizeInPixels) {
 		this.updateEnabled = updateEnabled;
 		this.visualDebug = visualDebug;
 		this.minCellSizeInPixels = minCellSizeInPixels;

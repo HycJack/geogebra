@@ -21,9 +21,11 @@ import org.geogebra.common.util.Util;
 /**
  * Font settings.
  */
-public class FontSettings extends AbstractSettings {
+public class FontSettings extends AbstractSettings<FontSettings> {
 
-	private DefaultSettings defaultSettings;
+	public static final int DEFAULT_FONT_SIZE = 16;
+
+	private final DefaultSettings defaultSettings;
 	private int appFontSize;
 	private int guiFontSize;
 
@@ -85,6 +87,9 @@ public class FontSettings extends AbstractSettings {
 		this.guiFontSize = guiFontSize;
 	}
 
+	/**
+	 * @return font size used in the algebra view
+	 */
 	public int getAlgebraFontSize() {
 		return getAppFontSize() + 2;
 	}

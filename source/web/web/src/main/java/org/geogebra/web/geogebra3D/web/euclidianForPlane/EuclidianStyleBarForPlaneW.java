@@ -23,10 +23,10 @@ import org.geogebra.web.full.euclidian.EuclidianStyleBarW;
 
 /**
  * Style bar for view for plane
- * 
+ *
  * @author Mathieu
  */
-public class EuclidianStyleBarForPlaneW extends EuclidianStyleBarW {
+public final class EuclidianStyleBarForPlaneW extends EuclidianStyleBarW {
 
 	/**
 	 * @param ev
@@ -45,8 +45,8 @@ public class EuclidianStyleBarForPlaneW extends EuclidianStyleBarW {
 
 	@Override
 	protected void setEvStandardView() {
-		EuclidianViewForPlaneCompanion companion = (EuclidianViewForPlaneCompanion) getView()
-				.getCompanion();
+		EuclidianViewForPlaneCompanion companion =
+				(EuclidianViewForPlaneCompanion) getView().getCompanion();
 		companion.updateCenterAndOrientationRegardingView();
 		companion.updateScaleRegardingView();
 	}

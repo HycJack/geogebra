@@ -17,9 +17,36 @@
 package org.geogebra.common.properties.aliases;
 
 import org.geogebra.common.properties.ConstrainedProperty;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A property that is represented as a String.
  */
 public interface StringProperty extends ConstrainedProperty<String> {
+	/**
+	 * @return {@code true} if the property should be displayed as a text area (see
+	 * {@link org.geogebra.common.properties.PropertyView.TextArea}, {@code false} otherwise (see
+	 * {@link org.geogebra.common.properties.PropertyView.TextField} and
+	 * {@link org.geogebra.common.properties.PropertyView.ComboBox}).
+	 */
+	default boolean isDisplayedAsTextArea() {
+		return false;
+	}
+
+	/**
+	 * @return {@code true} if the property should be displayed with a math editor,
+	 * {@code false} if it should be displayed as plain text.
+	 */
+	default boolean isDisplayedInMathFormat() {
+		return false;
+	}
+
+	/**
+	 * Returns a label used as aria-title and data-title.
+	 * It is defined only in specific cases, null otherwise.
+	 * @return translation key of an accessibility label.
+	 */
+	default @Nullable String getAriaLabel() {
+		return null;
+	}
 }

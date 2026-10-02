@@ -81,9 +81,9 @@ final class SimpleTableValuesModel implements TableValuesModel {
 	}
 
 	private void fillValueList(GeoList values) {
-		double[] range = DoubleUtil.range(settings.getValuesMin(),
-				settings.getValuesMax(), settings.getValuesStep());
-		for (Double d: range) {
+		double[] range = DoubleUtil.range(
+				settings.getValuesMin(), settings.getValuesMax(), settings.getValuesStep());
+		for (Double d : range) {
 			values.add(new GeoNumeric(kernel.getConstruction(), d));
 		}
 	}
@@ -185,8 +185,8 @@ final class SimpleTableValuesModel implements TableValuesModel {
 		if (getEvaluatableIndex(evaluatable) == -1) {
 			collector.startCollection(this);
 			int idx = 0;
-			while (idx < columns.size() && columns.get(idx)
-					.getEvaluatable().getTableColumn() < evaluatable.getTableColumn()) {
+			while (idx < columns.size()
+					&& columns.get(idx).getEvaluatable().getTableColumn() < evaluatable.getTableColumn()) {
 				idx++;
 			}
 			TableValuesColumn column = createColumn(evaluatable);
@@ -431,7 +431,7 @@ final class SimpleTableValuesModel implements TableValuesModel {
 	}
 
 	private void forEachListener(Consumer<? super TableValuesListener> action) {
-		listenerStream().forEachOrdered(action);
+		listenerStream().toList().forEach(action);
 	}
 
 	@Override
@@ -526,8 +526,7 @@ final class SimpleTableValuesModel implements TableValuesModel {
 	}
 
 	boolean isEvaluatableEmptyList(int column) {
-		return getEvaluatable(column).isGeoList()
-				&& ((GeoList) getEvaluatable(column)).isEmptyList();
+		return getEvaluatable(column).isGeoList() && ((GeoList) getEvaluatable(column)).isEmptyList();
 	}
 
 	/**
@@ -573,7 +572,7 @@ final class SimpleTableValuesModel implements TableValuesModel {
 		}
 		for (int index = 0; index < importColumns.length; index++) {
 			GeoList column = importColumns[index];
-			GeoElement element = null;
+			GeoElement element;
 			if (index < values.length) {
 				if (values[index] != null) {
 					element = new GeoNumeric(kernel.getConstruction(), values[index], false);

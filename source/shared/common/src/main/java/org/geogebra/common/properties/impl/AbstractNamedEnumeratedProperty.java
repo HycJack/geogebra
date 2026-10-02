@@ -49,25 +49,26 @@ public abstract class AbstractNamedEnumeratedProperty<V> extends AbstractEnumera
 	 * @param values a list of value / translation key pairs
 	 */
 	protected void setNamedValues(List<Map.Entry<V, String>> values) {
-		setValues(values.stream().map(Map.Entry::getKey)
-				.collect(Collectors.toList()));
-		this.valueNameTranslationIds = values.stream()
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		setValues(values.stream().map(Map.Entry::getKey).collect(Collectors.toList()));
+		this.valueNameTranslationIds =
+				values.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
 	@Override
 	public String[] getValueNames() {
 		ensureValueNamesPresent();
-		return getValues().stream().map(value -> getLocalization().getMenu(
-				valueNameTranslationIds.get(value)
-		)).toArray(String[]::new);
+		return getValues().stream()
+				.map(value -> getLocalization().getMenu(valueNameTranslationIds.get(value)))
+				.toArray(String[]::new);
+	}
+
+	protected String getTranslationId(V index) {
+		return valueNameTranslationIds.get(index);
 	}
 
 	private void ensureValueNamesPresent() {
 		if (valueNameTranslationIds == null) {
-			throw new RuntimeException("Set values must be called in the constructor for "
-					+ getName());
+			throw new RuntimeException("Set values must be called in the constructor for " + getName());
 		}
 	}
-
 }

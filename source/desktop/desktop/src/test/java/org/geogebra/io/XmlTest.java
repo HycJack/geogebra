@@ -2,29 +2,31 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Locale;
 
+import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.geogebra3D.kernel3D.geos.GeoSpace;
 import org.geogebra.common.io.XmlTestUtil;
 import org.geogebra.common.kernel.StringTemplate;
+import org.geogebra.common.kernel.arithmetic.MyDouble;
 import org.geogebra.common.kernel.commands.AlgebraProcessor;
 import org.geogebra.common.kernel.geos.GeoBoolean;
 import org.geogebra.common.kernel.geos.GeoButton;
@@ -32,33 +34,37 @@ import org.geogebra.common.kernel.geos.GeoConic;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
+import org.geogebra.common.util.MyMath;
 import org.geogebra.desktop.headless.AppDNoGui;
 import org.geogebra.desktop.main.LocalizationD;
 import org.geogebra.desktop.util.UtilD;
+import org.geogebra.editor.share.util.Unicode;
 import org.geogebra.test.annotation.Issue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-public class XmlTest {
+class XmlTest {
 
 	static AppDNoGui app;
 	private static AlgebraProcessor ap;
 
 	/** Set up app */
-	@BeforeClass
-	public static void setup() {
+	@BeforeAll
+	static void setup() {
 		app = new AppDNoGui(new LocalizationD(3), false);
 		ap = app.getKernel().getAlgebraProcessor();
 		app.setLanguage(Locale.US);
 	}
 
 	@Test
-	public void emptyAppTest() {
+	void emptyAppTest() {
 		XmlTestUtil.checkCurrentXML(app);
 	}
 
 	@Test
-	public void pointReloadTest() {
+	void pointReloadTest() {
 		GeoElementND p = processAlgebraCommand("P=(1,1)");
 		((GeoPoint) p).setAnimationStep(0.01);
 		app.setXML(app.getXML(), true);
@@ -66,14 +72,14 @@ public class XmlTest {
 	}
 
 	@Test
-	public void specialPointsLoadTest() {
+	void specialPointsLoadTest() {
 		app.setXML(UtilD.loadFileIntoString("src/test/resources/specialpoints.xml"), true);
 		assertEquals(20, app.getGgbApi().getAllObjectNames().length);
 	}
 
 	@Test
 	@Issue("APPS-6072")
-	public void checkAnimationSpeedsOnFileSaveAndLoad() {
+	void checkAnimationSpeedsOnFileSaveAndLoad() {
 		// Some random input
 		processAlgebraCommand("A = (1, 2)");
 		processAlgebraCommand("l = {A, (3, 4)}");
@@ -110,7 +116,7 @@ public class XmlTest {
 
 	@Test
 	@Issue("APPS-1470")
-	public void elementShouldNotBeReloadedAsVectorIfLocalVariableExists() {
+	void elementShouldNotBeReloadedAsVectorIfLocalVariableExists() {
 		processAlgebraCommand("l1 = {(1, 2), (3, 4)}");
 		processAlgebraCommand("l2 = {(0, 2), (1, 0)}");
 		processAlgebraCommand("l3 = Zip(Vector(aa, bb), aa, l1, bb, l2)");
@@ -125,14 +131,16 @@ public class XmlTest {
 
 	@Test
 	@Issue("APPS-7032")
-	public void constantElementsShouldBeOverwrittenWhenLoadingXML() {
-		app.setXML("<geogebra><construction>"
-				+ "<element type=\"boolean\" label=\"zAxis\"></element>"
-				+ "<element type=\"conic\" label=\"xOyPlane\"></element>"
-				+ "<element type=\"numeric\" label=\"space\"> </element>"
-				+ "<element type=\"button\" label=\"xAxis\"></element>"
-				+ "<element type=\"point\" label=\"yAxis\"></element>"
-				+ "</construction></geogebra>", false);
+	void constantElementsShouldBeOverwrittenWhenLoadingXML() {
+		app.setXML(
+				"<geogebra><construction>"
+						+ "<element type=\"boolean\" label=\"zAxis\"></element>"
+						+ "<element type=\"conic\" label=\"xOyPlane\"></element>"
+						+ "<element type=\"numeric\" label=\"space\"> </element>"
+						+ "<element type=\"button\" label=\"xAxis\"></element>"
+						+ "<element type=\"point\" label=\"yAxis\"></element>"
+						+ "</construction></geogebra>",
+				false);
 		assertEquals(GeoBoolean.class, app.getKernel().lookupLabel("zAxis").getClass());
 		assertEquals(GeoConic.class, app.getKernel().lookupLabel("xOyPlane").getClass());
 		assertEquals(GeoNumeric.class, app.getKernel().lookupLabel("space").getClass());
@@ -145,13 +153,56 @@ public class XmlTest {
 
 	@Test
 	@Issue("APPS-7282")
-	public void functionShouldNotSimplifyCoefficientsWhenLoadingOldFile() {
+	void functionShouldNotSimplifyCoefficientsWhenLoadingOldFile() {
 		processAlgebraCommand("f(x)=1x+0x+1");
 		String xml = app.getXML();
 		xml = xml.replace("<simplifyCoefficients val=\"true\"/>", "");
 		app.setXML(xml, true);
-		assertEquals("1x + 0x + 1",
+		assertEquals(
+				"1x + 0x + 1",
 				app.getKernel().lookupLabel("f").toValueString(StringTemplate.defaultTemplate));
+	}
+
+	@Test
+	@Issue("APPS-7345")
+	void oldFilesShouldNotDisplayLargeNumbersUsingScientificNotation() {
+		processAlgebraCommand("a = " + MyMath.LARGEST_INTEGER);
+
+		String xml = app.getXML();
+		xml = xml.replace(
+				"version=\"" + GeoGebraConstants.VERSION_STRING + "\"", "version=\"5.4.923.0\"");
+		app.setXML(xml, true);
+
+		String largestInteger =
+				app.getKernel().lookupLabel("a").toValueString(StringTemplate.defaultTemplate);
+		assertEquals("9007199254740992", largestInteger);
+	}
+
+	@Test
+	@Issue("APPS-7345")
+	void newFilesShouldDisplayLargeNumbersUsingScientificNotation() {
+		processAlgebraCommand("a = " + MyMath.LARGEST_INTEGER);
+		app.setXML(app.getXML(), true);
+
+		String largestInteger =
+				app.getKernel().lookupLabel("a").toValueString(StringTemplate.defaultTemplate);
+		assertEquals(
+				"9.00719925474099 " + Unicode.CENTER_DOT + " 10" + Unicode.SUPERSCRIPT_1
+						+ Unicode.SUPERSCRIPT_5,
+				largestInteger);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"(6,7)", "Point(x=y)"})
+	@Issue({"APPS-7729", "APPS-7875"})
+	void horizontalIncrementShouldBeSavedForFixedPoint(String definition) {
+		GeoPoint point = (GeoPoint) processAlgebraCommand("A = " + definition);
+		point.setAnimationStep(2.2);
+		point.setVerticalIncrement(new MyDouble(app.getKernel(), 3.3));
+		point.setFixed(true);
+		String xml = app.getXML();
+		assertTrue(xml.contains("<animation step=\"2.2\" type=\"1\" playing=\"false\"/>")
+				&& xml.contains("<incrementY val=\"3.3\"/>"));
 	}
 
 	private GeoElementND processAlgebraCommand(String input) {

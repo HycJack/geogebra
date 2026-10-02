@@ -37,15 +37,15 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  * Class for Plus menu for AV Input to select input method (expression, text or
  * image) and get help.
- * 
+ *
  * @author Laszlo Gal
  *
  */
-public class ContextMenuAVPlus implements SetLabels {
+public final class ContextMenuAVPlus implements SetLabels {
 	/** The popup itself */
-	protected GPopupMenuW wrappedPopup;
+	private final GPopupMenuW wrappedPopup;
 	/** Localization */
-	protected Localization loc;
+	private final Localization loc;
 	/** Application */
 	AppWFull app;
 	/** The AV item associated the menu with */
@@ -55,7 +55,7 @@ public class ContextMenuAVPlus implements SetLabels {
 
 	/**
 	 * Creates new context menu
-	 * 
+	 *
 	 * @param item
 	 *            application
 	 */
@@ -73,33 +73,34 @@ public class ContextMenuAVPlus implements SetLabels {
 		wrappedPopup.clearItems();
 		SuiteScope suiteScope = GlobalScope.getSuiteScope(app);
 		Set<ContextMenuItemFilter> contextMenuFilters = suiteScope != null
-				? suiteScope.restrictionsController.getContextMenuItemFilters() : Set.of();
-		List<InputContextMenuItem> items = ContextMenuFactory
-				.makeInputContextMenu(true, hasImageItem(), contextMenuFilters);
-		for (InputContextMenuItem item: items) {
-			wrappedPopup.addItem(new AriaMenuItem(item.getLocalizedTitle(loc),
-					ImageMap.get(item.getIcon()), () -> execute(item)));
+				? suiteScope.restrictionsController.getContextMenuItemFilters()
+				: Set.of();
+		List<InputContextMenuItem> items =
+				ContextMenuFactory.makeInputContextMenu(true, hasImageItem(), contextMenuFilters);
+		for (InputContextMenuItem item : items) {
+			wrappedPopup.addItem(new AriaMenuItem(
+					item.getLocalizedTitle(loc), ImageMap.get(item.getIcon()), () -> execute(item)));
 		}
 	}
 
-	protected boolean hasImageItem() {
+	boolean hasImageItem() {
 		return !GlobalScope.isExamActive(app) && app.getGuiManager().toolbarHasImageMode();
 	}
 
 	private void execute(InputContextMenuItem item) {
 		switch (item) {
-		case Expression:
-			addExpression();
-			break;
-		case Text:
-			addText();
-			break;
-		case Help:
-			showHelp();
-			break;
-		case Image:
-			addImage();
-			break;
+			case Expression:
+				addExpression();
+				break;
+			case Text:
+				addText();
+				break;
+			case Help:
+				showHelp();
+				break;
+			case Image:
+				addImage();
+				break;
 		}
 	}
 
@@ -114,18 +115,17 @@ public class ContextMenuAVPlus implements SetLabels {
 		item.ensureEditing();
 		kbd.selectTab(KeyboardType.ABC);
 	}
-	
+
 	void addImage() {
 		item.getController().setInputAsText(false);
 		app.getImageManager().setPreventAuxImage(true);
 
-		app.getGuiManager().loadImage(null,
-				null, false, app.getActiveEuclidianView());
+		app.getGuiManager().loadImage(null, null, false, app.getActiveEuclidianView());
 	}
 
 	/**
 	 * Show popup menu at (x, y) screen coordinates.
-	 * 
+	 *
 	 * @param x
 	 *            y coordinate.
 	 * @param y
@@ -139,7 +139,7 @@ public class ContextMenuAVPlus implements SetLabels {
 	public void setLabels() {
 		buildGUI();
 	}
-	
+
 	/**
 	 * Shows command help dialog for the item.
 	 */
@@ -150,4 +150,3 @@ public class ContextMenuAVPlus implements SetLabels {
 		MarblePanel.showDeferred(item);
 	}
 }
-

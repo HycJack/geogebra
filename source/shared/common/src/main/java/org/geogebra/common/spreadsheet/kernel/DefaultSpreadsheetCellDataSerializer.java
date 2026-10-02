@@ -16,14 +16,13 @@
 
 package org.geogebra.common.spreadsheet.kernel;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.algos.AlgoElement;
 import org.geogebra.common.kernel.algos.Algos;
 import org.geogebra.common.kernel.commands.Commands;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.spreadsheet.core.SpreadsheetCellDataSerializer;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Spreadsheet data conversion.
@@ -41,7 +40,7 @@ public final class DefaultSpreadsheetCellDataSerializer implements SpreadsheetCe
 	 * @return A string representation of the content suitable for a cell editor.
 	 */
 	@Override
-	public @Nonnull String getStringForEditor(Object data) {
+	public @NonNull String getStringForEditor(Object data) {
 		if (data instanceof String) {
 			return (String) data;
 		}
@@ -51,13 +50,9 @@ public final class DefaultSpreadsheetCellDataSerializer implements SpreadsheetCe
 		GeoElement geo = (GeoElement) data;
 		AlgoElement parentAlgorithm = geo.getParentAlgorithm();
 		if (Algos.isUsedFor(Commands.ParseToNumber, geo) && parentAlgorithm != null) {
-			return "=" + parentAlgorithm.getInput(0).toValueString(
-					StringTemplate.defaultTemplate);
+			return "=" + parentAlgorithm.getInput(0).toValueString(StringTemplate.defaultTemplate);
 		}
-		String redefineString = geo.getRedefineString(true, false,
-				NO_POINT_EDITOR_TEMPLATE);
-		return geo.isGeoText() && parentAlgorithm == null
-				? redefineString
-				: "=" + redefineString;
+		String redefineString = geo.getRedefineString(true, false, NO_POINT_EDITOR_TEMPLATE);
+		return geo.isGeoText() && parentAlgorithm == null ? redefineString : "=" + redefineString;
 	}
 }

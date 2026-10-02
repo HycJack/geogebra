@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,7 +16,7 @@
 
 package org.geogebra.common.kernel.geos;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.awt.GPoint2D;
@@ -24,22 +24,22 @@ import org.geogebra.common.io.XmlTestUtil;
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.StringTemplate;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class GeoFormulaTest extends BaseUnitTest {
+class GeoFormulaTest extends BaseUnitTest {
 
 	private Construction cons;
 	private GeoFormula equationEditor;
 
-	@Before
-	public void setupTest() {
+	@BeforeEach
+	void setupTest() {
 		cons = getApp().getKernel().getConstruction();
 		equationEditor = new GeoFormula(cons, null);
 	}
 
 	@Test
-	public void formulaCorrectlySavedAndLoaded() {
+	void formulaCorrectlySavedAndLoaded() {
 		final double x = 1.2;
 		final double y = 2.5;
 		final int width = 1848;
@@ -70,37 +70,39 @@ public class GeoFormulaTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void definiteIntegral() {
+	void definiteIntegral() {
 		equationEditor.setContent("$defint(0,1)xdx");
-		assertEquals("\\int_0^1{}xdx",
-				equationEditor.toValueString(StringTemplate.latexTemplate));
+		assertEquals("\\int_0^1{}xdx", equationEditor.toValueString(StringTemplate.latexTemplate));
 	}
 
 	@Test
-	public void limes() {
+	void limes() {
 		equationEditor.setContent("$limeq(x→∞)x^(2)");
-		assertEquals("\\lim_{x\\rightarrow{}\\infty{}} x^{2}",
+		assertEquals(
+				"\\lim_{x\\rightarrow{}\\infty{}} x^{2}",
 				equationEditor.toValueString(StringTemplate.latexTemplate));
 	}
 
 	@Test
-	public void product() {
+	void product() {
 		equationEditor.setContent("$prodeq(i=1,10)x_{i}");
-		assertEquals("\\prod_{i\\,=\\,1}^{10}{}x_{i}",
+		assertEquals(
+				"\\prod_{i\\,=\\,1}^{10}{}x_{i}",
 				equationEditor.toValueString(StringTemplate.latexTemplate));
 	}
 
 	@Test
-	public void sum() {
+	void sum() {
 		equationEditor.setContent("$sumeq(i=0,10)i");
-		assertEquals("\\sum_{i\\,=\\,0}^{10}{}i",
-				equationEditor.toValueString(StringTemplate.latexTemplate));
+		assertEquals(
+				"\\sum_{i\\,=\\,0}^{10}{}i", equationEditor.toValueString(StringTemplate.latexTemplate));
 	}
 
 	@Test
-	public void vector() {
+	void vector() {
 		equationEditor.setContent("$vec(AB)=b-a");
-		assertEquals("\\overrightarrow{AB}\\,=\\,b-a",
+		assertEquals(
+				"\\overrightarrow{AB}\\,=\\,b-a",
 				equationEditor.toValueString(StringTemplate.latexTemplate));
 	}
 }

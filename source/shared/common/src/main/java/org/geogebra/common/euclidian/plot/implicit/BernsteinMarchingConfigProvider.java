@@ -45,7 +45,7 @@ public class BernsteinMarchingConfigProvider extends MarchingConfigProvider {
 
 	@Override
 	public int listThreshold() {
-		return 1;
+		return 1000;
 	}
 
 	@Override
@@ -59,8 +59,8 @@ public class BernsteinMarchingConfigProvider extends MarchingConfigProvider {
 	}
 
 	@Override
-	protected MarchingConfig checkContinuity(MarchingConfig config, MarchingRect marchingRect,
-			MyPoint[] points) {
+	protected MarchingConfig checkContinuity(
+			MarchingConfig config, MarchingRect marchingRect, MyPoint[] points) {
 		return BernsteinMarchingConfig.VALID;
 	}
 

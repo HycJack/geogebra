@@ -25,7 +25,7 @@ import org.gwtproject.user.client.Command;
 public class MenuCommand implements Command {
 	/** application */
 	protected AppW app;
-	
+
 	/**
 	 * @param app
 	 *            application
@@ -33,7 +33,7 @@ public class MenuCommand implements Command {
 	public MenuCommand(AppW app) {
 		this.app = app;
 	}
- 
+
 	@Override
 	public void execute() {
 		app.hideMenu();
@@ -43,8 +43,7 @@ public class MenuCommand implements Command {
 	/**
 	 * code that is executed if the menuEntry was clicked
 	 */
-	protected void doExecute() {
+	void doExecute() {
 		// this may be not needed if execute is overridden
 	}
-
 }

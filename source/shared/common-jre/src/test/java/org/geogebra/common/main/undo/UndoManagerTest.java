@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,13 +16,14 @@
 
 package org.geogebra.common.main.undo;
 
+import static org.geogebra.common.BaseUnitTest.hasValue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,26 +37,35 @@ import org.geogebra.common.geogebra3D.kernel3D.geos.GeoPoint3D;
 import org.geogebra.common.geogebra3D.kernel3D.geos.GeoSegment3D;
 import org.geogebra.common.jre.headless.EuclidianController3DNoGui;
 import org.geogebra.common.jre.headless.EuclidianView3DNoGui;
+import org.geogebra.common.kernel.CircularDefinitionException;
 import org.geogebra.common.kernel.MyPoint;
 import org.geogebra.common.kernel.algos.AlgoElement;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.common.kernel.geos.GeoImage;
 import org.geogebra.common.kernel.geos.GeoLocusStroke;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.kernel.matrix.Coords;
 import org.geogebra.common.main.GeoGebraPreferencesXML;
+import org.geogebra.common.main.UndoRedoMode;
 import org.geogebra.common.main.settings.config.AppConfigGraphing;
 import org.geogebra.common.main.settings.config.AppConfigNotes;
 import org.geogebra.common.plugin.ActionType;
 import org.geogebra.common.plugin.GeoClass;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class UndoManagerTest extends BaseEuclidianControllerTest {
+class UndoManagerTest extends BaseEuclidianControllerTest {
+
+	@BeforeEach
+	void setUp() {
+		setUpController();
+	}
 
 	@Test
-	public void undoDeletionGraphing() {
+	void undoDeletionGraphing() {
 		getApp().setConfig(new AppConfigGraphing());
 		getApp().setUndoActive(true);
 		GeoPoint pt = add("A=(1,1)");
@@ -70,7 +80,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void undoDeletionNotes() {
+	void undoDeletionNotes() {
 		getApp().setConfig(new AppConfigNotes());
 		getApp().setUndoActive(true);
 		GeoPoint pt = add("A=(1,1)");
@@ -84,7 +94,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void testRemoveActions() {
+	void testRemoveActions() {
 		getApp().setUndoActive(true);
 		GeoElement pt = add("A=(1,1)");
 		getUndoManager().storeAddGeo(pt);
@@ -102,7 +112,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void testUndoChangesPolygon() {
+	void testUndoChangesPolygon() {
 		getApp().setUndoActive(true);
 		add("A = (1, -1)");
 		add("B = (3, -3)");
@@ -119,7 +129,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void testUndoChangesMultiplePolygons() {
+	void testUndoChangesMultiplePolygons() {
 		getApp().setUndoActive(true);
 		add("A = (1, -1)");
 		add("B = (3, -3)");
@@ -144,7 +154,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void testUndoChangesLine() {
+	void testUndoChangesLine() {
 		getApp().setUndoActive(true);
 		add("A = (2, -2)");
 		add("B = (3, -3)");
@@ -160,7 +170,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void testUndoChangesSegment() {
+	void testUndoChangesSegment() {
 		getApp().setUndoActive(true);
 		add("A = (2, -2)");
 		add("B = (5, -6)");
@@ -176,7 +186,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void testUndoChangesSegmentWithOneUnlabeledPoint() {
+	void testUndoChangesSegmentWithOneUnlabeledPoint() {
 		getApp().setUndoActive(true);
 		add("A = (1, -2)");
 		add("f = Segment(A, (3, -4))");
@@ -191,7 +201,7 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void testUndoChangesPoint() {
+	void testUndoChangesPoint() {
 		getApp().setUndoActive(true);
 		add("A = (3, -2)");
 		dragStart(150, 100);
@@ -202,10 +212,10 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void undoDraggingPointOnPath() {
+	void undoDraggingPointOnPath() {
 		activateUndo();
-		UpdateActionStore actionStore = new UpdateActionStore(getApp().getSelectionManager(),
-				getUndoManager());
+		UpdateActionStore actionStore =
+				new UpdateActionStore(getApp().getSelectionManager(), getUndoManager());
 		GeoPoint pt = add("A=Point(xAxis)");
 		final GeoPoint dependent = add("B=A+(0,1)");
 		getApp().getSelectionManager().addSelectedGeo(pt);
@@ -224,10 +234,10 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 
 	@Test
 	@Issue("APPS-6589")
-	public void undoDraggingPointOnPath3D() {
+	void undoDraggingPointOnPath3D() {
 		activateUndo();
-		UpdateActionStore actionStore = new UpdateActionStore(getApp().getSelectionManager(),
-				getUndoManager());
+		UpdateActionStore actionStore =
+				new UpdateActionStore(getApp().getSelectionManager(), getUndoManager());
 		GeoPoint3D pt = add("A=Point(zAxis)");
 		final GeoPoint3D dependent = add("B=A+(0,1)");
 		getApp().getSelectionManager().addSelectedGeo(pt);
@@ -245,10 +255,10 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void undoDraggingPointInRegion() {
+	void undoDraggingPointInRegion() {
 		activateUndo();
-		UpdateActionStore actionStore = new UpdateActionStore(getApp().getSelectionManager(),
-				getUndoManager());
+		UpdateActionStore actionStore =
+				new UpdateActionStore(getApp().getSelectionManager(), getUndoManager());
 		add("poly=Polygon((0,0),(5,0),4)");
 		GeoPoint pt = add("PointIn(poly)");
 		getApp().getSelectionManager().addSelectedGeo(pt);
@@ -262,12 +272,17 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 		assertThat(pt, hasValue("(3, 0)"));
 	}
 
+	private void activateUndo() {
+		getApp().setUndoRedoMode(UndoRedoMode.GUI);
+		getApp().setUndoActive(true);
+	}
+
 	@Test
 	@Issue("APPS-5774")
-	public void undoDraggingSliderValue() {
+	void undoDraggingSliderValue() {
 		activateUndo();
-		UpdateActionStore actionStore = new UpdateActionStore(getApp().getSelectionManager(),
-				getUndoManager());
+		UpdateActionStore actionStore =
+				new UpdateActionStore(getApp().getSelectionManager(), getUndoManager());
 		GeoNumeric slider = add("a=Slider(1,5,1)");
 		getApp().getSelectionManager().addSelectedGeo(slider);
 		actionStore.storeSelection(MoveMode.NUMERIC);
@@ -280,10 +295,10 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void undoDraggingSliderPosition() {
+	void undoDraggingSliderPosition() {
 		activateUndo();
-		UpdateActionStore actionStore = new UpdateActionStore(getApp().getSelectionManager(),
-				getUndoManager());
+		UpdateActionStore actionStore =
+				new UpdateActionStore(getApp().getSelectionManager(), getUndoManager());
 		GeoNumeric slider = add("a=Slider(1,5,1)");
 		getApp().getSelectionManager().addSelectedGeo(slider);
 		slider.setSliderLocation(50, 50, true);
@@ -299,13 +314,13 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 
 	@Test
 	@Issue("APPS-6416")
-	public void undoDraggingNet() {
+	void undoDraggingNet() {
 		undoDraggingNet("0");
 	}
 
 	@Test
 	@Issue("APPS-6589")
-	public void undoDraggingNetNamed() {
+	void undoDraggingNetNamed() {
 		add("slider=Slider(0,1,.1)");
 		undoDraggingNet("slider");
 	}
@@ -317,17 +332,17 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 		GeoSegment3D edgeJT = (GeoSegment3D) lookup("edgeJT");
 		GeoNumeric param = edgeJT.getChangeableParent3D().getNumber();
 		EuclidianView3D view3D = get3Dview();
-		UpdateActionStore actionStore = new UpdateActionStore(getApp().getSelectionManager(),
-				getUndoManager());
+		UpdateActionStore actionStore =
+				new UpdateActionStore(getApp().getSelectionManager(), getUndoManager());
 		getApp().getSelectionManager().addSelectedGeo(edgeJT);
 		actionStore.storeSelection(MoveMode.DEPENDENT);
 		assertThat(edgeJT.getStartPointAsGeoElement(), hasValue("(1, 1, 0)"));
 		assertThat(param, hasValue("0"));
 		Coords startPoint = new Coords(1, 1, 0);
 		edgeJT.getChangeableParent3D().record(view3D, startPoint);
-		edgeJT.getChangeableParent3D().move(new Coords(1, 0, 0),
-				null, view3D.getViewDirection(),
-				null, null,  view3D);
+		edgeJT
+				.getChangeableParent3D()
+				.move(new Coords(1, 0, 0), null, view3D.getViewDirection(), null, null, view3D);
 		assertThat(edgeJT.getStartPointAsGeoElement(), hasValue("(2, 0, 0)"));
 		assertThat(param, hasValue("1"));
 		assertEquals(20, getConstruction().getGeoSetLabelOrder(GeoClass.POINT3D).size());
@@ -345,26 +360,35 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 
 	@Test
 	@Issue("APPS-7170")
-	public void undoUpdateStroke() {
+	void undoUpdateStroke() {
 		activateUndo();
 		GeoLocusStroke stroke = add("PenStroke(0,0,1,1)");
 		AlgoElement parentAlgo = stroke.getParentAlgorithm();
 		String oldXML = Objects.requireNonNull(parentAlgo).getXML();
-		stroke.appendPointArray(List.of(new MyPoint(2, 1)));
+		stroke.appendPointArray(List.of(new MyPoint(2, 1)), null);
 		stroke.update();
-		getApp().getUndoManager().buildAction(ActionType.UPDATE, parentAlgo.getXML())
-				.withUndo(ActionType.UPDATE, oldXML).withLabels("stroke1").storeAndNotifyUnsaved();
+		String currentXML = parentAlgo.getXML();
+		getApp()
+				.getUndoManager()
+				.buildAction(ActionType.UPDATE, currentXML)
+				.withUndo(ActionType.UPDATE, oldXML)
+				.withLabels("stroke1")
+				.storeAndNotifyUnsaved();
 		getUndoManager().undo();
-		assertThat(stroke, hasValue("PenStroke[0.0000E0,0.0000E0,1.0000E0,1.0000E0,NaN,NaN]"));
+		assertThat(
+				stroke,
+				hasValue("PenStrokeBezier[0.0000E0,0.0000E0,1,1.0000E0,1.0000E0,0," + "NaN,NaN,0]"));
 		getUndoManager().redo();
-		assertThat(stroke, hasValue("PenStroke[0.0000E0,0.0000E0,1.0000E0,1.0000E0,NaN,NaN,"
-				+ "2.0000E0,1.0000E0,2.0000E0,1.0000E0,NaN,NaN]"));
+		assertThat(
+				stroke,
+				hasValue("PenStrokeBezier[0.0000E0,0.0000E0,1,1.0000E0,1.0000E0,0,"
+						+ "NaN,NaN,0,2.0000E0,1.0000E0,1,2.0000E0,1.0000E0,0,NaN,NaN,0]"));
 		assertThat(String.join(",", getApp().getGgbApi().getAllObjectNames()), equalTo("stroke1"));
 	}
 
 	@Test
 	@Issue("APPS-6654")
-	public void zoomAfterUndo() {
+	void zoomAfterUndo() {
 		getApp().setXML(GeoGebraPreferencesXML.getXML(getApp()), false);
 		EuclidianView view = getApp().getActiveEuclidianView();
 		view.setKeepCenter(true);
@@ -379,14 +403,34 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 		assertEquals(100, view.getXZero(), 0);
 	}
 
+	@Test
+	@Issue("MOW-1908")
+	void undoUpdatingRuler() throws CircularDefinitionException {
+		activateUndo();
+		UpdateActionStore actionStore =
+				new UpdateActionStore(getApp().getSelectionManager(), getUndoManager());
+		final GeoPoint corner = add("(0,0)");
+		corner.remove(); // corner is unlabeled so that it does not trigger an own undo point
+		GeoImage ruler = new GeoImage(getKernel().getConstruction());
+		ruler.setMeasurementTool(true);
+		ruler.setStartPoint(corner);
+		getApp().getSelectionManager().addSelectedGeo(ruler);
+		actionStore.storeSelection(MoveMode.POINT);
+		corner.setCoords(1, 2, 3);
+		corner.updateRepaint();
+		assertFalse(getUndoManager().undoPossible());
+		actionStore.storeUndo();
+		assertFalse(getUndoManager().undoPossible());
+	}
+
 	private EuclidianView3D get3Dview() {
 		return new EuclidianView3DNoGui(
 				new EuclidianController3DNoGui(getApp(), getKernel()),
-				this.getSettings().getEuclidian(3));
+				getApp().getSettings().getEuclidian(3));
 	}
 
 	@Test
-	public void shouldSetUnsaved() {
+	void shouldSetUnsaved() {
 		getKernel().setUndoActive(true);
 		add("x");
 		getApp().storeUndoInfo();
@@ -398,6 +442,6 @@ public class UndoManagerTest extends BaseEuclidianControllerTest {
 	}
 
 	private AppState getCheckpoint() {
-		return getConstruction().getUndoManager().getCheckpoint(null).getAppState();
+		return getUndoManager().getCheckpoint(null).getAppState();
 	}
 }

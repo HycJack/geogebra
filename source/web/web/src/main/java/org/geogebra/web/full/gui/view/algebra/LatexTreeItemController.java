@@ -40,7 +40,6 @@ public class LatexTreeItemController extends RadioTreeItemController
 		implements MathFieldListener, BlurHandler {
 
 	private AutoCompletePopup autocomplete;
-	private RetexKeyboardListener retexListener;
 	private final EvaluateInput evalInput;
 	private String lastInput = "";
 
@@ -61,6 +60,7 @@ public class LatexTreeItemController extends RadioTreeItemController
 		} else {
 			super.startEdit(ctrl);
 		}
+		// store the initial input when activated using mouse
 		storeInitialInput();
 	}
 
@@ -78,6 +78,9 @@ public class LatexTreeItemController extends RadioTreeItemController
 			item.resetInputBarOnBlur();
 			if (preventBlur || isSuggesting()) {
 				return;
+			}
+			if (getMathField() != null) {
+				getMathField().getInternal().moveCursorToFirstEditablePart();
 			}
 
 			onEnter(false);
@@ -98,10 +101,11 @@ public class LatexTreeItemController extends RadioTreeItemController
 		if (isEditing()) {
 			dispatchEditEvent(EventType.EDITOR_STOP);
 		}
-		if (!item.isLastRadioTreeItem()) {
-			app.hideKeyboard();
+		if (keepFocus) {
+			app.getAccessibilityManager().resetTabOverGeos();
 		}
 		if (item.isInputTreeItem() && item.isEmpty()) {
+			hideKeyboardIfNotLast();
 			item.styleEditor();
 			item.addDummyLabel();
 			setEditing(false);
@@ -109,24 +113,35 @@ public class LatexTreeItemController extends RadioTreeItemController
 		}
 		item.setShowInputHelpPanel(false);
 		if (item.geo == null && isEditing()) {
+			hideKeyboardIfNotLast();
 			if (StringUtil.empty(item.getText())) {
 				return;
 			}
 			item.getAV().setLaTeXLoaded();
+			app.getSelectionManager().resetKeyboardSelection();
 			evalInput.createGeoFromInput(keepFocus);
 			setEditing(false);
 			return;
 		}
 		if (!isEditing()) {
+			hideKeyboardIfNotLast();
 			return;
 		}
-
 		item.stopEditing(item.getText(), obj -> {
+			if (obj != null) {
+				hideKeyboardIfNotLast();
+			}
 			if (obj != null && !keepFocus) {
 				app.setScrollToShow(true);
 				obj.update();
 			}
 		});
+	}
+
+	private void hideKeyboardIfNotLast() {
+		if (!item.isLastRadioTreeItem()) {
+			app.hideKeyboard();
+		}
 	}
 
 	@Override
@@ -187,7 +202,7 @@ public class LatexTreeItemController extends RadioTreeItemController
 	public GeoElementND evaluateToGeo() {
 		return evalInput.evaluateToGeo();
 	}
-	
+
 	/**
 	 * @param afterCb additional callback that runs after creation.
 	 */
@@ -204,26 +219,10 @@ public class LatexTreeItemController extends RadioTreeItemController
 	}
 
 	/**
-	 * @return keyboard listener
-	 */
-	public RetexKeyboardListener getRetexListener() {
-		return retexListener;
-	}
-
-	/**
-	 * @param retexListener
-	 *            keyboard listener
-	 */
-	public void setRetexListener(RetexKeyboardListener retexListener) {
-		this.retexListener = retexListener;
-	}
-
-	/**
 	 * Connect keyboard listener to keyboard
 	 */
 	public void setOnScreenKeyboardTextField() {
-		app.getKeyboardManager()
-				.setOnScreenKeyboardTextField(item);
+		app.getKeyboardManager().setOnScreenKeyboardTextField(item);
 		// prevent that keyboard is closed on clicks (changing
 		// cursor position)
 		CancelEventTimer.keyboardSetVisible();
@@ -234,8 +233,6 @@ public class LatexTreeItemController extends RadioTreeItemController
 	 *            whether to show keyboard
 	 */
 	public void initAndShowKeyboard(boolean show) {
-		retexListener = new RetexKeyboardListener(item.canvas, getMathField());
-		retexListener.setAcceptsCommandInserts(true);
 		if (show) {
 			app.getAppletFrame().showKeyboard(true, item, false);
 		}
@@ -267,12 +264,12 @@ public class LatexTreeItemController extends RadioTreeItemController
 
 	@Override
 	public boolean onTab(boolean shiftDown) {
-		onEnter(false);
+		boolean handled;
 		if (item.isInputTreeItem()) {
 			item.setItemWidth(item.getAV().getFullWidth());
-		}
-		boolean handled;
-		if (shiftDown) {
+			item.setFocus(false);
+			handled = item.getAV().focusAdjacentFromInput(shiftDown);
+		} else if (shiftDown) {
 			handled = app.getAccessibilityManager().focusPrevious();
 		} else {
 			handled = app.getAccessibilityManager().focusNext();

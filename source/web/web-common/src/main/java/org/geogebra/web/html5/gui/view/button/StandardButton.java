@@ -16,6 +16,7 @@
 
 package org.geogebra.web.html5.gui.view.button;
 
+import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.gui.util.FastClickHandler;
@@ -25,6 +26,7 @@ import org.geogebra.web.html5.gui.util.NoDragImage;
 import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.gui.view.ImageIconSpec;
 import org.geogebra.web.html5.util.GlobalHandlerRegistry;
+import org.geogebra.web.resources.SVGResourcePrototype;
 import org.gwtproject.resources.client.ImageResource;
 import org.gwtproject.resources.client.ResourcePrototype;
 import org.gwtproject.user.client.ui.Label;
@@ -48,17 +50,12 @@ public class StandardButton extends Widget implements HasResource {
 	}
 
 	/**
-	 * @param icon
-	 *            - img of button
-	 * @param label
-	 *            - text of button
-	 * @param width
-	 *            - width of button
-	 * @param height
-	 *            icon height
+	 * @param icon img of button
+	 * @param label text of button
+	 * @param width width of button
+	 * @param height icon height
 	 */
-	public StandardButton(final ResourcePrototype icon, final String label,
-			int width, int height) {
+	public StandardButton(final ResourcePrototype icon, final String label, int width, int height) {
 		this();
 		setIconAndLabel(icon, label, width, height);
 	}
@@ -77,8 +74,7 @@ public class StandardButton extends Widget implements HasResource {
 	 * @param width icon width
 	 * @param height icon height
 	 */
-	public StandardButton(final IconSpec icon, final String label,
-			int width, int height) {
+	public StandardButton(final IconSpec icon, final String label, int width, int height) {
 		this();
 		if (icon instanceof ImageIconSpec) {
 			setIconAndLabel(((ImageIconSpec) icon).getImage(), label, width, height);
@@ -104,8 +100,7 @@ public class StandardButton extends Widget implements HasResource {
 	 * @param width
 	 *            - width of button
 	 */
-	public StandardButton(final ResourcePrototype icon, final String label,
-			int width) {
+	public StandardButton(final ResourcePrototype icon, final String label, int width) {
 		this(icon, label, width, -1);
 	}
 
@@ -157,8 +152,7 @@ public class StandardButton extends Widget implements HasResource {
 		buildIconAndLabel(icon, label);
 	}
 
-	private void buildIconAndLabel(final ResourcePrototype image,
-			final String label) {
+	private void buildIconAndLabel(final ResourcePrototype image, final String label) {
 		SimplePanel imgPanel = new SimplePanel();
 		imgPanel.addStyleName("imgHolder");
 		btnImage = new NoDragImage(image, width, height);
@@ -178,8 +172,8 @@ public class StandardButton extends Widget implements HasResource {
 		this.getElement().appendChild(colorLbl.getElement());
 	}
 
-	private void setIconAndLabel(final ResourcePrototype image,
-			final String label, int width, int height) {
+	private void setIconAndLabel(
+			final ResourcePrototype image, final String label, int width, int height) {
 		this.width = width;
 		this.height = height;
 		this.icon = image;
@@ -309,7 +303,14 @@ public class StandardButton extends Widget implements HasResource {
 	 * @param enabled whether to add or remove the "disabled" property
 	 */
 	public void setEnabled(boolean enabled) {
+		Dom.toggleClass(this, "disabled", !enabled);
 		AriaHelper.setDisabled(this, !enabled);
+		if (icon instanceof SVGResourcePrototype svg) {
+			setResource(svg.withFill(
+					enabled
+							? GeoGebraColorConstants.PURPLE_700.toString()
+							: GeoGebraColorConstants.NEUTRAL_500.toString()));
+		}
 	}
 
 	/**
@@ -344,7 +345,7 @@ public class StandardButton extends Widget implements HasResource {
 	 * @param activateAction action to run when the button is activated by keyboard input
 	 */
 	public void addKeyActivateHandler(Runnable activateAction) {
-		Dom.addEventListener(this.getElement(), "keyup", (event) -> {
+		Dom.addEventListener(this.getElement(), "keypress", (event) -> {
 			KeyboardEvent e = (KeyboardEvent) event;
 			if (" ".equals(e.key) || "Enter".equals(e.key)) {
 				activateAction.run();

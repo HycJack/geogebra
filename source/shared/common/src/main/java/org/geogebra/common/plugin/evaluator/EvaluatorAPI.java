@@ -79,8 +79,10 @@ public class EvaluatorAPI {
 	}
 
 	private EvalInfo createEvalInfo() {
-		return new EvalInfo(false, false, false).withCAS(false)
-				.withSliders(false).withSymbolicMode(SymbolicMode.NONE);
+		return new EvalInfo(false, false, false)
+				.withCAS(false)
+				.withSliders(false)
+				.withSymbolicMode(SymbolicMode.NONE);
 	}
 
 	/**
@@ -191,8 +193,10 @@ public class EvaluatorAPI {
 		mathFieldInternal.parse(plainText);
 	}
 
+	/**
+	 * @return plain text content of the editor
+	 */
 	public String getText() {
 		return mathFieldInternal.getText();
 	}
-
 }

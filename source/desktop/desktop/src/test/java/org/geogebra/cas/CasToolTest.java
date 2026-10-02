@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,16 +16,16 @@
 
 package org.geogebra.cas;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.cas.view.CASInputHandler;
 import org.geogebra.common.kernel.StringTemplate;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CasToolTest extends BaseCASIntegrationTest {
+class CasToolTest extends BaseCASIntegrationTest {
 
 	@Test
-	public void checkNsolveExpansion() {
+	void checkNsolveExpansion() {
 		CASViewNoGui view = new CASViewNoGui(getApp(), "Sum(T/2^n,n,3,10)=1500000", "$1");
 		CASInputHandler cih = new CASInputHandler(view);
 		cih.processCurrentRow("NSolve", false, null);
@@ -35,7 +35,7 @@ public class CasToolTest extends BaseCASIntegrationTest {
 	}
 
 	@Test
-	public void nsolveToolTest() {
+	void nsolveToolTest() {
 		CASViewNoGui view = new CASViewNoGui(getApp(), "x^2+1", "$1", "$2");
 		CASInputHandler cih = new CASInputHandler(view);
 

@@ -19,8 +19,6 @@ package org.geogebra.common.properties.impl.objects;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.properties.FillType;
@@ -31,12 +29,13 @@ import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.AbstractGeoElementDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.FillingStylePropertyDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Filling style
  */
 public class FillingStyleProperty extends AbstractEnumeratedProperty<FillType>
-			implements IconsEnumeratedProperty<FillType> {
+		implements IconsEnumeratedProperty<FillType> {
 
 	private static final Map<FillType, PropertyResource> icons = Map.of(
 			FillType.STANDARD, PropertyResource.ICON_NO_FILLING,
@@ -57,7 +56,8 @@ public class FillingStyleProperty extends AbstractEnumeratedProperty<FillType>
 			throws NotApplicablePropertyException {
 		super(localization, "Filling");
 		delegate = new FillingStylePropertyDelegate(element);
-		setValues(List.of(FillType.STANDARD,
+		setValues(List.of(
+				FillType.STANDARD,
 				FillType.HATCH,
 				FillType.DOTTED,
 				FillType.CROSSHATCHED,
@@ -70,7 +70,7 @@ public class FillingStyleProperty extends AbstractEnumeratedProperty<FillType>
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 

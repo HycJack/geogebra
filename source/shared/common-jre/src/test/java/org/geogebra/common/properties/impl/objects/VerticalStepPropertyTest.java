@@ -25,47 +25,61 @@ import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.test.BaseAppTestSetup;
+import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-public class VerticalStepPropertyTest extends BaseAppTestSetup {
+class VerticalStepPropertyTest extends BaseAppTestSetup {
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
-	@Test
-	public void testApplicable() {
-		GeoElement point = evaluateGeoElement("(1, 1)");
-		assertDoesNotThrow(() ->
-				new VerticalStepProperty(getAlgebraProcessor(), getLocalization(), point));
+	@ParameterizedTest
+	@ValueSource(strings = {"(1,1)", "Point(x=y)"})
+	void testApplicable(String definition) {
+		GeoElement point = evaluateGeoElement(definition);
+		assertDoesNotThrow(
+				() -> new VerticalStepProperty(getAlgebraProcessor(), getLocalization(), point));
 	}
 
 	@Test
-	public void testNotApplicable() {
+	void testNotApplicable() {
 		GeoElement circle = evaluateGeoElement("Circle((0, 0), 1)");
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new VerticalStepProperty(getAlgebraProcessor(), getLocalization(), circle));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new VerticalStepProperty(getAlgebraProcessor(), getLocalization(), circle));
 	}
 
 	@Test
-	public void testNotApplicableForIntersectionPoint() {
+	void testNotApplicableForIntersectionPoint() {
 		evaluateGeoElement("f = x - 3");
 		GeoElement intersectionPoint = evaluateGeoElement("Intersect(f, (0,-3))");
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new VerticalStepProperty(getAlgebraProcessor(), getLocalization(),
-						intersectionPoint));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() ->
+						new VerticalStepProperty(getAlgebraProcessor(), getLocalization(), intersectionPoint));
 	}
 
 	@Test
-	public void testDisabledForLockedObject() {
+	void testDisabledForLockedObject() {
 		GeoElement point = evaluateGeoElement("(1, 1)");
-		VerticalStepProperty VerticalStepProperty = assertDoesNotThrow(() ->
-				new VerticalStepProperty(getAlgebraProcessor(), getLocalization(), point));
+		VerticalStepProperty VerticalStepProperty = assertDoesNotThrow(
+				() -> new VerticalStepProperty(getAlgebraProcessor(), getLocalization(), point));
 		point.setFixed(true);
 		assertFalse(VerticalStepProperty.isEnabled());
 		point.setFixed(false);
 		assertTrue(VerticalStepProperty.isEnabled());
+	}
+
+	@Test
+	@Issue("APPS-7729")
+	void testShowingForLockedObject() {
+		GeoElement point = evaluateGeoElement("(6, 7)");
+		point.setFixed(true);
+		assertTrue(VerticalStepProperty.isValid(point));
 	}
 }

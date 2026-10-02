@@ -25,14 +25,13 @@ import static org.geogebra.common.kernel.arithmetic.simplifiers.ExpressionValueU
 import static org.geogebra.common.kernel.arithmetic.simplifiers.ExpressionValueUtils.isSqrtNode;
 import static org.geogebra.common.kernel.arithmetic.simplifiers.ExpressionValueUtils.radicandOf;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.arithmetic.ExpressionNode;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
 import org.geogebra.common.kernel.arithmetic.NumberValue;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.common.util.DoubleUtil;
+import org.jspecify.annotations.NonNull;
 
 public final class RationalizeFractionAlgo {
 	private final SimplifyUtils utils;
@@ -44,9 +43,10 @@ public final class RationalizeFractionAlgo {
 	 * @param numerator of the fraction.
 	 * @param denominator of the fraction.
 	 */
-	public RationalizeFractionAlgo(@Nonnull SimplifyUtils utils,
-			@Nonnull ExpressionNode numerator,
-			@Nonnull ExpressionNode denominator) {
+	public RationalizeFractionAlgo(
+			@NonNull SimplifyUtils utils,
+			@NonNull ExpressionNode numerator,
+			@NonNull ExpressionNode denominator) {
 		this.utils = utils;
 		this.numerator = utils.deepCopy(numerator);
 		this.denominator = utils.deepCopy(denominator);
@@ -84,7 +84,8 @@ public final class RationalizeFractionAlgo {
 			return rationalizeAsSquareRootProduct();
 		}
 
-		if (isSqrtNode(numerator) || isAtomicSurdMultiplicationNode(denominator)
+		if (isSqrtNode(numerator)
+				|| isAtomicSurdMultiplicationNode(denominator)
 				|| isAtomicSurdAdditionNode(numerator) && isAtomicSurdAdditionNode(denominator)) {
 			return factorizeOrHandleProduct();
 		}
@@ -177,8 +178,8 @@ public final class RationalizeFractionAlgo {
 		} else if (DoubleUtil.isMinusOne(newNumeratorCoeff)) {
 			simplifiedNumerator = utils.newNode(utils.newDouble(-1), Operation.MULTIPLY, sqrtPart);
 		} else {
-			simplifiedNumerator = utils.newNode(utils.newDouble(newNumeratorCoeff),
-					Operation.MULTIPLY, sqrtPart);
+			simplifiedNumerator =
+					utils.newNode(utils.newDouble(newNumeratorCoeff), Operation.MULTIPLY, sqrtPart);
 		}
 
 		if (DoubleUtil.isOne(newDenominator)) {
@@ -208,19 +209,17 @@ public final class RationalizeFractionAlgo {
 			// if new denominator is integer but not 1 or -1
 			result = utils.newNode(
 					utils.multiplyR(numerator, conjugate),
-					Operation.DIVIDE, utils.newDouble(newDenominatorValue));
-
+					Operation.DIVIDE,
+					utils.newDouble(newDenominatorValue));
 		}
 		return result;
 	}
 
 	private ExpressionNode getConjugateFactor(ExpressionNode node) {
-		return utils.newNode(node.getLeft(), Operation.inverse(node.getOperation()),
-				node.getRight());
+		return utils.newNode(node.getLeft(), Operation.inverse(node.getOperation()), node.getRight());
 	}
 
-	private ExpressionNode simplifiedMultiply(ExpressionValue rationalized,
-			ExpressionNode node1) {
+	private ExpressionNode simplifiedMultiply(ExpressionValue rationalized, ExpressionNode node1) {
 		return rationalized.equals(node1.getLeft())
 				? rationalized.wrap()
 				: doMultiply(node1, denominator);
@@ -240,8 +239,7 @@ public final class RationalizeFractionAlgo {
 	}
 
 	private ExpressionNode multiplySquareRoots(ExpressionNode left, ExpressionNode right) {
-		double product = left.getLeftTree().multiply(right.getLeft())
-				.wrap().evaluateDouble();
+		double product = left.getLeftTree().multiply(right.getLeft()).wrap().evaluateDouble();
 
 		return utils.newSqrt(product);
 	}
@@ -254,15 +252,12 @@ public final class RationalizeFractionAlgo {
 	private ExpressionNode multiplyNumeratorWithSqrt() {
 		ExpressionValue squared = radicandOf(denominator);
 		if (numerator.isOperation(Operation.PLUS) || numerator.isOperation(Operation.MINUS)) {
-			ExpressionNode numeratorLeft =
-					utils.reduceProduct(simplifiedMultiply(squared, numerator.getLeftTree()))
-							.wrap();
-			ExpressionNode numeratorRight =
-					simplifiedMultiply(squared, numerator.getRightTree());
-			return utils.newNode(numeratorLeft, numerator.getOperation(),
-							numeratorRight);
+			ExpressionNode numeratorLeft = utils
+					.reduceProduct(simplifiedMultiply(squared, numerator.getLeftTree()))
+					.wrap();
+			ExpressionNode numeratorRight = simplifiedMultiply(squared, numerator.getRightTree());
+			return utils.newNode(numeratorLeft, numerator.getOperation(), numeratorRight);
 		}
-		return utils.reduceProduct(simplifiedMultiply(squared, numerator))
-				.wrap();
+		return utils.reduceProduct(simplifiedMultiply(squared, numerator)).wrap();
 	}
 }

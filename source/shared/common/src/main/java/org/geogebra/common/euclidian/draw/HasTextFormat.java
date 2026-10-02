@@ -16,7 +16,6 @@
 
 package org.geogebra.common.euclidian.draw;
 
-import org.geogebra.common.annotation.MissingDoc;
 import org.geogebra.common.kernel.geos.GeoInline;
 import org.geogebra.common.kernel.geos.properties.HorizontalAlignment;
 import org.geogebra.common.kernel.geos.properties.VerticalAlignment;
@@ -38,6 +37,12 @@ public interface HasTextFormat {
 	 * @param val font family name
 	 */
 	void formatFont(String val);
+
+	/**
+	 * @return Whether the font cannot be determined. This is the case if a selection contains
+	 * more than one font.
+	 */
+	boolean hasIndeterminableFont();
 
 	/**
 	 * @param key formatting option name
@@ -80,7 +85,10 @@ public interface HasTextFormat {
 	 */
 	void switchListTo(String listType);
 
-	@MissingDoc
+	/**
+	 * Copy selected part to clipboard.
+	 * @return whether the string to copy was non-empty
+	 */
 	boolean copySelection();
 
 	/**

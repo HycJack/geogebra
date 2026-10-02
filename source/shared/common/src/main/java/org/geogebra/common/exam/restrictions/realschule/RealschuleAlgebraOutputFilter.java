@@ -16,8 +16,6 @@
 
 package org.geogebra.common.exam.restrictions.realschule;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.gui.view.algebra.filter.AlgebraOutputFilter;
 import org.geogebra.common.kernel.algos.AlgoElement;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
@@ -25,6 +23,7 @@ import org.geogebra.common.kernel.statistics.AlgoFitImplicit;
 import org.geogebra.common.kernel.statistics.AlgoFitLineX;
 import org.geogebra.common.kernel.statistics.AlgoFitLineY;
 import org.geogebra.common.kernel.statistics.FitAlgo;
+import org.jspecify.annotations.Nullable;
 
 public final class RealschuleAlgebraOutputFilter implements AlgebraOutputFilter {
 
@@ -33,7 +32,7 @@ public final class RealschuleAlgebraOutputFilter implements AlgebraOutputFilter 
 		return isCalculatedEquationAllowed(element);
 	}
 
-	private boolean isCalculatedEquationAllowed(@CheckForNull GeoElementND element) {
+	private boolean isCalculatedEquationAllowed(@Nullable GeoElementND element) {
 		if (element == null) {
 			return false;
 		}
@@ -41,21 +40,23 @@ public final class RealschuleAlgebraOutputFilter implements AlgebraOutputFilter 
 			return true;
 		}
 		if ((element.isGeoLine()
-				|| element.isGeoRay()
-				|| element.isGeoConic()
-				|| element.isGeoFunction()
-				|| element.isImplicitEquation())
+						|| element.isGeoRay()
+						|| element.isGeoConic()
+						|| element.isGeoFunction()
+						|| element.isImplicitEquation())
 				&& (element.getParentAlgorithm() != null)) {
 			return false;
 		}
 		return true;
 	}
 
-	private boolean isAllowedFitCommand(@CheckForNull AlgoElement algo) {
+	private boolean isAllowedFitCommand(@Nullable AlgoElement algo) {
 		if (algo == null) {
 			return false;
 		}
-		return algo instanceof FitAlgo || algo instanceof AlgoFitLineX
-				|| algo instanceof AlgoFitLineY || algo instanceof AlgoFitImplicit;
+		return algo instanceof FitAlgo
+				|| algo instanceof AlgoFitLineX
+				|| algo instanceof AlgoFitLineY
+				|| algo instanceof AlgoFitImplicit;
 	}
 }

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -23,12 +23,12 @@ import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.gui.view.algebra.AlgebraItem;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AlgoLaTeXTest extends BaseUnitTest {
+class AlgoLaTeXTest extends BaseUnitTest {
 
 	@Test
-	public void testVectorString() {
+	void testVectorString() {
 		addAvInput("v=(1,1)");
 		addAvInput("u=2*v");
 		GeoElement formulaText = addAvInput("FormulaText(u,false,false)");
@@ -38,18 +38,17 @@ public class AlgoLaTeXTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testVectorFromPointString() {
+	void testVectorFromPointString() {
 		addAvInput("A=(1,1)");
 		addAvInput("u=Vector(A)");
 		GeoElement formulaText = addAvInput("FormulaText(u,false,false)");
 		assertThat(
 				AlgebraItem.getContentString(formulaText, 1500, true, StringTemplate.latexTemplate),
-				equalTo("text1 \\, = \\,"
-						+ "“\\left( \\begin{align}1 \\\\ 1 \\end{align} \\right)”"));
+				equalTo("text1 \\, = \\," + "“\\left( \\begin{align}1 \\\\ 1 \\end{align} \\right)”"));
 	}
 
 	@Test
-	public void testSymbolicVector() {
+	void testSymbolicVector() {
 		getApp().setDefaultConfig();
 		addAvInput("a = -7");
 		addAvInput("b = 3");
@@ -57,7 +56,6 @@ public class AlgoLaTeXTest extends BaseUnitTest {
 		GeoElement formulaText = addAvInput("FormulaText(u)");
 		assertThat(
 				AlgebraItem.getContentString(formulaText, 1500, true, StringTemplate.latexTemplate),
-				equalTo("text1 \\, = \\,"
-						+ "“\\left( \\begin{align}-7 \\\\ 3 \\end{align} \\right)”"));
+				equalTo("text1 \\, = \\," + "“\\left( \\begin{align}-7 \\\\ 3 \\end{align} \\right)”"));
 	}
 }

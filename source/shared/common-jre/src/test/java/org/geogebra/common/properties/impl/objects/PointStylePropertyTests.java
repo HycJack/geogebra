@@ -30,33 +30,32 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class PointStylePropertyTests extends BaseAppTestSetup {
+class PointStylePropertyTests extends BaseAppTestSetup {
 	@Test
-	public void testApplicableGeoElement() {
+	void testApplicableGeoElement() {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertDoesNotThrow(() -> new PointStyleProperty(
-				getLocalization(), evaluateGeoElement("(1, 2)")));
+		assertDoesNotThrow(
+				() -> new PointStyleProperty(getLocalization(), evaluateGeoElement("(1, 2)")));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"x",
-			"x = 0",
-			"5",
-			"f: x",
-	})
-	public void testNotApplicableGeoElements(String expression) {
+	@ValueSource(
+			strings = {
+				"x", "x = 0", "5", "f: x",
+			})
+	void testNotApplicableGeoElements(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertThrows(NotApplicablePropertyException.class, () -> new PointStyleProperty(
-				getLocalization(), evaluateGeoElement(expression)));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new PointStyleProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@Test
-	public void testSettingPointStyles() {
+	void testSettingPointStyles() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPoint geoPoint = evaluateGeoElement("(1, 2)");
-		PointStyleProperty pointStyleProperty = assertDoesNotThrow(() ->
-				new PointStyleProperty(getLocalization(), geoPoint));
+		PointStyleProperty pointStyleProperty =
+				assertDoesNotThrow(() -> new PointStyleProperty(getLocalization(), geoPoint));
 
 		pointStyleProperty.setValue(PointStyle.DOT);
 		assertEquals(PointStyle.DOT, pointStyleProperty.getValue());

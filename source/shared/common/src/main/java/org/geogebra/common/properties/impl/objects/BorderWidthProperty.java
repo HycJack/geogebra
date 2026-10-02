@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -22,8 +22,6 @@ import static org.geogebra.common.properties.PropertyResource.ICON_BORDER_THIN;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
@@ -33,11 +31,12 @@ import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.GeoElementDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.impl.objects.delegate.TextMindmapDelegate;
+import org.jspecify.annotations.Nullable;
 
 public class BorderWidthProperty extends AbstractEnumeratedProperty<Integer>
 		implements IconsEnumeratedProperty<Integer> {
 	private static final PropertyResource[] icons = {
-			ICON_BORDER_NONE, ICON_BORDER_THIN, ICON_BORDER_THICK,
+		ICON_BORDER_NONE, ICON_BORDER_THIN, ICON_BORDER_THICK,
 	};
 	private final GeoElementDelegate delegate;
 
@@ -59,7 +58,7 @@ public class BorderWidthProperty extends AbstractEnumeratedProperty<Integer>
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 

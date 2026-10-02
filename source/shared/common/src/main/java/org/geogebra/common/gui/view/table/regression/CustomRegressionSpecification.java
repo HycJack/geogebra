@@ -35,8 +35,11 @@ public class CustomRegressionSpecification implements RegressionSpecification {
 	private final Type type;
 	private final String coeffOrdering;
 
+	/** Regression model type. */
 	public enum Type {
-		LINEAR, EXPONENTIAL, EXP_PLUS_CONSTANT
+		LINEAR,
+		EXPONENTIAL,
+		EXP_PLUS_CONSTANT
 	}
 
 	/**
@@ -48,8 +51,8 @@ public class CustomRegressionSpecification implements RegressionSpecification {
 		this.label = asUnicode(label);
 		this.exponents = exponents;
 		type = Type.LINEAR;
-		coeffOrdering = Stream.of("c", "b", "a").filter(label::contains)
-				.collect(Collectors.joining(""));
+		coeffOrdering =
+				Stream.of("c", "b", "a").filter(label::contains).collect(Collectors.joining(""));
 	}
 
 	/**
@@ -65,7 +68,8 @@ public class CustomRegressionSpecification implements RegressionSpecification {
 	}
 
 	private String asUnicode(String label) {
-		return label.replace("^2", String.valueOf(Unicode.SUPERSCRIPT_2))
+		return label
+				.replace("^2", String.valueOf(Unicode.SUPERSCRIPT_2))
 				.replace("*", String.valueOf(Unicode.CENTER_DOT));
 	}
 
@@ -76,8 +80,7 @@ public class CustomRegressionSpecification implements RegressionSpecification {
 
 	@Override
 	public Command buildCommand(Kernel kernel, MyVecNode points) {
-		Command cleanData = new Command(kernel, Commands.RemoveUndefined.getCommand(),
-				false);
+		Command cleanData = new Command(kernel, Commands.RemoveUndefined.getCommand(), false);
 		cleanData.addArgument(points.wrap());
 		Commands cmdName = type == Type.EXPONENTIAL ? Commands.FitExp : Commands.Fit;
 		Command cmd = new Command(kernel, cmdName.name(), false);

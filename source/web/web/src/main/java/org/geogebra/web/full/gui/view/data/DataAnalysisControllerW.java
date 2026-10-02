@@ -21,11 +21,11 @@ import org.geogebra.web.html5.main.AppW;
 
 /**
  * Class to control data management for the DataAnalysisView.
- * 
+ *
  * @author G. Sturr
- * 
+ *
  */
-public class DataAnalysisControllerW extends DataAnalysisController {
+public final class DataAnalysisControllerW extends DataAnalysisController {
 
 	private DataAnalysisViewW view;
 
@@ -42,7 +42,7 @@ public class DataAnalysisControllerW extends DataAnalysisController {
 
 	/**
 	 * Updates all panels in the DataAnalysisView.
-	 * 
+	 *
 	 * @param doRedefine
 	 *            if true then the internal GeoElements will be redefined.
 	 */
@@ -84,5 +84,4 @@ public class DataAnalysisControllerW extends DataAnalysisController {
 			view.getDataDisplayPanel2().getModel().clearPlotGeoList();
 		}
 	}
-
 }

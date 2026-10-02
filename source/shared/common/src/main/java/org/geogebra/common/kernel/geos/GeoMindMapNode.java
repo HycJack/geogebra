@@ -27,8 +27,8 @@ import org.geogebra.common.kernel.geos.properties.VerticalAlignment;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.plugin.GeoClass;
 
-public class GeoMindMapNode extends GeoInline implements TextStyle, HasTextFormatter,
-		HasVerticalAlignment {
+public class GeoMindMapNode extends GeoInline
+		implements TextStyle, HasTextFormatter, HasVerticalAlignment {
 
 	public static final double DEFAULT_WIDTH = 200;
 	public static final double ROOT_HEIGHT = 72;
@@ -58,6 +58,9 @@ public class GeoMindMapNode extends GeoInline implements TextStyle, HasTextForma
 			this.dy1 = dy1;
 		}
 
+		/**
+		 * @return whether this alignment is vertical (top or bottom)
+		 */
 		public boolean isVertical() {
 			return this == TOP || this == BOTTOM;
 		}
@@ -117,8 +120,8 @@ public class GeoMindMapNode extends GeoInline implements TextStyle, HasTextForma
 	@Override
 	public void set(GeoElementND geo) {
 		if (geo instanceof GeoMindMapNode) {
-			setLocation(new GPoint2D(((GeoMindMapNode) geo).getLocation().x,
-					((GeoMindMapNode) geo).getLocation().y));
+			setLocation(new GPoint2D(
+					((GeoMindMapNode) geo).getLocation().x, ((GeoMindMapNode) geo).getLocation().y));
 		}
 	}
 
@@ -262,6 +265,9 @@ public class GeoMindMapNode extends GeoInline implements TextStyle, HasTextForma
 		return nodeAlignment;
 	}
 
+	/**
+	 * @param alignment node alignment
+	 */
 	public void setAlignment(NodeAlignment alignment) {
 		this.nodeAlignment = alignment;
 	}

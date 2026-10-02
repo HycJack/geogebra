@@ -23,10 +23,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.util.MulticastEvent;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides implementations for selection-related methods of {@link SpreadsheetController}
@@ -38,6 +37,7 @@ final class SpreadsheetSelectionController {
 	 * If nothing is selected, the list is empty.
 	 */
 	private final List<Selection> selections = new ArrayList<>();
+
 	private List<Selection> previousSelections = List.of();
 
 	final MulticastEvent<MulticastEvent.Void> selectionsChanged = new MulticastEvent<>();
@@ -48,8 +48,7 @@ final class SpreadsheetSelectionController {
 	}
 
 	void selectAll() {
-		setSelection(new Selection(new TabularRange(-1, -1,
-						-1, -1)));
+		setSelection(new Selection(new TabularRange(-1, -1, -1, -1)));
 	}
 
 	/**
@@ -59,14 +58,14 @@ final class SpreadsheetSelectionController {
 	 * the current selection state, and compare that against the selection state after some
 	 * (potentially selection-modifying) operations.
 	 */
-	@Nonnull Stream<Selection> getSelections() {
+	@NonNull Stream<Selection> getSelections() {
 		return selections.stream();
 	}
 
 	/**
 	 * @return A copy of the current list of selections.
 	 */
-	@Nonnull List<Selection> getSelectionsCopy() {
+	@NonNull List<Selection> getSelectionsCopy() {
 		return new ArrayList<>(selections);
 	}
 
@@ -86,10 +85,8 @@ final class SpreadsheetSelectionController {
 	 * @param extendSelection Whether we want to extend the current selection
 	 * @param addSelection Whether we want to add it to the current selections
 	 */
-	void selectRow(int rowIndex,
-			boolean extendSelection, boolean addSelection) {
-		Selection row = new Selection(
-				new TabularRange(rowIndex, -1, rowIndex, -1));
+	void selectRow(int rowIndex, boolean extendSelection, boolean addSelection) {
+		Selection row = new Selection(new TabularRange(rowIndex, -1, rowIndex, -1));
 		select(row, extendSelection, addSelection);
 	}
 
@@ -99,10 +96,8 @@ final class SpreadsheetSelectionController {
 	 * @param extendSelection Whether we want to extend the current selection
 	 * @param addSelection Whether we want to add it to the current selections
 	 */
-	void selectColumn(int columnIndex,
-			boolean extendSelection, boolean addSelection) {
-		Selection column = new Selection(
-				new TabularRange(-1, columnIndex, -1, columnIndex));
+	void selectColumn(int columnIndex, boolean extendSelection, boolean addSelection) {
+		Selection column = new Selection(new TabularRange(-1, columnIndex, -1, columnIndex));
 		select(column, extendSelection, addSelection);
 	}
 
@@ -117,9 +112,12 @@ final class SpreadsheetSelectionController {
 	void moveLeft(boolean extendSelection) {
 		Selection lastSelection = getLastSelection();
 		if (lastSelection != null) {
-			select(extendSelection ? lastSelection.getLeftExtension()
+			select(
+					extendSelection
+							? lastSelection.getLeftExtension()
 							: lastSelection.getNextCellForMoveLeft(),
-					extendSelection, false);
+					extendSelection,
+					false);
 		}
 	}
 
@@ -130,9 +128,12 @@ final class SpreadsheetSelectionController {
 	void moveRight(boolean extendSelection, int numberOfColumns) {
 		Selection lastSelection = getLastSelection();
 		if (lastSelection != null) {
-			select(extendSelection ? lastSelection.getRightExtension(numberOfColumns)
+			select(
+					extendSelection
+							? lastSelection.getRightExtension(numberOfColumns)
 							: lastSelection.getNextCellForMoveRight(numberOfColumns),
-					extendSelection, false);
+					extendSelection,
+					false);
 		}
 	}
 
@@ -142,8 +143,10 @@ final class SpreadsheetSelectionController {
 	void moveUp(boolean extendSelection) {
 		Selection lastSelection = getLastSelection();
 		if (lastSelection != null) {
-			select(extendSelection ? lastSelection.getTopExtension()
-					: lastSelection.getNextCellForMoveUp(), extendSelection, false);
+			select(
+					extendSelection ? lastSelection.getTopExtension() : lastSelection.getNextCellForMoveUp(),
+					extendSelection,
+					false);
 		}
 	}
 
@@ -154,9 +157,12 @@ final class SpreadsheetSelectionController {
 	void moveDown(boolean extendSelection, int numberOfRows) {
 		Selection lastSelection = getLastSelection();
 		if (lastSelection != null) {
-			select(extendSelection ? lastSelection.getBottomExtension(numberOfRows)
+			select(
+					extendSelection
+							? lastSelection.getBottomExtension(numberOfRows)
 							: lastSelection.getNextCellForMoveDown(numberOfRows),
-					extendSelection, false);
+					extendSelection,
+					false);
 		}
 	}
 
@@ -165,8 +171,7 @@ final class SpreadsheetSelectionController {
 	 * @param extendSelection Whether we want to extend the current selection (SHIFT)
 	 * @param addSelection Whether we want to add this selection to the current selections (CTRL)
 	 */
-	void select(@Nonnull Selection selection, boolean extendSelection,
-			boolean addSelection) {
+	void select(@NonNull Selection selection, boolean extendSelection, boolean addSelection) {
 		Selection lastSelection = getLastSelection();
 		if (extendSelection && lastSelection != null) {
 			extendSelection(lastSelection, selection, addSelection);
@@ -178,7 +183,7 @@ final class SpreadsheetSelectionController {
 		}
 		ArrayList<Selection> independent = new ArrayList<>();
 		Selection merged = selection;
-		for (Selection other: selections) {
+		for (Selection other : selections) {
 			Selection mergeResult = merged.getRectangularUnion(other);
 			if (mergeResult == null) {
 				independent.add(other);
@@ -232,8 +237,20 @@ final class SpreadsheetSelectionController {
 	 * In case there are multiple selections (ctrl+click), returns the one that was created last.
 	 * @return Last selection if present, null otherwise
 	 */
-	@CheckForNull Selection getLastSelection() {
+	@Nullable Selection getLastSelection() {
 		return selections.isEmpty() ? null : selections.get(selections.size() - 1);
+	}
+
+	/**
+	 * @param coords spreadsheet coordinates
+	 * @return {@code false} if {@code coords} is {@code null},
+	 * or {@link #isOnlyCellSelected(int, int)} for the given row/column pair.
+	 */
+	boolean isOnlyCellSelected(@Nullable SpreadsheetCoords coords) {
+		if (coords == null) {
+			return false;
+		}
+		return isOnlyCellSelected(coords.row, coords.column);
 	}
 
 	/**
@@ -242,7 +259,8 @@ final class SpreadsheetSelectionController {
 	 * @return Whether there is only a single cell selected, and that cell is (row, col).
 	 */
 	boolean isOnlyCellSelected(int row, int column) {
-		return selections.size() == 1 && selections.get(0).getRange().isSingleCell()
+		return selections.size() == 1
+				&& selections.get(0).getRange().isSingleCell()
 				&& isSelected(row, column);
 	}
 
@@ -258,7 +276,8 @@ final class SpreadsheetSelectionController {
 	 * @return Whether there is only a single row selected
 	 */
 	boolean isOnlyRowSelected(int row) {
-		return selections.size() == 1 && selections.get(0).getRange().isSingleRow()
+		return selections.size() == 1
+				&& selections.get(0).getRange().isSingleRow()
 				&& isSelected(row, -1);
 	}
 
@@ -274,7 +293,8 @@ final class SpreadsheetSelectionController {
 	 * @return Whether there is only a single column selected
 	 */
 	boolean isOnlyColumnSelected(int column) {
-		return selections.size() == 1 && selections.get(0).getRange().isSingleColumn()
+		return selections.size() == 1
+				&& selections.get(0).getRange().isSingleColumn()
 				&& isSelected(-1, column);
 	}
 
@@ -282,37 +302,39 @@ final class SpreadsheetSelectionController {
 	 * @return Whether currently only columns are selected
 	 */
 	boolean areOnlyColumnsSelected() {
-		return selections.stream().allMatch(
-				selection -> selection.getRange().isContiguousColumns());
+		return selections.stream().allMatch(selection -> selection.getRange().isContiguousColumns());
 	}
 
 	/**
 	 * @return True if only cells are selected (i.e. no <b>whole</b> rows or columns)
 	 */
 	boolean areOnlyCellsSelected() {
-		return selections.stream().allMatch(
-				selection -> !selection.getRange().isContiguousRows()
+		return selections.stream()
+				.allMatch(selection -> !selection.getRange().isContiguousRows()
 						&& !selection.getRange().isContiguousColumns());
 	}
 
 	boolean isSingleSelectionType() {
-		return areOnlyRowsSelected() || areOnlyColumnsSelected()
-				|| areOnlyCellsSelected() || areAllCellsSelected();
+		return areOnlyRowsSelected()
+				|| areOnlyColumnsSelected()
+				|| areOnlyCellsSelected()
+				|| areAllCellsSelected();
 	}
 
 	/**
 	 * @return Whether there is at least one selection that is of type {@link SelectionType#ALL}
 	 */
 	boolean areAllCellsSelected() {
-		return !selections.isEmpty() && selections.stream().anyMatch(
-				selection -> selection.getType() == SelectionType.ALL);
+		return !selections.isEmpty()
+				&& selections.stream().anyMatch(selection -> selection.getType() == SelectionType.ALL);
 	}
 
 	/**
 	 * @return The row indexes of all selections without duplicates
 	 */
 	List<Integer> getAllRowIndexes() {
-		return getAllIndexesWithoutDuplicates(selection -> selection.getRange().getMinRow(),
+		return getAllIndexesWithoutDuplicates(
+				selection -> selection.getRange().getMinRow(),
 				selection -> selection.getRange().getMaxRow());
 	}
 
@@ -320,7 +342,8 @@ final class SpreadsheetSelectionController {
 	 * @return The column indexes of all selections without duplicates
 	 */
 	List<Integer> getAllColumnIndexes() {
-		return getAllIndexesWithoutDuplicates(selection -> selection.getRange().getMinColumn(),
+		return getAllIndexesWithoutDuplicates(
+				selection -> selection.getRange().getMinColumn(),
 				selection -> selection.getRange().getMaxColumn());
 	}
 
@@ -331,8 +354,8 @@ final class SpreadsheetSelectionController {
 	 * some wanted maximum index (e.g. {@link TabularRange#getMaxRow()}
 	 * @return All indexes from all current selections without duplicates
 	 */
-	List<Integer> getAllIndexesWithoutDuplicates(Function<Selection, Integer> getMinIndex,
-			Function<Selection, Integer> getMaxIndex) {
+	List<Integer> getAllIndexesWithoutDuplicates(
+			Function<Selection, Integer> getMinIndex, Function<Selection, Integer> getMaxIndex) {
 		List<Integer> indexes = new ArrayList<>();
 		for (Selection selection : selections) {
 			int index = getMinIndex.apply(selection);
@@ -350,7 +373,8 @@ final class SpreadsheetSelectionController {
 	 * @return The lowest row index from all current selections
 	 */
 	int getUppermostSelectedRowIndex() {
-		return getExtremeIndexFor(selection -> selection.getRange().getMinRow(),
+		return getExtremeIndexFor(
+				selection -> selection.getRange().getMinRow(),
 				(fromRowIndex, otherFromRowIndex) -> fromRowIndex > otherFromRowIndex);
 	}
 
@@ -358,7 +382,8 @@ final class SpreadsheetSelectionController {
 	 * @return The highest row index from all current selections
 	 */
 	int getBottommostSelectedRowIndex() {
-		return getExtremeIndexFor(selection -> selection.getRange().getMaxRow(),
+		return getExtremeIndexFor(
+				selection -> selection.getRange().getMaxRow(),
 				(toRowIndex, otherToRowIndex) -> toRowIndex < otherToRowIndex);
 	}
 
@@ -366,7 +391,8 @@ final class SpreadsheetSelectionController {
 	 * @return The lowest column index from all current selections
 	 */
 	int getLeftmostSelectedColumnIndex() {
-		return getExtremeIndexFor(selection -> selection.getRange().getMinColumn(),
+		return getExtremeIndexFor(
+				selection -> selection.getRange().getMinColumn(),
 				(fromColumnIndex, otherFromColumnIndex) -> fromColumnIndex > otherFromColumnIndex);
 	}
 
@@ -374,7 +400,8 @@ final class SpreadsheetSelectionController {
 	 * @return The highest column index from all current selections
 	 */
 	int getRightmostSelectedColumnIndex() {
-		return getExtremeIndexFor(selection -> selection.getRange().getMaxColumn(),
+		return getExtremeIndexFor(
+				selection -> selection.getRange().getMaxColumn(),
 				(toColumnIndex, otherToColumnIndex) -> toColumnIndex < otherToColumnIndex);
 	}
 
@@ -386,8 +413,8 @@ final class SpreadsheetSelectionController {
 	 * be returned should be swapped with the result of the getIndex Function, false else
 	 * @return Needed extreme index
 	 */
-	private int getExtremeIndexFor(Function<Selection, Integer> getIndex,
-			BiPredicate<Integer, Integer> swapIndex) {
+	private int getExtremeIndexFor(
+			Function<Selection, Integer> getIndex, BiPredicate<Integer, Integer> swapIndex) {
 		if (selections.isEmpty()) {
 			return -1;
 		}
@@ -414,12 +441,12 @@ final class SpreadsheetSelectionController {
 				continue;
 			}
 			if (range.getMaxColumn() >= colCount) {
-				range = new TabularRange(range.getMinRow(), range.getMinColumn(),
-						range.getMaxRow(), colCount - 1);
+				range = new TabularRange(
+						range.getMinRow(), range.getMinColumn(), range.getMaxRow(), colCount - 1);
 			}
 			if (range.getMaxRow() >= rowCount) {
-				range = new TabularRange(range.getMinRow(), range.getMinColumn(),
-						rowCount - 1, range.getMaxColumn());
+				range = new TabularRange(
+						range.getMinRow(), range.getMinColumn(), rowCount - 1, range.getMaxColumn());
 			}
 			trimmed.add(new Selection(range));
 		}

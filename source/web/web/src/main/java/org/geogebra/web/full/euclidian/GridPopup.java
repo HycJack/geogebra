@@ -28,7 +28,7 @@ import org.geogebra.web.html5.main.AppW;
  * Grid style popup
  *
  */
-public class GridPopup extends PopupMenuButtonWithDefault {
+public final class GridPopup extends PopupMenuButtonWithDefault {
 
 	/**
 	 * @param app
@@ -45,9 +45,8 @@ public class GridPopup extends PopupMenuButtonWithDefault {
 
 	@Override
 	public void update(List<GeoElement> geos) {
-		this.setVisible(
-				geos.size() == 0 && !EuclidianView.isPenMode(app.getMode())
-						&& app.getMode() != EuclidianConstants.MODE_DELETE);
+		this.setVisible(geos.size() == 0
+				&& !EuclidianView.isPenMode(app.getMode())
+				&& app.getMode() != EuclidianConstants.MODE_DELETE);
 	}
-
 }

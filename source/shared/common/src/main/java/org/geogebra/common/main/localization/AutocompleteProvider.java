@@ -23,9 +23,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.kernel.Macro;
 import org.geogebra.common.kernel.arithmetic.filter.OperationFilter;
@@ -42,25 +39,27 @@ import org.geogebra.common.util.LowerCaseDictionary;
 import org.geogebra.common.util.ManualPage;
 import org.geogebra.common.util.MatchedString;
 import org.geogebra.common.util.debug.Log;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Weak;
 
 public class AutocompleteProvider {
 	@NonOwning
 	@Weak
-	private final @Nonnull App app;
+	private final @NonNull App app;
+
 	private final boolean isForClassicCAS;
 	private LocalizedCommandSyntax englishCommandSyntax;
-	private @CheckForNull OperationFilter operationFilter;
-	private static Map<String, String> functionAliasSyntaxes = Map.of(
-			Commands.nCr.name(), ParserFunctions.COMBINATORIAL_SUFFIX
-	);
+	private @Nullable OperationFilter operationFilter;
+	private static Map<String, String> functionAliasSyntaxes =
+			Map.of(Commands.nCr.name(), ParserFunctions.COMBINATORIAL_SUFFIX);
 
 	/**
 	 * @param app application
 	 * @param isForClassicCAS whether this is for the classic CAS
 	 */
-	public AutocompleteProvider(@Nonnull App app, boolean isForClassicCAS) {
+	public AutocompleteProvider(@NonNull App app, boolean isForClassicCAS) {
 		this.app = app;
 		this.isForClassicCAS = isForClassicCAS;
 	}
@@ -69,7 +68,7 @@ public class AutocompleteProvider {
 	 * Adds a syntax filter.
 	 * @param syntaxFilter a syntax filter.
 	 */
-	public void addSyntaxFilter(@Nonnull SyntaxFilter syntaxFilter) {
+	public void addSyntaxFilter(@NonNull SyntaxFilter syntaxFilter) {
 		getEnglishCommandSyntax().addSyntaxFilter(syntaxFilter);
 	}
 
@@ -77,7 +76,7 @@ public class AutocompleteProvider {
 	 * Removes a previously added syntax filter.
 	 * @param syntaxFilter a syntax filter.
 	 */
-	public void removeSyntaxFilter(@Nonnull SyntaxFilter syntaxFilter) {
+	public void removeSyntaxFilter(@NonNull SyntaxFilter syntaxFilter) {
 		getEnglishCommandSyntax().removeSyntaxFilter(syntaxFilter);
 	}
 
@@ -85,7 +84,7 @@ public class AutocompleteProvider {
 	 * Sets a filter to restrict operations in the completions.
 	 * @param operationFilter an optional operation filter
 	 */
-	public void setOperationFilter(@CheckForNull OperationFilter operationFilter) {
+	public void setOperationFilter(@Nullable OperationFilter operationFilter) {
 		this.operationFilter = operationFilter;
 	}
 
@@ -136,8 +135,7 @@ public class AutocompleteProvider {
 
 	private String getSyntaxString(String localizedCommandName) {
 		String internalCommandName = app.getInternalCommand(localizedCommandName);
-		boolean englishOnly = internalCommandName == null
-				&& isFallbackCompletionAllowed();
+		boolean englishOnly = internalCommandName == null && isFallbackCompletionAllowed();
 		if (englishOnly) {
 			internalCommandName = app.englishToInternal(localizedCommandName);
 		}
@@ -149,11 +147,11 @@ public class AutocompleteProvider {
 			LocalizedCommandSyntax commandSyntax = app.getLocalization().getCommandSyntax();
 			syntaxString = commandSyntax.getCommandSyntaxCAS(internalCommandName);
 		} else {
-			LocalizedCommandSyntax commandSyntax = englishOnly
-					? getEnglishCommandSyntax() : app.getLocalization().getCommandSyntax();
+			LocalizedCommandSyntax commandSyntax =
+					englishOnly ? getEnglishCommandSyntax() : app.getLocalization().getCommandSyntax();
 			AlgebraProcessor algebraProcessor = app.getKernel().getAlgebraProcessor();
-			syntaxString = algebraProcessor.getSyntax(commandSyntax, internalCommandName,
-					app.getSettings());
+			syntaxString =
+					algebraProcessor.getSyntax(commandSyntax, internalCommandName, app.getSettings());
 		}
 
 		if (syntaxString == null || syntaxString.isEmpty()) {
@@ -163,8 +161,7 @@ public class AutocompleteProvider {
 		if (syntaxString.endsWith(Localization.syntaxCAS)
 				|| syntaxString.endsWith(Localization.syntaxStr)) {
 			// command not found, check for macros
-			Macro macro = isCas() ? null
-					: app.getKernel().getMacro(internalCommandName);
+			Macro macro = isCas() ? null : app.getKernel().getMacro(internalCommandName);
 			if (macro != null) {
 				return macro.toString();
 			} else {
@@ -204,18 +201,21 @@ public class AutocompleteProvider {
 	 * @return stream of suggestions
 	 */
 	public Stream<Completion> getCompletions(String curWord) {
-		List<String> functionResults = app.getParserFunctions().getCompletions(curWord,
-				operationFilter);
+		String prefix = curWord.indexOf('(') > 0 ? curWord.split("\\(")[0] : curWord;
+		List<String> functionResults = app.getParserFunctions().getCompletions(prefix, operationFilter);
 		Stream<Completion> completions = functionResults.stream()
-				.map(function -> new Completion(getMatch(function, curWord),
+				.map(function -> new Completion(
+						getMatch(function, prefix),
 						Collections.singletonList(function),
-						ManualPage.OPERATORS, null));
+						ManualPage.OPERATORS,
+						null));
 
-		List<MatchedString> commandResults = getCommandDictionary()
-				.getCompletions(curWord.toLowerCase(Locale.ROOT));
+		List<MatchedString> commandResults =
+				getCommandDictionary().getCompletions(prefix.toLowerCase(Locale.ROOT));
 		if (commandResults != null) {
 			Stream<Completion> commandCompletions = commandResults.stream()
-					.map(command -> new Completion(command,
+					.map(command -> new Completion(
+							command,
 							getSyntaxes(command.content),
 							ManualPage.COMMAND,
 							app.getInternalCommand(command.content)));
@@ -240,7 +240,7 @@ public class AutocompleteProvider {
 	public static final class Completion {
 		public final MatchedString match;
 		public final List<String> syntaxes;
-		public final @CheckForNull String helpPage;
+		public final @Nullable String helpPage;
 		public final ManualPage helpType;
 
 		/**
@@ -250,8 +250,11 @@ public class AutocompleteProvider {
 		 * @param helpType help type
 		 * @param helpPage help page
 		 */
-		public Completion(MatchedString match, List<String> syntaxes, ManualPage helpType,
-				@CheckForNull String helpPage) {
+		public Completion(
+				MatchedString match,
+				List<String> syntaxes,
+				ManualPage helpType,
+				@Nullable String helpPage) {
 			this.match = match;
 			this.syntaxes = syntaxes;
 			this.helpPage = helpPage;
@@ -270,7 +273,7 @@ public class AutocompleteProvider {
 			return syntaxes;
 		}
 
-		public @CheckForNull String getHelpPage() {
+		public @Nullable String getHelpPage() {
 			return helpPage;
 		}
 

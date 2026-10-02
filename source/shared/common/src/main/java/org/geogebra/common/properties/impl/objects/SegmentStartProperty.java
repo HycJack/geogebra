@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.HasSegmentStyle;
@@ -31,23 +29,24 @@ import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.GeoElementDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.impl.objects.delegate.SegmentPropertyDelegate;
+import org.jspecify.annotations.Nullable;
 
 public class SegmentStartProperty extends AbstractEnumeratedProperty<SegmentStyle>
 		implements IconsEnumeratedProperty<SegmentStyle> {
 
 	private static final PropertyResource[] icons = {
-			PropertyResource.ICON_SEGMENT_START_DEFAULT,
-			PropertyResource.ICON_SEGMENT_START_LINE,
-			PropertyResource.ICON_SEGMENT_START_ARROW,
-			PropertyResource.ICON_SEGMENT_START_CROWS_FOOT,
-			PropertyResource.ICON_SEGMENT_START_ARROW_OUTLINE,
-			PropertyResource.ICON_SEGMENT_START_ARROW_FILLED,
-			PropertyResource.ICON_SEGMENT_START_CIRCLE_OUTLINE,
-			PropertyResource.ICON_SEGMENT_START_CIRCLE,
-			PropertyResource.ICON_SEGMENT_START_SQUARE_OUTLINE,
-			PropertyResource.ICON_SEGMENT_START_SQUARE,
-			PropertyResource.ICON_SEGMENT_START_DIAMOND_OUTLINE,
-			PropertyResource.ICON_SEGMENT_START_DIAMOND
+		PropertyResource.ICON_SEGMENT_START_DEFAULT,
+		PropertyResource.ICON_SEGMENT_START_LINE,
+		PropertyResource.ICON_SEGMENT_START_ARROW,
+		PropertyResource.ICON_SEGMENT_START_CROWS_FOOT,
+		PropertyResource.ICON_SEGMENT_START_ARROW_OUTLINE,
+		PropertyResource.ICON_SEGMENT_START_ARROW_FILLED,
+		PropertyResource.ICON_SEGMENT_START_CIRCLE_OUTLINE,
+		PropertyResource.ICON_SEGMENT_START_CIRCLE,
+		PropertyResource.ICON_SEGMENT_START_SQUARE_OUTLINE,
+		PropertyResource.ICON_SEGMENT_START_SQUARE,
+		PropertyResource.ICON_SEGMENT_START_DIAMOND_OUTLINE,
+		PropertyResource.ICON_SEGMENT_START_DIAMOND
 	};
 
 	private final GeoElementDelegate delegate;
@@ -60,12 +59,19 @@ public class SegmentStartProperty extends AbstractEnumeratedProperty<SegmentStyl
 			throws NotApplicablePropertyException {
 		super(localization, "stylebar.LineStartStyle");
 		delegate = new SegmentPropertyDelegate(element);
-		setValues(List.of(SegmentStyle.DEFAULT, SegmentStyle.LINE,
-				SegmentStyle.ARROW, SegmentStyle.CROWS_FOOT,
-				SegmentStyle.ARROW_OUTLINE, SegmentStyle.ARROW_FILLED,
-				SegmentStyle.CIRCLE_OUTLINE, SegmentStyle.CIRCLE,
-				SegmentStyle.SQUARE_OUTLINE, SegmentStyle.SQUARE,
-				SegmentStyle.DIAMOND_OUTLINE, SegmentStyle.DIAMOND));
+		setValues(List.of(
+				SegmentStyle.DEFAULT,
+				SegmentStyle.LINE,
+				SegmentStyle.ARROW,
+				SegmentStyle.CROWS_FOOT,
+				SegmentStyle.ARROW_OUTLINE,
+				SegmentStyle.ARROW_FILLED,
+				SegmentStyle.CIRCLE_OUTLINE,
+				SegmentStyle.CIRCLE,
+				SegmentStyle.SQUARE_OUTLINE,
+				SegmentStyle.SQUARE,
+				SegmentStyle.DIAMOND_OUTLINE,
+				SegmentStyle.DIAMOND));
 	}
 
 	@Override
@@ -74,7 +80,7 @@ public class SegmentStartProperty extends AbstractEnumeratedProperty<SegmentStyl
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 
@@ -90,4 +96,3 @@ public class SegmentStartProperty extends AbstractEnumeratedProperty<SegmentStyl
 		return ((HasSegmentStyle) delegate.getElement()).getStartStyle();
 	}
 }
-

@@ -27,7 +27,7 @@ import org.geogebra.web.full.javax.swing.GCheckmarkMenuItem;
 import org.geogebra.web.html5.gui.menu.AriaMenuItem;
 import org.geogebra.web.html5.main.AppW;
 
-public class ContextMenuGraphicsWindow3DW extends ContextMenuGraphicsWindowW {
+public final class ContextMenuGraphicsWindow3DW extends ContextMenuGraphicsWindowW {
 
 	/**
 	 * @param app application
@@ -46,27 +46,26 @@ public class ContextMenuGraphicsWindow3DW extends ContextMenuGraphicsWindowW {
 	}
 
 	private void addPlaneMenuItem() {
-		final GCheckmarkMenuItem showPlane = new GCheckmarkMenuItem(loc.getMenu("ShowPlane"),
+		final GCheckmarkMenuItem showPlane = new GCheckmarkMenuItem(
+				loc.getMenu("ShowPlane"),
 				((Kernel3D) app.getKernel()).getXOYPlane().isPlateVisible(),
-				((GuiManager3DW) app.getGuiManager()).getShowPlane3DAction()
-		);
+				((GuiManager3DW) app.getGuiManager()).getShowPlane3DAction());
 		wrappedPopup.addItem(showPlane);
 	}
 
 	private void addGridMenuItem() {
-		final GCheckmarkMenuItem showGrid = new GCheckmarkMenuItem(loc.getMenu("ShowGrid"),
+		final GCheckmarkMenuItem showGrid = new GCheckmarkMenuItem(
+				loc.getMenu("ShowGrid"),
 				((Kernel3D) app.getKernel()).getXOYPlane().isGridVisible(),
-				((GuiManager3DW) app.getGuiManager()).getShowGrid3DAction()
-		);
+				((GuiManager3DW) app.getGuiManager()).getShowGrid3DAction());
 		wrappedPopup.addItem(showGrid);
 	}
 
 	private void addProjectionMenuItem() {
-		SingleSelectionIconRow projectionProperty =
-				new SingleSelectionIconRow(new ProjectionsProperty(loc,
-						app.getEuclidianView3D(), app.getEuclidianView3D().getSettings()));
-		IconButtonPanel iconButtonPanel = new IconButtonPanel((AppW) app, projectionProperty, true,
-				wrappedPopup::hide);
+		SingleSelectionIconRow projectionProperty = new SingleSelectionIconRow(new ProjectionsProperty(
+				loc, app.getEuclidianView3D(), app.getEuclidianView3D().getSettings()));
+		IconButtonPanel iconButtonPanel =
+				new IconButtonPanel((AppW) app, projectionProperty, true, wrappedPopup::hide);
 		AriaMenuItem projectionItem = new AriaMenuItem(iconButtonPanel, () -> {});
 		projectionItem.addStyleName("iconButtonPanel projection");
 		wrappedPopup.addItem(projectionItem);

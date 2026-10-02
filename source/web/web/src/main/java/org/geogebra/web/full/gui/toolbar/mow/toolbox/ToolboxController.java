@@ -24,10 +24,10 @@ import org.geogebra.common.plugin.EventType;
 import org.geogebra.web.full.gui.layout.DockPanelW;
 import org.geogebra.web.html5.main.AppW;
 
-public class ToolboxController {
+public final class ToolboxController {
 	private final AppW appW;
 	private final NotesToolbox toolbox;
-	
+
 	/**
 	 * Controller
 	 * @param appW - application
@@ -42,8 +42,8 @@ public class ToolboxController {
 	 * turn spotlight on
 	 */
 	public void switchSpotlightOn() {
-		DockPanelW dp = (DockPanelW) appW.getGuiManager().getLayout().getDockManager()
-				.getPanel(App.VIEW_EUCLIDIAN);
+		DockPanelW dp =
+				(DockPanelW) appW.getGuiManager().getLayout().getDockManager().getPanel(App.VIEW_EUCLIDIAN);
 		dp.getComponent().addStyleName("graphicsWithSpotlight");
 		appW.getActiveEuclidianView().getEuclidianController().spotlightOn();
 		initSpotlightOff();
@@ -58,8 +58,8 @@ public class ToolboxController {
 			public void sendEvent(Event evt) {
 				if (evt.getType() == EventType.HIDE_SPOTLIGHT) {
 					EuclidianView view = appW.getActiveEuclidianView();
-					DockPanelW dp = (DockPanelW) appW.getGuiManager().getLayout().getDockManager()
-							.getPanel(App.VIEW_EUCLIDIAN);
+					DockPanelW dp = (DockPanelW)
+							appW.getGuiManager().getLayout().getDockManager().getPanel(App.VIEW_EUCLIDIAN);
 					dp.getComponent().removeStyleName("graphicsWithSpotlight");
 					view.clearSpotlight();
 					toolbox.forEach(widget -> widget.removeStyleName("disabled"));

@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -22,7 +22,7 @@ import org.gwtproject.event.logical.shared.ValueChangeHandler;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 
-public class SliderPanel extends FlowPanel implements SliderInputHandler {
+public final class SliderPanel extends FlowPanel implements SliderInputHandler {
 
 	private final Slider slider;
 	private final Label sliderLabel;
@@ -48,6 +48,9 @@ public class SliderPanel extends FlowPanel implements SliderInputHandler {
 		slider.addInputHandler(this);
 	}
 
+	/**
+	 * @return the current value of the slider.
+	 */
 	public Integer getValue() {
 		return slider.getValue();
 	}
@@ -104,5 +107,4 @@ public class SliderPanel extends FlowPanel implements SliderInputHandler {
 		slider.setValue(value);
 		sliderLabel.setText(this.getValue() + "");
 	}
-
 }

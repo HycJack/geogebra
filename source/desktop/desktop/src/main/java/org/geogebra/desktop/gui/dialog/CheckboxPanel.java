@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -38,14 +38,14 @@ class CheckboxPanel extends OptionPanel
 	private String title;
 	private UpdateTabs tabs;
 
-	public CheckboxPanel(AppD app, UpdateTabs tabs, BooleanOptionModel model) {
+	CheckboxPanel(AppD app, UpdateTabs tabs, BooleanOptionModel model) {
 		this(app, model.getTitle(), tabs);
 		this.model = model;
 		model.setListener(this);
 		app.setFlowLayoutOrientation(this);
 	}
 
-	public CheckboxPanel(AppD app, final String title, UpdateTabs tabs) {
+	CheckboxPanel(AppD app, final String title, UpdateTabs tabs) {
 		super();
 		this.app = app;
 		loc = app.getLocalization();
@@ -93,7 +93,7 @@ class CheckboxPanel extends OptionPanel
 		}
 	}
 
-	public void apply(boolean value) {
+	void apply(boolean value) {
 		model.applyChanges(value);
 		tabs.updateTabs(model.getGeos());
 	}
@@ -103,11 +103,11 @@ class CheckboxPanel extends OptionPanel
 		checkbox.setSelected(value);
 	}
 
-	public void setModel(BooleanOptionModel model) {
+	void setModel(BooleanOptionModel model) {
 		this.model = model;
 	}
 
-	public JCheckBox getCheckbox() {
+	JCheckBox getCheckbox() {
 		return checkbox;
 	}
 }

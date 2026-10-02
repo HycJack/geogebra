@@ -80,8 +80,8 @@ public class BaseActivity implements GeoGebraActivity {
 	}
 
 	@Override
-	public ErrorHandler createAVErrorHandler(RadioTreeItem radioTreeItem, boolean valid,
-			boolean allowSliders, boolean withSliders) {
+	public ErrorHandler createAVErrorHandler(
+			RadioTreeItem radioTreeItem, boolean valid, boolean allowSliders, boolean withSliders) {
 		return new AVErrorHandler(radioTreeItem, valid, allowSliders, withSliders);
 	}
 
@@ -98,7 +98,7 @@ public class BaseActivity implements GeoGebraActivity {
 
 	@Override
 	public boolean useValidInput() {
-		return true;
+		return false;
 	}
 
 	@Override

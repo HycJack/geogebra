@@ -29,7 +29,7 @@ import org.geogebra.web.shared.components.dialog.DialogData;
 /**
  * Dialog for rotation around a line
  */
-public class InputDialogRotateAxisW extends InputDialogRotateW {
+public final class InputDialogRotateAxisW extends InputDialogRotateW {
 
 	private GeoLineND[] lines;
 
@@ -49,18 +49,29 @@ public class InputDialogRotateAxisW extends InputDialogRotateW {
 	 * @param ec
 	 *            controller
 	 */
-	public InputDialogRotateAxisW(AppW app, DialogData data,
-            NumberInputHandler handler, GeoPolygon[] polys,
-            GeoLineND[] selectedLines, GeoElement[] selGeos,
-            EuclidianController ec) {
+	public InputDialogRotateAxisW(
+			AppW app,
+			DialogData data,
+			NumberInputHandler handler,
+			GeoPolygon[] polys,
+			GeoLineND[] selectedLines,
+			GeoElement[] selGeos,
+			EuclidianController ec) {
 		super(app, data, handler, polys, selGeos, ec);
 		this.lines = selectedLines;
 	}
 
 	@Override
 	protected void processInput(AsyncOperation<String> callback) {
-		EuclidianController3D.rotateObject(app,
-				getInputText(), isClockWise(), polys,
-				lines, selGeos, (EuclidianController3D) ec, this, callback);
+		EuclidianController3D.rotateObject(
+				app,
+				getInputText(),
+				isClockWise(),
+				polys,
+				lines,
+				selGeos,
+				(EuclidianController3D) ec,
+				this,
+				callback);
 	}
 }

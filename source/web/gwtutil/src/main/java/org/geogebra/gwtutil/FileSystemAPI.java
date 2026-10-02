@@ -21,15 +21,19 @@ import elemental2.promise.Promise;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
-import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
 @JsType(isNative = true, name = "window", namespace = JsPackage.GLOBAL)
-public class FileSystemAPI {
+public final class FileSystemAPI {
+	private FileSystemAPI() {}
+
 	public static native Promise<FileSystemFileHandle> showSaveFilePicker(JsPropertyMap<?> options);
 
+	/**
+	 * @return whether {@code showSaveFilePicker} is available in the browser
+	 */
 	@JsOverlay
 	public static boolean isSupported() {
-		return Js.asPropertyMap(DomGlobal.window).has("showSaveFilePicker");
+		return JsObject.of(DomGlobal.window).has("showSaveFilePicker");
 	}
 }

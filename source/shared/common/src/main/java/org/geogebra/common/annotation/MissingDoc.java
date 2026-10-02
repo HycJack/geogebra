@@ -20,11 +20,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * This annotation is a temporary placeholder for JavaDoc.
+ * This annotation is a temporary placeholder for Javadoc.
  * @deprecated document methods instead
  */
 @Retention(RetentionPolicy.SOURCE)
 @Deprecated
-public @interface MissingDoc {
-	// tagging annotation
-}
+public @interface MissingDoc {}

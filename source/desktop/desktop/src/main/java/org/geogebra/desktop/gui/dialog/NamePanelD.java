@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -52,12 +52,26 @@ import org.geogebra.desktop.main.AppD;
  *
  * @author Markus Hohenwarter
  */
-class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusListener,
-		UpdateablePropertiesPanel, SetLabels, UpdateFonts, ObjectNameModel.IObjectNameListener {
+class NamePanelD extends JPanel
+		implements ActionListener,
+				ErrorHandler,
+				FocusListener,
+				UpdateablePropertiesPanel,
+				SetLabels,
+				UpdateFonts,
+				ObjectNameModel.IObjectNameListener {
 
 	private static final long serialVersionUID = 1L;
 	/** name model */
 	ObjectNameModel model;
+	/**
+	 * current geo on which focus lost should apply (might be different to current
+	 * geo, due to threads)
+	 */
+	private GeoElementND currentGeoForFocusLost = null;
+
+	private String redefinitionForFocusLost = "";
+
 	private final AutoCompleteTextFieldD tfName;
 	private final AutoCompleteTextFieldD tfDefinition;
 	private final AutoCompleteTextFieldD tfCaption;
@@ -80,7 +94,7 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 	 * @param app
 	 *            application
 	 */
-	public NamePanelD(AppD app, UpdateTabs tabs) {
+	NamePanelD(AppD app, UpdateTabs tabs) {
 		this.app = app;
 		this.loc = app.getLocalization();
 		model = new ObjectNameModel(app, this);
@@ -95,8 +109,7 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 
 		// definition field: non auto complete input panel
 		inputPanelDef = new InputPanelD(null, app, -1, true, false);
-		tfDefinition = (AutoCompleteTextFieldD) inputPanelDef
-				.getTextComponent();
+		tfDefinition = (AutoCompleteTextFieldD) inputPanelDef.getTextComponent();
 		tfDefinition.setAutoComplete(false);
 		tfDefinition.addActionListener(this);
 		tfDefinition.addFocusListener(this);
@@ -183,16 +196,11 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 		// Lay out the panel
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
-		SpringUtilities.makeCompactGrid(this, layout, rows, 2, // rows, cols
+		SpringUtilities.makeCompactGrid(
+				this, layout, rows, 2, // rows, cols
 				5, 5, // initX, initY
 				5, 5); // xPad, yPad
 	}
-
-	/**
-	 * current geo on which focus lost should apply (might be different to current
-	 * geo, due to threads)
-	 */
-	private GeoElementND currentGeoForFocusLost = null;
 
 	@Override
 	public JPanel updatePanel(Object[] geos) {
@@ -234,13 +242,11 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 		return this;
 	}
 
-	private String redefinitionForFocusLost = "";
-
 	/**
 	 * Updates the definition of an element and clears the error label if visible.
 	 * @param geo Element whose definition should be updated.
 	 */
-	public void updateDefinition(GeoElementND geo) {
+	void updateDefinition(GeoElementND geo) {
 		// do nothing if called by doActionPerformed
 		if (model.isBusy()) {
 			return;
@@ -269,7 +275,7 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 	 * @param geo
 	 *            element
 	 */
-	public void updateName(GeoElement geo) {
+	void updateName(GeoElement geo) {
 		// do nothing if called by doActionPerformed
 		if (model.isBusy()) {
 			return;
@@ -314,9 +320,8 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 				geo0.setLabelVisible(true);
 				geo0.setLabelMode(GeoElement.LABEL_CAPTION);
 
-				OptionPanelD op = ((PropertiesViewD) app.getGuiManager()
-						.getPropertiesView())
-								.getOptionPanel(OptionType.OBJECTS);
+				OptionPanelD op = ((PropertiesViewD) app.getGuiManager().getPropertiesView())
+						.getOptionPanel(OptionType.OBJECTS);
 
 				if (op instanceof OptionsObjectD) {
 					PropertiesPanelD propPanel = ((OptionsObjectD) op).getPropPanel();
@@ -353,8 +358,8 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 			if (model.getCurrentGeo() == currentGeoForFocusLost) {
 				model.applyDefinitionChange(tfDefinition.getText(), this);
 			} else {
-				model.redefineCurrentGeo(currentGeoForFocusLost,
-						tfDefinition.getText(), redefinitionForFocusLost, this);
+				model.redefineCurrentGeo(
+						currentGeoForFocusLost, tfDefinition.getText(), redefinitionForFocusLost, this);
 			}
 
 			SwingUtilities.invokeLater(doActionStopped);
@@ -422,10 +427,9 @@ class NamePanelD extends JPanel implements ActionListener, ErrorHandler, FocusLi
 		// if a focus lost is called in between, we keep the current definition text
 		redefinitionForFocusLost = tfDefinition.getText();
 		tfName.addActionListener(this);
-
 	}
 
-	public DynamicCaptionPanelD getDynamicCaptionPanel() {
+	DynamicCaptionPanelD getDynamicCaptionPanel() {
 		return dynamicCaptionPanel;
 	}
 

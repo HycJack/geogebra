@@ -26,7 +26,7 @@ import org.gwtproject.user.client.ui.SimplePanel;
 /**
  * material design switch component
  */
-public class ComponentSwitch extends FlowPanel {
+public final class ComponentSwitch extends FlowPanel {
 	private SimplePanel track;
 	private SimplePanel thumb;
 	private boolean isSwitchOn;
@@ -37,7 +37,7 @@ public class ComponentSwitch extends FlowPanel {
 	 *            true if switch is on by default
 	 * @param callback
 	 *            function to update UI on switch update
-	 * 
+	 *
 	 */
 	public ComponentSwitch(boolean switchOn, AsyncOperation<Boolean> callback) {
 		this.isSwitchOn = switchOn;

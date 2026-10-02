@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -20,7 +20,7 @@ import static org.geogebra.test.TestStringUtil.unicode;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.CircularDefinitionException;
@@ -30,79 +30,73 @@ import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.spreadsheet.kernel.DefaultSpreadsheetCellDataSerializer;
 import org.geogebra.test.TestErrorHandler;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RelativeCopyTest extends BaseUnitTest {
+class RelativeCopyTest extends BaseUnitTest {
 
 	private DefaultSpreadsheetCellDataSerializer serializer =
 			new DefaultSpreadsheetCellDataSerializer();
 
 	@Test
-	public void conditionToShowRelative() throws CircularDefinitionException {
+	void conditionToShowRelative() throws CircularDefinitionException {
 		GeoElement a1 = add("A1=(1,1)");
 		GeoBoolean b1 = add("B1=true");
 		add("B2=false");
 		a1.setShowObjectCondition(b1);
-		newRelativeCopy().doDragCopy(0, 0, 0, 0,
-				0, 1, 0, 1);
+		newRelativeCopy().doDragCopy(0, 0, 0, 0, 0, 1, 0, 1);
 		assertEquals(lookup("A2").getShowObjectCondition(), lookup("B2"));
 	}
 
 	@Test
-	public void conditionToShowAbsolute() throws CircularDefinitionException {
+	void conditionToShowAbsolute() throws CircularDefinitionException {
 		GeoElement a1 = add("A1=(1,1)");
 		GeoBoolean b = add("b=true");
 		a1.setShowObjectCondition(b);
-		newRelativeCopy().doDragCopy(0, 0, 0, 0,
-				0, 1, 0, 1);
+		newRelativeCopy().doDragCopy(0, 0, 0, 0, 0, 1, 0, 1);
 		assertEquals(lookup("A2").getShowObjectCondition(), b);
 	}
 
 	@Test
-	public void numericCopy() {
+	void numericCopy() {
 		add("A1=1");
-		newRelativeCopy().doDragCopy(0, 0, 0, 0,
-				0, 1, 0, 1);
+		newRelativeCopy().doDragCopy(0, 0, 0, 0, 0, 1, 0, 1);
 		assertThat(lookup("A2"), hasValue("1"));
 	}
 
 	@Test
-	public void numericCopyHasCorrectPrecision() {
+	void numericCopyHasCorrectPrecision() {
 		add("C3 = 1 / 8");
 		getApp().setRounding("2");
-		newRelativeCopy().doDragCopy(2, 2, 2, 2,
-				3, 2, 3, 2);
+		newRelativeCopy().doDragCopy(2, 2, 2, 2, 3, 2, 3, 2);
 		getApp().setRounding("3");
 		assertThat(lookup("D3"), hasValue("0.125"));
 	}
 
 	@Test
-	public void copyPowerHasCorrectPrecision() {
+	void copyPowerHasCorrectPrecision() {
 		add("A1=5");
 		add("B1=6");
 		add("A2=A1^2");
 		getApp().setRounding("2");
-		newRelativeCopy().doDragCopy(0, 1, 0, 1,
-				1, 1, 1, 1);
+		newRelativeCopy().doDragCopy(0, 1, 0, 1, 1, 1, 1, 1);
 		getApp().setRounding("3");
 		assertThat(lookup("B2").getDefinitionForEditor(), equalTo(unicode("B2=B1^2")));
 	}
 
 	@Test
-	public void functionCopyHasCorrectValue() {
+	void functionCopyHasCorrectValue() {
 		add("C2 = 3 / 8 ");
 		add("D2 = 5 / 8 ");
 		add("C3 = C2 + x");
 		getApp().setRounding("2");
-		newRelativeCopy().doDragCopy(2, 2, 2, 2,
-				3, 2, 3, 2);
+		newRelativeCopy().doDragCopy(2, 2, 2, 2, 3, 2, 3, 2);
 		getApp().setRounding("3");
 		assertThat(lookup("D3"), hasValue("0.625 + x"));
 	}
 
 	@Issue("APPS-6058")
 	@Test
-	public void dragCopyRelativeExpression() {
+	void dragCopyRelativeExpression() {
 		for (int i = 1; i < 11; i++) {
 			add("A" + i + " = " + i);
 			add("B" + i + " = (A" + i + ", 0)");
@@ -110,8 +104,7 @@ public class RelativeCopyTest extends BaseUnitTest {
 		}
 
 		add("C1 = Circle(B1, 0.4)");
-		newRelativeCopy().doDragCopy(2, 0, 2, 0,
-				2, 1, 2, 10);
+		newRelativeCopy().doDragCopy(2, 0, 2, 0, 2, 1, 2, 10);
 		for (int row = 2; row < 10; row++) {
 			assertThat(lookup("C" + row), hasValue("(x - " + row + ")\u00B2 + y\u00B2 = 0.16"));
 			shouldBeInEditor("C" + row, "=Circle(B" + row + "," + "0.4)");
@@ -127,7 +120,7 @@ public class RelativeCopyTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void commandsShouldBeCaseInsensitiveCommandsInCells() {
+	void commandsShouldBeCaseInsensitiveCommandsInCells() {
 		add("c = Circle((0, 0), 1)");
 		assertThat(prepareAddingValue("Dilate(c, 2)"), hasValue("x\u00B2 + y\u00B2 = 4"));
 		assertThat(prepareAddingValue("DiLaTe(c, 2)"), hasValue("x\u00B2 + y\u00B2 = 4"));
@@ -135,7 +128,7 @@ public class RelativeCopyTest extends BaseUnitTest {
 	}
 
 	private GeoElementND prepareAddingValue(String inputText) {
-		return newRelativeCopy().prepareAddingValueToTableNoStoringUndoInfo(
-				inputText, null, 1, 1, false);
+		return newRelativeCopy()
+				.prepareAddingValueToTableNoStoringUndoInfo(inputText, null, 1, 1, false);
 	}
 }

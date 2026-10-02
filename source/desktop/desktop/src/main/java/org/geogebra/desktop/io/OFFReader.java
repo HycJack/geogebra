@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -56,30 +56,26 @@ public class OFFReader {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param file
 	 *            off file
 	 */
 	public void parse(File file, OFFHandler handler) {
 		try {
 			InputStream stream = new FileInputStream(file);
-			BufferedReader br = new BufferedReader(
-					new InputStreamReader(stream, StandardCharsets.UTF_8));
+			BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 			parse(br, handler);
 
 			br.close();
 
-			Log.debug(String.format("Off file has ben load:(v=%d;e=%d;f=%d)",
-					handler.getVertexCount(), handler.getEdgeCount(),
-					handler.getEdgeCount()));
+			Log.debug(String.format(
+					"Off file has ben load:(v=%d;e=%d;f=%d)",
+					handler.getVertexCount(), handler.getEdgeCount(), handler.getEdgeCount()));
 		} catch (FileNotFoundException e) {
 			// It is unexpected as we already have checked existence GUI
 			throw new RuntimeException(e);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (CSVException e) {
-			e.printStackTrace();
+		} catch (IOException | CSVException e) {
+			Log.debug(e);
 		}
 	}
-
 }

@@ -19,11 +19,11 @@ package org.geogebra.common.util;
 import java.io.StringReader;
 import java.util.ArrayList;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.awt.MyImage;
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.euclidian.EuclidianView;
+import org.geogebra.common.exam.ExamListener;
+import org.geogebra.common.exam.ExamState;
 import org.geogebra.common.gui.EdgeInsets;
 import org.geogebra.common.io.QDParser;
 import org.geogebra.common.kernel.Kernel;
@@ -34,12 +34,36 @@ import org.geogebra.common.kernel.geos.GeoText;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.main.App;
 import org.geogebra.common.util.debug.Log;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-abstract public class ImageManager {
+@HasNativeSubclass
+public abstract class ImageManager implements ExamListener {
+	private boolean enabled = true;
+
+	/**
+	 * Makes a built-in button icon available as a fill image.
+	 * Platforms that need to register or rename bundled images should override this method.
+	 * @param fileName logical icon file name
+	 * @param kernel kernel owning the image
+	 * @return path to store on the GeoElement
+	 */
+	public @NonNull String applyButtonIcon(@NonNull String fileName, @NonNull Kernel kernel) {
+		return getButtonIconPath(fileName);
+	}
+
+	/**
+	 * Gets the path used to store a built-in button icon.
+	 * @param fileName logical icon file name
+	 * @return path stored on the GeoElement
+	 */
+	public @NonNull String getButtonIconPath(@NonNull String fileName) {
+		return fileName;
+	}
 
 	/**
 	 * Set image corners; use selected points if any.
-	 * 
+	 *
 	 * @param geoImage
 	 *            image
 	 * @param app
@@ -113,8 +137,7 @@ abstract public class ImageManager {
 	 * @param app
 	 *            app
 	 */
-	public static void ensure2ndCornerOnScreen(double x1, GeoPointND point,
-			App app) {
+	public static void ensure2ndCornerOnScreen(double x1, GeoPointND point, App app) {
 		double x2 = point.getInhomX();
 		EuclidianView ev = app.getActiveEuclidianView();
 		EdgeInsets safeArea = ev.getSafeAreaInsets();
@@ -132,15 +155,12 @@ abstract public class ImageManager {
 		double xMax = ev.toRealWorldCoordX(ev.getWidth() - safeArea.getRight());
 		double yMin = ev.toRealWorldCoordY(safeArea.getTop());
 		double yMax = ev.toRealWorldCoordY(ev.getHeight() - safeArea.getBottom());
-		point.setCoords(xMin + (xMax - xMin) / 5, yMax - (yMax - yMin) / 5,
-				1.0);
+		point.setCoords(xMin + (xMax - xMin) / 5, yMax - (yMax - yMin) / 5, 1.0);
 		point.update();
 	}
 
-	private void ensureImageHeightFitsInScreen(double x1, GeoPointND point,
-			App app, GeoImage image) {
+	private void ensureImageHeightFitsInScreen(double x1, GeoPointND point, App app, GeoImage image) {
 		EuclidianView ev = app.getActiveEuclidianView();
-		EdgeInsets safeArea = ev.getSafeAreaInsets();
 
 		double xScale = ev.getKernel().getXscale();
 		double yScale = ev.getKernel().getYscale();
@@ -149,6 +169,7 @@ abstract public class ImageManager {
 		double factor = imageHeight / imageWidth;
 		double realWorldWidth = image.getRealWorldX(1) - image.getRealWorldX(0);
 		double realWorldHeight = realWorldWidth * factor;
+		EdgeInsets safeArea = ev.getSafeAreaInsets();
 		double yMax = ev.toRealWorldCoordY(safeArea.getTop());
 		if (point.getInhomY() + realWorldHeight > yMax) {
 			double expectedHeight = (yMax - point.getInhomY()) * 0.9;
@@ -160,7 +181,7 @@ abstract public class ImageManager {
 
 	/**
 	 * centers an image on screen
-	 * 
+	 *
 	 * @param geoImage
 	 *            image to be centered
 	 * @param app
@@ -168,10 +189,10 @@ abstract public class ImageManager {
 	 */
 	private static void centerOnScreen(GeoImage geoImage, App app) {
 		EuclidianView ev = app.getActiveEuclidianView();
-		double screenWidth = ev.toRealWorldCoordX((double) ev.getWidth() + 1)
-				- ev.toRealWorldCoordX(0.0);
-		double screenHeight = ev.toRealWorldCoordY(
-				(double) ev.getHeight() + 1) - ev.toRealWorldCoordY(0.0);
+		double screenWidth =
+				ev.toRealWorldCoordX((double) ev.getWidth() + 1) - ev.toRealWorldCoordX(0.0);
+		double screenHeight =
+				ev.toRealWorldCoordY((double) ev.getHeight() + 1) - ev.toRealWorldCoordY(0.0);
 
 		GeoPoint point1 = geoImage.getStartPoint(0);
 		GeoPoint point2 = geoImage.getStartPoint(1);
@@ -197,7 +218,7 @@ abstract public class ImageManager {
 
 	/**
 	 * Update width/height based on viewBox to ensure correct rendering (GGB-1419)
-	 * 
+	 *
 	 * @param fileStr
 	 *            SVG to check as string
 	 * @return SVG with width and height
@@ -238,8 +259,7 @@ abstract public class ImageManager {
 		}
 		try {
 			qd.parse(handler, new StringReader(svgTag));
-			return fileStr.substring(0, svgStart) + handler.getSVGTag()
-					+ fileStr.substring(svgEnd + 1);
+			return fileStr.substring(0, svgStart) + handler.getSVGTag() + fileStr.substring(svgEnd + 1);
 		} catch (Exception e) {
 			Log.debug(e);
 		}
@@ -248,7 +268,7 @@ abstract public class ImageManager {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param filename0
 	 *            filename eg "79054025255fb1a26e4bc422aef54eb4/image.png"
 	 * @param urlBase64
@@ -278,7 +298,7 @@ abstract public class ImageManager {
 	 * @param image image
 	 * @param path path
 	 */
-	public void addExternalImage(@Nonnull MyImage image, @Nonnull String path) {
+	public void addExternalImage(@NonNull MyImage image, @NonNull String path) {
 		//
 	}
 
@@ -287,7 +307,16 @@ abstract public class ImageManager {
 	 * @param path path to image
 	 * @return image or {@code null}
 	 */
-	public @CheckForNull MyImage getExternalImage(@Nonnull String path) {
+	public @Nullable MyImage getExternalImage(@NonNull String path) {
 		return null;
+	}
+
+	@Override
+	public void examStateChanged(ExamState newState) {
+		this.enabled = newState == ExamState.IDLE;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
 	}
 }

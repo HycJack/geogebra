@@ -31,47 +31,58 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class SizePropertyCollectionTests extends BaseAppTestSetup {
+class SizePropertyCollectionTests extends BaseAppTestSetup {
 	private final GeoElementPropertiesFactory propertiesFactory = new GeoElementPropertiesFactory();
 
 	@BeforeEach
-	public void setUpTest() {
+	void setUpTest() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)",
-			"f(x) = x^2",
-			"a = 1 + 2",
-	})
-	public void testNotApplicableObjects(String expression) {
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new SizePropertyCollection(propertiesFactory, getAlgebraProcessor(),
-						getLocalization(), List.of(evaluateGeoElement(expression))));
+	@ValueSource(
+			strings = {
+				"(1, 2)",
+				"f(x) = x^2",
+				"a = 1 + 2",
+			})
+	void testNotApplicableObjects(String expression) {
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new SizePropertyCollection(
+						propertiesFactory,
+						getAlgebraProcessor(),
+						getLocalization(),
+						List.of(evaluateGeoElement(expression))));
 	}
 
 	@Test
-	public void testInputBox() {
-		SizePropertyCollection collection = assertDoesNotThrow(
-				() -> new SizePropertyCollection(propertiesFactory, getAlgebraProcessor(),
-						getLocalization(), List.of(evaluateGeoElement("InputBox()"))));
+	void testInputBox() {
+		SizePropertyCollection collection = assertDoesNotThrow(() -> new SizePropertyCollection(
+				propertiesFactory,
+				getAlgebraProcessor(),
+				getLocalization(),
+				List.of(evaluateGeoElement("InputBox()"))));
 		assertEquals(1, collection.getProperties().length);
 	}
 
 	@Test
-	public void testButton() {
-		SizePropertyCollection collection = assertDoesNotThrow(
-				() -> new SizePropertyCollection(propertiesFactory, getAlgebraProcessor(),
-						getLocalization(), List.of(evaluateGeoElement("Button()"))));
+	void testButton() {
+		SizePropertyCollection collection = assertDoesNotThrow(() -> new SizePropertyCollection(
+				propertiesFactory,
+				getAlgebraProcessor(),
+				getLocalization(),
+				List.of(evaluateGeoElement("Button()"))));
 		assertEquals(3, collection.getProperties().length);
 	}
-	
+
 	@Test
-	public void testPieChart() {
-		SizePropertyCollection collection = assertDoesNotThrow(
-				() -> new SizePropertyCollection(propertiesFactory, getAlgebraProcessor(),
-						getLocalization(), List.of(evaluateGeoElement("PieChart({1,2,3})"))));
+	void testPieChart() {
+		SizePropertyCollection collection = assertDoesNotThrow(() -> new SizePropertyCollection(
+				propertiesFactory,
+				getAlgebraProcessor(),
+				getLocalization(),
+				List.of(evaluateGeoElement("PieChart({1,2,3})"))));
 		assertEquals(1, collection.getProperties().length);
 	}
 }

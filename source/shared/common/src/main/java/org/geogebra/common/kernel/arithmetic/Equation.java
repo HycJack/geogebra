@@ -27,6 +27,7 @@ import org.geogebra.common.kernel.commands.EvalInfo;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.kernel.parser.GParser;
+import org.geogebra.common.main.Localization;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.editor.share.util.Unicode;
@@ -45,7 +46,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	private Polynomial rightPoly; // polynomial in normalForm
 	private Polynomial normalForm; // polynomial in normalForm
 	private boolean isFunctionDependent; // Equation depends (non-constant) on
-											// functions (set in InitEquation)
+	// functions (set in InitEquation)
 	@Weak
 	private final Kernel kernel;
 
@@ -62,7 +63,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	/**
 	 * check whether ExpressionNodes are evaluable to instances of Polynomial or
 	 * NumberValue and build an Equation out of them
-	 * 
+	 *
 	 * @param kernel
 	 *            kernel
 	 * @param lhs
@@ -132,14 +133,14 @@ public class Equation extends ValidExpression implements EquationValue {
 	/**
 	 * @return true if this is forced to evaluate to line
 	 */
-	final public boolean isForcedLine() {
+	public final boolean isForcedLine() {
 		return forceLine;
 	}
 
 	/**
 	 * Force this to evaluate to plane
 	 */
-	final public void setForcePlane() {
+	public final void setForcePlane() {
 		// this expression should be considered as a plane, not a line
 		forcePlane = true;
 	}
@@ -147,14 +148,14 @@ public class Equation extends ValidExpression implements EquationValue {
 	/**
 	 * @return true if this is forced to evaluate to plane
 	 */
-	final public boolean isForcedPlane() {
+	public final boolean isForcedPlane() {
 		return forcePlane;
 	}
 
 	/**
 	 * Force this to evaluate to quadric
 	 */
-	final public void setForceQuadric() {
+	public final void setForceQuadric() {
 		// this expression should be considered as a quadric, not a conic
 		forceQuadric = true;
 	}
@@ -162,7 +163,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	/**
 	 * Force this to evaluate to quadric
 	 */
-	final public void setForceSurface() {
+	public final void setForceSurface() {
 		// this expression should be considered as a surface, not implicit poly
 		forceSurface = true;
 	}
@@ -170,14 +171,14 @@ public class Equation extends ValidExpression implements EquationValue {
 	/**
 	 * @return true if this is forced to evaluate to quadric
 	 */
-	final public boolean isForcedQuadric() {
+	public final boolean isForcedQuadric() {
 		return forceQuadric;
 	}
 
 	/**
 	 * @return true if this is forced to evaluate to quadric
 	 */
-	final public boolean isForcedSurface() {
+	public final boolean isForcedSurface() {
 		return forceSurface;
 	}
 
@@ -223,7 +224,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	/**
 	 * Adds/subtracts/muliplies/divides ev to this equation to get lhs + ev =
 	 * rhs = ev
-	 * 
+	 *
 	 * @param operation
 	 *            operation to apply
 	 * @param ev
@@ -231,8 +232,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	 * @param switchOrder
 	 *            true to compute other * this
 	 */
-	public void applyOperation(Operation operation, ExpressionValue ev,
-			boolean switchOrder) {
+	public void applyOperation(Operation operation, ExpressionValue ev, boolean switchOrder) {
 		ExpressionValue left, right;
 
 		if (ev instanceof Equation) {
@@ -253,7 +253,6 @@ public class Equation extends ValidExpression implements EquationValue {
 			lhs = new ExpressionNode(kernel, lhs, operation, left);
 			rhs = new ExpressionNode(kernel, rhs, operation, right);
 		}
-
 	}
 
 	/**
@@ -268,10 +267,10 @@ public class Equation extends ValidExpression implements EquationValue {
 			// avoid auto creation of GeoElement when lhs is a single variable
 			// e.g. A4 = x^2
 			Variable leftVar = (Variable) lhs.getLeft();
-			lhs.setLeft(leftVar.resolve(false, true,
-					SymbolicMode.NONE, info.isMultiLetterVariablesAllowed())); // don't allow
-																// auto
-														// creation of variables
+			lhs.setLeft(leftVar.resolve(
+					false, true, SymbolicMode.NONE, info.isMultiLetterVariablesAllowed())); // don't allow
+			// auto
+			// creation of variables
 		} else {
 			// standard case for lhs
 			lhs.resolveVariables(info);
@@ -298,8 +297,10 @@ public class Equation extends ValidExpression implements EquationValue {
 		normalForm.add(leftPoly, this, keepFractions);
 	}
 
-	private static void fixStructure(ExpressionNode expression,
-			FunctionVariable xVar, FunctionVariable yVar,
+	private static void fixStructure(
+			ExpressionNode expression,
+			FunctionVariable xVar,
+			FunctionVariable yVar,
 			FunctionVariable zVar) {
 		// try to replace x(x+1) by x*(x+1)
 		expression.replaceXYZnodes(xVar, yVar, zVar);
@@ -367,7 +368,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	 *            symbolic mode
 	 * @return GeoElement variables
 	 */
-	final public GeoElement[] getGeoElementVariables(SymbolicMode mode) {
+	public final GeoElement[] getGeoElementVariables(SymbolicMode mode) {
 		Set<GeoElement> varSet = lhs.getVariables(mode);
 		rhs.getVariables(varSet, mode);
 		return varSet.toArray(new GeoElement[0]);
@@ -388,8 +389,8 @@ public class Equation extends ValidExpression implements EquationValue {
 
 		// var = ... || ... = var
 		return (lhsp.length() == 1
-				&& lhsp.getCoefficient(var).evaluateDouble() == 1
-				&& !rhsp.contains(var))
+						&& lhsp.getCoefficient(var).evaluateDouble() == 1
+						&& !rhsp.contains(var))
 				|| (rhsp.length() == 1
 						&& rhsp.getCoefficient(var).evaluateDouble() == 1
 						&& !lhsp.contains(var));
@@ -409,8 +410,7 @@ public class Equation extends ValidExpression implements EquationValue {
 
 	@Override
 	public Equation deepCopy(Kernel kernel1) {
-		Equation ret = new Equation(kernel1, lhs.getCopy(kernel1),
-				rhs.getCopy(kernel1));
+		Equation ret = new Equation(kernel1, lhs.getCopy(kernel1), rhs.getCopy(kernel1));
 		ret.forceConic = forceConic;
 		ret.forceLine = forceLine;
 		ret.forcePlane = forcePlane;
@@ -439,8 +439,8 @@ public class Equation extends ValidExpression implements EquationValue {
 		kernel.getConstruction().setSuppressLabelCreation(true);
 		GeoElement geo;
 		try {
-			geo = kernel.getAlgebraProcessor().processEquation(this,
-					this.wrap(), true, new EvalInfo(false))[0];
+			geo = kernel.getAlgebraProcessor()
+					.processEquation(this, this.wrap(), true, new EvalInfo(false))[0];
 		} finally {
 			kernel.getConstruction().setSuppressLabelCreation(oldFlag);
 		}
@@ -471,8 +471,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	@Override
 	public void resolveVariables(EvalInfo info) {
 		if ("X".equals(lhs.toString(StringTemplate.defaultTemplate))
-				&& kernel.lookupLabel("X", false,
-						info.getSymbolicMode()) == null) {
+				&& kernel.lookupLabel("X", false, info.getSymbolicMode()) == null) {
 			return;
 		}
 		lhs.resolveVariables(info);
@@ -499,7 +498,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	}
 
 	@Override
-	final public String toValueString(StringTemplate tpl) {
+	public final String toValueString(StringTemplate tpl) {
 		StringBuilder sb = new StringBuilder();
 
 		if (lhs != null) {
@@ -539,7 +538,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param tpl
 	 *            string template
 	 * @param lhs1
@@ -591,6 +590,11 @@ public class Equation extends ValidExpression implements EquationValue {
 	}
 
 	@Override
+	public Localization getLocalization() {
+		return kernel.getLocalization();
+	}
+
+	@Override
 	public ExpressionValue traverse(Traversing t) {
 		ExpressionValue v = t.process(this);
 		if (v != this) {
@@ -609,19 +613,21 @@ public class Equation extends ValidExpression implements EquationValue {
 	@Override
 	public ExpressionValue getChild(int index) {
 		switch (index) {
-		case 0: return lhs;
-		case 1: return rhs;
-		default: return super.getChild(index);
+			case 0:
+				return lhs;
+			case 1:
+				return rhs;
+			default:
+				return super.getChild(index);
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @return says if the original expression contains "z"
 	 */
 	public boolean containsZ() {
 		return containsVar(lhs, 'z') || containsVar(rhs, 'z');
-
 	}
 
 	private static boolean containsVar(ExpressionValue v, char var) {
@@ -649,7 +655,8 @@ public class Equation extends ValidExpression implements EquationValue {
 		}
 		if (v instanceof MyVec3DNode) {
 			MyVec3DNode vec = (MyVec3DNode) v;
-			return containsVar(vec.getX(), var) || containsVar(vec.getY(), var)
+			return containsVar(vec.getX(), var)
+					|| containsVar(vec.getY(), var)
 					|| containsVar(vec.getZ(), var);
 		}
 		if (v instanceof MyList) {
@@ -747,8 +754,7 @@ public class Equation extends ValidExpression implements EquationValue {
 
 			// special case: e = 2 should be an assignment
 			// but an undefined "e" has been read as the Euler constant already
-			if (Unicode.EULER_STRING
-					.equals(lhsUnwrapped.toString(StringTemplate.defaultTemplate))) {
+			if (Unicode.EULER_STRING.equals(lhsUnwrapped.toString(StringTemplate.defaultTemplate))) {
 				rhs.setLabel("e");
 				return rhs;
 			}
@@ -762,22 +768,21 @@ public class Equation extends ValidExpression implements EquationValue {
 
 			// special case: z = 2 should be an assignment when 3D view is not
 			// present
-			else if (kernel.isZvarAllowed() && "z"
-					.equals(lhsUnwrapped.toString(StringTemplate.defaultTemplate))) {
+			else if (kernel.isZvarAllowed()
+					&& "z".equals(lhsUnwrapped.toString(StringTemplate.defaultTemplate))) {
 				rhs.setLabel("z");
 				return rhs;
 			}
-
 		}
 		return this;
 	}
 
 	private ValidExpression assignmentOrProduct(ExpressionValue lhsUnwrapped, boolean rhsConstant) {
-		String name = ((Variable) lhsUnwrapped)
-				.getName(StringTemplate.defaultTemplate);
+		String name = ((Variable) lhsUnwrapped).getName(StringTemplate.defaultTemplate);
 		if (GParser.shouldSplitLabel(name)) {
-			lhs = ((Variable) lhsUnwrapped).resolveAsExpressionValue(SymbolicMode.NONE,
-					true, true).wrap();
+			lhs = ((Variable) lhsUnwrapped)
+					.resolveAsExpressionValue(SymbolicMode.NONE, true, true)
+					.wrap();
 			return this;
 		}
 		if (!rhsConstant && kernel.getSymbolicMode() != SymbolicMode.SYMBOLIC_AV) {
@@ -795,8 +800,7 @@ public class Equation extends ValidExpression implements EquationValue {
 			ExpressionNode n = (ExpressionNode) v;
 			return n.getOperation() != Operation.FUNCTION_NVAR
 					&& n.getOperation() != Operation.ELEMENT_OF
-					&& (n.getLeft() instanceof MyList
-							|| n.getRight() instanceof MyList);
+					&& (n.getLeft() instanceof MyList || n.getRight() instanceof MyList);
 		};
 		return rhs.any(check);
 	}
@@ -828,8 +832,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	 *         we have free x and y is bound inside nested equation)
 	 */
 	public boolean containsFreeFunctionVariable(String name) {
-		return lhs.containsFreeFunctionVariable(name)
-				|| rhs.containsFreeFunctionVariable(name);
+		return lhs.containsFreeFunctionVariable(name) || rhs.containsFreeFunctionVariable(name);
 	}
 
 	@Override
@@ -847,9 +850,8 @@ public class Equation extends ValidExpression implements EquationValue {
 		if (ve != null && ve.unwrap() instanceof Equation) {
 			Equation eq = (Equation) ve.unwrap();
 			return ("y".equals(eq.lhs.toString(StringTemplate.defaultTemplate))
-					&& !eq.rhs.containsFreeFunctionVariable("y"))
-					|| ("z".equals(
-							eq.lhs.toString(StringTemplate.defaultTemplate))
+							&& !eq.rhs.containsFreeFunctionVariable("y"))
+					|| ("z".equals(eq.lhs.toString(StringTemplate.defaultTemplate))
 							&& !eq.rhs.containsFreeFunctionVariable("z"));
 		}
 		return false;
@@ -871,8 +873,7 @@ public class Equation extends ValidExpression implements EquationValue {
 	 */
 	public boolean isExplicitIn(String varName) {
 		String lhsString = getLHS().toString(StringTemplate.noLocalDefault);
-		return varName.equals(lhsString)
-				&& !getRHS().containsFreeFunctionVariable(varName);
+		return varName.equals(lhsString) && !getRHS().containsFreeFunctionVariable(varName);
 	}
 
 	/**

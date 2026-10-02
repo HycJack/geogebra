@@ -6,7 +6,12 @@ plugins {
 
 pmd {
     isIgnoreFailures = System.getenv("CI") != null
-    toolVersion = "7.17.0"
+    toolVersion = "7.28.0"
     ruleSets = emptyList()
     ruleSetConfig = resources.text.fromString(Resources.getString("pmd.xml"))
+}
+
+tasks.register("lintPmd") {
+	description = "Runs PMD in all applicable Java projects."
+	dependsOn("pmdMain", "pmdTest")
 }

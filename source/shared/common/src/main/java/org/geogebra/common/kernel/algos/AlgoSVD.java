@@ -72,7 +72,6 @@ public class AlgoSVD extends AlgoElement {
 
 		super.setOnlyOutput(listOfMatrices);
 		setDependencies();
-
 	}
 
 	/**
@@ -124,29 +123,24 @@ public class AlgoSVD extends AlgoElement {
 			listOfMatrices.setUndefined();
 			Log.debug(t);
 		}
-
 	}
 
 	// convert list into matrix
 	private boolean makeMatrices() {
-		GeoElement geo = null;
-		GeoList row = null;
 		M = new Array2DRowRealMatrix(rows, columns);
 
 		for (int r = 0; r < rows; r++) {
-			geo = listOfLines.get(r);
+			GeoElement geo = listOfLines.get(r);
 			if (!geo.isGeoList()) {
 				return false;
 			}
-			row = (GeoList) geo;
+			GeoList row = (GeoList) geo;
 			for (int c = 0; c < columns; c++) {
 				M.setEntry(r, c, row.get(c).evaluateDouble());
 			}
-
 		}
 
 		return true;
-
 	}
 
 	private void makeListOfMatrices() {
@@ -173,5 +167,4 @@ public class AlgoSVD extends AlgoElement {
 		}
 		return list;
 	}
-
 }

@@ -16,7 +16,7 @@
 
 package org.geogebra.web.full.gui;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
@@ -57,6 +57,7 @@ public class InlineFormattingItemsTest {
 	@Before
 	public void setUp() {
 		app = AppMocker.mockNotes();
+		AppMocker.mockLocalization(key -> "ContextMenu.Font".equals(key) ? "Font" : key);
 		construction = app.getKernel().getConstruction();
 		point = new GPoint2D(0, 0);
 		controllerMockWithLink = new InlineTextControllerMock(LINK_URL);
@@ -74,12 +75,17 @@ public class InlineFormattingItemsTest {
 		ArrayList<GeoElement> geos = new ArrayList<>();
 		geos.add(createTextInline("text1", new InlineTextControllerMock()));
 		List<String> expected = Arrays.asList(
-				"TEXTTOOLBAR", "ContextMenu.Font", "Link",
-				"SEPARATOR", "Cut", "Copy", "Paste",
-				"SEPARATOR", "General.Order",
+				"TEXTTOOLBAR",
+				"Link",
 				"SEPARATOR",
-				"FixObject", "Settings"
-		);
+				"Cut",
+				"Copy",
+				"Paste",
+				"SEPARATOR",
+				"General.Order",
+				"SEPARATOR",
+				"FixObject",
+				"Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -90,7 +96,6 @@ public class InlineFormattingItemsTest {
 		geos.add(createTableInline(InlineTableControllerMock.getWithSelection(true)));
 		List<String> expected = Arrays.asList(
 				"TEXTTOOLBAR",
-				"ContextMenu.Font",
 				"Link",
 				"ContextMenu.textWrapping",
 				"ContextMenu.textRotation",
@@ -98,7 +103,9 @@ public class InlineFormattingItemsTest {
 				"SEPARATOR",
 				"ContextMenu.CreateChart",
 				"SEPARATOR",
-				"Cut", "Copy", "Paste",
+				"Cut",
+				"Copy",
+				"Paste",
 				"SEPARATOR",
 				"ContextMenu.insertRowAbove",
 				"ContextMenu.insertRowBelow",
@@ -106,8 +113,7 @@ public class InlineFormattingItemsTest {
 				"ContextMenu.insertColumnRight",
 				"SEPARATOR",
 				"ContextMenu.deleteRow",
-				"ContextMenu.deleteColumn"
-		);
+				"ContextMenu.deleteColumn");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -118,14 +124,12 @@ public class InlineFormattingItemsTest {
 		geos.add(createTableInline(InlineTableControllerMock.getWithSelection(false)));
 		List<String> expected = Arrays.asList(
 				"TEXTTOOLBAR",
-				"ContextMenu.Font",
 				"Link",
 				"ContextMenu.textWrapping",
 				"ContextMenu.textRotation",
 				"ContextMenu.Heading",
 				"SEPARATOR",
-				"ContextMenu.CreateChart"
-		);
+				"ContextMenu.CreateChart");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -135,17 +139,20 @@ public class InlineFormattingItemsTest {
 		ArrayList<GeoElement> geos = new ArrayList<>();
 		geos.add(createTableInline(InlineTableControllerMock.get()));
 		List<String> expected = Arrays.asList(
-				"ContextMenu.Font",
 				"ContextMenu.textWrapping",
 				"ContextMenu.textRotation",
 				"ContextMenu.Heading",
 				"SEPARATOR",
 				"ContextMenu.CreateChart",
-				"SEPARATOR", "Cut", "Copy", "Paste",
-				"SEPARATOR", "General.Order",
 				"SEPARATOR",
-				"FixObject", "Settings"
-		);
+				"Cut",
+				"Copy",
+				"Paste",
+				"SEPARATOR",
+				"General.Order",
+				"SEPARATOR",
+				"FixObject",
+				"Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -156,12 +163,15 @@ public class InlineFormattingItemsTest {
 		geos.add(createTextInline("text1", new InlineTextControllerMock()));
 		geos.add(createTableInline(InlineTableControllerMock.get()));
 		List<String> expected = Arrays.asList(
-				"ContextMenu.Font",
-				"SEPARATOR", "Cut", "Copy", "Paste",
-				"SEPARATOR", "General.Order",
 				"SEPARATOR",
-				"FixObject", "Settings"
-		);
+				"Cut",
+				"Copy",
+				"Paste",
+				"SEPARATOR",
+				"General.Order",
+				"SEPARATOR",
+				"FixObject",
+				"Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -171,12 +181,18 @@ public class InlineFormattingItemsTest {
 		ArrayList<GeoElement> geos = new ArrayList<>();
 		geos.add(createTextInline("text1", controllerMockWithLink));
 		List<String> expected = Arrays.asList(
-				"TEXTTOOLBAR", "ContextMenu.Font", "editLink", "removeLink",
-				"SEPARATOR", "Cut", "Copy", "Paste",
-				"SEPARATOR", "General.Order",
+				"TEXTTOOLBAR",
+				"editLink",
+				"removeLink",
 				"SEPARATOR",
-				"FixObject", "Settings"
-		);
+				"Cut",
+				"Copy",
+				"Paste",
+				"SEPARATOR",
+				"General.Order",
+				"SEPARATOR",
+				"FixObject",
+				"Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -187,12 +203,16 @@ public class InlineFormattingItemsTest {
 		geos.add(createTextInline("text1", controllerMockWithLink));
 		geos.add(createTextInline("text2", controllerMockWithLink));
 		List<String> expected = Arrays.asList(
-				"TEXTTOOLBAR", "ContextMenu.Font",
-				"SEPARATOR", "Cut", "Copy", "Paste",
-				"SEPARATOR", "General.Order",
+				"TEXTTOOLBAR",
 				"SEPARATOR",
-				"FixObject", "Settings"
-		);
+				"Cut",
+				"Copy",
+				"Paste",
+				"SEPARATOR",
+				"General.Order",
+				"SEPARATOR",
+				"FixObject",
+				"Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -203,11 +223,7 @@ public class InlineFormattingItemsTest {
 		geos.add(createTextInline("text1", new InlineTextControllerMock(LINK_URL)));
 		geos.add(createPolygon("poly1"));
 		List<String> expected = Arrays.asList(
-				"Cut", "Copy", "Paste",
-				"SEPARATOR", "General.Order",
-				"SEPARATOR",
-				"FixObject", "Settings"
-		);
+				"Cut", "Copy", "Paste", "SEPARATOR", "General.Order", "SEPARATOR", "FixObject", "Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -217,9 +233,7 @@ public class InlineFormattingItemsTest {
 		ArrayList<GeoElement> geos = new ArrayList<>();
 		geos.add(createPolygon("Poly1"));
 		List<String> expected = Arrays.asList(
-				"Cut", "Copy", "Paste", "SEPARATOR", "General.Order", "SEPARATOR",
-				"FixObject", "Settings"
-		);
+				"Cut", "Copy", "Paste", "SEPARATOR", "General.Order", "SEPARATOR", "FixObject", "Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -228,10 +242,8 @@ public class InlineFormattingItemsTest {
 	public void testMaskContextMenu() {
 		ArrayList<GeoElement> geos = new ArrayList<>();
 		geos.add(createMask());
-		List<String> expected = Arrays.asList(
-				"Cut", "Copy", "Paste", "SEPARATOR",
-				"FixObject", "Settings"
-		);
+		List<String> expected =
+				Arrays.asList("Cut", "Copy", "Paste", "SEPARATOR", "FixObject", "Settings");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}
@@ -248,12 +260,12 @@ public class InlineFormattingItemsTest {
 		return poly;
 	}
 
-	private GeoInlineText createTextInline(String label,
-			InlineTextControllerMock inlineTextControllerMock) {
+	private GeoInlineText createTextInline(
+			String label, InlineTextControllerMock inlineTextControllerMock) {
 		GeoInlineText text = new GeoInlineText(construction, point);
 		text.setLabel(label);
-		DrawInlineText drawInlineText = (DrawInlineText) app.getActiveEuclidianView()
-				.getDrawableFor(text);
+		DrawInlineText drawInlineText =
+				(DrawInlineText) app.getActiveEuclidianView().getDrawableFor(text);
 		assertNotNull(drawInlineText);
 		drawInlineText.setTextController(inlineTextControllerMock);
 		return text;
@@ -262,8 +274,8 @@ public class InlineFormattingItemsTest {
 	private GeoInlineTable createTableInline(InlineTableController inlineTextController) {
 		GeoInlineTable table = new GeoInlineTable(construction, point);
 		table.setLabel("table1");
-		DrawInlineTable drawInlineTable = (DrawInlineTable) app.getActiveEuclidianView()
-				.getDrawableFor(table);
+		DrawInlineTable drawInlineTable =
+				(DrawInlineTable) app.getActiveEuclidianView().getDrawableFor(table);
 		assertNotNull(drawInlineTable);
 		drawInlineTable.setTextController(inlineTextController);
 		return table;
@@ -276,11 +288,8 @@ public class InlineFormattingItemsTest {
 		geos.add(createTextInline("text2", controllerMockWithLink));
 		construction.createGroup(geos);
 		app.getSelectionManager().setFocusedGroupElement(geos.get(0));
-		List<String> expected = Arrays.asList(
-				"TEXTTOOLBAR", "ContextMenu.Font",
-				"editLink", "removeLink",
-				"SEPARATOR", "General.Order"
-		);
+		List<String> expected =
+				Arrays.asList("TEXTTOOLBAR", "editLink", "removeLink", "SEPARATOR", "General.Order");
 
 		assertEquals(expected, contextMenu.getEntriesFor(geos));
 	}

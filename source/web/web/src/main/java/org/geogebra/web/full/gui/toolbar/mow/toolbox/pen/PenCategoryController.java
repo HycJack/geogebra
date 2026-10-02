@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -22,7 +22,7 @@ import org.geogebra.common.main.settings.PenToolsSettings;
 import org.geogebra.common.main.settings.SettingListener;
 import org.geogebra.web.html5.main.AppW;
 
-public class PenCategoryController {
+public final class PenCategoryController {
 	private final AppW appW;
 
 	/**
@@ -30,7 +30,7 @@ public class PenCategoryController {
 	 * @param appW - application
 	 * @param listener - settings listener
 	 */
-	public PenCategoryController(AppW appW, SettingListener listener) {
+	public PenCategoryController(AppW appW, SettingListener<PenToolsSettings> listener) {
 		this.appW = appW;
 		getPenSettings().addListener(listener);
 	}
@@ -39,8 +39,7 @@ public class PenCategoryController {
 	 * @return euclidian pen
 	 */
 	public EuclidianPen getPen() {
-		return appW.getActiveEuclidianView().getEuclidianController()
-				.getPen();
+		return appW.getActiveEuclidianView().getEuclidianController().getPen();
 	}
 
 	/**
@@ -52,6 +51,9 @@ public class PenCategoryController {
 		getPen().updateMode();
 	}
 
+	/**
+	 * @return last pen color from the settings.
+	 */
 	public GColor getLastPenColor() {
 		return getPenSettings().getLastSelectedPenColor();
 	}
@@ -64,6 +66,9 @@ public class PenCategoryController {
 		getPenSettings().setLastSelectedPenColor(lastPenColor);
 	}
 
+	/**
+	 * @return last highlighter color from the settings.
+	 */
 	public GColor getLastHighlighterColor() {
 		return getPenSettings().getLastSelectedHighlighterColor();
 	}

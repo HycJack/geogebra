@@ -16,23 +16,21 @@
 
 package org.geogebra.web.full.gui.layout;
 
+import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.gui.AccessibilityGroup;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.OptionType;
-import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.web.full.css.MaterialDesignResources;
-import org.geogebra.web.full.gui.ContextMenuGraphicsWindowW;
-import org.geogebra.web.html5.gui.GPopupPanel;
-import org.geogebra.web.html5.gui.view.button.StandardButton;
+import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.IconButton;
+import org.geogebra.web.html5.gui.view.ImageIconSpec;
 import org.geogebra.web.html5.gui.zoompanel.FocusableWidget;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.util.TestHarness;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-public class GraphicsControlsPanel extends FlowPanel implements DockControlPanel {
-	private static final int GEAR_CONTEXT_MENU_MARGIN = 16;
+public final class GraphicsControlsPanel extends FlowPanel implements DockControlPanel {
 	private final AppW app;
-	StandardButton graphicsContextMenuBtn;
+	private IconButton graphicsContextMenuBtn;
 
 	/**
 	 * Panel wrapping the settings icon and optional controls
@@ -41,7 +39,8 @@ public class GraphicsControlsPanel extends FlowPanel implements DockControlPanel
 	 */
 	public GraphicsControlsPanel(AppW app, DockPanelW parent) {
 		this.app = app;
-		if (app.letShowPropertiesDialog() && !app.isWhiteboardActive()
+		if (app.letShowPropertiesDialog()
+				&& !app.isWhiteboardActive()
 				&& parent.getViewId() != App.VIEW_PROBABILITY_CALCULATOR) {
 			addSettingsIcon(parent);
 		}
@@ -49,25 +48,24 @@ public class GraphicsControlsPanel extends FlowPanel implements DockControlPanel
 	}
 
 	private void addSettingsIcon(final DockPanelW parent) {
-		graphicsContextMenuBtn = new StandardButton(
-				MaterialDesignResources.INSTANCE.settings_border(), null, 24);
-		graphicsContextMenuBtn
-				.setTitle(app.getLocalization().getMenu("Settings"));
+		graphicsContextMenuBtn = new IconButton(
+				app,
+				null,
+				new ImageIconSpec(MaterialDesignResources.INSTANCE.settings_border()),
+				"Settings");
 		final FocusableWidget focusableWidget = new FocusableWidget(
 				AccessibilityGroup.getViewGroup(parent.getViewId()),
-				AccessibilityGroup.ViewControlId.SETTINGS_BUTTON,  graphicsContextMenuBtn);
+				AccessibilityGroup.ViewControlId.SETTINGS_BUTTON,
+				graphicsContextMenuBtn);
 		if (parent.getViewId() == App.VIEW_EUCLIDIAN) {
 			focusableWidget.attachTo(app);
 		}
 
 		graphicsContextMenuBtn.addFastClickHandler(source -> {
 			app.getAccessibilityManager().setAnchor(focusableWidget);
-			onGraphicsSettingsPressed(parent);
+			onGraphicsSettingsPressed();
 		});
 
-		graphicsContextMenuBtn.addStyleName("flatButton");
-		graphicsContextMenuBtn.addStyleName(app.isWhiteboardActive()
-				? "graphicsContextMenuBtn mow" : "graphicsContextMenuBtn");
 		graphicsContextMenuBtn.getElement().setTabIndex(0);
 		TestHarness.setAttr(graphicsContextMenuBtn, "graphicsViewContextMenu");
 		graphicsContextMenuBtn.setTooltipPositionRight();
@@ -75,35 +73,19 @@ public class GraphicsControlsPanel extends FlowPanel implements DockControlPanel
 	}
 
 	/** Graphics Settings button handler */
-	private void onGraphicsSettingsPressed(DockPanelW parent) {
+	private void onGraphicsSettingsPressed() {
 		app.closeMenuHideKeyboard();
-		if (PreviewFeature.isAvailable(PreviewFeature.SETTINGS_VIEW)) {
-			app.getDialogManager().showPropertiesDialog(OptionType.GLOBAL, null);
-		} else {
-			final ContextMenuGraphicsWindowW contextMenu = parent.getGraphicsWindowContextMenu();
-
-			final GPopupPanel popup = contextMenu.getWrappedPopup().getPopupPanel();
-			popup.setPopupPositionAndShow((offsetWidth, offsetHeight) -> {
-				popup.setPopupPosition(
-						(int) app.getWidth() - offsetWidth - GEAR_CONTEXT_MENU_MARGIN,
-						GEAR_CONTEXT_MENU_MARGIN);
-				contextMenu.getWrappedPopup().getPopupMenu().focusDeferred();
-			});
-
-			popup.addCloseHandler(event -> {
-				if (event.isAutoClosed()) {
-					app.getEuclidianView1().getEuclidianController().setPopupJustClosed(true);
-				}
-			});
-		}
+		EuclidianView view = app.getActiveEuclidianView();
+		OptionType type =
+				view != null && view.isEuclidianView3D() ? OptionType.EUCLIDIAN3D : OptionType.EUCLIDIAN;
+		app.getSelectionManager().clearSelectedGeos();
+		app.getDialogManager().showPropertiesDialog(type, null);
 	}
 
 	@Override
 	public void setLabels() {
 		if (graphicsContextMenuBtn != null) {
-			String titletext = app.getLocalization().getMenu("Settings");
-			graphicsContextMenuBtn.setTitle(titletext);
-			graphicsContextMenuBtn.setAltText(titletext);
+			graphicsContextMenuBtn.setLabels();
 		}
 	}
 

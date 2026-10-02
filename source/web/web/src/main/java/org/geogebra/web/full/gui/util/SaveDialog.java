@@ -32,7 +32,7 @@ import org.gwtproject.resources.client.ImageResource;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Image;
 
-public class SaveDialog extends SaveFileDialog {
+public final class SaveDialog extends SaveFileDialog {
 	private ComponentCheckbox templateCheckbox;
 	private Image providerImage;
 	private Set<Material.Provider> availableProviders;
@@ -67,8 +67,7 @@ public class SaveDialog extends SaveFileDialog {
 	}
 
 	private void buildTemplateCheckbox(boolean visible) {
-		templateCheckbox = new ComponentCheckbox(app.getLocalization(), false,
-				"saveTemplate");
+		templateCheckbox = new ComponentCheckbox(app.getLocalization(), false, "saveTemplate");
 		addDialogContent(templateCheckbox);
 		templateCheckbox.setVisible(visible);
 	}
@@ -80,8 +79,8 @@ public class SaveDialog extends SaveFileDialog {
 		for (Material.Provider provider : availableProviders) {
 			providers.add(provider.getName());
 		}
-		locationDropDown = new ComponentDropDown((AppW) app,
-				app.getLocalization().getMenu("Location"), providers, 0);
+		locationDropDown =
+				new ComponentDropDown((AppW) app, app.getLocalization().getMenu("Location"), providers, 0);
 		locationDropDown.setFullWidth(true);
 		locationDropDown.addChangeHandler(() -> {
 			Material.Provider provider = getSelectedProvider(locationDropDown.getSelectedText());
@@ -111,8 +110,7 @@ public class SaveDialog extends SaveFileDialog {
 		if (app.getLoginOperation() != null) {
 			user = app.getLoginOperation().getModel().getLoggedInUser();
 		}
-		if (user != null && user.hasGoogleDrive()
-				&& ((AppW) app).getLAF().supportsGoogleDrive()) {
+		if (user != null && user.hasGoogleDrive() && ((AppW) app).getLAF().supportsGoogleDrive()) {
 			availableProviders.add(Material.Provider.GOOGLE);
 		}
 	}
@@ -121,8 +119,8 @@ public class SaveDialog extends SaveFileDialog {
 	public void show() {
 		super.show();
 		Material activeMaterial = app.getActiveMaterial();
-		templateCheckbox.setSelected(activeMaterial != null && Material.MaterialType.ggsTemplate
-				.equals(activeMaterial.getType()));
+		templateCheckbox.setSelected(
+				activeMaterial != null && Material.MaterialType.ggsTemplate == activeMaterial.getType());
 		updateProviderUI();
 	}
 
@@ -134,7 +132,7 @@ public class SaveDialog extends SaveFileDialog {
 			int idxOfCurrentProvider = 0;
 			Material.Provider currentProvider = ((AppW) app).getFileManager().getFileProvider();
 			for (Material.Provider provider : availableProviders) {
-				if (provider.equals(currentProvider)) {
+				if (provider == currentProvider) {
 					break;
 				}
 				idxOfCurrentProvider++;
@@ -150,13 +148,13 @@ public class SaveDialog extends SaveFileDialog {
 
 	private ImageResource getProviderIcon(Material.Provider provider) {
 		switch (provider) {
-		case GOOGLE:
-			return BrowseResources.INSTANCE.location_drive();
-		case LOCAL:
-			return BrowseResources.INSTANCE.location_local();
-		default:
-		case TUBE:
-			return BrowseResources.INSTANCE.location_tube();
+			case GOOGLE:
+				return BrowseResources.INSTANCE.location_drive();
+			case LOCAL:
+				return BrowseResources.INSTANCE.location_local();
+			default:
+			case TUBE:
+				return BrowseResources.INSTANCE.location_tube();
 		}
 	}
 

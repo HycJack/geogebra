@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -25,7 +25,6 @@ import org.geogebra.common.euclidian.DrawEquation;
 import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.euclidian3D.EuclidianView3DInterface;
 import org.geogebra.common.factories.LaTeXFactory;
-import org.geogebra.common.factories.UtilFactory;
 import org.geogebra.common.io.MyXMLio;
 import org.geogebra.common.jre.headless.ApiDelegate;
 import org.geogebra.common.jre.headless.App3DCompanionHeadless;
@@ -46,8 +45,6 @@ import org.geogebra.common.plugin.GgbAPI;
 import org.geogebra.common.plugin.ScriptManager;
 import org.geogebra.common.sound.SoundManager;
 import org.geogebra.common.util.FileExtensions;
-import org.geogebra.common.util.GTimer;
-import org.geogebra.common.util.GTimerListener;
 import org.geogebra.common.util.ImageManager;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.desktop.awt.AwtFactoryD;
@@ -55,14 +52,11 @@ import org.geogebra.desktop.awt.GBufferedImageD;
 import org.geogebra.desktop.euclidian.DrawEquationD;
 import org.geogebra.desktop.factories.LaTeXFactoryD;
 import org.geogebra.desktop.factories.LoggingCASFactoryD;
-import org.geogebra.desktop.factories.UtilFactoryD;
 import org.geogebra.desktop.io.MyXMLioD;
 import org.geogebra.desktop.kernel.geos.GeoElementGraphicsAdapterD;
 import org.geogebra.desktop.move.ggtapi.models.LoginOperationD;
-import org.geogebra.desktop.plugin.GgbAPID;
 import org.geogebra.desktop.plugin.ScriptManagerD;
 import org.geogebra.desktop.sound.SoundManagerD;
-import org.geogebra.desktop.util.GTimerD;
 import org.geogebra.desktop.util.ImageManagerD;
 
 /**
@@ -87,8 +81,6 @@ public class AppDNoGui extends AppCommon implements AppDI {
 	 */
 	public AppDNoGui(LocalizationJre loc, boolean silent) {
 		super(loc, new AwtFactoryD());
-
-		UtilFactory.setPrototypeIfNull(new UtilFactoryD());
 		loginOperation = new LoginOperationD();
 		setCASFactory(new LoggingCASFactoryD());
 	}
@@ -99,8 +91,7 @@ public class AppDNoGui extends AppCommon implements AppDI {
 	}
 
 	@Override
-	public MyImage getExportImage(double thumbnailPixelsX,
-			double thumbnailPixelsY) {
+	public MyImage getExportImage(double thumbnailPixelsX, double thumbnailPixelsY) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -117,9 +108,7 @@ public class AppDNoGui extends AppCommon implements AppDI {
 	 */
 	public void setLanguage(Locale locale) {
 
-		if ((locale == null)
-				|| getLocalization().getLocale().toString()
-						.equals(locale.toString())) {
+		if ((locale == null) || getLocalization().getLocale().toString().equals(locale.toString())) {
 			return;
 		}
 
@@ -172,13 +161,7 @@ public class AppDNoGui extends AppCommon implements AppDI {
 	}
 
 	@Override
-	public GTimer newTimer(GTimerListener listener, int delay) {
-		return new GTimerD(listener, delay);
-	}
-
-	@Override
-	public MyImage getExternalImageAdapter(String filename, int width,
-			int height) {
+	public MyImage getExternalImageAdapter(String filename, int width, int height) {
 		return ImageManagerD.getStaticExternalImage(filename);
 	}
 
@@ -200,8 +183,7 @@ public class AppDNoGui extends AppCommon implements AppDI {
 	@Override
 	public EuclidianView3DInterface getEuclidianView3D() {
 		return ev3d = new EuclidianView3DNoGui(
-				new EuclidianController3DNoGui(this, kernel),
-				this.getSettings().getEuclidian(3));
+				new EuclidianController3DNoGui(this, kernel), this.getSettings().getEuclidian(3));
 	}
 
 	@Override
@@ -224,30 +206,28 @@ public class AppDNoGui extends AppCommon implements AppDI {
 		return new ScriptManagerD(this);
 	}
 
-	private class GgbApiDelegateHeadless implements ApiDelegate {
+	private final class GgbApiDelegateHeadless implements ApiDelegate {
 
 		@Override
 		public void openFile(String strURL) {
 			try {
 				String lowerCase = StringUtil.toLowerCaseUS(strURL);
 				URL url = new URL(strURL);
-				GFileHandler.loadXML(AppDNoGui.this, url.openStream(),
-						lowerCase.endsWith(FileExtensions.GEOGEBRA_TOOL
-								.toString()));
+				GFileHandler.loadXML(
+						AppDNoGui.this,
+						url.openStream(),
+						lowerCase.endsWith(FileExtensions.GEOGEBRA_TOOL.toString()));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		}
 
 		@Override
-		public String base64encodePNG(boolean transparent,
-				double DPI, double exportScale, EuclidianView ev) {
+		public String base64encodePNG(
+				boolean transparent, double DPI, double exportScale, EuclidianView ev) {
 			ev.updateBackground();
-			GBufferedImage img = ev
-					.getExportImage(exportScale, transparent,
-							ExportType.PNG);
-			return GBufferedImageD.base64encode(
-					GBufferedImageD.getAwtBufferedImage(img), DPI);
+			GBufferedImage img = ev.getExportImage(exportScale, transparent, ExportType.PNG);
+			return GBufferedImageD.base64encode(GBufferedImageD.getAwtBufferedImage(img), DPI);
 		}
 	}
 }

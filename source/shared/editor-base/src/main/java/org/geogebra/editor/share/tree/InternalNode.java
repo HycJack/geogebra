@@ -26,7 +26,7 @@ import org.geogebra.editor.share.tree.traverse.Traversing;
 /**
  * This class represents abstract model element.
  */
-abstract public class InternalNode extends Node implements Iterable<Node> {
+public abstract class InternalNode extends Node implements Iterable<Node> {
 
 	/**
 	 * List of child nodes
@@ -62,28 +62,21 @@ abstract public class InternalNode extends Node implements Iterable<Node> {
 
 			char newChar = comp.toString().charAt(0);
 
-			if (!Korean.isSingleKoreanChar(newChar)) {
+			if (!Korean.isSingleKoreanChar(newChar) || s.length() != 1) {
 				return false;
 			}
 
-			char lastChar = 0;
-
-			if (s.length() == 1) {
-				lastChar = s.charAt(0);
-			} else {
-				return false;
-			}
+			char lastChar = s.charAt(0);
 
 			char[] ret = Korean.checkMerge(lastChar, newChar);
 
 			// check if "previous" char needs changing
 			if (ret[0] != lastChar) {
-				CharacterTemplate characterComponent = new CharacterTemplate(
-						ret[0] + "", ret[0], CharacterTemplate.TYPE_CHARACTER);
+				CharacterTemplate characterComponent =
+						new CharacterTemplate(ret[0] + "", ret[0], CharacterTemplate.TYPE_CHARACTER);
 
 				CharacterNode mathChar = (CharacterNode) compLast;
 				mathChar.setChar(characterComponent);
-
 			}
 
 			char newNewChar = ret[1];
@@ -99,16 +92,14 @@ abstract public class InternalNode extends Node implements Iterable<Node> {
 			}
 
 			CharacterNode mathChar = (CharacterNode) comp;
-			mathChar.setChar(new CharacterTemplate(newNewChar + "",
-					newNewChar, CharacterTemplate.TYPE_CHARACTER));
+			mathChar.setChar(
+					new CharacterTemplate(newNewChar + "", newNewChar, CharacterTemplate.TYPE_CHARACTER));
 
 			// make sure comp is still inserted
 			return false;
-
 		}
 
 		return false;
-
 	}
 
 	/**
@@ -132,8 +123,7 @@ abstract public class InternalNode extends Node implements Iterable<Node> {
 	 * @return argument
 	 */
 	public Node getChild(int i) {
-		return children != null && children.size() > i && i >= 0
-				? children.get(i) : null;
+		return children != null && children.size() > i && i >= 0 ? children.get(i) : null;
 	}
 
 	/**
@@ -434,7 +424,8 @@ abstract public class InternalNode extends Node implements Iterable<Node> {
 			return false;
 		}
 
-		return getParent() != null && getParent().getParent() != null
+		return getParent() != null
+				&& getParent().getParent() != null
 				&& getParent().getParent().isProtected
 				&& children.get(index).isFieldSeparator();
 	}
@@ -479,5 +470,14 @@ abstract public class InternalNode extends Node implements Iterable<Node> {
 	 */
 	public boolean isRenderingOwnPlaceholders() {
 		return false;
+	}
+
+	/**
+	 * Whether this node is equal or ancestor of the other node.
+	 * @param other potential child node
+	 * @return whether this node is equal or ancestor of the other node.
+	 */
+	public boolean isOrHasChild(InternalNode other) {
+		return this == other || (other.getParent() != null && isOrHasChild(other.getParent()));
 	}
 }

@@ -2,23 +2,23 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.geos.symbolic;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.gui.view.algebra.EvalInfoFactory;
@@ -36,10 +36,10 @@ import org.geogebra.editor.share.util.Unicode;
 import org.geogebra.test.annotation.Issue;
 import org.geogebra.test.commands.ErrorAccumulator;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class SymbolicRegressionTest extends BaseUnitTest {
+class SymbolicRegressionTest extends BaseUnitTest {
 
 	private TableValuesView view;
 
@@ -48,8 +48,8 @@ public class SymbolicRegressionTest extends BaseUnitTest {
 		return new AppDNoGui(new LocalizationD(3), false);
 	}
 
-	@Before
-	public void setupTable() {
+	@BeforeEach
+	void setupTable() {
 		GeoList list = add("x_1={1,2,3,4}");
 		GeoList listY = add("y_1={1,8,27,64}");
 		getApp().setCasConfig();
@@ -63,7 +63,7 @@ public class SymbolicRegressionTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-3360")
-	public void columnsShouldNotBeSymbolic() {
+	void columnsShouldNotBeSymbolic() {
 		reload();
 		assertThat(lookup("x_1").getGeoClassType(), equalTo(GeoClass.LIST));
 		assertThat(lookup("y_1").getGeoClassType(), equalTo(GeoClass.LIST));
@@ -71,27 +71,28 @@ public class SymbolicRegressionTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-4104")
-	public void regressionShouldNotBeSymbolic() {
-		GeoElement regression = view.plotRegression(1,
-				new RegressionSpecificationBuilder().getForListSize(3).get(0));
+	void regressionShouldNotBeSymbolic() {
+		GeoElement regression = view.plotRegression(
+				1, new RegressionSpecificationBuilder().getForListSize(3).get(0));
 		assertThat(regression.getGeoClassType(), CoreMatchers.is(GeoClass.FUNCTION));
 		assertEquals("f", regression.getLabelSimple());
-		EvalInfo info = EvalInfoFactory.getEvalInfoForRedefinition(getKernel(),
-				regression, true);
+		EvalInfo info = EvalInfoFactory.getEvalInfoForRedefinition(getKernel(), regression, true);
 		ErrorAccumulator handler = new ErrorAccumulator();
-		getKernel().getAlgebraProcessor().changeGeoElementNoExceptionHandling(regression,
-				"FitPoly(RemoveUndefined((x_1,y_1)),3)+1", info, false,
-				null, handler);
+		getKernel()
+				.getAlgebraProcessor()
+				.changeGeoElementNoExceptionHandling(
+						regression, "FitPoly(RemoveUndefined((x_1,y_1)),3)+1", info, false, null, handler);
 		assertThat(lookup("f"), hasValue("x³ + 1"));
 		reload();
 		assertThat(lookup("f"), hasValue("x³ + 1"));
-		getKernel().getAlgebraProcessor().changeGeoElementNoExceptionHandling(lookup("f"),
-				"FitLogistic(RemoveUndefined((x_1,y_1)))+1", info, false,
-				null, handler);
+		getKernel()
+				.getAlgebraProcessor()
+				.changeGeoElementNoExceptionHandling(
+						lookup("f"), "FitLogistic(RemoveUndefined((x_1,y_1)))+1", info, false, null, handler);
 		GeoElement numeric = add("Numeric(f,2)");
-		assertThat(numeric, hasValue("(260e^(-1.5 x) + 111) / (260e^(-1.5 x) + 1)"
-				.replace("e", Unicode.EULER_STRING)));
+		assertThat(
+				numeric,
+				hasValue("(260e^(-1.5 x) + 111) / (260e^(-1.5 x) + 1)".replace("e", Unicode.EULER_STRING)));
 		assertEquals("", handler.getErrors());
 	}
-
 }

@@ -27,7 +27,7 @@ import org.geogebra.web.html5.main.AppW;
 /**
  * Line style popup
  */
-public class EuclidianLineStylePopup extends LineStylePopup {
+public final class EuclidianLineStylePopup extends LineStylePopup {
 	private final LineStyleModel model;
 
 	/**
@@ -35,8 +35,7 @@ public class EuclidianLineStylePopup extends LineStylePopup {
 	 *            application
 	 */
 	public EuclidianLineStylePopup(AppW app) {
-		super(app, LineStylePopup.getLineStyleIcons(), -1, 5,
-				SelectionTable.MODE_ICON, true, true);
+		super(app, LineStylePopup.getLineStyleIcons(), -1, 5, SelectionTable.MODE_ICON, true, true);
 		model = new LineStyleModel(app);
 		this.setKeepVisible(false);
 	}
@@ -57,6 +56,7 @@ public class EuclidianLineStylePopup extends LineStylePopup {
 			if (hasSlider()) {
 				setSliderValue(geo0.getLineThickness());
 				getSlider().setMinimum(model.maxMinimumThickness());
+				getSlider().setMaximum(model.minMaximumThickness());
 			}
 			selectLineType(geo0.getLineType());
 		}

@@ -29,9 +29,9 @@ import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.Test;
 
-public class DynamicColorModePropertyTests extends BaseAppTestSetup {
+class DynamicColorModePropertyTests extends BaseAppTestSetup {
 	@Test
-	public void testSwitchingDynamicColorMode() {
+	void testSwitchingDynamicColorMode() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoElement geoElement = evaluateGeoElement("(1, 2)");
 		DynamicColorModeProperty dynamicColorModeProperty =
@@ -47,18 +47,24 @@ public class DynamicColorModePropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testDefaultRGBColor() {
+	void testDefaultRGBColor() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoElement geoElement = evaluateGeoElement("(1, 2)");
 		GColor color = geoElement.getObjectColor();
 		DynamicColorModeProperty.activateDynamicColorMode(geoElement);
 
 		assertEquals(GeoElement.COLORSPACE_RGB, geoElement.getColorSpace());
-		assertEquals(color.getRed() / 255d,
-				((GeoNumeric) geoElement.getColorFunction().get(0)).getValue(), 0.000001);
-		assertEquals(color.getGreen() / 255d,
-				((GeoNumeric) geoElement.getColorFunction().get(1)).getValue(), 0.000001);
-		assertEquals(color.getBlue() / 255d,
-				((GeoNumeric) geoElement.getColorFunction().get(2)).getValue(), 0.000001);
+		assertEquals(
+				color.getRed() / 255d,
+				((GeoNumeric) geoElement.getColorFunction().get(0)).getValue(),
+				0.000001);
+		assertEquals(
+				color.getGreen() / 255d,
+				((GeoNumeric) geoElement.getColorFunction().get(1)).getValue(),
+				0.000001);
+		assertEquals(
+				color.getBlue() / 255d,
+				((GeoNumeric) geoElement.getColorFunction().get(2)).getValue(),
+				0.000001);
 	}
 }

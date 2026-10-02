@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.AngleProperties;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoAngle;
@@ -29,12 +27,13 @@ import org.geogebra.common.properties.IconsEnumeratedProperty;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 public class AngleDecorationProperty extends AbstractEnumeratedProperty<Integer>
 		implements IconsEnumeratedProperty<Integer> {
 
 	private static List<Integer> values = List.of(GeoAngle.getDecoTypes());
-	private final GeoElement element;
+	private final AngleProperties element;
 
 	/**
 	 * @param localization localization
@@ -43,24 +42,27 @@ public class AngleDecorationProperty extends AbstractEnumeratedProperty<Integer>
 	public AngleDecorationProperty(Localization localization, GeoElement element)
 			throws NotApplicablePropertyException {
 		super(localization, "Decoration");
+		if (element instanceof GeoAngle angle && angle.isSlider()) {
+			throw new NotApplicablePropertyException(element); // don't show for angle sliders
+		}
 		if (!(element instanceof AngleProperties)) {
 			throw new NotApplicablePropertyException(element);
 		}
+		this.element = (AngleProperties) element;
 		setValues(values);
-		this.element = element;
 	}
 
 	@Override
 	public PropertyResource[] getValueIcons() {
 		return new PropertyResource[] {
-				PropertyResource.ICON_ANGLE_DECO_NONE,
-				PropertyResource.ICON_ANGLE_DECO_TWO_ARCS,
-				PropertyResource.ICON_ANGLE_DECO_THREE_ARCS,
-				PropertyResource.ICON_ANGLE_DECO_ONE_TICK,
-				PropertyResource.ICON_ANGLE_DECO_TWO_TICKS,
-				PropertyResource.ICON_ANGLE_DECO_THREE_TICKS,
-				PropertyResource.ICON_ANGLE_DECO_ARROW_ANTICLOCKWISE,
-				PropertyResource.ICON_ANGLE_DECO_ARROW_CLOCKWISE
+			PropertyResource.ICON_ANGLE_DECO_NONE,
+			PropertyResource.ICON_ANGLE_DECO_TWO_ARCS,
+			PropertyResource.ICON_ANGLE_DECO_THREE_ARCS,
+			PropertyResource.ICON_ANGLE_DECO_ONE_TICK,
+			PropertyResource.ICON_ANGLE_DECO_TWO_TICKS,
+			PropertyResource.ICON_ANGLE_DECO_THREE_TICKS,
+			PropertyResource.ICON_ANGLE_DECO_ARROW_ANTICLOCKWISE,
+			PropertyResource.ICON_ANGLE_DECO_ARROW_CLOCKWISE
 		};
 	}
 
@@ -76,7 +78,7 @@ public class AngleDecorationProperty extends AbstractEnumeratedProperty<Integer>
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 }

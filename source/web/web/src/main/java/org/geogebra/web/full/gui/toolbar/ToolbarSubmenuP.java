@@ -23,7 +23,7 @@ import org.geogebra.web.html5.gui.util.UnorderedList;
 import org.geogebra.web.html5.main.AppW;
 import org.gwtproject.user.client.ui.Image;
 
-public class ToolbarSubmenuP extends ToolbarSubmenuW {
+public final class ToolbarSubmenuP extends ToolbarSubmenuW {
 
 	/**
 	 * @param app
@@ -64,7 +64,6 @@ public class ToolbarSubmenuP extends ToolbarSubmenuW {
 	@Override
 	public void setVisible(boolean visible) {
 		setStyleName("visible", visible);
-
 	}
 
 	/**
@@ -74,5 +73,4 @@ public class ToolbarSubmenuP extends ToolbarSubmenuW {
 		int count = this.getItemList().getWidgetCount();
 		return count;
 	}
-
 }

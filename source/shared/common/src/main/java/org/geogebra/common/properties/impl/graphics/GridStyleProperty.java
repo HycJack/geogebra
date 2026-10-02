@@ -20,14 +20,13 @@ import static java.util.Map.entry;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.properties.IconsEnumeratedProperty;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.impl.AbstractNamedEnumeratedProperty;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This property controls the style of the grid.
@@ -37,10 +36,13 @@ public class GridStyleProperty extends AbstractNamedEnumeratedProperty<Integer>
 
 	private final EuclidianSettings euclidianSettings;
 
-	private static final PropertyResource[] icons = new PropertyResource[]{
-			PropertyResource.ICON_CARTESIAN,
-			PropertyResource.ICON_CARTESIAN_MINOR, PropertyResource.ICON_POLAR,
-			PropertyResource.ICON_ISOMETRIC, PropertyResource.ICON_DOTS};
+	private static final PropertyResource[] icons = new PropertyResource[] {
+		PropertyResource.ICON_CARTESIAN,
+		PropertyResource.ICON_CARTESIAN_MINOR,
+		PropertyResource.ICON_POLAR,
+		PropertyResource.ICON_ISOMETRIC,
+		PropertyResource.ICON_DOTS
+	};
 
 	/**
 	 * Controls a grid style property.
@@ -79,7 +81,7 @@ public class GridStyleProperty extends AbstractNamedEnumeratedProperty<Integer>
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 }

@@ -18,8 +18,6 @@ package org.geogebra.web.html5.gui;
 
 import java.util.ArrayList;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.SymbolicEditor;
 import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.common.ownership.GlobalScope;
@@ -54,6 +52,7 @@ import org.gwtproject.user.client.DOM;
 import org.gwtproject.user.client.Event;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.RootPanel;
+import org.jspecify.annotations.Nullable;
 
 import jsinterop.base.Js;
 
@@ -61,19 +60,19 @@ import jsinterop.base.Js;
  * The main frame containing every view / menu bar / .... This Panel (Frame is
  * resize able)
  */
-public abstract class GeoGebraFrameW extends FlowPanel implements
-		HasAppletProperties {
+public abstract class GeoGebraFrameW extends FlowPanel implements HasAppletProperties {
 	private static final String APPLET_FOCUSED_CLASSNAME = "applet-focused";
 	private static final String APPLET_UNFOCUSED_CLASSNAME = "applet-unfocused";
 	private static final ArrayList<GeoGebraFrameW> instances = new ArrayList<>();
 	private static final int SMALL_SCREEN_HEADER_HEIGHT = 48;
+	private static final double COMPACT_WIDTH = 600;
 	/** The application */
 	protected AppW app;
 
 	/**
 	 * Splash Dialog to get it work quickly
 	 */
-	private @CheckForNull SplashDialog splash;
+	private @Nullable SplashDialog splash;
 
 	private static final int LOGO_WIDTH = 427;
 
@@ -81,6 +80,7 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 
 	/** GeoGebra element */
 	private GeoGebraElement geoGebraElement;
+
 	private AppletParameters appletParameters;
 
 	private int computedWidth = 0;
@@ -100,8 +100,9 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 		this.laf = laf;
 		instances.add(this);
 		addStyleName("GeoGebraFrame");
-		DOM.sinkEvents(this.getElement(), Event.ONMOUSEDOWN | Event.ONMOUSEMOVE
-				| Event.ONMOUSEUP | Event.ONMOUSEOVER);
+		DOM.sinkEvents(
+				this.getElement(),
+				Event.ONMOUSEDOWN | Event.ONMOUSEMOVE | Event.ONMOUSEUP | Event.ONMOUSEOVER);
 		if (mainTag) {
 			getElement().setAttribute("role", "main");
 		}
@@ -115,8 +116,8 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * @param geoGebraElement
 	 *            applet parameters
 	 */
-	public GeoGebraFrameW(GLookAndFeelI laf, GeoGebraElement geoGebraElement,
-			AppletParameters appletParameters) {
+	public GeoGebraFrameW(
+			GLookAndFeelI laf, GeoGebraElement geoGebraElement, AppletParameters appletParameters) {
 		this(laf, appletParameters.getDataParamFitToScreen());
 		this.geoGebraElement = geoGebraElement;
 		this.appletParameters = appletParameters;
@@ -133,7 +134,7 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * Hide tooltips in all instances
 	 */
 	public static void hideAllTooltips() {
-		for (GeoGebraFrameW frame: instances) {
+		for (GeoGebraFrameW frame : instances) {
 			AppW instance = frame.getApp();
 			if (instance != null) {
 				instance.getToolTipManager().hideTooltip();
@@ -164,10 +165,6 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * The application loading continues in the splashDialog onLoad handler
 	 */
 	public void createSplash() {
-
-		int splashWidth = LOGO_WIDTH;
-		int splashHeight = LOGO_HEIGHT;
-
 		// to not touch the DOM twice when computing width and height
 		preProcessFitToScreen();
 
@@ -175,9 +172,10 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 		int height = computeHeight();
 
 		boolean showLogo = (width >= LOGO_WIDTH) && (height >= LOGO_HEIGHT);
-		SplashDialog splashPopup = new SplashDialog(showLogo, geoGebraElement,
-				appletParameters, this);
+		SplashDialog splashPopup = new SplashDialog(showLogo, geoGebraElement, appletParameters, this);
 		this.splash = splashPopup;
+		int splashWidth = LOGO_WIDTH;
+		int splashHeight = LOGO_HEIGHT;
 		if (splashPopup.isPreviewExists()) {
 			splashWidth = width;
 			splashHeight = height;
@@ -200,14 +198,11 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 			setHeight(height + "px"); // 2: border
 			// Styleshet not loaded yet, add CSS directly
 			splashPopup.getElement().getStyle().setPosition(Position.RELATIVE);
-			splashPopup.getElement().getStyle()
-					.setTop((height - splashHeight) / 2d, Unit.PX);
+			splashPopup.getElement().getStyle().setTop((height - splashHeight) / 2d, Unit.PX);
 			if (!geoGebraElement.isRTL()) {
-				splashPopup.getElement().getStyle()
-					.setLeft((width - splashWidth) / 2d, Unit.PX);
+				splashPopup.getElement().getStyle().setLeft((width - splashWidth) / 2d, Unit.PX);
 			} else {
-				splashPopup.getElement().getStyle()
-						.setRight((width - splashWidth) / 2d, Unit.PX);
+				splashPopup.getElement().getStyle().setRight((width - splashWidth) / 2d, Unit.PX);
 			}
 			useDataParamBorder();
 		}
@@ -222,8 +217,7 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 
 	private void preProcessFitToScreen() {
 		if (appletParameters.getDataParamFitToScreen()) {
-			Document.get().getDocumentElement().getStyle()
-					.setHeight(100, Unit.PCT);
+			Document.get().getDocumentElement().getStyle().setHeight(100, Unit.PCT);
 			RootPanel.getBodyElement().getStyle().setHeight(100, Unit.PCT);
 			RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 			updateArticleHeight();
@@ -281,16 +275,15 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * @return whether the header should be hidden or not
 	 */
 	public boolean shouldHideHeader() {
-		return forcedHeaderHidden
-				|| appletParameters.getDataParamMarginTop() <= 0;
+		return forcedHeaderHidden || appletParameters.getDataParamMarginTop() <= 0;
 	}
 
 	/**
 	 * @return True if the frame is shown in a small window or if it has a compact header.
 	 */
 	public boolean hasSmallWindowOrCompactHeader() {
-		boolean isClassicOrMebis = app != null
-				&& ("classic".equals(app.getConfig().getAppCode()) || app.isByCS());
+		boolean isClassicOrMebis =
+				app != null && ("classic".equals(app.getConfig().getAppCode()) || app.isByCS());
 		if (isClassicOrMebis) {
 			return hasSmallWindow();
 		}
@@ -312,12 +305,13 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * @return whether navigation rail should be compact (based on app width)
 	 */
 	public boolean hasCompactNavigationRail() {
-		return app.getWidth() < 600;
+		return app.getWidth() < COMPACT_WIDTH;
 	}
 
 	private void setHeightWithCompactHeader() {
-		geoGebraElement.getStyle().setProperty("height",
-				"calc(100% - " + getSmallScreenHeaderHeight() + "px)");
+		geoGebraElement
+				.getStyle()
+				.setProperty("height", "calc(100% - " + getSmallScreenHeaderHeight() + "px)");
 	}
 
 	/**
@@ -329,8 +323,7 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 
 	private void setHeightWithTallHeader() {
 		int headerHeight = appletParameters.getDataParamMarginTop();
-		geoGebraElement.getStyle().setProperty("height",
-				"calc(100% - " + headerHeight + "px)");
+		geoGebraElement.getStyle().setProperty("height", "calc(100% - " + headerHeight + "px)");
 	}
 
 	/**
@@ -464,8 +457,7 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 		setBorder(geoGebraElement, getStyleElement(), dpBorder, px);
 	}
 
-	private static void setBorder(GeoGebraElement ae, Element gfE,
-			String dpBorder, int px) {
+	private static void setBorder(GeoGebraElement ae, Element gfE, String dpBorder, int px) {
 		ae.getStyle().setBorderWidth(0, Unit.PX);
 		gfE.getStyle().setBorderWidth(px, Unit.PX);
 		gfE.getStyle().setBorderStyle(BorderStyle.SOLID);
@@ -485,12 +477,9 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 		} else {
 			setBorder(dpBorder, thickness);
 		}
-		getElement().getStyle().setProperty("borderRadius",
-				appletParameters.getBorderRadius() + "px");
-		getElement().removeClassName(
-				APPLET_FOCUSED_CLASSNAME);
-		getElement().addClassName(
-				APPLET_UNFOCUSED_CLASSNAME);
+		getElement().getStyle().setProperty("borderRadius", appletParameters.getBorderRadius() + "px");
+		getElement().removeClassName(APPLET_FOCUSED_CLASSNAME);
+		getElement().addClassName(APPLET_UNFOCUSED_CLASSNAME);
 		geoGebraElement.getStyle().setOutlineStyle(OutlineStyle.NONE);
 	}
 
@@ -500,10 +489,8 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 */
 	public void useFocusedBorder() {
 		String dpBorder = appletParameters.getDataParamBorder("");
-		getElement().removeClassName(
-				APPLET_UNFOCUSED_CLASSNAME);
-		getElement()
-				.addClassName(APPLET_FOCUSED_CLASSNAME);
+		getElement().removeClassName(APPLET_UNFOCUSED_CLASSNAME);
+		getElement().addClassName(APPLET_FOCUSED_CLASSNAME);
 		int thickness = appletParameters.getBorderThickness() / 2;
 		if ("none".equals(dpBorder)) {
 			setBorder("transparent", thickness);
@@ -524,16 +511,15 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 
 			if (app.isApplet()) {
 				Event.sinkEvents(geoGebraElement.getElement(), Event.KEYEVENTS);
-				Event.setEventListener(geoGebraElement.getElement(),
-						app.getGlobalKeyDispatcher().getGlobalShortcutHandler());
+				Event.setEventListener(
+						geoGebraElement.getElement(), app.getGlobalKeyDispatcher().getGlobalShortcutHandler());
 			} else {
 				Element parent = geoGebraElement.getParentElement();
 				if (parent != null) {
 					Element grandparent = parent.getParentElement();
 					if (grandparent != null) {
 						Event.sinkEvents(parent, Event.KEYEVENTS);
-						Event.setEventListener(parent,
-								app.getGlobalKeyDispatcher().getGlobalShortcutHandler());
+						Event.setEventListener(parent, app.getGlobalKeyDispatcher().getGlobalShortcutHandler());
 					}
 				}
 			}
@@ -566,8 +552,7 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * @param app
 	 *            app
 	 */
-	public static void handleLoadFile(AppletParameters articleElement,
-			AppW app) {
+	public static void handleLoadFile(AppletParameters articleElement, AppW app) {
 		new LoadFilePresenter().onPageLoad(articleElement, app);
 	}
 
@@ -609,8 +594,8 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 *            look and feel
 	 * @return the newly created instance of Application
 	 */
-	protected abstract AppW createApplication(GeoGebraElement article,
-			AppletParameters parameters, GLookAndFeelI lookAndFeel);
+	protected abstract AppW createApplication(
+			GeoGebraElement article, AppletParameters parameters, GLookAndFeelI lookAndFeel);
 
 	@Override
 	public void onBrowserEvent(Event event) {
@@ -708,7 +693,8 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	@Override
 	public void resetAutoSize() {
 		if (app.getAppletParameters().getDataParamWidth() > 0) {
-			setFramePixelSize(app.getAppletParameters().getDataParamWidth(),
+			setFramePixelSize(
+					app.getAppletParameters().getDataParamWidth(),
 					app.getAppletParameters().getDataParamHeight());
 		}
 	}
@@ -730,9 +716,8 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * @param onLoadCallback
 	 *            load callback
 	 */
-	public void renderArticleElementWithFrame(GeoGebraElement element,
-			AttributeProvider provider,
-			JsConsumer<Object> onLoadCallback) {
+	public void renderArticleElementWithFrame(
+			GeoGebraElement element, AttributeProvider provider, JsConsumer<Object> onLoadCallback) {
 		element.clear();
 		element.initID(0, provider);
 		if (Log.getLogger() == null) {
@@ -793,8 +778,7 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 	 * @param scale scale-up factor
 	 */
 	public void getScreenshotBase64(StringConsumer callback, double scale) {
-		String imageDataUrl = app.getEuclidianView1()
-				.getExportImageDataUrl(scale, false, false);
+		String imageDataUrl = app.getEuclidianView1().getExportImageDataUrl(scale, false, false);
 		callback.consume(StringUtil.removePngMarker(imageDataUrl));
 	}
 }

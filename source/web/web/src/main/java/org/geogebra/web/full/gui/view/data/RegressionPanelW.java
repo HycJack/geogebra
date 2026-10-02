@@ -27,7 +27,7 @@ import org.geogebra.common.kernel.statistics.Regression;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.error.ErrorHelper;
 import org.geogebra.common.util.debug.Log;
-import org.geogebra.web.html5.gui.inputfield.AutoCompleteTextFieldW;
+import org.geogebra.web.full.gui.view.probcalculator.MathTextFieldW;
 import org.geogebra.web.html5.gui.util.LayoutUtilW;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.main.DrawEquationW;
@@ -40,10 +40,10 @@ import org.gwtproject.user.client.ui.ScrollPanel;
 
 /**
  * Panel to select and display the DataAnalysisView regression model.
- * 
+ *
  * @author G. Sturr, Laszlo Gal
  */
-public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
+public final class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 
 	private final AppW app;
 	private final LocalizationW loc;
@@ -55,7 +55,7 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 	private ListBox lbRegression;
 	private ListBox lbPolyOrder;
 	private Label lblEvaluate;
-	private AutoCompleteTextFieldW fldInputX;
+	private MathTextFieldW fldInputX;
 
 	private String[] regressionLabels;
 	private Label fldOutputY;
@@ -70,7 +70,7 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 
 	/**
 	 * Construct a regression panel
-	 * 
+	 *
 	 * @param app
 	 *            application
 	 * @param statDialog
@@ -94,22 +94,22 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 
 	private void createRegressionPanel() {
 		// components
-		String[] orders = { "2", "3", "4", "5", "6", "7", "8", "9" };
+		String[] orders = {"2", "3", "4", "5", "6", "7", "8", "9"};
 		lbPolyOrder = new ListBox();
-		for (String item: orders) {
+		for (String item : orders) {
 			lbPolyOrder.addItem(item);
 		}
-		
+
 		lbPolyOrder.setSelectedIndex(0);
 		lbPolyOrder.addChangeHandler(event -> onOrderChange());
 
 		regressionLabels = new String[Regression.values().length];
 		setRegressionLabels(app.getLocalization());
 		lbRegression = new ListBox();
-		for (String item: regressionLabels) {
+		for (String item : regressionLabels) {
 			lbRegression.addItem(item);
 		}
-		
+
 		lbRegression.addChangeHandler(event -> onRegressionChange());
 
 		lblEqn = new Label();
@@ -143,7 +143,7 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 		FlowPanel regressionPanel = new FlowPanel();
 		regressionPanel.add(regressionTitle);
 		regressionPanel.add(LayoutUtilW.panelRow(lbPanel, modelPanel));
-		
+
 		add(regressionPanel);
 	}
 
@@ -152,18 +152,27 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 	 */
 	private void createPredictionPanel() {
 		lblEvaluate = new Label();
-		fldInputX = new AutoCompleteTextFieldW(6, app);
-		
-		fldInputX.addEnterPressHandler(() -> doTextFieldActionPerformed(fldInputX));
-		fldInputX.enableGGBKeyboard();
+		fldInputX = new MathTextFieldW(app);
+
+		fldInputX.addChangeHandler(enter -> {
+			if (enter) {
+				doTextFieldActionPerformed(fldInputX);
+			}
+		});
+		fldInputX.addBlurHandler(event -> doTextFieldActionPerformed(fldInputX));
 
 		Label lblOutputY = new Label();
 		fldOutputY = new Label();
 
 		predictionPanel = new FlowPanel();
-		
-		predictionPanel.add(LayoutUtilW.panelRow(lblEvaluate, new Label("x = "), fldInputX,
-				new Label("y = "), lblOutputY, fldOutputY));
+		predictionPanel.add(LayoutUtilW.panelRow(
+				"evaluationRow",
+				lblEvaluate,
+				new Label("x = "),
+				fldInputX,
+				new Label("y = "),
+				lblOutputY,
+				fldOutputY));
 	}
 
 	/**
@@ -212,8 +221,7 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 		}
 
 		lbRegression.setSelectedIndex(j);
-		regressionTitle.setText(loc
-				.getMenu("RegressionModel"));
+		regressionTitle.setText(loc.getMenu("RegressionModel"));
 		lblEqn.setText(loc.getMenu("Equation") + ":");
 
 		lblEvaluate.setText(loc.getMenu("Evaluate") + ": ");
@@ -230,30 +238,27 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 			// prepare number format
 			StringTemplate highPrecision;
 			if (daModel.getPrintDecimals() >= 0) {
-				highPrecision = StringTemplate.printDecimals(StringType.LATEX,
-						daModel.getPrintDecimals(), false);
+				highPrecision =
+						StringTemplate.printDecimals(StringType.LATEX, daModel.getPrintDecimals(), false);
 			} else {
-				highPrecision = StringTemplate.printFigures(StringType.LATEX,
-						daModel.getPrintFigures(), false);
+				highPrecision =
+						StringTemplate.printFigures(StringType.LATEX, daModel.getPrintFigures(), false);
 			}
 
 			// no regression
-			if (daModel.getRegressionMode().equals(Regression.NONE)
+			if (daModel.getRegressionMode() == Regression.NONE
 					|| statDialog.getRegressionModel() == null) {
 				eqn = "";
 			} else {
-				eqn = "y = "
-						+ statDialog.getRegressionModel().getFormulaString(
-								highPrecision, true);
+				eqn = "y = " + statDialog.getRegressionModel().getFormulaString(highPrecision, true);
 			}
 		} catch (Exception e) {
 			Log.debug(e);
 			eqn = "\\text{" + loc.getMenu("NotAvailable") + "}";
 		}
 
-		DrawEquationW.paintOnCanvas(sample, eqn, latexCanvas,
-				app.getFontSize());
-		
+		DrawEquationW.paintOnCanvas(sample, eqn, latexCanvas, app.getFontSize());
+
 		updateGUI();
 	}
 
@@ -265,10 +270,8 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 	}
 
 	private void updateGUI() {
-		lbPolyOrder.setVisible(daModel.getRegressionMode().equals(
-				Regression.POLY));
-		predictionPanel.setVisible(!daModel.getRegressionMode()
-				.equals(Regression.NONE));
+		lbPolyOrder.setVisible(daModel.getRegressionMode() == Regression.POLY);
+		predictionPanel.setVisible(daModel.getRegressionMode() != Regression.NONE);
 	}
 
 	private void onRegressionChange() {
@@ -286,7 +289,7 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 		daModel.setRegressionMode(Regression.POLY.ordinal());
 	}
 
-	private void doTextFieldActionPerformed(AutoCompleteTextFieldW source) {
+	private void doTextFieldActionPerformed(MathTextFieldW source) {
 		if (isIniting) {
 			return;
 		}
@@ -294,19 +297,18 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 		if (source == fldInputX) {
 			try {
 				String inputText = source.getText().trim();
-				if (inputText.length() == 0) {
+				if (inputText.isEmpty()) {
 					return;
 				}
 
 				NumberValue nv;
-				nv = app.getKernel().getAlgebraProcessor()
+				nv = app.getKernel()
+						.getAlgebraProcessor()
 						.evaluateToNumeric(inputText, ErrorHelper.silent());
 				double value = nv.getDouble();
-				double output = ((GeoFunctionable) statDialog
-						.getRegressionModel()).value(value);
+				double output = ((GeoFunctionable) statDialog.getRegressionModel()).value(value);
 
 				fldOutputY.setText(statDialog.format(output));
-
 			} catch (Exception e) {
 				Log.debug(e);
 			}
@@ -318,6 +320,9 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 		// TODO Auto-generated method stub
 	}
 
+	/**
+	 * @return index of the selected regression model.
+	 */
 	public int getRegressionIdx() {
 		return lbRegression.getSelectedIndex();
 	}
@@ -329,5 +334,4 @@ public class RegressionPanelW extends FlowPanel implements StatPanelInterfaceW {
 	public void setRegressionIdx(int idx) {
 		lbRegression.setSelectedIndex(idx);
 	}
-
 }

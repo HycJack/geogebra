@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoSegment;
@@ -28,13 +26,12 @@ import org.geogebra.common.properties.IconsEnumeratedProperty;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 public class SegmentDecorationProperty extends AbstractEnumeratedProperty<Integer>
 		implements IconsEnumeratedProperty<Integer> {
 
-	private static List<Integer> values = List.of(
-		GeoSegment.getDecoTypes()
-	);
+	private static List<Integer> values = List.of(GeoSegment.getDecoTypes());
 	private final GeoElement element;
 
 	/**
@@ -54,19 +51,19 @@ public class SegmentDecorationProperty extends AbstractEnumeratedProperty<Intege
 
 	@Override
 	public PropertyResource[] getValueIcons() {
-		return new PropertyResource[]{
-				PropertyResource.ICON_SEGMENT_DECO_NONE,
-				PropertyResource.ICON_SEGMENT_DECO_1STROKE,
-				PropertyResource.ICON_SEGMENT_DECO_2STROKES,
-				PropertyResource.ICON_SEGMENT_DECO_3STROKES,
-				PropertyResource.ICON_SEGMENT_DECO_1ARROW,
-				PropertyResource.ICON_SEGMENT_DECO_2ARROWS,
-				PropertyResource.ICON_SEGMENT_DECO_3ARROWS
+		return new PropertyResource[] {
+			PropertyResource.ICON_SEGMENT_DECO_NONE,
+			PropertyResource.ICON_SEGMENT_DECO_1STROKE,
+			PropertyResource.ICON_SEGMENT_DECO_2STROKES,
+			PropertyResource.ICON_SEGMENT_DECO_3STROKES,
+			PropertyResource.ICON_SEGMENT_DECO_1ARROW,
+			PropertyResource.ICON_SEGMENT_DECO_2ARROWS,
+			PropertyResource.ICON_SEGMENT_DECO_3ARROWS
 		};
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 

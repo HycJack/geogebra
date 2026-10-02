@@ -29,41 +29,39 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class ObjectColorPropertyTests extends BaseAppTestSetup {
+class ObjectColorPropertyTests extends BaseAppTestSetup {
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)",
-			"f(x) = x^2",
-			"Slider(-5, 5, 1)",
-			"Line((0, 0), (1, 1))",
-			"Circle((0, 0), 3)",
-			"Polygon({(0, 0), (1, 1), (1, 0)})",
-	})
-	public void testApplicableGeoElements(String expression) {
+	@ValueSource(
+			strings = {
+				"(1, 2)",
+				"f(x) = x^2",
+				"Slider(-5, 5, 1)",
+				"Line((0, 0), (1, 1))",
+				"Circle((0, 0), 3)",
+				"Polygon({(0, 0), (1, 1), (1, 0)})",
+			})
+	void testApplicableGeoElements(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertDoesNotThrow(() -> new ObjectColorProperty(
-				getLocalization(), evaluateGeoElement(expression)));
+		assertDoesNotThrow(
+				() -> new ObjectColorProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"\"abc\"",
-			"Button(\"Press\")",
-			"BarChart({1,2,3},{4,5,6})",
-			"PieChart({1,2,3})"
-	})
-	public void testNotApplicableGeoElements(String expression) {
+	@ValueSource(
+			strings = {"\"abc\"", "Button(\"Press\")", "BarChart({1,2,3},{4,5,6})", "PieChart({1,2,3})"})
+	void testNotApplicableGeoElements(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertThrows(NotApplicablePropertyException.class, () -> new ObjectColorProperty(
-				getLocalization(), evaluateGeoElement(expression)));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new ObjectColorProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@Test
-	public void testSettingObjectColor() {
+	void testSettingObjectColor() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoElement geoElement = evaluateGeoElement("(1, 2)");
-		ObjectColorProperty objectColorProperty = assertDoesNotThrow(() ->
-				new ObjectColorProperty(getLocalization(), geoElement));
+		ObjectColorProperty objectColorProperty =
+				assertDoesNotThrow(() -> new ObjectColorProperty(getLocalization(), geoElement));
 
 		objectColorProperty.setValue(GColor.BLACK);
 		assertEquals(GColor.BLACK, objectColorProperty.getValue());

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,10 +16,10 @@
 
 package org.geogebra.common.kernel.geos;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.GeoElementFactory;
@@ -31,12 +31,12 @@ import org.geogebra.common.main.settings.config.AppConfigGeometry;
 import org.geogebra.common.main.settings.config.AppConfigGraphing;
 import org.geogebra.common.properties.impl.objects.LinearEquationFormProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ForceInputFormTest extends BaseUnitTest {
+class ForceInputFormTest extends BaseUnitTest {
 
 	@Test
-	public void testLinesConicsRaysToStringModeInGraphing() {
+	void testLinesConicsRaysToStringModeInGraphing() {
 		getApp().setConfig(new AppConfigGraphing());
 
 		GeoElementFactory factory = getElementFactory();
@@ -46,20 +46,15 @@ public class ForceInputFormTest extends BaseUnitTest {
 		GeoConic hyperbola = (GeoConic) factory.create("yy-xx=1");
 		GeoRay geoRay = factory.createGeoRayWithCommand();
 
-		assertEquals(LinearEquationRepresentable.Form.USER,
-				line.getEquationForm());
-		assertEquals(LinearEquationRepresentable.Form.EXPLICIT,
-				lineWithCommand.getEquationForm());
-		assertEquals(LinearEquationRepresentable.Form.USER,
-				geoRay.getEquationForm());
-		assertEquals(QuadraticEquationRepresentable.Form.USER,
-				parabola.getEquationForm());
-		assertEquals(QuadraticEquationRepresentable.Form.USER,
-				hyperbola.getEquationForm());
+		assertEquals(LinearEquationRepresentable.Form.USER, line.getEquationForm());
+		assertEquals(LinearEquationRepresentable.Form.EXPLICIT, lineWithCommand.getEquationForm());
+		assertEquals(LinearEquationRepresentable.Form.USER, geoRay.getEquationForm());
+		assertEquals(QuadraticEquationRepresentable.Form.USER, parabola.getEquationForm());
+		assertEquals(QuadraticEquationRepresentable.Form.USER, hyperbola.getEquationForm());
 	}
 
 	@Test
-	public void testLinesLoadedFromXMLGraphing() {
+	void testLinesLoadedFromXMLGraphing() {
 		getApp().setConfig(new AppConfigGraphing());
 
 		GeoElementFactory factory = getElementFactory();
@@ -69,8 +64,7 @@ public class ForceInputFormTest extends BaseUnitTest {
 		GeoLine lineWithCommand = factory.createGeoLineWithCommand();
 		lineWithCommand.setLabel("lineCmd");
 		lineWithCommand.setEquationForm(LinearEquationRepresentable.Form.PARAMETRIC);
-		assertEquals(LinearEquationRepresentable.Form.PARAMETRIC,
-				lineWithCommand.getEquationForm());
+		assertEquals(LinearEquationRepresentable.Form.PARAMETRIC, lineWithCommand.getEquationForm());
 
 		getApp().setXML(getApp().getXML(), true);
 
@@ -78,12 +72,12 @@ public class ForceInputFormTest extends BaseUnitTest {
 		GeoLine loadedLineWithCommand = (GeoLine) lookup("lineCmd");
 
 		assertEquals(LinearEquationRepresentable.Form.USER, loadedLine.getEquationForm());
-		assertEquals(LinearEquationRepresentable.Form.PARAMETRIC,
-				loadedLineWithCommand.getEquationForm());
+		assertEquals(
+				LinearEquationRepresentable.Form.PARAMETRIC, loadedLineWithCommand.getEquationForm());
 	}
 
 	@Test
-	public void testLinesConicsRaysToStringModeInGeometry() {
+	void testLinesConicsRaysToStringModeInGeometry() {
 		getApp().setConfig(new AppConfigGeometry());
 
 		GeoElementFactory factory = getElementFactory();
@@ -93,20 +87,15 @@ public class ForceInputFormTest extends BaseUnitTest {
 		GeoConic parabola = (GeoConic) factory.create("y=xx");
 		GeoConic hyperbola = (GeoConic) factory.create("yy-xx=1");
 
-		assertEquals(LinearEquationRepresentable.Form.USER,
-				line.getEquationForm());
-		assertEquals(LinearEquationRepresentable.Form.EXPLICIT,
-				lineWithCommand.getEquationForm());
-		assertEquals(LinearEquationRepresentable.Form.EXPLICIT,
-				ray.getEquationForm());
-		assertEquals(QuadraticEquationRepresentable.Form.USER,
-				parabola.getEquationForm());
-		assertEquals(QuadraticEquationRepresentable.Form.USER,
-				hyperbola.getEquationForm());
+		assertEquals(LinearEquationRepresentable.Form.USER, line.getEquationForm());
+		assertEquals(LinearEquationRepresentable.Form.EXPLICIT, lineWithCommand.getEquationForm());
+		assertEquals(LinearEquationRepresentable.Form.EXPLICIT, ray.getEquationForm());
+		assertEquals(QuadraticEquationRepresentable.Form.USER, parabola.getEquationForm());
+		assertEquals(QuadraticEquationRepresentable.Form.USER, hyperbola.getEquationForm());
 	}
 
 	@Test
-	public void testHideOutputRowGraphing() {
+	void testHideOutputRowGraphing() {
 		getApp().setGraphingConfig();
 		GeoRay ray = getElementFactory().createGeoRayWithCommand();
 
@@ -115,7 +104,7 @@ public class ForceInputFormTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testShowOutputRowGeometry() {
+	void testShowOutputRowGeometry() {
 		getApp().setConfig(new AppConfigGeometry());
 		GeoRay ray = getElementFactory().createGeoRayWithCommand();
 
@@ -124,7 +113,7 @@ public class ForceInputFormTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testEquationPropertyIsHiddenGraphing() {
+	void testEquationPropertyIsHiddenGraphing() {
 		getApp().setConfig(new AppConfigGraphing());
 		getApp().getSettings().getCasSettings().setEnabled(getApp().getConfig().isCASEnabled());
 
@@ -141,7 +130,7 @@ public class ForceInputFormTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testEquationPropertyIsHiddenGeometry() {
+	void testEquationPropertyIsHiddenGeometry() {
 		getApp().setConfig(new AppConfigGeometry());
 		getApp().getSettings().getCasSettings().setEnabled(getApp().getConfig().isCASEnabled());
 

@@ -25,7 +25,7 @@ import org.geogebra.common.main.MaterialVisibility;
 import org.geogebra.common.properties.impl.AbstractNamedEnumeratedProperty;
 import org.geogebra.common.util.debug.Log;
 
-public class MaterialVisibilityProperty
+public final class MaterialVisibilityProperty
 		extends AbstractNamedEnumeratedProperty<MaterialVisibility> {
 	private MaterialVisibility materialVisibility;
 
@@ -58,13 +58,11 @@ public class MaterialVisibilityProperty
 			setNamedValues(List.of(
 					entry(MaterialVisibility.Private, "Private"),
 					entry(MaterialVisibility.Shared, "Shared"),
-					entry(MaterialVisibility.Public, "Public")
-			));
+					entry(MaterialVisibility.Public, "Public")));
 		} else {
 			setNamedValues(List.of(
 					entry(MaterialVisibility.Private, "Private"),
-					entry(MaterialVisibility.Shared, "Shared")
-			));
+					entry(MaterialVisibility.Shared, "Shared")));
 		}
 		doSetValue(visibility);
 	}

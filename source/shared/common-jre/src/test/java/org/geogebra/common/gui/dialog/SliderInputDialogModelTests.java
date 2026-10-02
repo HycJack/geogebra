@@ -32,19 +32,21 @@ import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-public class SliderInputDialogModelTests extends BaseAppTestSetup {
+class SliderInputDialogModelTests extends BaseAppTestSetup {
 	private SliderInputDialogModel model;
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
-		model = new SliderInputDialogModel(getApp(), getApp().getActiveEuclidianView(),
-				getLocalization(), getKernel(), 100, 100);
+		model = new SliderInputDialogModel(
+				getApp(), getApp().getActiveEuclidianView(), getLocalization(), getKernel(), 100, 100);
 	}
 
 	@Test
-	public void testDefaultNumberFields() {
+	void testDefaultNumberFields() {
 		assertAll(
 				() -> assertEquals("a", model.getLastValidField(SliderType.NUMBER, Field.NAME)),
 				() -> assertEquals("-5", model.getLastValidField(SliderType.NUMBER, Field.MIN)),
@@ -53,7 +55,7 @@ public class SliderInputDialogModelTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testDefaultAngleFields() {
+	void testDefaultAngleFields() {
 		assertAll(
 				() -> assertEquals("α", model.getLastValidField(SliderType.ANGLE, Field.NAME)),
 				() -> assertEquals("0°", model.getLastValidField(SliderType.ANGLE, Field.MIN)),
@@ -62,13 +64,13 @@ public class SliderInputDialogModelTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void submitCreatesLabeledNumberGeo() {
+	void submitCreatesLabeledNumberGeo() {
 		assertTrue(model.submit(SliderType.NUMBER, "s", "-5", "5", "0.1"));
 		assertInstanceOf(GeoNumeric.class, lookup("s"));
 	}
 
 	@Test
-	public void submitSetsNumberBounds() {
+	void submitSetsNumberBounds() {
 		assertTrue(model.submit(SliderType.NUMBER, "s", "-3", "7", "0.5"));
 		GeoNumeric geo = (GeoNumeric) lookup("s");
 		assertAll(
@@ -78,13 +80,13 @@ public class SliderInputDialogModelTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void submitCreatesLabeledAngleGeo() {
+	void submitCreatesLabeledAngleGeo() {
 		assertTrue(model.submit(SliderType.ANGLE, "alpha", "0°", "360°", "1°"));
 		assertInstanceOf(GeoAngle.class, lookup("alpha"));
 	}
 
 	@Test
-	public void submitSetsAngleBoundsInRadians() {
+	void submitSetsAngleBoundsInRadians() {
 		assertTrue(model.submit(SliderType.ANGLE, "alpha", "0°", "180°", "1°"));
 		GeoNumeric geo = (GeoNumeric) lookup("alpha");
 		assertAll(
@@ -93,27 +95,28 @@ public class SliderInputDialogModelTests extends BaseAppTestSetup {
 				() -> assertEquals(Math.PI, geo.getIntervalMax(), 1e-10));
 	}
 
-	@Test
-	public void validateFieldReturnsErrorForInvalidName() {
+	@ParameterizedTest
+	@ValueSource(strings = {"", "a b", "a/", "x"})
+	void validateFieldReturnsErrorForInvalidName(String name) {
 		String previousName = model.getLastValidField(SliderType.NUMBER, Field.NAME);
-		String error = model.validateField(SliderType.NUMBER, Field.NAME, "");
+		String error = model.validateField(SliderType.NUMBER, Field.NAME, name);
 		assertAll(
 				() -> assertNotNull(error),
-				() -> assertEquals(previousName,
-						model.getLastValidField(SliderType.NUMBER, Field.NAME)));
+				() -> assertEquals(previousName, model.getLastValidField(SliderType.NUMBER, Field.NAME)));
 	}
 
-	@Test
-	public void validateFieldReturnsErrorForInvalidNumber() {
+	@ParameterizedTest
+	@ValueSource(strings = {"", "abc", "xx"})
+	void validateFieldReturnsErrorForInvalidNumber(String value) {
 		assertNull(model.validateField(SliderType.NUMBER, Field.MIN, "-3"));
-		String error = model.validateField(SliderType.NUMBER, Field.MIN, "abc");
+		String error = model.validateField(SliderType.NUMBER, Field.MIN, value);
 		assertAll(
 				() -> assertNotNull(error),
 				() -> assertEquals("-3", model.getLastValidField(SliderType.NUMBER, Field.MIN)));
 	}
 
 	@Test
-	public void validateFieldUpdatesLastValidValueForValidInput() {
+	void validateFieldUpdatesLastValidValueForValidInput() {
 		String error = model.validateField(SliderType.NUMBER, Field.STEP, "0.25");
 		assertAll(
 				() -> assertNull(error),
@@ -121,13 +124,13 @@ public class SliderInputDialogModelTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void submitReturnsFalseForInvalidInput() {
+	void submitReturnsFalseForInvalidInput() {
 		assertFalse(model.submit(SliderType.NUMBER, "s", "abc", "5", "0.1"));
 		assertNull(lookup("s"));
 	}
 
 	@Test
-	public void submitReturnsFalseForInvalidName() {
+	void submitReturnsFalseForInvalidName() {
 		assertFalse(model.submit(SliderType.NUMBER, "1a", "-5", "5", "0.1"));
 		assertNull(lookup("1a"));
 	}

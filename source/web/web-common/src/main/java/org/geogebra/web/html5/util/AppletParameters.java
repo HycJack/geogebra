@@ -32,7 +32,7 @@ import org.geogebra.web.html5.bridge.AttributeProvider;
 import org.geogebra.web.html5.bridge.MapAttributeProvider;
 
 /**
- *
+ * Applet parameters as provided through "data-" attributes or a string map.
  */
 public class AppletParameters {
 	/** default applet ID */
@@ -86,8 +86,7 @@ public class AppletParameters {
 	}
 
 	private boolean getBoolDataParam(String attr, boolean def) {
-		return (def && !"false".equals(getAttribute(attr)))
-				|| "true".equals(getAttribute(attr));
+		return (def && !"false".equals(getAttribute(attr))) || "true".equals(getAttribute(attr));
 	}
 
 	private String getStringDataParam(String attr, String def) {
@@ -141,7 +140,7 @@ public class AppletParameters {
 	/**
 	 * Determines if the "data-param-enableLabelDrags" article attribute is set
 	 * to true
-	 * 
+	 *
 	 * @return the data-param-enableLabelDrags (default: true)
 	 */
 	public boolean getDataParamEnableLabelDrags() {
@@ -151,7 +150,7 @@ public class AppletParameters {
 	/**
 	 * Determines if the "data-param-enableUndoRedo" article attribute is set to
 	 * true
-	 * 
+	 *
 	 * @return the data-param-enableUndoRedo (default: true)
 	 */
 	public boolean getDataParamEnableUndoRedo() {
@@ -161,7 +160,7 @@ public class AppletParameters {
 	/**
 	 * Determines if the "data-param-enableRightClick" article attribute is set
 	 * to true
-	 * 
+	 *
 	 * @return the data-param-enableRightClick (default: true)
 	 */
 	public boolean getDataParamEnableRightClick() {
@@ -173,7 +172,7 @@ public class AppletParameters {
 	 *            fallback if parameter not set
 	 * @return data-param-enableCAS: whether CAS is enabled
 	 */
-	public boolean getDataParamEnableCAS(boolean def) {
+	public boolean getParamEnableCAS(boolean def) {
 		return getBoolDataParam("enableCAS", def);
 	}
 
@@ -182,8 +181,16 @@ public class AppletParameters {
 	 *            fallback if parameter not set
 	 * @return data-param-enable3D: whether 3D is enabled
 	 */
-	public boolean getDataParamEnable3D(boolean def) {
+	public boolean getParamEnable3D(boolean def) {
 		return getBoolDataParam("enable3D", def);
+	}
+
+	/**
+	 * @param def fallback if parameter not set
+	 * @return data-param-enableProbability: whether probability calculator is enabled
+	 */
+	public boolean getParamEnableProbability(boolean def) {
+		return getBoolDataParam("enableProbability", def);
 	}
 
 	/**
@@ -193,6 +200,9 @@ public class AppletParameters {
 		return getStringDataParam("featureSet", null);
 	}
 
+	/**
+	 * @return exam mode ID (same as featureSet)
+	 */
 	public boolean getParamExamMode() {
 		return getBoolDataParam("examMode", false);
 	}
@@ -256,7 +266,7 @@ public class AppletParameters {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the data-param-customToolBar (default: null)
 	 */
 	public String getDataParamCustomToolBar() {
@@ -278,8 +288,8 @@ public class AppletParameters {
 	 * @return input position (top / bottom / AV)
 	 */
 	public InputPosition getAlgebraPosition(InputPosition def) {
-		String pos = getStringDataParam("algebraInputPosition", "")
-				.toLowerCase(Locale.ROOT).trim();
+		String pos =
+				getStringDataParam("algebraInputPosition", "").toLowerCase(Locale.ROOT).trim();
 		if ("top".equals(pos)) {
 			return InputPosition.top;
 		}
@@ -316,7 +326,7 @@ public class AppletParameters {
 
 	/**
 	 * eg "de"
-	 * 
+	 *
 	 * @return the data-param-showResetIcon (default: null)
 	 */
 	public String getDataParamLanguage() {
@@ -325,7 +335,7 @@ public class AppletParameters {
 
 	/**
 	 * eg "AT"
-	 * 
+	 *
 	 * @return the data-param-showResetIcon (default: null)
 	 */
 	public String getDataParamCountry() {
@@ -333,7 +343,7 @@ public class AppletParameters {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the data-param-useBrowserForJS (default: false)
 	 */
 	public boolean getDataParamUseBrowserForJS() {
@@ -434,7 +444,7 @@ public class AppletParameters {
 
 	/**
 	 * Running in screenshot generator mode allows some optimizations
-	 * 
+	 *
 	 * @return whether we are running the applet as screenshot generator
 	 */
 	public boolean getDataParamScreenshotGenerator() {
@@ -474,7 +484,8 @@ public class AppletParameters {
 	 */
 	public String getDataParamAppName() {
 		return getStringDataParam("appName", "classic")
-				.replace("whiteboard", "notes").toLowerCase(Locale.US);
+				.replace("whiteboard", "notes")
+				.toLowerCase(Locale.US);
 	}
 
 	/**
@@ -643,6 +654,9 @@ public class AppletParameters {
 		return getBoolDataParam("disableAutoScale", false);
 	}
 
+	/**
+	 * @return whether to allow randomization on load
+	 */
 	public boolean getParamRandomize() {
 		return getBoolDataParam("randomize", true);
 	}
@@ -787,18 +801,30 @@ public class AppletParameters {
 		}
 	}
 
+	/**
+	 * @return maximum image size in KiB, ignored if set to 0.
+	 */
 	public int getParamMaxImageSize() {
 		return getIntDataParam("maxImageSize", 0);
 	}
 
+	/**
+	 * @return multiplayer URL
+	 */
 	public String getParamMultiplayerUrl() {
 		return getStringDataParam("multiplayerUrl", "");
 	}
 
+	/**
+	 * @return whether to allow checkpoint-based undo points
+	 */
 	public boolean getParamAllowUndoCheckpoints() {
 		return getBoolDataParam("allowUndoCheckpoints", true);
 	}
 
+	/**
+	 * @return border radius in pixels
+	 */
 	public double getBorderRadius() {
 		return getIntDataParam("borderRadius", 0);
 	}
@@ -824,8 +850,7 @@ public class AppletParameters {
 	 * @return whether to run JS in QuickJS sandbox
 	 */
 	public boolean getParamSandbox() {
-		return getBoolDataParam("sandboxJavaScript",
-				getDataParamApp() || Browser.isGeoGebraOrg());
+		return getBoolDataParam("sandboxJavaScript", getDataParamApp() || Browser.isGeoGebraOrg());
 	}
 
 	/**
@@ -841,9 +866,14 @@ public class AppletParameters {
 	 */
 	public List<String> getDataParamCustomToolbox() {
 		return Arrays.stream(getStringDataParam("customToolbox", "").split(","))
-				.map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+				.map(String::trim)
+				.filter(s -> !s.isEmpty())
+				.collect(Collectors.toList());
 	}
 
+	/**
+	 * @return maximum height for evaluator app
+	 */
 	public double getMaxHeight() {
 		return getIntDataParam("maxHeight", -1);
 	}
@@ -863,6 +893,9 @@ public class AppletParameters {
 		return getStringDataParam("examLaunchURL", "");
 	}
 
+	/**
+	 * @return parameter for external controls (selectors to tab through)
+	 */
 	public String getParamExternalControls() {
 		return getStringDataParam("externalControls", "");
 	}

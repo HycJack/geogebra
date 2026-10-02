@@ -16,47 +16,34 @@
 
 package org.geogebra.web.full.euclidian.quickstylebar.components;
 
-import org.geogebra.common.awt.GColor;
 import org.geogebra.common.properties.Property;
 import org.geogebra.common.properties.PropertySupplier;
 import org.geogebra.common.properties.impl.facade.RangePropertyListFacade;
 import org.geogebra.common.properties.impl.objects.ImageOpacityProperty;
 import org.geogebra.common.properties.impl.objects.OpacityProperty;
-import org.geogebra.common.properties.impl.objects.ThicknessProperty;
-import org.geogebra.web.full.gui.util.LineStylePreview;
 import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.main.AppW;
-import org.geogebra.web.html5.util.sliderPanel.SliderPanelW;
+import org.geogebra.web.html5.util.sliderPanel.SliderW;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 
-public class SliderWithProperty extends FlowPanel {
+public final class SliderWithProperty extends FlowPanel {
 	private final AppW appW;
 	private RangePropertyListFacade<?> property;
 	private final PropertySupplier propertySupplier;
-	private LineStylePreview preview;
 	private Label unitLabel;
-	private SliderPanelW sliderPanel;
-	private int rangeValue;
-	private int lineType;
-	private GColor color;
+	private SliderW slider;
 	private boolean dragging;
 
 	/**
-	 * constructor
-	 * @param appW - application
-	 * @param property - range property
-	 * @param lineType - line type
-	 * @param color - line color
+	 * Builds a slider component with {@link Property}.
+	 * @param appW application
+	 * @param property range property
 	 */
-	public SliderWithProperty(AppW appW, RangePropertyListFacade<?> property,
-			PropertySupplier propertySupplier,
-			int lineType, GColor color) {
+	public SliderWithProperty(
+			AppW appW, RangePropertyListFacade<?> property, PropertySupplier propertySupplier) {
 		this.appW = appW;
 		this.property = property;
-		this.rangeValue = property.getValue();
-		this.lineType = lineType;
-		this.color = color;
 		this.propertySupplier = propertySupplier;
 
 		styleComponent();
@@ -71,29 +58,26 @@ public class SliderWithProperty extends FlowPanel {
 	}
 
 	private void buildGui() {
-		String sliderText  = getFirstProperty().getName();
+		String sliderText = getFirstProperty().getName();
 		Label sliderLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(
 				appW.getLocalization().getMenu(sliderText), "sliderLabel");
+		unitLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(getUnitText(), "sliderLabel");
 
 		FlowPanel labelPreviewHolder = new FlowPanel();
 		labelPreviewHolder.addStyleName("labelPreviewHolder");
 		labelPreviewHolder.add(sliderLabel);
-		addPropertyBasedPreview(labelPreviewHolder);
+		labelPreviewHolder.add(unitLabel);
 
 		add(labelPreviewHolder);
 		buildSlider();
-		add(sliderPanel);
+		add(slider);
 	}
 
-	private void addPropertyBasedPreview(FlowPanel parent) {
-		if (getFirstProperty() instanceof ThicknessProperty) {
-			preview = new LineStylePreview(30, 30);
-			preview.addStyleName("preview");
-			parent.add(preview);
-		} else if (getFirstProperty() instanceof OpacityProperty) {
-			unitLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(((OpacityProperty)
-					getFirstProperty()).getValue() + "%", "sliderLabel");
-			parent.add(unitLabel);
+	private String getUnitText() {
+		if (getFirstProperty() instanceof OpacityProperty opacityProperty) {
+			return opacityProperty.getValue() + "%";
+		} else {
+			return String.valueOf(property.getValue());
 		}
 	}
 
@@ -102,21 +86,18 @@ public class SliderWithProperty extends FlowPanel {
 	}
 
 	private void buildSlider() {
-		sliderPanel = new SliderPanelW(property.getMin(),
-				property.getMax(), appW.getKernel(), false);
-		sliderPanel.getSlider().addStyleName("slider");
+		slider = new SliderW(property.getMin(), property.getMax());
+		slider.addStyleName("slider");
 		setInitialValue();
-		sliderPanel.getSlider().addValueChangeHandler(event -> {
-			onInputChangeFinished(sliderPanel.getSlider().getValue().intValue());
-		});
-		sliderPanel.getSlider().addInputHandler(()
-				-> onInputChange(sliderPanel.getSlider().getValue().intValue()));
+		slider.addValueChangeHandler(
+				event -> onInputChangeFinished(slider.getValue().intValue()));
+		slider.addInputHandler(() -> onInputChange(slider.getValue().intValue()));
 	}
 
 	private void setInitialValue() {
 		Integer val = property.getValue();
-		sliderPanel.setValue(val.doubleValue());
-		updatePreview();
+		slider.setValue(val.doubleValue());
+		updateUnitLabel();
 	}
 
 	private void onInputChange(int val) {
@@ -127,7 +108,7 @@ public class SliderWithProperty extends FlowPanel {
 		}
 		property.setValue(val);
 
-		setRangeValue(val);
+		updateUnitLabel();
 	}
 
 	private void onInputChangeFinished(int val) {
@@ -136,38 +117,15 @@ public class SliderWithProperty extends FlowPanel {
 			dragging = false;
 			property.endSetValue();
 		}
-		setRangeValue(val);
+		updateUnitLabel();
 	}
 
-	private void updatePreview() {
-		if (preview != null) {
-			preview.update(rangeValue, lineType, color);
-		} else if (unitLabel != null) {
-			unitLabel.setText(rangeValue + "%");
+	/**
+	 * Updates the unit label.
+	 */
+	public void updateUnitLabel() {
+		if (unitLabel != null) {
+			unitLabel.setText(getUnitText());
 		}
-	}
-
-	/**
-	 * @param rangeValue - line thickness or opacity
-	 */
-	public void setRangeValue(int rangeValue) {
-		this.rangeValue = rangeValue;
-		updatePreview();
-	}
-
-	/**
-	 * @param lineType - line type
-	 */
-	public void setLineType(int lineType) {
-		this.lineType = lineType;
-		updatePreview();
-	}
-
-	/**
-	 * @param color - line color
-	 */
-	public void setLineColor(GColor color) {
-		this.color = color;
-		updatePreview();
 	}
 }

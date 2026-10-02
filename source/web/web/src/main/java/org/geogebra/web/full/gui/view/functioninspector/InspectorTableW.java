@@ -27,12 +27,12 @@ import org.gwtproject.user.client.ui.FlexTable;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.Widget;
 
-public class InspectorTableW extends FlexTable implements IGridListener {
+public final class InspectorTableW extends FlexTable implements IGridListener {
 	private static final int HEADER_ROW = 0;
 	private GridModel model;
 	private int selectedRow;
 	private AutoCompleteTextFieldW cellEditor;
-	
+
 	/**
 	 * @param app
 	 *            application
@@ -51,7 +51,7 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 		InputPanelW input = new InputPanelW(app, -1, false);
 		cellEditor = input.getTextComponent();
 		cellEditor.addStyleName("inspectorTableEditor");
-		
+
 		addClickHandler(event -> {
 			Cell cell = getCellForEvent(event);
 			if (cell == null) {
@@ -59,7 +59,7 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 			}
 			updateRowStyle(cell, "selected");
 		});
-		
+
 		cellEditor.addEnterPressHandler(blurAndEnterHandler);
 	}
 
@@ -74,7 +74,7 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 		Double value = null;
 		try {
 			value = Double.parseDouble(cellEditor.getText());
-		} catch (NumberFormatException e) {
+		} catch (NumberFormatException ignored) {
 			// not a number
 		}
 		return value;
@@ -88,24 +88,24 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 		cellEditor.setText(data);
 		setWidget(row, col, cellEditor);
 	}
-	
+
 	private void updateRowStyle(Cell cell, String style) {
 		if (cell == null) {
 			return;
 		}
-	
-		int row  = cell.getRowIndex();
+
+		int row = cell.getRowIndex();
 		if (row == HEADER_ROW) {
 			// Header row cannot be selected.
 			return;
 		}
-		
+
 		clearSelectedRowStyle();
 		RowFormatter rf = getRowFormatter();
 		rf.setStyleName(row, style);
 		selectedRow = row;
 	}
-	
+
 	/**
 	 * Remove selected row style.
 	 */
@@ -126,10 +126,10 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 		// Cells at row 0 are headers.
 		updateCell(row + 1, col, value);
 	}
-		
-	protected void updateCell(int row, int col, DataCell value) {
+
+	private void updateCell(int row, int col, DataCell value) {
 		Widget widget = getWidget(row, col);
-		
+
 		if (widget != null) {
 			if (widget == cellEditor) {
 				cellEditor.setText(value.toString());
@@ -141,8 +141,8 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 		}
 	}
 
-	protected void setCellWidget(int row, int col, String style, DataCell cell) {
-		Widget w = null;
+	private void setCellWidget(int row, int col, String style, DataCell cell) {
+		Widget w;
 		if (cell.isEditable()) {
 			cellEditor.setText(cell.toString());
 			w = cellEditor;
@@ -153,13 +153,13 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 		getCellFormatter().setStyleName(row, col, style);
 		setWidget(row, col, w);
 	}
-	
-	protected void setCellWidget(int row, int col, String style, String text) {
+
+	private void setCellWidget(int row, int col, String style, String text) {
 		Label label = new Label(text);
 		getCellFormatter().setStyleName(row, col, style);
 		setWidget(row, col, label);
 	}
-	
+
 	public GridModel getModel() {
 		return model;
 	}
@@ -172,7 +172,7 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 	public void addRow(List<DataCell> row) {
 		int numRows = getRowCount();
 		int col = 0;
-		for (DataCell cell: row) {
+		for (DataCell cell : row) {
 			setCellWidget(numRows, col, "inspectorTableData", cell);
 			col++;
 		}
@@ -181,7 +181,7 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 	@Override
 	public void setHeaders(String[] headers) {
 		int col = 0;
-		for (String title: headers) {
+		for (String title : headers) {
 			updateHeader(col, title);
 			col++;
 		}
@@ -233,7 +233,7 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 
 	/**
 	 * Make a cell editable.
-	 * 
+	 *
 	 * @param row
 	 *            row
 	 * @param col
@@ -243,5 +243,4 @@ public class InspectorTableW extends FlexTable implements IGridListener {
 		model.setCellEditable(row, col);
 		setEditorInCell(row + 1, col);
 	}
-
 }

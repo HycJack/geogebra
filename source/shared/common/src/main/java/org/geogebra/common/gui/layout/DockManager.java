@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,9 +16,11 @@
 
 package org.geogebra.common.gui.layout;
 
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.euclidian.GetViewId;
 import org.geogebra.common.gui.SetLabels;
 
+@HasNativeSubclass
 public abstract class DockManager implements SetLabels {
 
 	/**
@@ -73,7 +75,7 @@ public abstract class DockManager implements SetLabels {
 	/**
 	 * Puts AV bellow to EV if app height is bigger than width (portrait), or EV
 	 * next to AV otherwise (landscape).
-	 * 
+	 *
 	 * @param force
 	 *            TODO
 	 */

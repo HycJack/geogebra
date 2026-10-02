@@ -18,8 +18,8 @@ package org.geogebra.common.spreadsheet.core;
 
 import java.util.function.Consumer;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Clipboard (platform) abstraction.
@@ -30,11 +30,12 @@ public interface ClipboardInterface {
 	 * Read content from the clipboard.
 	 * @param reader A reader.
 	 */
-	void readContent(@Nonnull Consumer<String> reader);
+	void readContent(@NonNull Consumer<String> reader);
 
 	/**
 	 * Set the clipboard's content.
-	 * @param content Clipboard content.
+	 * @param content Clipboard content, can be read by this or other GGB app.
+	 * @param externalContent clipboard content for other apps
 	 */
-	void setContent(@CheckForNull String content);
+	void setContent(@Nullable String content, @Nullable String externalContent);
 }

@@ -16,6 +16,7 @@
 
 package org.geogebra.web.full.gui.menubar.action;
 
+import org.geogebra.common.util.debug.AccessibilityAnalytics;
 import org.geogebra.web.full.gui.ShareControllerW;
 import org.geogebra.web.full.gui.menubar.DefaultMenuAction;
 import org.geogebra.web.full.main.AppWFull;
@@ -24,7 +25,7 @@ import org.geogebra.web.html5.bridge.GeoGebraJSNativeBridge;
 /**
  * Shares the material.
  */
-public class ShareAction extends DefaultMenuAction<AppWFull> {
+public final class ShareAction extends DefaultMenuAction<AppWFull> {
 
 	@Override
 	public void execute(AppWFull app) {
@@ -33,7 +34,16 @@ public class ShareAction extends DefaultMenuAction<AppWFull> {
 			shareController.getBase64();
 		} else {
 			shareController.setAnchor(null);
+			registerShareClicked(app);
 			shareController.share();
 		}
+	}
+
+	private void registerShareClicked(AppWFull app) {
+		app.getAccessibilityAnalyticsContext()
+				.setTrigger(AccessibilityAnalytics.Value.BURGER_MENU)
+				.setFlow(AccessibilityAnalytics.Value.SHARE);
+		AccessibilityAnalytics.logShareClicked(
+				false, app.getLoginOperation().isLoggedIn(), app.isSaved());
 	}
 }

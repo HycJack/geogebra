@@ -17,6 +17,7 @@
 package org.geogebra.web.full.main;
 
 import static org.geogebra.common.io.layout.DockPanelData.TabIds.ALGEBRA;
+import static org.geogebra.common.io.layout.DockPanelData.TabIds.DISTRIBUTION;
 import static org.geogebra.common.io.layout.DockPanelData.TabIds.SPREADSHEET;
 import static org.geogebra.common.io.layout.DockPanelData.TabIds.TABLE;
 import static org.geogebra.common.main.App.VIEW_ALGEBRA;
@@ -24,7 +25,7 @@ import static org.geogebra.common.main.App.VIEW_ALGEBRA;
 import org.geogebra.common.io.layout.DockPanelData;
 import org.geogebra.common.main.InitialViewState;
 
-public class UnbundledInitialViewState implements InitialViewState {
+public final class UnbundledInitialViewState implements InitialViewState {
 
 	private final AppWFull app;
 	private final boolean toolbarVisible;
@@ -59,8 +60,8 @@ public class UnbundledInitialViewState implements InitialViewState {
 			return;
 		}
 
-		DockPanelData dpd = app.getGuiManager().getLayout().getDockManager()
-						.getPanel(VIEW_ALGEBRA).createInfo();
+		DockPanelData dpd =
+				app.getGuiManager().getLayout().getDockManager().getPanel(VIEW_ALGEBRA).createInfo();
 		initialTabId = dpd.getTabId();
 	}
 
@@ -73,7 +74,7 @@ public class UnbundledInitialViewState implements InitialViewState {
 		if (toolbarVisible) {
 			return true;
 		}
-		return id.equals(initialTabId);
+		return id == initialTabId;
 	}
 
 	@Override
@@ -98,7 +99,7 @@ public class UnbundledInitialViewState implements InitialViewState {
 
 	@Override
 	public boolean hasProbability() {
-		return false; // not supported
+		return isToggleable(DISTRIBUTION);
 	}
 
 	@Override

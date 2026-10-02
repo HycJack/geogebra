@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,22 +16,30 @@
 
 package org.geogebra.common.properties.impl.facade;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 
 import org.geogebra.common.properties.PropertyValueObserver;
 import org.geogebra.common.properties.ValuedProperty;
 
 abstract class AbstractValuedPropertyListFacade<T extends ValuedProperty<S>, S>
-		extends AbstractPropertyListFacade<T>
-		implements ValuedProperty<S> {
+		extends AbstractPropertyListFacade<T> implements ValuedProperty<S> {
 
 	private final Set<PropertyValueObserver> observers = new HashSet<>();
+	private final BinaryOperator<S> reducer;
 
 	AbstractValuedPropertyListFacade(List<T> properties) {
 		super(properties);
+		reducer = null;
+	}
+
+	AbstractValuedPropertyListFacade(List<T> properties, BinaryOperator<S> reducer) {
+		super(properties);
+		this.reducer = reducer;
 	}
 
 	@Override
@@ -45,7 +53,8 @@ abstract class AbstractValuedPropertyListFacade<T extends ValuedProperty<S>, S>
 	}
 
 	private void notifyObservers(Consumer<PropertyValueObserver> observerConsumer) {
-		observers.forEach(observerConsumer);
+		// Iterate through a copy so that observers can remove themselves during a notification
+		new ArrayList<>(observers).forEach(observerConsumer);
 	}
 
 	private void callProperty(Consumer<T> propertyConsumer) {
@@ -54,6 +63,9 @@ abstract class AbstractValuedPropertyListFacade<T extends ValuedProperty<S>, S>
 
 	@Override
 	public S getValue() {
+		if (reducer != null) {
+			return properties.stream().map(ValuedProperty::getValue).reduce(reducer).orElseThrow();
+		}
 		return getFirstProperty().getValue();
 	}
 

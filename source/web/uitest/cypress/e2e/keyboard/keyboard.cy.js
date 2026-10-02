@@ -1,6 +1,5 @@
 import '../../support/embed/commands.js'
 import {selectors} from '@geogebra/web-test-harness/selectors'
-/*global cy*/
 
 describe('Keyboard ANS button test', () => {
     beforeEach(() => {
@@ -23,9 +22,9 @@ describe('Keyboard ANS button test', () => {
         cy.get('div[aria-label="ans"]').should("be.visible");
     });
     it("inserts the result of the previous cell when the 'ans' button is pressed", () => {
-        cy.writeInAVInput("1+3 {enter}");
+        cy.writeInAVInput("1+3{enter}");
         cy.get('div[aria-label="ans"]').click();
-        cy.writeInAVInput("+ 2 {enter}");
+        cy.writeInAVInput("+2{enter}");
         cy.get(".avValue").should("contain", "6");
     });
     it("does not show the 'ans' button in the properties view", () => {
@@ -33,8 +32,10 @@ describe('Keyboard ANS button test', () => {
         // is shown before we start with the actions
         cy.wait(3000);
         selectors.graphicsViewContextMenu.get().click();
-        cy.get('.gwt-MenuItem').contains('settings').click();
-        cy.get('.gwt-SuggestBox').first().click();
+        cy.get('.tabBtn').contains('Graphics').click();
+        cy.get('.expandableList .header').contains('Dimensions').click();
+        selectors.showKeyboardButton.click();
+        cy.get('.gwt-SuggestBox[aria-label="x Min"]').click();
         cy.get('div[aria-label="ans"]').should("not.be.visible");
     });
 

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -47,9 +47,9 @@ import org.jfugue.Player;
 
 /**
  * Class for managing and playing Midi sound.
- * 
+ *
  * @author G. Sturr 2010-9-18
- * 
+ *
  */
 public class MidiSoundD implements MetaEventListener {
 
@@ -90,8 +90,7 @@ public class MidiSoundD implements MetaEventListener {
 
 				Soundbank sb = synthesizer.getDefaultSoundbank();
 				if (sb != null) {
-					instruments = synthesizer.getDefaultSoundbank()
-							.getInstruments();
+					instruments = synthesizer.getDefaultSoundbank().getInstruments();
 					synthesizer.loadInstrument(instruments[0]);
 				}
 
@@ -115,7 +114,7 @@ public class MidiSoundD implements MetaEventListener {
 
 	/**
 	 * Plays a MIDI sequence
-	 * 
+	 *
 	 * @param sequence note sequence
 	 * @param tempo tempo
 	 * @param tickPosition position
@@ -139,7 +138,7 @@ public class MidiSoundD implements MetaEventListener {
 			// Start playing
 			sequencer.start();
 
-		} catch (MidiUnavailableException | InvalidMidiDataException e) {
+		} catch (MidiUnavailableException | InvalidMidiDataException ignored) {
 			// ignore
 		}
 	}
@@ -159,7 +158,6 @@ public class MidiSoundD implements MetaEventListener {
 		} else {
 			playSequence(seq, tickPos);
 		}
-
 	}
 
 	/**
@@ -181,7 +179,6 @@ public class MidiSoundD implements MetaEventListener {
 			// sequencer.stop();
 			sequencer.close();
 		}
-
 	}
 
 	/**
@@ -196,15 +193,13 @@ public class MidiSoundD implements MetaEventListener {
 
 	/**
 	 * Uses the Sequencer to play a single note in channel[0]
-	 * 
+	 *
 	 */
-	public void playSequenceNote(final int note, final double duration,
-			final int instrument) {
+	public void playSequenceNote(final int note, final double duration, final int instrument) {
 
 		tickPos = 0;
 		String str = "[" + note + "]/" + Double.toString(duration);
 		this.playSequenceFromJFugueString(str, instrument);
-
 	}
 
 	/**
@@ -260,8 +255,7 @@ public class MidiSoundD implements MetaEventListener {
 
 				f = new File(filePath);
 				if (!f.exists()) {
-					f = new File(
-							app.getCurrentPath() + File.separator + filePath);
+					f = new File(app.getCurrentPath() + File.separator + filePath);
 				}
 			}
 
@@ -278,17 +272,13 @@ public class MidiSoundD implements MetaEventListener {
 				// Load new sequence from .mid file
 				tickPos = 0;
 
-				seq = f == null ? MidiSystem.getSequence(url)
-						: MidiSystem.getSequence(f);
+				seq = f == null ? MidiSystem.getSequence(url) : MidiSystem.getSequence(f);
 				playSequence(seq, tickPos);
 			}
 
-		} catch (IOException e) {
-			Log.debug(e);
-		} catch (InvalidMidiDataException e) {
+		} catch (IOException | InvalidMidiDataException e) {
 			Log.debug(e);
 		}
-
 	}
 
 	private void loadSoundBank(File soundbankFile, URL soundbankURL) {
@@ -305,8 +295,7 @@ public class MidiSoundD implements MetaEventListener {
 			Log.debug("soundbank added: " + sb);
 
 			if (sb != null) {
-				Log.debug("soundbank supported: "
-						+ synthesizer.isSoundbankSupported(sb));
+				Log.debug("soundbank supported: " + synthesizer.isSoundbankSupported(sb));
 				boolean bInstrumentsLoaded = synthesizer.loadAllInstruments(sb);
 				Log.debug("Instruments loaded: " + bInstrumentsLoaded);
 			}
@@ -320,8 +309,7 @@ public class MidiSoundD implements MetaEventListener {
 	 * @param noteString0 note string
 	 * @param instrument instrument
 	 */
-	public void playSequenceFromJFugueString(String noteString0,
-			int instrument) {
+	public void playSequenceFromJFugueString(String noteString0, int instrument) {
 
 		initialize();
 		try {
@@ -334,7 +322,7 @@ public class MidiSoundD implements MetaEventListener {
 		String noteString = "I[" + instrument + "] " + noteString0;
 		player = new Player(sequencer);
 		Pattern pattern = new Pattern(noteString);
-		PlayerThread thread = new PlayerThread(player, pattern);
+		Thread thread = new Thread(new PlayerThread(player, pattern));
 		thread.start();
 	}
 
@@ -343,9 +331,8 @@ public class MidiSoundD implements MetaEventListener {
 		StringBuilder contents = new StringBuilder();
 
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-				file == null ? url.openStream() : new FileInputStream(file),
-				StandardCharsets.UTF_8))) {
-			String text = null;
+				file == null ? url.openStream() : new FileInputStream(file), StandardCharsets.UTF_8))) {
+			String text;
 			while ((text = reader.readLine()) != null) {
 				contents.append(text);
 			}
@@ -366,12 +353,12 @@ public class MidiSoundD implements MetaEventListener {
 	/**********************************************************
 	 * Class PlayerThread Thread extension that runs a JFugue MIDI player
 	 */
-	private static class PlayerThread extends Thread {
+	private static final class PlayerThread implements Runnable {
 
 		private final Pattern pattern;
 		private final Player player;
 
-		public PlayerThread(Player player, Pattern pattern) {
+		private PlayerThread(Player player, Pattern pattern) {
 			this.player = player;
 			this.pattern = pattern;
 		}
@@ -382,5 +369,4 @@ public class MidiSoundD implements MetaEventListener {
 			player.close();
 		}
 	}
-
 }

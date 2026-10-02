@@ -16,19 +16,22 @@
 
 package org.geogebra.common.properties.impl.objects;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.test.BaseAppTestSetup;
+import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.Test;
 
-public class ShowConditionPropertyTests extends BaseAppTestSetup {
+class ShowConditionPropertyTests extends BaseAppTestSetup {
 	@Test
-	public void testSettingCondition() {
+	void testSettingCondition() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPoint point = evaluateGeoElement("A = (0, 0)");
 		ShowConditionProperty showConditionProperty =
@@ -47,7 +50,7 @@ public class ShowConditionPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testDynamicCondition() {
+	void testDynamicCondition() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPoint point = evaluateGeoElement("A = (0, 0)");
 		GeoNumeric slider = evaluateGeoElement("a = Slider(-5, 5, 0.1)");
@@ -66,6 +69,15 @@ public class ShowConditionPropertyTests extends BaseAppTestSetup {
 		slider.setValue(-1);
 		slider.updateRepaint();
 		assertFalse(point.isEuclidianVisible());
+	}
 
+	@Test
+	@Issue("APPS-7881")
+	void testShowConditionWithUnbalancedBracketsIsInvalid() {
+		setupApp(SuiteSubApp.GRAPHING);
+		GeoPoint point = evaluateGeoElement("A = (0, 0)");
+		ShowConditionProperty showConditionProperty =
+				new ShowConditionProperty(getLocalization(), point);
+		assertNotNull(assertDoesNotThrow(() -> showConditionProperty.validateValue("(")));
 	}
 }

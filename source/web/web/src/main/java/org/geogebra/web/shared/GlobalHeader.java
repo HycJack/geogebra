@@ -16,12 +16,13 @@
 
 package org.geogebra.web.shared;
 
+import static org.geogebra.common.gui.AccessibilityGroup.REDO_SCI_CALC;
+import static org.geogebra.common.gui.AccessibilityGroup.SETTINGS;
 import static org.geogebra.common.gui.AccessibilityGroup.SIGN_IN_ICON;
 import static org.geogebra.common.gui.AccessibilityGroup.SIGN_IN_TEXT;
+import static org.geogebra.common.gui.AccessibilityGroup.UNDO_SCI_CALC;
 
 import java.util.ArrayList;
-
-import javax.annotation.CheckForNull;
 
 import org.geogebra.common.exam.ExamController;
 import org.geogebra.common.exam.ExamListener;
@@ -33,9 +34,11 @@ import org.geogebra.common.main.undo.UndoRedoButtonsController;
 import org.geogebra.common.move.events.BaseEvent;
 import org.geogebra.common.move.ggtapi.events.LogOutEvent;
 import org.geogebra.common.move.ggtapi.events.LoginEvent;
+import org.geogebra.common.move.ggtapi.operations.LogInOperation;
 import org.geogebra.common.move.views.EventRenderable;
 import org.geogebra.common.ownership.GlobalScope;
 import org.geogebra.common.util.AsyncOperation;
+import org.geogebra.common.util.debug.AccessibilityAnalytics;
 import org.geogebra.gwtutil.JavaScriptInjector;
 import org.geogebra.gwtutil.SafeExamBrowser;
 import org.geogebra.web.full.css.MaterialDesignResources;
@@ -64,6 +67,7 @@ import org.gwtproject.user.client.ui.Image;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.RootPanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 import elemental2.core.Function;
 import elemental2.core.JsArray;
@@ -92,7 +96,7 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 	private ActionButton redoButton;
 	private ActionButton settingsButton;
 	private boolean assignButtonInitialized;
-	private @CheckForNull FlowPanel examTypeHolder;
+	private @Nullable FlowPanel examTypeHolder;
 	private String examHash;
 	private ExamController examController;
 
@@ -101,8 +105,7 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 	/**
 	 * Singleton constructor
 	 */
-	private GlobalHeader() {
-	}
+	private GlobalHeader() {}
 
 	public static String getExamHash() {
 		return INSTANCE.examHash;
@@ -121,26 +124,29 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 			examController.addListener(this);
 		}
 		signIn = getSignInTextButton() != null
-				? getSignInTextButton().getElement().getParentElement() : null;
+				? getSignInTextButton().getElement().getParentElement()
+				: null;
 		if (signIn == null) {
 			return;
 		}
 
 		registerSignInButtonsAsFocusable();
+		LogInOperation logInOperation = appW.getLoginOperation();
 
 		Dom.addEventListener(signIn, "click", (e) -> {
-			appW.getSignInController().login();
+			registerLoginClicked(appW);
+			logInOperation.showLoginDialog();
 			e.stopPropagation();
 			e.preventDefault();
 		});
-		app.getLoginOperation().getView().add(this);
+		logInOperation.getView().add(this);
 	}
 
 	private RootPanel getSignInTextButton() {
 		return RootPanel.get("signInTextID");
 	}
 
-	private @CheckForNull RootPanel getSignInIconButton() {
+	private @Nullable RootPanel getSignInIconButton() {
 		return RootPanel.get("signInIconID");
 	}
 
@@ -158,8 +164,7 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 
 	@Override
 	public void renderEvent(BaseEvent event) {
-		if (event instanceof LoginEvent
-				&& ((LoginEvent) event).isSuccessful()) {
+		if (event instanceof LoginEvent && ((LoginEvent) event).isSuccessful()) {
 			if (profilePanel == null) {
 				profilePanel = new ProfileAvatar(app);
 			}
@@ -205,7 +210,7 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 	 * updating header button visibility on header resize or login
 	 * @param smallScreen - whether is small screen or not
 	 */
-	public void updateHeaderButtonVisibility(boolean smallScreen) {
+	private void updateHeaderButtonVisibility(boolean smallScreen) {
 		updateButtonVisibility(smallScreen, "#shareButton");
 
 		boolean isLoggedIn = app.getLoginOperation().isLoggedIn();
@@ -244,6 +249,7 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 			shareButtonInitialized = true;
 			registerFocusable(app, AccessibilityGroup.SHARE, shareBtn);
 			Dom.addEventListener(shareBtn.getElement(), "click", (e) -> {
+				registerShareClicked(app);
 				callback.callback(shareBtn);
 				e.stopPropagation();
 				e.preventDefault();
@@ -261,6 +267,7 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 			registerFocusable(app, AccessibilityGroup.ASSIGN, assignButton);
 			assignButtonInitialized = true;
 			Dom.addEventListener(assignButton.getElement(), "click", (e) -> {
+				registerAssignClicked(app);
 				onClick.run();
 				e.stopPropagation();
 				e.preventDefault();
@@ -274,6 +281,28 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 
 	private static RootPanel getShareButton() {
 		return RootPanel.get("shareButton");
+	}
+
+	private void registerLoginClicked(AppW app) {
+		app.getAccessibilityAnalyticsContext()
+				.setTrigger(AccessibilityAnalytics.Value.HEADER)
+				.setFlow(AccessibilityAnalytics.Value.DIRECT);
+		AccessibilityAnalytics.logLoginClicked(AccessibilityAnalytics.Value.HEADER);
+	}
+
+	private void registerShareClicked(AppW app) {
+		app.getAccessibilityAnalyticsContext()
+				.setTrigger(AccessibilityAnalytics.Value.HEADER)
+				.setFlow(AccessibilityAnalytics.Value.SHARE);
+		AccessibilityAnalytics.logShareClicked(
+				true, app.getLoginOperation().isLoggedIn(), app.isSaved());
+	}
+
+	private void registerAssignClicked(AppW app) {
+		app.getAccessibilityAnalyticsContext()
+				.setTrigger(AccessibilityAnalytics.Value.HEADER)
+				.setFlow(AccessibilityAnalytics.Value.ASSIGN);
+		AccessibilityAnalytics.logAssignClicked(app.getLoginOperation().isLoggedIn(), app.isSaved());
 	}
 
 	/**
@@ -318,12 +347,26 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 
 	private void initSettingButtonIfOnHeader() {
 		if (settingsButton == null) {
-			settingsButton = getActionButton("settingsButton", "Settings");
+			settingsButton = getActionButton("settingsButton", "Settings", SETTINGS);
 			if (settingsButton != null) {
-				settingsButton.setAction(() -> app.getDialogManager().showPropertiesDialog(
-						OptionType.GLOBAL, null));
+				settingsButton.setAction(() -> {
+					FocusableWidget focusableWidget = getSettingsFocusableWidget();
+					if (focusableWidget != null) {
+						app.getAccessibilityManager().setAnchor(focusableWidget);
+					}
+					app.getDialogManager().showPropertiesDialog(OptionType.GLOBAL, null);
+				});
 			}
 		}
+	}
+
+	private @Nullable FocusableWidget getSettingsFocusableWidget() {
+		for (FocusableWidget focusableWidget : focusableWidgets) {
+			if (focusableWidget.getAccessibilityGroup() == SETTINGS) {
+				return focusableWidget;
+			}
+		}
+		return null;
 	}
 
 	private void initUndoRedoButtonsIfOnHeader() {
@@ -331,23 +374,23 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 			undoButton = getUndoButton();
 			redoButton = getRedoButton();
 			if (undoButton != null && redoButton != null) {
-				UndoRedoButtonsController.addUndoRedoFunctionality(undoButton,
-						redoButton, app.getKernel());
+				UndoRedoButtonsController.addUndoRedoFunctionality(undoButton, redoButton, app.getKernel());
 			}
 		}
 	}
 
 	private ActionButton getUndoButton() {
-		return getActionButton("undoButton", "Undo");
+		return getActionButton("undoButton", "Undo", UNDO_SCI_CALC);
 	}
 
 	private ActionButton getRedoButton() {
-		return getActionButton("redoButton", "Redo");
+		return getActionButton("redoButton", "Redo", REDO_SCI_CALC);
 	}
 
-	private ActionButton getActionButton(String viewId, String title) {
+	private ActionButton getActionButton(String viewId, String title, AccessibilityGroup group) {
 		RootPanel view = getViewById(viewId);
 		if (view != null) {
+			registerFocusable(app, group, view);
 			return new ActionButton(app, view, title);
 		}
 		return null;
@@ -378,15 +421,13 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 			public void execute(double timestamp) {
 				if (examController != null && examController.isExamActive()) {
 					if (examController.isCheating()) {
-						app.getGuiManager()
-								.updateUnbundledToolbarStyle();
+						app.getGuiManager().updateUnbundledToolbarStyle();
 						if (examTypeHolder != null) {
 							examTypeHolder.addStyleName("cheat");
 						}
 					}
 					if (getTimer() != null) {
-						getTimer().setText(
-								examController.getDurationFormatted(app.getLocalization()));
+						getTimer().setText(examController.getDurationFormatted(app.getLocalization()));
 					}
 					AnimationScheduler.get().requestAnimationFrame(this);
 				}
@@ -404,13 +445,13 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 		}
 
 		// exam panel with timer and info btn
-		Image timerImg = new Image(MaterialDesignResources.INSTANCE.timer()
-				.getSafeUri().asString());
+		Image timerImg =
+				new Image(MaterialDesignResources.INSTANCE.timer().getSafeUri().asString());
 		timerImg.addStyleName("timerImg");
 		timer = new Label("0:00");
 		timer.setStyleName("examTimer");
-		examInfoBtn = new IconButton(app, () -> {}, new ImageIconSpec(SharedResources.INSTANCE
-				.info_black()), "exam_log_header");
+		examInfoBtn = new IconButton(
+				app, () -> {}, new ImageIconSpec(SharedResources.INSTANCE.info_black()), "exam_log_header");
 		examInfoBtn.addStyleName("examInfoBtn");
 		// add exam panel to
 		Element exam = DOM.createDiv();
@@ -427,15 +468,13 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 		if (SafeExamBrowser.get() != null && SafeExamBrowser.get().security != null) {
 			initSafeExamBrowser(hash -> addExamType("Safe Exam Browser (" + hash + ")"));
 		} else if (examType != ExamType.GENERIC && examType != null) {
-			addExamType(examType.getDisplayName(
-					app.getLocalization(), app.getConfig()));
+			addExamType(examType.getDisplayName(app.getLocalization(), app.getConfig()));
 		}
 
 		examId.add(timerImg);
 		examId.add(timer);
 		examId.add(examInfoBtn);
-		examInfoBtn.addFastClickHandler(source ->
-				app.getGuiManager().showExamInfoDialog(examInfoBtn));
+		examInfoBtn.addFastClickHandler(source -> app.getGuiManager().showExamInfoDialog(examInfoBtn));
 		// run timer
 		onResize();
 	}
@@ -461,7 +500,7 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 			JavaScriptInjector.inject(globalScript);
 		}
 		SafeExamBrowser.SebSecurity security = SafeExamBrowser.get().security;
-		GeoGebraGlobal.ggbCallbacks.push(() ->  {
+		GeoGebraGlobal.ggbCallbacks.push(() -> {
 			examHash = security.configKey.substring(0, 8);
 			onHashChange.consume(examHash);
 		});
@@ -523,8 +562,9 @@ public final class GlobalHeader implements EventRenderable, ExamListener {
 			menuBtn.setLabel();
 		}
 		if (getAssignButton() != null && app != null) {
-			getAssignButton().getElement().setInnerText(app.getLocalization()
-					.getMenu("assignButton.title"));
+			getAssignButton()
+					.getElement()
+					.setInnerText(app.getLocalization().getMenu("assignButton.title"));
 		}
 		if (getShareButton() != null && app != null && shareButtonInitialized) {
 			AriaHelper.setTitle(getShareButton(), app.getLocalization().getMenu("Share"));

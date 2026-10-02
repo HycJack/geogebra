@@ -42,7 +42,7 @@ import org.geogebra.web.shared.GlobalHeader;
  *
  * @author Zbynek
  */
-public class ScientificActivity extends BaseActivity {
+public final class ScientificActivity extends BaseActivity {
 
 	private ScientificHeaderResizer headerResizer = null;
 	private ScientificDataTableController tableController;
@@ -56,7 +56,8 @@ public class ScientificActivity extends BaseActivity {
 
 	@Override
 	public void start(AppW app) {
-		app.getKernel().getAlgebraProcessor()
+		app.getKernel()
+				.getAlgebraProcessor()
 				.addCommandFilter(CommandFilterFactory.createSciCalcCommandFilter());
 		initHeaderButtons(app);
 		app.forceEnglishCommands();
@@ -100,19 +101,14 @@ public class ScientificActivity extends BaseActivity {
 	}
 
 	@Override
-	public ErrorHandler createAVErrorHandler(RadioTreeItem radioTreeItem, boolean valid,
-			boolean allowSliders, boolean withSliders) {
+	public ErrorHandler createAVErrorHandler(
+			RadioTreeItem radioTreeItem, boolean valid, boolean allowSliders, boolean withSliders) {
 		return ErrorHelper.silent();
 	}
 
 	@Override
 	public SVGResource getIcon() {
 		return MaterialDesignResources.INSTANCE.scientific();
-	}
-
-	@Override
-	public boolean useValidInput() {
-		return false;
 	}
 
 	@Override

@@ -25,8 +25,8 @@ import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 
 /**
- * 
- * 
+ *
+ *
  * @author G. Sturr
  */
 public class AlgoZProportion2Estimate extends AlgoElement {
@@ -55,8 +55,12 @@ public class AlgoZProportion2Estimate extends AlgoElement {
 	 * @param level
 	 *            confidence level
 	 */
-	public AlgoZProportion2Estimate(Construction cons, GeoNumeric proportion,
-			GeoNumeric n, GeoNumeric proportion2, GeoNumeric n_2,
+	public AlgoZProportion2Estimate(
+			Construction cons,
+			GeoNumeric proportion,
+			GeoNumeric n,
+			GeoNumeric proportion2,
+			GeoNumeric n_2,
 			GeoNumeric level) {
 		super(cons);
 		this.proportion = proportion;
@@ -112,16 +116,9 @@ public class AlgoZProportion2Estimate extends AlgoElement {
 
 	@Override
 	public final void compute() {
-
-		double n1 = n.getDouble();
-		double phat1 = proportion.getDouble();
-		double n2 = n_2.getDouble();
-		double phat2 = proportion2.getDouble();
-		double cLevel = level.getDouble();
-
 		NormalDistribution normalDist = new NormalDistribution(0, 1);
-
-		double critZ = 0;
+		double cLevel = level.getDouble();
+		double critZ;
 
 		try {
 			critZ = normalDist.inverseCumulativeProbability((1 - cLevel) / 2);
@@ -130,6 +127,10 @@ public class AlgoZProportion2Estimate extends AlgoElement {
 			return;
 		}
 
+		double n1 = n.getDouble();
+		double phat1 = proportion.getDouble();
+		double n2 = n_2.getDouble();
+		double phat2 = proportion2.getDouble();
 		double stat = phat1 - phat2;
 		se = Math.sqrt(phat1 * (1 - phat1) / n1 + phat2 * (1 - phat2) / n2);
 		double z = Math.abs(critZ);
@@ -139,7 +140,5 @@ public class AlgoZProportion2Estimate extends AlgoElement {
 		result.clear();
 		result.addNumber(stat - me, null);
 		result.addNumber(stat + me, null);
-
 	}
-
 }

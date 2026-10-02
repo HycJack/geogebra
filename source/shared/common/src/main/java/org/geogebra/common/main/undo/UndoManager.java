@@ -25,9 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.euclidian.EmbedManager;
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.geos.GeoElement;
@@ -37,6 +34,8 @@ import org.geogebra.common.plugin.ActionType;
 import org.geogebra.common.plugin.Event;
 import org.geogebra.common.plugin.EventType;
 import org.geogebra.common.spreadsheet.core.UndoProvider;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Weak;
 
@@ -60,6 +59,7 @@ public abstract class UndoManager implements UndoProvider {
 	protected LinkedList<UndoCommand> undoInfoList;
 	/** invariant: iterator.previous() is current state */
 	private ListIterator<UndoCommand> iterator;
+
 	private boolean storeUndoInfoNeededForProperties = false;
 	private List<UndoInfoStoredListener> undoInfoStoredListeners;
 	private ArrayList<UndoPossibleListener> mListener = new ArrayList<>();
@@ -90,8 +90,8 @@ public abstract class UndoManager implements UndoProvider {
 
 		while (undoIterator.hasPrevious()) {
 			UndoCommand cmd = undoIterator.previous();
-			if (cmd.getAppState() != null && (cmd.getSlideID() == null
-					|| cmd.getSlideID().equals(slideID))) {
+			if (cmd.getAppState() != null
+					&& (cmd.getSlideID() == null || cmd.getSlideID().equals(slideID))) {
 				state = cmd;
 				break;
 			}
@@ -119,8 +119,7 @@ public abstract class UndoManager implements UndoProvider {
 		while (iterator.hasPrevious()) {
 			UndoCommand cmd = iterator.previous();
 			steps++;
-			if ((cmd.getAction() == ActionType.ADD_PAGE
-					|| cmd.getAction() == ActionType.PASTE_PAGE)
+			if ((cmd.getAction() == ActionType.ADD_PAGE || cmd.getAction() == ActionType.PASTE_PAGE)
 					&& cmd.getArgs().length > 1
 					&& cmd.getArgs()[1].equals(slideID)) {
 
@@ -144,7 +143,7 @@ public abstract class UndoManager implements UndoProvider {
 	 * @param args event arguments
 	 */
 	public void executeAction(ActionType action, String... args) {
-		for (ActionExecutor executor: executors) {
+		for (ActionExecutor executor : executors) {
 			if (executor.executeAction(action, args)) {
 				return;
 			}
@@ -209,10 +208,10 @@ public abstract class UndoManager implements UndoProvider {
 
 	/**
 	 * Get current undo info for later comparisons
-	 * 
+	 *
 	 * @return Object (the file of last undo)
 	 */
-	final public synchronized AppState getCurrentUndoInfo() {
+	public final synchronized AppState getCurrentUndoInfo() {
 		AppState ret = iterator.previous().getAppState();
 		iterator.next();
 		return ret;
@@ -222,7 +221,7 @@ public abstract class UndoManager implements UndoProvider {
 	 * Reloads construction state at current position of undo list (this is
 	 * needed for "cancel" actions).
 	 */
-	final public synchronized void restoreCurrentUndoInfo() {
+	public final synchronized void restoreCurrentUndoInfo() {
 		app.getSelectionManager().storeSelectedGeosNames();
 		if (iterator != null) {
 			loadUndoInfo(iterator.previous().getAppState(), null);
@@ -243,7 +242,7 @@ public abstract class UndoManager implements UndoProvider {
 
 	/**
 	 * Returns whether undo operation is possible or not.
-	 * 
+	 *
 	 * @return whether undo operation is possible or not.
 	 */
 	public boolean undoPossible() {
@@ -258,7 +257,7 @@ public abstract class UndoManager implements UndoProvider {
 
 	/**
 	 * Returns whether redo operation is possible or not.
-	 * 
+	 *
 	 * @return whether redo operation is possible or not.
 	 */
 	public boolean redoPossible() {
@@ -281,14 +280,14 @@ public abstract class UndoManager implements UndoProvider {
 	 * Stores undo info
 	 */
 	@Override
-	final public void storeUndoInfo() {
+	public final void storeUndoInfo() {
 		storeUndoInfo(construction.getCurrentUndoXML(true));
 		storeUndoInfoNeededForProperties = false;
 	}
 
 	/**
 	 * Loads undo info
-	 * 
+	 *
 	 * @param state
 	 *            stored state
 	 * @param slideID
@@ -296,8 +295,8 @@ public abstract class UndoManager implements UndoProvider {
 	 */
 	protected abstract void loadUndoInfo(AppState state, String slideID);
 
-	protected void loadUndoInfo(UndoCommand cmd, @CheckForNull String slideId,
-			@Nonnull UndoCommand until) {
+	protected void loadUndoInfo(
+			UndoCommand cmd, @Nullable String slideId, @NonNull UndoCommand until) {
 		loadUndoInfo(extractFromCommand(cmd), slideId);
 		replayActions(cmd, slideId, until);
 	}
@@ -321,12 +320,12 @@ public abstract class UndoManager implements UndoProvider {
 	 * @param slideID slide ID
 	 * @param until first action not to be replayed (null=replay all)
 	 */
-	public void replayActions(String slideID, @Nonnull UndoCommand until) {
+	public void replayActions(String slideID, @NonNull UndoCommand until) {
 		replayActions(getCheckpoint(slideID), slideID, until);
 	}
 
-	private void replayActions(@CheckForNull UndoCommand checkpoint, @CheckForNull String slideID,
-			@Nonnull UndoCommand until) {
+	private void replayActions(
+			@Nullable UndoCommand checkpoint, @Nullable String slideID, @NonNull UndoCommand until) {
 		boolean checkpointReached = checkpoint == null;
 
 		for (UndoCommand undoCommand : undoInfoList) {
@@ -334,7 +333,8 @@ public abstract class UndoManager implements UndoProvider {
 				return;
 			}
 
-			if (checkpointReached && undoCommand.getAction() != null
+			if (checkpointReached
+					&& undoCommand.getAction() != null
 					&& Objects.equals(slideID, undoCommand.getSlideID())) {
 				executeAction(undoCommand.getAction(), undoCommand.getArgs());
 			}
@@ -393,7 +393,7 @@ public abstract class UndoManager implements UndoProvider {
 	 * @param command the undo command to store
 	 * @return true if the command was stored
 	 */
-	final protected boolean maybeStoreUndoCommand(UndoCommand command) {
+	protected final boolean maybeStoreUndoCommand(UndoCommand command) {
 		boolean equalsWithPrevious = false;
 		if (iterator.hasPrevious()) {
 			UndoCommand currentState = iterator.previous();
@@ -422,7 +422,7 @@ public abstract class UndoManager implements UndoProvider {
 	/**
 	 * End batch of properties changes; reset properties change flag and store
 	 * undo if necessary
-	 * 
+	 *
 	 * @param isUndoActive
 	 *            whether undo should be actually stored
 	 */
@@ -439,8 +439,8 @@ public abstract class UndoManager implements UndoProvider {
 	 * @param args
 	 *            action arguments
 	 */
-	public void storeAction(ActionType action, String[] args, ActionType undoAction,
-			String... undoArgs) {
+	public void storeAction(
+			ActionType action, String[] args, ActionType undoAction, String... undoArgs) {
 		storeActionWithSlideId(null, action, args, undoAction, undoArgs);
 	}
 
@@ -449,8 +449,8 @@ public abstract class UndoManager implements UndoProvider {
 	 * @param slideID slide ID
 	 * @param args action arguments
 	 */
-	public void storeActionWithSlideId(String slideID, ActionType action,  String[] args,
-			ActionType undoAction, String[] undoArgs) {
+	public void storeActionWithSlideId(
+			String slideID, ActionType action, String[] args, ActionType undoAction, String[] undoArgs) {
 		storeAndNotifyUnsaved(new UndoCommand(slideID, action, args, undoAction, undoArgs));
 	}
 
@@ -523,8 +523,8 @@ public abstract class UndoManager implements UndoProvider {
 	 * @param type action type
 	 * @param args arguments
 	 */
-	public void storeUndoableAction(ActionType action, String[] args, ActionType type,
-			String... undoArgs) {
+	public void storeUndoableAction(
+			ActionType action, String[] args, ActionType type, String... undoArgs) {
 		buildAction(action, args).withUndo(type, undoArgs).storeAndNotifyUnsaved();
 	}
 
@@ -591,6 +591,7 @@ public abstract class UndoManager implements UndoProvider {
 		app.getCompanion().recallViewCreators();
 		app.getSelectionManager().recallSelectedGeosNames(app.getKernel());
 		app.getActiveEuclidianView().restoreDynamicStylebar();
+		app.getActiveEuclidianView().getEuclidianController().clearMeasurementTools();
 		app.resetPen();
 	}
 
@@ -600,11 +601,11 @@ public abstract class UndoManager implements UndoProvider {
 	 */
 	public void undoHistoryTo(Map<String, UndoHistory> undoHistory) {
 		LinkedList<UndoCommand> undoCommands = new LinkedList<>();
-		for (UndoCommand undoCommand: undoInfoList) {
+		for (UndoCommand undoCommand : undoInfoList) {
 			undoCommands.add(new UndoCommand(undoCommand));
 		}
-		undoHistory.put(app.getConfig().getSubAppCode(),
-				new UndoHistory(undoCommands, iterator.nextIndex()));
+		undoHistory.put(
+				app.getConfig().getSubAppCode(), new UndoHistory(undoCommands, iterator.nextIndex()));
 		clearUndoInfo();
 	}
 
@@ -650,7 +651,7 @@ public abstract class UndoManager implements UndoProvider {
 			listener.redoPossible(redoPossible());
 		}
 	}
-	
+
 	public void setAllowCheckpoints(boolean val) {
 		this.allowCheckpoints = val;
 	}

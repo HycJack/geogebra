@@ -20,10 +20,9 @@ import static org.geogebra.common.util.StreamUtils.flatMap;
 
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
 import org.geogebra.common.kernel.arithmetic.filter.ExpressionFilter;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Restriction for {@link ExpressionValue}s (used in exam restrictions).
@@ -38,9 +37,10 @@ public interface ExpressionRestriction {
 	 * @param expression the expression to check
 	 * @return set of restricted sub-expressions
 	 */
-	default @Nonnull Set<ExpressionValue> getRestrictedSubExpressions(@Nonnull ExpressionValue expression) {
-        return Set.of();
-    }
+	default @NonNull Set<ExpressionValue> getRestrictedSubExpressions(
+			@NonNull ExpressionValue expression) {
+		return Set.of();
+	}
 
 	/**
 	 * Return the set of sub-expressions that should be allowed.
@@ -53,53 +53,52 @@ public interface ExpressionRestriction {
 	 * @param expression the expression to check
 	 * @return set of allowed sub-expressions
 	 */
-	default @Nonnull Set<ExpressionValue> getAllowedSubExpressions(@Nonnull ExpressionValue expression) {
-        return Set.of();
-    }
+	default @NonNull Set<ExpressionValue> getAllowedSubExpressions(
+			@NonNull ExpressionValue expression) {
+		return Set.of();
+	}
 
-    /**
-     * Determine whether an expression is restricted
-     * for the combined effect of a set of expression restrictions.
-     * @param expression The expression to check.
-     * @param restrictions The set of expression restrictions to apply.
-     * @return {@code true} if the expression is restricted, {@code false} otherwise.
-     */
-    static boolean isExpressionRestricted(
-            @Nonnull ExpressionValue expression,
-            @Nonnull Set<ExpressionRestriction> restrictions
-    ) {
-        Set<ExpressionValue> restrictedSubExpressions = flatMap(restrictions,
-                restriction -> restriction.getRestrictedSubExpressions(expression));
-        if (restrictedSubExpressions.isEmpty()) {
-            return false;
-        }
-        Set<ExpressionValue> allowedSubExpressions = flatMap(restrictions,
-                restriction -> restriction.getAllowedSubExpressions(expression));
-        // If a sub-expression is restricted by any expression restriction
-        // and none allows it, then the expression is restricted.
-        for (ExpressionValue restrictedSubExpression : restrictedSubExpressions) {
-            if (!allowedSubExpressions.contains(restrictedSubExpression)) {
-                return true;
-            }
-        }
-        return false;
-    }
+	/**
+	 * Determine whether an expression is restricted
+	 * for the combined effect of a set of expression restrictions.
+	 * @param expression The expression to check.
+	 * @param restrictions The set of expression restrictions to apply.
+	 * @return {@code true} if the expression is restricted, {@code false} otherwise.
+	 */
+	static boolean isExpressionRestricted(
+			@NonNull ExpressionValue expression, @NonNull Set<ExpressionRestriction> restrictions) {
+		Set<ExpressionValue> restrictedSubExpressions =
+				flatMap(restrictions, restriction -> restriction.getRestrictedSubExpressions(expression));
+		if (restrictedSubExpressions.isEmpty()) {
+			return false;
+		}
+		Set<ExpressionValue> allowedSubExpressions =
+				flatMap(restrictions, restriction -> restriction.getAllowedSubExpressions(expression));
+		// If a sub-expression is restricted by any expression restriction
+		// and none allows it, then the expression is restricted.
+		for (ExpressionValue restrictedSubExpression : restrictedSubExpressions) {
+			if (!allowedSubExpressions.contains(restrictedSubExpression)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Constructs an {@link ExpressionFilter} from a set of {@code ExpressionRestriction}.
 	 * @param restrictions the set of expression restrictions
 	 * @return the expression filter with the combined effect of the expression restrictions
 	 */
-	static @Nonnull ExpressionFilter toFilter(@Nonnull Set<ExpressionRestriction> restrictions) {
-        return expression -> !isExpressionRestricted(expression, restrictions);
-    }
+	static @NonNull ExpressionFilter toFilter(@NonNull Set<ExpressionRestriction> restrictions) {
+		return expression -> !isExpressionRestricted(expression, restrictions);
+	}
 
 	/**
 	 * Constructs an {@link ExpressionFilter} from {@code ExpressionRestriction}s.
 	 * @param restrictions expression restrictions
 	 * @return the expression filter with the combined effect of the expression restrictions
 	 */
-	static @Nonnull ExpressionFilter toFilter(@Nonnull ExpressionRestriction... restrictions) {
-        return toFilter(Set.of(restrictions));
-    }
+	static @NonNull ExpressionFilter toFilter(@NonNull ExpressionRestriction... restrictions) {
+		return toFilter(Set.of(restrictions));
+	}
 }

@@ -26,6 +26,7 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoImage;
 import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.main.App;
+import org.geogebra.common.properties.impl.objects.PlacementProperty;
 
 public class AbsoluteScreenLocationModel extends BooleanOptionModel {
 
@@ -54,8 +55,7 @@ public class AbsoluteScreenLocationModel extends BooleanOptionModel {
 
 			// geo could be redefined, so need to change geos[i] to
 			// new geo
-			EuclidianStyleBarStatic.applyFixPosition(al, value,
-					app.getActiveEuclidianView());
+			EuclidianStyleBarStatic.applyFixPosition(al, value, app.getActiveEuclidianView());
 		}
 		storeUndoInfo();
 	}
@@ -65,8 +65,8 @@ public class AbsoluteScreenLocationModel extends BooleanOptionModel {
 		return "AbsoluteScreenLocation";
 	}
 
-	public static void setAbsolute(AbsoluteScreenLocateable geo,
-			boolean value, EuclidianViewInterfaceCommon ev) {
+	public static void setAbsolute(
+			AbsoluteScreenLocateable geo, boolean value, EuclidianViewInterfaceCommon ev) {
 		if (value) {
 			if (!geo.isAbsoluteScreenLocActive()) {
 				// convert real world to screen coords
@@ -92,11 +92,12 @@ public class AbsoluteScreenLocationModel extends BooleanOptionModel {
 	@Override
 	public boolean isValidAt(int index) {
 		GeoElement geo = getGeoAt(index);
-		if (geo instanceof AbsoluteScreenLocateable) {
-			AbsoluteScreenLocateable absLoc = (AbsoluteScreenLocateable) geo;
-			if (!absLoc.isAbsoluteScreenLocateable() || geo.isGeoBoolean()
-					|| geo instanceof GeoList || (geo instanceof GeoImage
-							&& ((GeoImage) geo).isCentered())) {
+		if (geo instanceof AbsoluteScreenLocateable absLoc) {
+			if (!absLoc.isAbsoluteScreenLocateable()
+					|| geo.isGeoBoolean()
+					|| geo instanceof GeoList
+					|| (geo instanceof GeoImage && ((GeoImage) geo).isCentered())
+					|| PlacementProperty.isDependentTextCommand(geo)) {
 
 				return false;
 			}
@@ -106,5 +107,4 @@ public class AbsoluteScreenLocationModel extends BooleanOptionModel {
 		// whiteboard: no abs position for texts or images
 		return !geo.getKernel().getApplication().isWhiteboardActive();
 	}
-
 }

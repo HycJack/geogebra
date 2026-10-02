@@ -24,7 +24,7 @@ import com.himamis.retex.renderer.share.platform.graphics.Insets;
 /** Measures text size using ReTeX library */
 public class LaTeXTextSizeMeasurer implements TextSizeMeasurer {
 
-	private int fontSize;
+	private final int fontSize;
 
 	/**
 	 * Creates a new LaTeXTextSizeMeasurer
@@ -37,11 +37,11 @@ public class LaTeXTextSizeMeasurer implements TextSizeMeasurer {
 	@Override
 	public int getWidth(String text) {
 		try {
-			TeXFormula formula = new TeXFormula(text);  // this may throw (for invalid formulas)
+			TeXFormula formula = new TeXFormula(text); // this may throw (for invalid formulas)
 			TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, fontSize);
 			icon.setInsets(new Insets(1, 1, 1, 1));
 			return icon.getIconWidth();
-		} catch (Exception ex) {
+		} catch (RuntimeException ignored) {
 			// don't propagate exceptions from formula parsing (e.g., APPS-4584)
 		}
 		return 0;

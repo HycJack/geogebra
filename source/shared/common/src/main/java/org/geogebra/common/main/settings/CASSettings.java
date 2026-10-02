@@ -20,11 +20,11 @@ import java.util.LinkedList;
 
 /**
  * Stores CAS specific settings
- * 
+ *
  * @author tom
  *
  */
-public class CASSettings extends AbstractSettings {
+public class CASSettings extends AbstractSettings<CASSettings> {
 
 	private long timeoutMillis;
 	private boolean showExpAsRoots;
@@ -34,7 +34,7 @@ public class CASSettings extends AbstractSettings {
 	 * @param listeners
 	 *            listeners
 	 */
-	public CASSettings(LinkedList<SettingListener> listeners) {
+	public CASSettings(LinkedList<SettingListener<CASSettings>> listeners) {
 		super(listeners);
 		init();
 	}
@@ -53,7 +53,7 @@ public class CASSettings extends AbstractSettings {
 
 	/**
 	 * Changes the timeout value for the cas
-	 * 
+	 *
 	 * @param value
 	 *            new timeout value, in milliseconds
 	 */
@@ -66,7 +66,7 @@ public class CASSettings extends AbstractSettings {
 
 	/**
 	 * Changes the showExpAsRoos value for the cas
-	 * 
+	 *
 	 * @param value
 	 *            new boolean value if exponents should be displayed as roots
 	 */

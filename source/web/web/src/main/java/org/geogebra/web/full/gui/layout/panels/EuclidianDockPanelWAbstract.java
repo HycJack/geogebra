@@ -18,8 +18,6 @@ package org.geogebra.web.full.gui.layout.panels;
 
 import static org.geogebra.web.full.gui.pagecontrolpanel.PageListPanel.PAGE_OVERVIEW_WIDTH;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.euclidian.GetViewId;
 import org.geogebra.web.full.gui.layout.DockPanelW;
@@ -37,6 +35,7 @@ import org.gwtproject.user.client.ui.AbsolutePanel;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.RequiresResize;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.DomGlobal;
@@ -52,8 +51,7 @@ import jsinterop.base.Js;
  *
  * @author arpad (based on EuclidianDockPanelAbstract by Mathieu)
  */
-public abstract class EuclidianDockPanelWAbstract extends DockPanelW
-		implements GetViewId {
+public abstract class EuclidianDockPanelWAbstract extends DockPanelW implements GetViewId {
 	private ConstructionProtocolNavigationW consProtNav;
 	private final boolean mayHaveZoomButtons;
 
@@ -69,8 +67,8 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 	 * @param hasZoomPanel
 	 *            - true if it has zoom panel
 	 */
-	public EuclidianDockPanelWAbstract(int id, String toolbar,
-			boolean hasStyleBar, boolean hasZoomPanel) {
+	public EuclidianDockPanelWAbstract(
+			int id, String toolbar, boolean hasStyleBar, boolean hasZoomPanel) {
 		super(id, toolbar, hasStyleBar);
 		this.mayHaveZoomButtons = hasZoomPanel;
 	}
@@ -83,32 +81,30 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 	/**
 	 * @return view in this dock panel
 	 */
-	abstract public EuclidianView getEuclidianView();
+	public abstract EuclidianView getEuclidianView();
 
 	/**
 	 * Adds navigation bar
 	 */
 	public final void addNavigationBar() {
-		consProtNav = (ConstructionProtocolNavigationW) app.getGuiManager()
-				.getConstructionProtocolNavigation(id);
+		consProtNav =
+				(ConstructionProtocolNavigationW) app.getGuiManager().getConstructionProtocolNavigation(id);
 		consProtNav.getImpl().addStyleName("consProtNav");
 		if (getEuclidianPanel() == null) {
 			loadComponent();
 		}
 		getEuclidianPanel().add(consProtNav.getImpl()); // may be invisible, but
-														// made
-													// visible later
+		// made
+		// visible later
 		updateNavigationBar();
 	}
 
 	@Override
 	public final void updateNavigationBar() {
 		if (app.getShowCPNavNeedsUpdate(id)) {
-			app.setShowConstructionProtocolNavigation(
-					app.showConsProtNavigation(id), id);
+			app.setShowConstructionProtocolNavigation(app.showConsProtNavigation(id), id);
 		}
-		if (app.showConsProtNavigation(id)
-				&& consProtNav == null) {
+		if (app.showConsProtNavigation(id) && consProtNav == null) {
 			this.addNavigationBar();
 		}
 		if (consProtNav != null) {
@@ -120,8 +116,7 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 
 	@Override
 	public int navHeight() {
-		if (this.consProtNav != null
-				&& this.consProtNav.getImpl().getOffsetHeight() != 0) {
+		if (this.consProtNav != null && this.consProtNav.getImpl().getOffsetHeight() != 0) {
 			return this.consProtNav.getImpl().getOffsetHeight();
 		}
 		return 30;
@@ -130,8 +125,7 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 	/**
 	 * Wrapper of euclidian view
 	 */
-	public static class EuclidianPanel extends FlowPanel
-			implements RequiresResize {
+	public static class EuclidianPanel extends FlowPanel implements RequiresResize {
 
 		/** dock panel */
 		EuclidianDockPanelWAbstract dockPanel;
@@ -156,28 +150,23 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 		 * @param absPanel
 		 *            absolute panel (for positioning stuff over canvas)
 		 */
-		public EuclidianPanel(EuclidianDockPanelWAbstract dockPanel,
-				AbsolutePanel absPanel) {
+		public EuclidianPanel(EuclidianDockPanelWAbstract dockPanel, AbsolutePanel absPanel) {
 			super();
 			this.dockPanel = dockPanel;
 			add(absoluteEuclidianPanel = absPanel);
 			absoluteEuclidianPanel.addStyleName(EuclidianViewW.ABSOLUTE_PANEL_CLASS);
-			absoluteEuclidianPanel.getElement().getStyle()
-					.setOverflow(Overflow.HIDDEN);
+			absoluteEuclidianPanel.getElement().getStyle().setOverflow(Overflow.HIDDEN);
 			checkFocus();
-			getElement().setAttribute("role", "application");
 		}
 
 		@Override
 		public void onResize() {
 			if (dockPanel.getApp() != null) {
-				int h = dockPanel.getComponentInteriorHeight()
-						- dockPanel.navHeightIfShown();
+				int h = dockPanel.getComponentInteriorHeight() - dockPanel.navHeightIfShown();
 				int w = dockPanel.getComponentInteriorWidth();
 				if (dockPanel.getApp().isWhiteboardActive()) {
 					PageListPanel pageControlPanel =
-							((AppWFull) dockPanel.getApp()).getAppletFrame()
-									.getPageControlPanel();
+							((AppWFull) dockPanel.getApp()).getAppletFrame().getPageControlPanel();
 					if (pageControlPanel != null && pageControlPanel.isVisible()) {
 						w = w - PAGE_OVERVIEW_WIDTH;
 					}
@@ -205,8 +194,10 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 		// hack to fix GGB-697
 		private void checkFocus() {
 			final EventListener focusCheck = (e) -> forceResize();
-			dockPanel.app.getGlobalHandlers().addEventListener(DomGlobal.document,
-					"visibilitychange", focusCheck);
+			dockPanel
+					.app
+					.getGlobalHandlers()
+					.addEventListener(DomGlobal.document, "visibilitychange", focusCheck);
 		}
 
 		private void forceResize() {
@@ -225,7 +216,6 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 		public AbsolutePanel getAbsolutePanel() {
 			return absoluteEuclidianPanel;
 		}
-
 	}
 
 	/**
@@ -243,9 +233,8 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 	/**
 	 * @return panel for positioning overlay elements (e.g. input boxes)
 	 */
-	public final @CheckForNull AbsolutePanel getAbsolutePanel() {
-		return getEuclidianPanel() == null ? null : getEuclidianPanel()
-				.getAbsolutePanel();
+	public final @Nullable AbsolutePanel getAbsolutePanel() {
+		return getEuclidianPanel() == null ? null : getEuclidianPanel().getAbsolutePanel();
 	}
 
 	private boolean allowZoomPanel() {
@@ -269,9 +258,7 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 		}
 		if (allowZoomPanel()) {
 			boolean bottomRight = isBottomRight();
-			zoomPanel = new ZoomPanel(getEuclidianView(), app,
-					bottomRight,
-					this.mayHaveZoomButtons);
+			zoomPanel = new ZoomPanel(getEuclidianView(), app, bottomRight, this.mayHaveZoomButtons);
 			if (bottomRight) {
 				app.setZoomPanel(zoomPanel);
 			}
@@ -356,12 +343,11 @@ public abstract class EuclidianDockPanelWAbstract extends DockPanelW
 	}
 
 	@Override
-	public void paintToCanvas(CanvasRenderingContext2D context2d,
-			ViewCounter counter, int left, int top) {
+	public void paintToCanvas(
+			CanvasRenderingContext2D context2d, ViewCounter counter, int left, int top) {
 		if (getEuclidianView() != null) {
 			HTMLCanvasElement evCanvas =
-					Js.uncheckedCast(((EuclidianViewWInterface) getEuclidianView())
-							.getExportCanvas());
+					Js.uncheckedCast(((EuclidianViewWInterface) getEuclidianView()).getExportCanvas());
 			double pixelRatio = app.getPixelRatio();
 			context2d.scale(1 / pixelRatio, 1 / pixelRatio);
 			context2d.drawImage(evCanvas, pixelRatio * left, pixelRatio * top);

@@ -23,10 +23,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.plugin.ActionType;
+import org.jspecify.annotations.NonNull;
 
 public class UpdateStyleActionStore {
 	private final UndoManager undoManager;
@@ -38,9 +37,9 @@ public class UpdateStyleActionStore {
 	 * @param geosAsList selected geos
 	 * @param undoManager undo manager
 	 */
-	public UpdateStyleActionStore(List<GeoElement> geosAsList, @Nonnull UndoManager undoManager) {
+	public UpdateStyleActionStore(List<GeoElement> geosAsList, @NonNull UndoManager undoManager) {
 		this.geos = geosAsList;
-		for (GeoElement geo: geosAsList) {
+		for (GeoElement geo : geosAsList) {
 			initialStyleXML.add(geo.getStyleXML());
 		}
 		this.undoManager = undoManager;
@@ -63,7 +62,8 @@ public class UpdateStyleActionStore {
 			actions.add(currentStyleXML);
 			undoActions.add(initialStyleXML.get(i));
 		}
-		undoManager.buildAction(ActionType.UPDATE, actions.toArray(new String[0]))
+		undoManager
+				.buildAction(ActionType.UPDATE, actions.toArray(new String[0]))
 				.withUndo(ActionType.UPDATE, undoActions.toArray(new String[0]))
 				.withLabels(labels)
 				.storeAndNotifyUnsaved();

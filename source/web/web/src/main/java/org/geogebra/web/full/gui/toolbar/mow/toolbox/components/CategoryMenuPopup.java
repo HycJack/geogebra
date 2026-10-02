@@ -29,7 +29,7 @@ import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.main.toolbox.ToolboxIcon;
 
-public class CategoryMenuPopup extends GPopupMenuW implements SetLabels {
+public final class CategoryMenuPopup extends GPopupMenuW implements SetLabels {
 	private final List<Integer> tools;
 
 	/**
@@ -49,8 +49,10 @@ public class CategoryMenuPopup extends GPopupMenuW implements SetLabels {
 
 		for (Integer mode : tools) {
 			if (mode == EuclidianConstants.MODE_CALCULATOR) {
-				addItem(new AriaMenuItem("GeoGebra", getApp().getToolboxIconResource()
-						.getImageResource(ToolboxIcon.GEOGEBRA), new CalculatorSubMenu(getApp())));
+				addItem(new AriaMenuItem(
+						"GeoGebra",
+						getApp().getToolboxIconResource().getImageResource(ToolboxIcon.GEOGEBRA),
+						new CalculatorSubMenu(getApp())));
 			} else {
 				addItem(mode);
 			}

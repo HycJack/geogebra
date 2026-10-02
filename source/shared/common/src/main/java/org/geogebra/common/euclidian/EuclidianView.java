@@ -20,13 +20,11 @@ import static org.geogebra.common.main.GeoGebraColorConstants.NEUTRAL_500;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import org.geogebra.common.awt.AwtFactory;
 import org.geogebra.common.awt.GAffineTransform;
@@ -45,6 +43,7 @@ import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.common.awt.GRectangle;
 import org.geogebra.common.awt.GShape;
 import org.geogebra.common.awt.MyImage;
+import org.geogebra.common.euclidian.CoordSystemInfo.ScaledAxis;
 import org.geogebra.common.euclidian.background.DrawBackground;
 import org.geogebra.common.euclidian.draw.DrawAngle;
 import org.geogebra.common.euclidian.draw.DrawConic;
@@ -106,7 +105,6 @@ import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.common.main.GuiManagerInterface;
 import org.geogebra.common.main.ScreenReader;
 import org.geogebra.common.main.SelectionManager;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.AlgebraStyle;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.plugin.EuclidianStyleConstants;
@@ -124,14 +122,16 @@ import org.geogebra.common.util.debug.Log;
 import org.geogebra.common.util.debug.crashlytics.CrashlyticsLogger;
 import org.geogebra.common.util.shape.Rectangle;
 import org.geogebra.editor.share.util.Unicode;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Weak;
 
 /**
  * View containing graphic representation of construction elements
  */
-public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
-		SetLabels, Restrictable {
+public abstract class EuclidianView
+		implements EuclidianViewInterfaceCommon, SetLabels, Restrictable {
 
 	private boolean isCrashlyticsLoggingEnabled;
 
@@ -153,6 +153,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	protected double xScaleStart;
 	/** old onscreen y-scale for animate zoom */
 	protected double yScaleStart;
+
 	private int mode = EuclidianConstants.MODE_MOVE;
 	/** minimal width */
 	public static final int MIN_WIDTH = 50;
@@ -160,8 +161,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	protected static final int MIN_HEIGHT = 50;
 	/** corner of export area */
 	public static final String EXPORT1 = "Export_1"; // Points used to define
-														// corners for export
-														// (if they exist)
+	// corners for export
+	// (if they exist)
 	/** corner of export area */
 	public static final String EXPORT2 = "Export_2";
 
@@ -188,6 +189,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * steps to set back to standard view
 	 */
 	protected static final int STANDARD_VIEW_STEPS = 15;
+
 	private static final double LEFT_MARGIN_NOTES = 64;
 
 	// or use volatile image
@@ -198,7 +200,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * g2d of bgImage: used for axis, grid, background images and object traces
 	 */
-	protected @CheckForNull GGraphics2D bgGraphics;
+	protected @Nullable GGraphics2D bgGraphics;
 	// selection rectangle colors
 	private static final GColor selRectBorder = GColor.newColor(200, 200, 230);
 	private static final GColor selRectFill = GColor.newColor(200, 200, 230, 50);
@@ -206,19 +208,19 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	private static final GColor selRectFillMebis = GColor.newColor(193, 159, 203, 30);
 
 	// deletion square design
-	protected static final GColor colDeletionSquare = GColor
-			.newColor(128, 0, 0);
-	protected static final GBasicStroke strokeDeletionSquare = AwtFactory
-			.getPrototype().newBasicStroke(1.0f);
+	protected static final GColor colDeletionSquare = GColor.newColor(128, 0, 0);
+	protected static final GBasicStroke strokeDeletionSquare =
+			AwtFactory.getPrototype().newBasicStroke(1.0f);
 	protected GRectangle deletionRectangle;
 
 	/** label outlines from 5.0.416.0 */
-	protected static final int[] LABEL_OUTLINES_FROM = new int[] { 5, 0, 416, 0 };
+	protected static final int[] LABEL_OUTLINES_FROM = new int[] {5, 0, 416, 0};
 
 	/**
 	 * bounding box
 	 */
 	protected BoundingBox<? extends GShape> boundingBox;
+
 	private ShapeManipulationHandler hitHandler = EuclidianBoundingBoxHandler.UNDEFINED;
 
 	// shape tools
@@ -247,14 +249,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * object color of shape (black by default)
 	 */
-	private final static GColor shapeObjCol = GColor.BLACK;
-	/**
-	 * stroke of shape
-	 */
-	private final GBasicStroke shapeStroke = AwtFactory
-			.getPrototype().newBasicStroke(2.0f, GBasicStroke.CAP_BUTT,
-					GBasicStroke.JOIN_MITER);
-	private boolean isRounded = false;
+	private static final GColor shapeObjCol = GColor.BLACK;
 
 	// colors: axes, grid, background
 	GColor axesColor;
@@ -264,12 +259,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * default axes stroke
 	 */
 	static final GBasicStroke defAxesStroke = AwtFactory.getPrototype()
-			.newBasicStroke(1.0f, GBasicStroke.CAP_BUTT,
-					GBasicStroke.JOIN_MITER);
+			.newBasicStroke(1.0f, GBasicStroke.CAP_BUTT, GBasicStroke.JOIN_MITER);
 
 	static final GBasicStroke boldAxesStroke = AwtFactory.getPrototype()
-			.newBasicStroke(2.0f, GBasicStroke.CAP_BUTT,
-					GBasicStroke.JOIN_MITER);
+			.newBasicStroke(2.0f, GBasicStroke.CAP_BUTT, GBasicStroke.JOIN_MITER);
 
 	// axes and grid stroke
 	GBasicStroke axesStroke;
@@ -310,8 +303,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	protected double printingScale;
 
 	// Map (geo, drawable) for GeoElements and Drawables
-	private final HashMap<GeoElementND, DrawableND> drawableMap = new HashMap<>(
-			500);
+	private final HashMap<GeoElementND, DrawableND> drawableMap = new HashMap<>(500);
 
 	private final ArrayList<GeoPointND> stickyPointList = new ArrayList<>();
 
@@ -326,7 +318,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	private int[] axesTickStyles;
 
 	// for axes labeling with numbers
-	protected boolean[] automaticAxesNumberingDistances = { true, true };
+	protected boolean[] automaticAxesNumberingDistances = {true, true};
 
 	protected double[] axesNumberingDistances;
 	protected GeoNumberValue[] axesDistanceObjects;
@@ -347,39 +339,40 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	@Weak
 	protected Kernel kernel;
 
-	private final static int[] lineTypes = {
-			EuclidianStyleConstants.LINE_TYPE_FULL,
-			EuclidianStyleConstants.LINE_TYPE_DASHED_LONG,
-			EuclidianStyleConstants.LINE_TYPE_DASHED_SHORT,
-			EuclidianStyleConstants.LINE_TYPE_DOTTED,
-			EuclidianStyleConstants.LINE_TYPE_DASHED_DOTTED,
-			EuclidianStyleConstants.LINE_TYPE_POINTWISE };
+	private static final int[] lineTypes = {
+		EuclidianStyleConstants.LINE_TYPE_FULL,
+		EuclidianStyleConstants.LINE_TYPE_DASHED_LONG,
+		EuclidianStyleConstants.LINE_TYPE_DASHED_SHORT,
+		EuclidianStyleConstants.LINE_TYPE_DOTTED,
+		EuclidianStyleConstants.LINE_TYPE_DASHED_DOTTED,
+		EuclidianStyleConstants.LINE_TYPE_POINTWISE
+	};
 
-	private final static int[] pointStyles = {
-			EuclidianStyleConstants.POINT_STYLE_DOT,
-			EuclidianStyleConstants.POINT_STYLE_CROSS,
-			EuclidianStyleConstants.POINT_STYLE_CIRCLE,
-			EuclidianStyleConstants.POINT_STYLE_PLUS,
-			EuclidianStyleConstants.POINT_STYLE_FILLED_DIAMOND,
-			EuclidianStyleConstants.POINT_STYLE_EMPTY_DIAMOND,
-			EuclidianStyleConstants.POINT_STYLE_TRIANGLE_NORTH,
-			EuclidianStyleConstants.POINT_STYLE_TRIANGLE_SOUTH,
-			EuclidianStyleConstants.POINT_STYLE_TRIANGLE_EAST,
-			EuclidianStyleConstants.POINT_STYLE_TRIANGLE_WEST,
-			EuclidianStyleConstants.POINT_STYLE_NO_OUTLINE };
+	private static final int[] pointStyles = {
+		EuclidianStyleConstants.POINT_STYLE_DOT,
+		EuclidianStyleConstants.POINT_STYLE_CROSS,
+		EuclidianStyleConstants.POINT_STYLE_CIRCLE,
+		EuclidianStyleConstants.POINT_STYLE_PLUS,
+		EuclidianStyleConstants.POINT_STYLE_FILLED_DIAMOND,
+		EuclidianStyleConstants.POINT_STYLE_EMPTY_DIAMOND,
+		EuclidianStyleConstants.POINT_STYLE_TRIANGLE_NORTH,
+		EuclidianStyleConstants.POINT_STYLE_TRIANGLE_SOUTH,
+		EuclidianStyleConstants.POINT_STYLE_TRIANGLE_EAST,
+		EuclidianStyleConstants.POINT_STYLE_TRIANGLE_WEST,
+		EuclidianStyleConstants.POINT_STYLE_NO_OUTLINE
+	};
 
 	// end
 	private int fontSize;
-	private GAffineTransform coordTransform = AwtFactory.getPrototype()
-			.newAffineTransform();
+	private GAffineTransform coordTransform = AwtFactory.getPrototype().newAffineTransform();
 	/** tick interval for axes */
 	protected double[] axesTickInterval;
 	/** number formats for axes */
 	protected NumberFormatAdapter[] axesNumberFormat;
 	/** Flags for axis visibility */
-	protected boolean[] showAxes = { true, true };
+	protected boolean[] showAxes = {true, true};
 	/** Flags for logarithmic axes */
-	protected boolean[] logAxes = { false, false };
+	protected boolean[] logAxes = {false, false};
 
 	// distances between grid lines
 	protected boolean automaticGridDistance = true;
@@ -427,7 +420,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * whether to allow onscreen mouse coords.
-	 * 
+	 *
 	 * set to false because it was set to false in Desktop anyway
 	 */
 	protected boolean allowShowMouseCoords = false;
@@ -473,10 +466,9 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/** controller */
 	protected EuclidianController euclidianController;
 
-	private final GEllipse2DDouble circle = AwtFactory.getPrototype()
-			.newEllipse2DDouble(); // polar
-									// grid
-									// circles
+	private final GEllipse2DDouble circle = AwtFactory.getPrototype().newEllipse2DDouble(); // polar
+	// grid
+	// circles
 	private final GLine2D tempLine = AwtFactory.getPrototype().newLine2D();
 	private GeoElement[] previewFromInputBarGeos;
 	private final ArrayList<GeoElement> geosWaiting = new ArrayList<>();
@@ -484,6 +476,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	private GeoElement labelHitLastGeo = null;
 	/** reIniting is used by GeoGebraWeb */
 	protected boolean reIniting = false;
+
 	private boolean backgroundIsUpdating = false;
 
 	private final Hits tempArrayList = new Hits();
@@ -503,6 +496,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * Get styleBar
 	 */
 	protected EuclidianStyleBar styleBar;
+
 	private DrawGrid drawGrid;
 	private DrawAxis da;
 
@@ -519,6 +513,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * axes ratio if locked; -1 otherwise
 	 */
 	protected double lockedAxesRatio = EuclidianSettings.UNSET_LOCK_RATIO;
+
 	private boolean updateBackgroundOnNextRepaint;
 
 	private List<GeoElement> specPoints;
@@ -538,6 +533,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	private Rectangle visibleRect = new Rectangle();
 	private EdgeInsets safeAreaInsets = new EdgeInsets(MINIMUM_SAFE_AREA);
+
+	protected final Set<DimensionListener> dimensionListeners = new HashSet<>();
 
 	/** @return line types */
 	public static Integer[] getLineTypes() {
@@ -605,8 +602,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param settings
 	 *            settings
 	 */
-	public EuclidianView(EuclidianController ec, int viewNo,
-		EuclidianSettings settings) {
+	public EuclidianView(EuclidianController ec, int viewNo, EuclidianSettings settings) {
 		this();
 		init(ec, viewNo, settings);
 	}
@@ -619,8 +615,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param settings
 	 *            settings
 	 */
-	protected void init(EuclidianController ec, int viewNo,
-			EuclidianSettings settings) {
+	protected void init(EuclidianController ec, int viewNo, EuclidianSettings settings) {
 
 		// 1, 2 or EVNO_GENERAL
 		setEuclidianViewNo(viewNo);
@@ -638,7 +633,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		}
 
 		GeoPriorityComparator cmp = app.getGeoPriorityComparator();
-		logToCrashlytics("EuclidianView.allDrawableList reinitialized at EuclidianView.init(",
+		logToCrashlytics(
+				"EuclidianView.allDrawableList reinitialized at EuclidianView.init(",
 				"EuclidianController ec, int viewNo, EuclidianSettings settings)");
 		allDrawableList = new DrawableList(cmp);
 		bgImageList = new DrawableList(cmp);
@@ -653,11 +649,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		}
 		hitDetector.reset();
 
-		printScaleNF = FormatFactory.getPrototype().getNumberFormat("#.#####",
-				5);
-        setXscale(SCALE_STANDARD);
-        setYscale(SCALE_STANDARD);
-   }
+		printScaleNF = FormatFactory.getPrototype().getNumberFormat("#.#####", 5);
+		setXscale(SCALE_STANDARD);
+		setYscale(SCALE_STANDARD);
+	}
 
 	protected void setMinMaxObjects() {
 		xminObject = new GeoNumeric(kernel.getConstruction());
@@ -682,7 +677,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return new view companion attached to this
 	 */
 	protected EuclidianViewCompanion newEuclidianViewCompanion() {
@@ -690,7 +685,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return companion
 	 */
 	public EuclidianViewCompanion getCompanion() {
@@ -702,23 +697,22 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	protected void initAxesValues() {
 		axesNumberFormat = new NumberFormatAdapter[2];
-		showAxesNumbers = new boolean[] { true, true };
-		axesLabels = new String[] { null, null };
-		axesLabelsStyle = new int[] { GFont.PLAIN, GFont.PLAIN };
-		axesUnitLabels = new String[] { null, null };
+		showAxesNumbers = new boolean[] {true, true};
+		axesLabels = new String[] {null, null};
+		axesLabelsStyle = new int[] {GFont.PLAIN, GFont.PLAIN};
+		axesUnitLabels = new String[] {null, null};
 		axesTickStyles = new int[] {
-				EuclidianStyleConstants.AXES_TICK_STYLE_MAJOR,
-				EuclidianStyleConstants.AXES_TICK_STYLE_MAJOR };
-		automaticAxesNumberingDistances = new boolean[] { true, true };
-		axesNumberingDistances = new double[] { 2, 2 };
-		axesDistanceObjects = new GeoNumberValue[] { null, null };
-		drawBorderAxes = new boolean[] { false, false };
-		axisCross = new double[] { 0, 0 };
-		positiveAxes = new boolean[] { false, false };
-		piAxisUnit = new boolean[] { false, false };
-		gridDistances = new double[] { 2, 2, Math.PI / 6 };
-		axesTickInterval = new double[] { 1, 1 };
-
+			EuclidianStyleConstants.AXES_TICK_STYLE_MAJOR, EuclidianStyleConstants.AXES_TICK_STYLE_MAJOR
+		};
+		automaticAxesNumberingDistances = new boolean[] {true, true};
+		axesNumberingDistances = new double[] {2, 2};
+		axesDistanceObjects = new GeoNumberValue[] {null, null};
+		drawBorderAxes = new boolean[] {false, false};
+		axisCross = new double[] {0, 0};
+		positiveAxes = new boolean[] {false, false};
+		piAxisUnit = new boolean[] {false, false};
+		gridDistances = new double[] {2, 2, Math.PI / 6};
+		axesTickInterval = new double[] {1, 1};
 	}
 
 	@Override
@@ -730,13 +724,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Sets the coord system to default
-	 * 
+	 *
 	 * @param repaint
 	 *            whether to repaint afterwards
 	 */
 	protected void setStandardCoordSystem(boolean repaint) {
-		setCoordSystem(getXZeroStandard(), getYZeroStandard(), SCALE_STANDARD,
-				SCALE_STANDARD, repaint);
+		setCoordSystem(getXZeroStandard(), getYZeroStandard(), SCALE_STANDARD, SCALE_STANDARD, repaint);
 	}
 
 	/**
@@ -809,14 +802,14 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	private static boolean shouldClearRectangle(int mode) {
 		switch (mode) {
-		case EuclidianConstants.MODE_MIRROR_AT_LINE:
-		case EuclidianConstants.MODE_MIRROR_AT_POINT:
-		case EuclidianConstants.MODE_ROTATE_BY_ANGLE:
-		case EuclidianConstants.MODE_TRANSLATE_BY_VECTOR:
-		case EuclidianConstants.MODE_DILATE_FROM_POINT:
-			return false;
-		default:
-			return true;
+			case EuclidianConstants.MODE_MIRROR_AT_LINE:
+			case EuclidianConstants.MODE_MIRROR_AT_POINT:
+			case EuclidianConstants.MODE_ROTATE_BY_ANGLE:
+			case EuclidianConstants.MODE_TRANSLATE_BY_VECTOR:
+			case EuclidianConstants.MODE_DILATE_FROM_POINT:
+				return false;
+			default:
+				return true;
 		}
 	}
 
@@ -829,7 +822,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	private boolean shouldClearSelectedGeos(int newMode) {
 		return (this.mode == EuclidianConstants.MODE_SELECT_MOW
-				|| this.mode == EuclidianConstants.MODE_SELECT)
+						|| this.mode == EuclidianConstants.MODE_SELECT)
 				&& newMode == EuclidianConstants.MODE_MOVE;
 	}
 
@@ -848,12 +841,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			((GeoNumeric) xmaxObject).setValue(getXmax());
 			((GeoNumeric) yminObject).setValue(getYmin());
 			((GeoNumeric) ymaxObject).setValue(getYmax());
+			dimensionListeners.forEach(DimensionListener::dimensionsUpdated);
 		}
 	}
 
 	/**
 	 * returns true if the axes ratio is 1
-	 * 
+	 *
 	 * @return true if the axes ratio is 1
 	 */
 	@Override
@@ -864,7 +858,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Set axes ratio. To unlock the ratio pass {@link EuclidianSettings#UNSET_LOCK_RATIO} as
 	 * argument.
-	 * 
+	 *
 	 * @param ratio
 	 *            the x:y ratio, numbers &lt;= 0 treated as unlocked
 	 */
@@ -891,8 +885,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 		updatingBounds = true;
 		for (int i = 0; i < axesDistanceObjects.length; i++) {
-			if (axesDistanceObjects[i] != null
-					&& axesDistanceObjects[i].getDouble() > 0) {
+			if (axesDistanceObjects[i] != null && axesDistanceObjects[i].getDouble() > 0) {
 				axesNumberingDistances[i] = axesDistanceObjects[i].getDouble();
 			}
 		}
@@ -906,10 +899,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		boolean validSize = (getHeight() > 0) && (getWidth() > 0);
 		if (isLockedAxesRatio() && validSize) {
 			double ratio = gridType == GRID_POLAR ? 1 : lockedAxesRatio;
-			double newWidth = ratio * (ymax2 - ymin2) * getWidth()
-					/ getHeight();
-			double newHeight = 1 / ratio * (xmax2 - xmin2) * getHeight()
-					/ getWidth();
+			double newWidth = ratio * (ymax2 - ymin2) * getWidth() / getHeight();
+			double newHeight = 1 / ratio * (xmax2 - xmin2) * getHeight() / getWidth();
 
 			if ((xmax2 - xmin2) < newWidth) {
 				double c = (xmin2 + xmax2) / 2;
@@ -922,7 +913,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			}
 		}
 		if (((xmax2 - xmin2) > Kernel.MAX_PRECISION)
-				&& ((ymax2 - ymin2) > Kernel.MAX_PRECISION) && validSize) {
+				&& ((ymax2 - ymin2) > Kernel.MAX_PRECISION)
+				&& validSize) {
 			xmax = xmax2;
 			xmin = xmin2;
 			ymin = ymin2;
@@ -943,14 +935,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			}
 
 			if (evNo != 2 || (evNo == 2 && app.hasEuclidianView2EitherShowingOrNot(1))) {
-				app.dispatchEvent(new Event(EventType.VIEW_CHANGED_2D)
-						.setJsonArgument(getCoordinates()));
+				app.dispatchEvent(new Event(EventType.VIEW_CHANGED_2D).setJsonArgument(getCoordinates()));
 			}
 		}
 		// tell kernel
 		if (evNo != EVNO_GENERAL) {
-			kernel.setEuclidianViewBounds(evNo, getXmin(), getXmax(),
-					getYmin(), getYmax(), getXscale(), getYscale());
+			kernel.setEuclidianViewBounds(
+					evNo, getXmin(), getXmax(), getYmin(), getYmax(), getXscale(), getYscale());
 		}
 
 		// needed for images eg in zoomed EV2
@@ -1063,7 +1054,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * @return handler that was hit
 	 */
-	public @Nonnull ShapeManipulationHandler getHitHandler() {
+	public @NonNull ShapeManipulationHandler getHitHandler() {
 		return hitHandler;
 	}
 
@@ -1085,39 +1076,40 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * convert real world coordinate x to screen coordinate x
-	 * 
+	 *
 	 * @param xRW
 	 *            real world x coord
 	 * @return screen equivalent of real world x-coord
 	 */
 	@Override
-	final public int toScreenCoordX(double xRW) {
+	public final int toScreenCoordX(double xRW) {
 		return (int) Math.round(getXZero() + xRW * getXscale());
 	}
 
 	/**
 	 * convert real world coordinate y to screen coordinate y
-	 * 
+	 *
 	 * @param yRW
 	 *            real world y coord
 	 * @return screen equivalent of real world y-coord
 	 */
 	@Override
-	final public int toScreenCoordY(double yRW) {
+	public final int toScreenCoordY(double yRW) {
 		return (int) Math.round(getYZero() - (yRW * getYscale()));
 	}
 
 	/**
 	 * convert real world coordinate x to screen coordinate x
-	 * 
+	 *
 	 * @param xRW
 	 *            real world x-coord
 	 * @return screen equivalent of real world x-coord as double
 	 */
 	@Override
-	final public double toScreenCoordXd(double xRW) {
+	public final double toScreenCoordXd(double xRW) {
 		if (getXaxisLog()) {
-			return getWidth() * (Math.log10(xRW) - Math.log10(xmin))
+			return getWidth()
+					* (Math.log10(xRW) - Math.log10(xmin))
 					/ (Math.log10(xmax) - Math.log10(xmin));
 		}
 		return getXZero() + (xRW * getXscale());
@@ -1125,17 +1117,16 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * convert real world coordinate y to screen coordinate y
-	 * 
+	 *
 	 * @param yRW
 	 *            real world y-coord
 	 * @return screen equivalent of real world y-coord
 	 */
 	@Override
-	final public double toScreenCoordYd(double yRW) {
+	public final double toScreenCoordYd(double yRW) {
 		if (getYaxisLog()) {
 			return getHeight()
-					* (1 - (Math.log10(yRW) - Math.log10(ymin))
-							/ (Math.log10(ymax) - Math.log10(ymin)));
+					* (1 - (Math.log10(yRW) - Math.log10(ymin)) / (Math.log10(ymax) - Math.log10(ymin)));
 		}
 		return getYZero() - (yRW * getYscale());
 	}
@@ -1143,12 +1134,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * convert real world coordinate x to screen coordinate x. If the value is
 	 * outside the screen it is clipped to one pixel outside.
-	 * 
+	 *
 	 * @param xRW
 	 *            real world x coordinate
 	 * @return real world coordinate x to screen coordinate x clipped to screen
 	 */
-	final public int toClippedScreenCoordX(double xRW) {
+	public final int toClippedScreenCoordX(double xRW) {
 		if (xRW > getXmax()) {
 			return getWidth() + 1;
 		} else if (xRW < getXmin()) {
@@ -1170,12 +1161,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * convert real world coordinate y to screen coordinate y. If the value is
 	 * outside the screen it is clipped to one pixel outside.
-	 * 
+	 *
 	 * @param yRW
 	 *            real world y coordinate
 	 * @return real world coordinate y to screen coordinate x clipped to screen
 	 */
-	final public int toClippedScreenCoordY(double yRW) {
+	public final int toClippedScreenCoordY(double yRW) {
 		if (yRW > getYmax()) {
 			return -1;
 		} else if (yRW < getYmin()) {
@@ -1188,16 +1179,17 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Converts real world coordinates to screen coordinates. Note that
 	 * MAX_SCREEN_COORD is used to avoid huge coordinates.
-	 * 
+	 *
 	 * @param inOut
 	 *            input and output array with x and y coords
 	 * @return if resulting coords are on screen
 	 */
-	final public boolean toScreenCoords(double[] inOut) {
+	public final boolean toScreenCoords(double[] inOut) {
 		// convert to screen coords
 
 		if (getXaxisLog()) {
-			inOut[0] = getWidth() * (Math.log10(inOut[0]) - Math.log10(xmin))
+			inOut[0] = getWidth()
+					* (Math.log10(inOut[0]) - Math.log10(xmin))
 					/ (Math.log10(xmax) - Math.log10(xmin));
 		} else {
 			inOut[0] = getXZero() + (inOut[0] * getXscale());
@@ -1205,8 +1197,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 		if (getYaxisLog()) {
 			inOut[1] = getHeight()
-					* (1 - (Math.log10(inOut[1]) - Math.log10(ymin))
-							/ (Math.log10(ymax) - Math.log10(ymin)));
+					* (1 - (Math.log10(inOut[1]) - Math.log10(ymin)) / (Math.log10(ymax) - Math.log10(ymin)));
 		} else {
 			inOut[1] = getYZero() - (inOut[1] * getYscale());
 		}
@@ -1244,26 +1235,30 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Checks if (screen) coords are on screen.
-	 * 
+	 *
 	 * @param coords
 	 *            coords
 	 * @return true if coords are on screen
 	 */
-	final public boolean isOnScreen(double[] coords) {
-		return (coords[0] >= 0) && (coords[0] <= getWidth())
-				&& (coords[1] >= 0) && (coords[1] <= getHeight());
+	public final boolean isOnScreen(double[] coords) {
+		return (coords[0] >= 0)
+				&& (coords[0] <= getWidth())
+				&& (coords[1] >= 0)
+				&& (coords[1] <= getHeight());
 	}
 
 	/**
 	 * Checks if (real world) coords are on view.
-	 * 
+	 *
 	 * @param coords
 	 *            coords
 	 * @return true if coords are on view
 	 */
 	public boolean isOnView(double[] coords) {
-		return (coords[0] >= getXmin()) && (coords[0] <= getXmax())
-				&& (coords[1] >= getYmin()) && (coords[1] <= getYmax());
+		return (coords[0] >= getXmin())
+				&& (coords[0] <= getXmax())
+				&& (coords[1] >= getYmin())
+				&& (coords[1] <= getYmax());
 	}
 
 	/**
@@ -1283,7 +1278,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Performs a quick test whether the segment p1 to p2 is off view.
-	 * 
+	 *
 	 * @param p1
 	 *            first point
 	 * @param p2
@@ -1322,25 +1317,25 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * convert screen coordinate x to real world coordinate x
-	 * 
+	 *
 	 * @param x
 	 *            screen coord
 	 * @return real world equivalent of screen x-coord
 	 */
 	@Override
-	final public double toRealWorldCoordX(double x) {
+	public final double toRealWorldCoordX(double x) {
 		return (x - getXZero()) * getInvXscale();
 	}
 
 	/**
 	 * convert screen coordinate y to real world coordinate y
-	 * 
+	 *
 	 * @param y
 	 *            screen coord
 	 * @return real world equivalent of screen y-coord
 	 */
 	@Override
-	final public double toRealWorldCoordY(double y) {
+	public final double toRealWorldCoordY(double y) {
 		return (getYZero() - y) * getInvYscale();
 	}
 
@@ -1348,13 +1343,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * Sets real world coord system, where zero point has screen coords (xZero,
 	 * yZero) and one unit is xScale pixels wide on the x-Axis and yScale pixels
 	 * height on the y-Axis.
-	 * 
+	 *
 	 * Also updates settings *before* all the algos that might need them are
 	 * updated
 	 */
 	@Override
-	final public void setCoordSystem(double xZero, double yZero, double xScale,
-			double yScale) {
+	public final void setCoordSystem(double xZero, double yZero, double xScale, double yScale) {
 		if (settings != null) {
 			settings.setCoordSystem(xZero, yZero, xScale, yScale, false);
 		}
@@ -1390,7 +1384,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Sets coord system from mouse move
-	 * 
+	 *
 	 * @param dx
 	 *            x-displacement
 	 * @param dy
@@ -1413,8 +1407,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * min and max values for both axes in real world values.
 	 */
 	@Override
-	final public void setRealWorldCoordSystem(double xmin2, double xmax2,
-			double ymin2, double ymax2) {
+	public final void setRealWorldCoordSystem(
+			double xmin2, double xmax2, double ymin2, double ymax2) {
 		setRealWorldCoordSystemVisible(xmin2, xmax2, ymin2, ymax2, false);
 	}
 
@@ -1422,8 +1416,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * Sets real world coord system to the visible part or the whole EV
 	 * using min and max values for both axes in real world values.
 	 */
-	final public void setRealWorldCoordSystemVisible(double xmin2, double xmax2,
-			double ymin2, double ymax2, boolean visible) {
+	public final void setRealWorldCoordSystemVisible(
+			double xmin2, double xmax2, double ymin2, double ymax2, boolean visible) {
 		double calcXscale = (visible ? getVisibleWidth() : getWidth()) / (xmax2 - xmin2);
 		double calcYscale = (visible ? getVisibleHeight() : getHeight()) / (ymax2 - ymin2);
 
@@ -1446,13 +1440,15 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param repaint
 	 *            true to repaint
 	 */
-	public final void setCoordSystem(double xZero, double yZero, double xscale,
-			double yscale, boolean repaint) {
-		if (Double.isNaN(xscale) || (xscale < Kernel.MAX_DOUBLE_PRECISION)
+	public final void setCoordSystem(
+			double xZero, double yZero, double xscale, double yscale, boolean repaint) {
+		if (Double.isNaN(xscale)
+				|| (xscale < Kernel.MAX_DOUBLE_PRECISION)
 				|| (xscale > Kernel.INV_MAX_DOUBLE_PRECISION)) {
 			return;
 		}
-		if (Double.isNaN(yscale) || (yscale < Kernel.MAX_DOUBLE_PRECISION)
+		if (Double.isNaN(yscale)
+				|| (yscale < Kernel.MAX_DOUBLE_PRECISION)
 				|| (yscale > Kernel.INV_MAX_DOUBLE_PRECISION)) {
 			return;
 		}
@@ -1491,12 +1487,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		updateBackgroundOnNextRepaint = true;
 	}
 
-    /**
-     * notify controller that coordinate system has changed from setCoordSystem()
-     */
+	/**
+	 * notify controller that coordinate system has changed from setCoordSystem()
+	 */
 	protected void onCoordSystemChangedFromSetCoordSystem() {
-        getEuclidianController().onCoordSystemChanged();
-    }
+		getEuclidianController().onCoordSystemChanged();
+	}
 
 	/**
 	 * If the background was marked for update (axes changed), repaint it
@@ -1518,7 +1514,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * This is only needed for second or above euclidian views
-	 * 
+	 *
 	 * @param evNo
 	 *            euclidian view number 1, 2 or EVNO_GENERAL
 	 */
@@ -1659,7 +1655,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Returns the ratio yscale / xscale of this view. The scale is the number
 	 * of pixels in screen space that represent one unit in user space.
-	 * 
+	 *
 	 * @return yscale / xscale ratio
 	 */
 	public double getScaleRatio() {
@@ -1722,7 +1718,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * Returns grid type.
 	 */
 	@Override
-	final public int getGridType() {
+	public final int getGridType() {
 		return gridType;
 	}
 
@@ -1736,7 +1732,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * TODO check whether this is what we want
-	 * 
+	 *
 	 * @param minMax
 	 *            minima and maxima
 	 */
@@ -1765,13 +1761,16 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		ymin = (getYZero() - getHeight()) * getInvYscale();
 
 		int visibleFromX = settings != null ? settings.getVisibleFromX() : 0;
-		visibleRect = new Rectangle(-(getXZero() - visibleFromX) * getInvXscale(), xmax,
-				(getYZero() - getVisibleHeight()) * getInvYscale(), ymax);
+		visibleRect = new Rectangle(
+				-(getXZero() - visibleFromX) * getInvXscale(),
+				xmax,
+				(getYZero() - getVisibleHeight()) * getInvYscale(),
+				ymax);
 	}
 
 	/**
 	 * Zooms around fixed point (center of screen)
-	 * 
+	 *
 	 * @param zoomFactor
 	 *            zoom factor
 	 */
@@ -1795,21 +1794,19 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 		// tell kernel
 		if (evNo != EVNO_GENERAL) {
-			kernel.setEuclidianViewBounds(evNo, getXmin(), getXmax(),
-					getYmin(), getYmax(), getXscale(), getYscale());
+			kernel.setEuclidianViewBounds(
+					evNo, getXmin(), getXmax(), getYmin(), getYmax(), getXscale(), getYscale());
 		}
 
 		setCoordTransformIfNeeded();
 
 		updateBackgroundImage();
 		updateAllDrawablesForView(true);
-
 	}
 
 	protected void setCoordTransformIfNeeded() {
 		if (coordTransform != null) {
-			coordTransform.setTransform(xscale, 0.0d, 0.0d, -yscale, xZero,
-					yZero);
+			coordTransform.setTransform(xscale, 0.0d, 0.0d, -yscale, xZero, yZero);
 		}
 	}
 
@@ -1817,7 +1814,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param repaint
 	 *            true to repaint
 	 */
-	final public void updateAllDrawables(boolean repaint) {
+	public final void updateAllDrawables(boolean repaint) {
 		if (repaint && this.batchUpdate) {
 			this.needsAllDrawablesUpdate = true;
 			return;
@@ -1830,8 +1827,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	private void logToCrashlytics(Object... messageParts) {
 		if (isCrashlyticsLoggingEnabled) {
-			CrashlyticsLogger.log(StringUtil.join("", messageParts)
-					+ " on thread " + app.getThreadId());
+			CrashlyticsLogger.log(StringUtil.join("", messageParts) + " on thread " + app.getThreadId());
 		}
 	}
 
@@ -1851,7 +1847,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param repaint
 	 *            true to repaint
 	 */
-	final public void updateAllDrawablesForView(boolean repaint) {
+	public final void updateAllDrawablesForView(boolean repaint) {
 		if (repaint && this.batchUpdate) {
 			this.needsAllDrawablesUpdate = true;
 			return;
@@ -1899,7 +1895,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if currently batch update
 	 */
 	public boolean isBatchUpdate() {
@@ -1931,7 +1927,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * axis: 0 for x-axis, 1 for y-axis
-	 * 
+	 *
 	 * @param scale
 	 *            axis scale
 	 * @param axis
@@ -1943,20 +1939,19 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		int exp = (int) Math.floor(Math.log10(units));
 
 		int maxFractionDigits = Math.max(-exp, kernel.getPrintDecimals());
-		
+
 		if (automaticAxesNumberingDistances[axis]) {
 			// force same unit if scales are same, see #1082
-			if ((axis == 1) && automaticAxesNumberingDistances[0]
+			if ((axis == 1)
+					&& automaticAxesNumberingDistances[0]
 					&& DoubleUtil.isEqual(getXscale(), getYscale())) {
 
 				if (piAxisUnit[0] == piAxisUnit[1]) {
 					axesNumberingDistances[1] = axesNumberingDistances[0];
 				} else if (piAxisUnit[0]) {
-					axesNumberingDistances[1] = axesNumberingDistances[0]
-							/ Math.PI;
+					axesNumberingDistances[1] = axesNumberingDistances[0] / Math.PI;
 				} else if (piAxisUnit[1]) {
-					axesNumberingDistances[1] = axesNumberingDistances[0]
-							* Math.PI;
+					axesNumberingDistances[1] = axesNumberingDistances[0] * Math.PI;
 				}
 
 			} else if (piAxisUnit[axis]) {
@@ -1973,7 +1968,6 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 				} else {
 					axesNumberingDistances[axis] = pot;
 				}
-
 			}
 		}
 		axesTickInterval[axis] = axesNumberingDistances[axis] / 2.0;
@@ -1983,13 +1977,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		// NumberFormatAdapter df = axesNumberFormat[axis];
 
 		// display large and small numbers in scientific notation
-		if ((axesNumberingDistances[axis] < 10E-6)
-				|| (axesNumberingDistances[axis] > 10E6)) {
+		if ((axesNumberingDistances[axis] < 10E-6) || (axesNumberingDistances[axis] > 10E6)) {
 			maxFractionDigits = Math.min(14, maxFractionDigits);
-			
+
 			if (axesNumberFormatsExponential[maxFractionDigits] == null) {
-				axesNumberFormatsExponential[maxFractionDigits] = FormatFactory.getPrototype()
-						.getNumberFormat("0.##E0", maxFractionDigits);
+				axesNumberFormatsExponential[maxFractionDigits] =
+						FormatFactory.getPrototype().getNumberFormat("0.##E0", maxFractionDigits);
 			}
 
 			axesNumberFormat[axis] = axesNumberFormatsExponential[maxFractionDigits];
@@ -1998,15 +1991,15 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			// computing tick mark numbers
 		} else {
 			if (axesNumberFormatsNormal[maxFractionDigits] == null) {
-				axesNumberFormatsNormal[maxFractionDigits] = FormatFactory.getPrototype()
-						.getNumberFormat("###0.##", maxFractionDigits);
+				axesNumberFormatsNormal[maxFractionDigits] =
+						FormatFactory.getPrototype().getNumberFormat("###0.##", maxFractionDigits);
 			}
 			axesNumberFormat[axis] = axesNumberFormatsNormal[maxFractionDigits];
 		}
 
 		if (automaticGridDistance && axis < 2) {
-			gridDistances[axis] = axesNumberingDistances[axis]
-					* EuclidianStyleConstants.DEFAULT_GRID_DIST_FACTOR;
+			gridDistances[axis] =
+					axesNumberingDistances[axis] * EuclidianStyleConstants.DEFAULT_GRID_DIST_FACTOR;
 		}
 	}
 
@@ -2039,9 +2032,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 				return;
 			}
 			if (d instanceof DrawImage) {
-				this.updateBackgroundOnNextRepaint = ((DrawImage) d)
-						.checkInBackground()
-						|| this.updateBackgroundOnNextRepaint;
+				this.updateBackgroundOnNextRepaint =
+						((DrawImage) d).checkInBackground() || this.updateBackgroundOnNextRepaint;
 			} else if (!needsSynchUpdate(geo, d.isTracing())) {
 				d.setNeedsUpdate(true);
 			} else {
@@ -2100,7 +2092,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * create and add geo to this view
-	 * 
+	 *
 	 * @param geo
 	 *            geo
 	 * @return true if drawable created
@@ -2109,8 +2101,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		DrawableND d = createDrawable(geo);
 		if (d != null) {
 			if (!bgImageList.contains(d)) {
-				logToCrashlytics("EuclidianView.allDrawableList modified at ",
-						"EuclidianView.createAndAddDrawable(GeoElement geo) for", geo);
+				logToCrashlytics(
+						"EuclidianView.allDrawableList modified at ",
+						"EuclidianView.createAndAddDrawable(GeoElement geo) for",
+						geo);
 				allDrawableList.add((Drawable) d);
 			}
 			return true;
@@ -2127,7 +2121,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Updates the special points of a function.
-	 * 
+	 *
 	 * @param geos
 	 *            special points
 	 */
@@ -2155,10 +2149,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	protected void updatePreviewFromInputBar() {
-		if (app.getConfig().hasPreviewPoints() && !restrictGraphSelectionForFunctions
+		if (app.getConfig().hasPreviewPoints()
+				&& !restrictGraphSelectionForFunctions
 				&& app.getAlgebraStyle() != AlgebraStyle.LINEAR_NOTATION) {
-			GeoElement geo0 = (previewFromInputBarGeos == null
-					|| previewFromInputBarGeos.length == 0) ? null
+			GeoElement geo0 = (previewFromInputBarGeos == null || previewFromInputBarGeos.length == 0)
+					? null
 					: previewFromInputBarGeos[0];
 			app.getSpecialPointsManager().updateSpecialPoints(geo0);
 		} else {
@@ -2198,7 +2193,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * create previews for special points if needed
-	 * 
+	 *
 	 * @return true if at least one preview was created
 	 */
 	protected boolean createPreviewsForSpecsPoints() {
@@ -2224,12 +2219,9 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		if (geo.isVisibleInView(App.VIEW_FUNCTION_INSPECTOR)) {
 			return true;
 		}
-		if (isVisibleInThisView(geo)
-				&& (geo.isLabelSet() || isPlotPanel())) {
+		if (isVisibleInThisView(geo) && (geo.isLabelSet() || isPlotPanel())) {
 			return geo.isEuclidianVisible()
-
-					|| (geo instanceof HasCorners && ((HasCorners) geo)
-							.needsUpdatedBoundingBox())
+					|| (geo instanceof HasCorners && ((HasCorners) geo).needsUpdatedBoundingBox())
 					|| (geo.isGeoAngle() && geo.getParentAlgorithm() instanceof AlgoAngle);
 		}
 		return false;
@@ -2279,7 +2271,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * event coords
-	 * 
+	 *
 	 * @param x
 	 *            event screen x-coord
 	 * @param y
@@ -2312,11 +2304,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * set hits for current mouse loc
-	 * 
+	 *
 	 * @param type
 	 *            event type
 	 */
-	final public void setHits(PointerEventType type) {
+	public final void setHits(PointerEventType type) {
 		getCompanion().setHits(type);
 	}
 
@@ -2346,7 +2338,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Returns Drawable whose bounding box handler is at screen coords (x,y).
-	 * 
+	 *
 	 * @param p
 	 *            pointer event position
 	 * @param type
@@ -2359,11 +2351,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		}
 
 		if (getFocusedGroupGeoBoundingBox() instanceof MindMapBoundingBox) {
-			hitHandler = getFocusedGroupGeoBoundingBox()
-					.getHitHandler(p.x, p.y, app.getCapturingThreshold(type));
+			hitHandler =
+					getFocusedGroupGeoBoundingBox().getHitHandler(p.x, p.y, app.getCapturingThreshold(type));
 			if (hitHandler != EuclidianBoundingBoxHandler.UNDEFINED) {
-				return (Drawable) getDrawableFor(app.getSelectionManager()
-						.getFocusedGroupElement());
+				return (Drawable) getDrawableFor(app.getSelectionManager().getFocusedGroupElement());
 			}
 		}
 
@@ -2394,7 +2385,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * WARNING: ensure setLabelHitNeedsRefresh() is call once since last mouse
 	 * event
-	 * 
+	 *
 	 * @param p
 	 *            mouse position
 	 * @param type
@@ -2411,13 +2402,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Returns the drawable for the given GeoElement.
-	 * 
+	 *
 	 * @param geo
 	 *            geo
 	 * @return drawable for the given GeoElement.
 	 */
 	@Override
-	final public @CheckForNull DrawableND getDrawableFor(GeoElementND geo) {
+	public final @Nullable DrawableND getDrawableFor(GeoElementND geo) {
 		return drawableMap.get(geo);
 	}
 
@@ -2437,7 +2428,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * adds a GeoElement to this view
-	 * 
+	 *
 	 * @param geo
 	 *            GeoElement to be added
 	 * @return drawable for given GeoElement
@@ -2529,7 +2520,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	final public void updateAuxiliaryObject(GeoElement geo) {
+	public final void updateAuxiliaryObject(GeoElement geo) {
 		// repaint();
 	}
 
@@ -2537,9 +2528,6 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * Updates font size for all drawables
 	 */
 	protected void updateDrawableFontSize() {
-		for (Drawable d : allDrawableList) {
-			d.updateFontSize();
-		}
 		repaint();
 	}
 
@@ -2587,8 +2575,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		}
 		// default while initing
 		if (fontCoords == null) {
-			return getApplication().getFontCommon(false, GFont.PLAIN,
-					(int) Math.max(Math.round(getFontSize() * 0.75), 10));
+			return getApplication()
+					.getFontCommon(false, GFont.PLAIN, (int) Math.max(Math.round(getFontSize() * 0.75), 10));
 		}
 		return fontCoords;
 	}
@@ -2625,7 +2613,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	final public int getAllowToolTips() {
+	public final int getAllowToolTips() {
 		return tooltipsInThisView;
 	}
 
@@ -2635,7 +2623,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * return null if classic 2D view
-	 * 
+	 *
 	 * @return matrix representation of the plane shown by this view
 	 */
 	public CoordMatrix getMatrix() {
@@ -2644,7 +2632,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * return null if classic 2D view
-	 * 
+	 *
 	 * @return matrix inverse representation of the plane shown by this view
 	 */
 	public CoordMatrix getInverseMatrix() {
@@ -2674,12 +2662,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	@Override
 	public int getViewID() {
 		switch (evNo) {
-		case 1:
-			return App.VIEW_EUCLIDIAN;
-		case 2:
-			return App.VIEW_EUCLIDIAN2;
-		default:
-			return App.VIEW_NONE;
+			case 1:
+				return App.VIEW_EUCLIDIAN;
+			case 2:
+				return App.VIEW_EUCLIDIAN2;
+			default:
+				return App.VIEW_NONE;
 		}
 	}
 
@@ -2691,7 +2679,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return null (for 2D) and xOyPlane (for 3D)
 	 */
 	public GeoPlaneND getPlaneContaining() {
@@ -2699,7 +2687,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return null (for 2D) and xOyPlane (for 3D)
 	 */
 	@Override
@@ -2709,7 +2697,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * transform in view coords
-	 * 
+	 *
 	 * @param coords
 	 *            point
 	 * @return the same coords for classic 2d view
@@ -2742,7 +2730,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Replaces num by num2 in xmin, xmax,ymin,ymax. Does not add / remove EV
 	 * listeners from these numerics
-	 * 
+	 *
 	 * @param num
 	 *            old numeric
 	 * @param num2
@@ -2773,7 +2761,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * @return right angle style
 	 */
-	final public int getRightAngleStyle() {
+	public final int getRightAngleStyle() {
 		return getApplication().rightAngleStyle;
 	}
 
@@ -2879,17 +2867,17 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	public static boolean usesSelectionAsInput(int mode) {
 		switch (mode) {
-		case EuclidianConstants.MODE_TRANSLATE_BY_VECTOR:
-			return false; // changed for new "drag" behaviour
-		case EuclidianConstants.MODE_MIRROR_AT_POINT:
-		case EuclidianConstants.MODE_MIRROR_AT_LINE:
-		case EuclidianConstants.MODE_DILATE_FROM_POINT:
-		case EuclidianConstants.MODE_ROTATE_BY_ANGLE:
-		case EuclidianConstants.MODE_PEN:
-			return true;
+			case EuclidianConstants.MODE_TRANSLATE_BY_VECTOR:
+				return false; // changed for new "drag" behaviour
+			case EuclidianConstants.MODE_MIRROR_AT_POINT:
+			case EuclidianConstants.MODE_MIRROR_AT_LINE:
+			case EuclidianConstants.MODE_DILATE_FROM_POINT:
+			case EuclidianConstants.MODE_ROTATE_BY_ANGLE:
+			case EuclidianConstants.MODE_PEN:
+				return true;
 
-		default:
-			return false;
+			default:
+				return false;
 		}
 	}
 
@@ -2900,18 +2888,18 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	public static boolean usesSelectionRectangleAsInput(int mode) {
 		switch (mode) {
-		case EuclidianConstants.MODE_FITLINE:
-		case EuclidianConstants.MODE_CREATE_LIST:
+			case EuclidianConstants.MODE_FITLINE:
+			case EuclidianConstants.MODE_CREATE_LIST:
 			// case EuclidianConstants.MODE_PEN:
-		case EuclidianConstants.MODE_MIRROR_AT_LINE:
-		case EuclidianConstants.MODE_MIRROR_AT_POINT:
-		case EuclidianConstants.MODE_ROTATE_BY_ANGLE:
-		case EuclidianConstants.MODE_TRANSLATE_BY_VECTOR:
-		case EuclidianConstants.MODE_DILATE_FROM_POINT:
-		case EuclidianConstants.MODE_COPY_VISUAL_STYLE:
-			return true;
-		default:
-			return false;
+			case EuclidianConstants.MODE_MIRROR_AT_LINE:
+			case EuclidianConstants.MODE_MIRROR_AT_POINT:
+			case EuclidianConstants.MODE_ROTATE_BY_ANGLE:
+			case EuclidianConstants.MODE_TRANSLATE_BY_VECTOR:
+			case EuclidianConstants.MODE_DILATE_FROM_POINT:
+			case EuclidianConstants.MODE_COPY_VISUAL_STYLE:
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -3058,11 +3046,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * setters and getters for EuclidianViewInterface
-	 * 
+	 *
 	 */
-
 	@Override
 	public String[] getAxesLabels(boolean addBoldItalicTags) {
 		String[] ret = new String[axesLabels.length];
@@ -3106,7 +3093,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * sets the axis label to axisLabel
-	 * 
+	 *
 	 * @param axis
 	 *            axis id
 	 * @param axLabel
@@ -3135,7 +3122,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @param i
 	 *            axis index
 	 * @return axis scale
@@ -3148,7 +3135,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	final public void setAutomaticAxesNumberingDistance(boolean flag, int axis) {
+	public final void setAutomaticAxesNumberingDistance(boolean flag, int axis) {
 		automaticAxesNumberingDistances[axis] = flag;
 		setAxesIntervals(getScale(axis), axis);
 	}
@@ -3169,7 +3156,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @param dist
 	 *            numbering distance
 	 * @param axis
@@ -3180,8 +3167,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		if (axesDistanceObjects[axis] != null) {
 			((GeoNumeric) axesDistanceObjects[axis]).removeEVSizeListener(this);
 		}
-		if (dist != null && !Double.isNaN(dist.getDouble())
-				&& dist.getDouble() > 0) {
+		if (dist != null && !Double.isNaN(dist.getDouble()) && dist.getDouble() > 0) {
 			axesNumberingDistances[axis] = dist.getDouble();
 			axesDistanceObjects[axis] = dist;
 			setAutomaticAxesNumberingDistance(false, axis);
@@ -3225,8 +3211,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 		// check if pi is an axis unit
 		for (int i = 0; i < getDimension(); i++) {
-			piAxisUnit[i] = (axesUnitLabels[i] != null)
-					&& axesUnitLabels[i].equals(Unicode.PI_STRING);
+			piAxisUnit[i] = (axesUnitLabels[i] != null) && axesUnitLabels[i].equals(Unicode.PI_STRING);
 		}
 		setAxesIntervals(getXscale(), 0);
 		setAxesIntervals(getYscale(), 1);
@@ -3303,7 +3288,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * says if the axis is shown or not
-	 * 
+	 *
 	 * @param axis
 	 *            id of the axis
 	 * @return if the axis is shown
@@ -3313,6 +3298,9 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		return showAxes[axis];
 	}
 
+	/**
+	 * @return whether both axes are hidden
+	 */
 	public boolean isAxesHidden() {
 		return !showAxes[0] && !showAxes[1];
 	}
@@ -3360,15 +3348,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	public Previewable createPreviewPerpendicularBisector(
-			ArrayList<GeoPointND> selectedPoints) {
-		return new DrawLine(this, selectedPoints,
-				PreviewType.PERPENDICULAR_BISECTOR);
+	public Previewable createPreviewPerpendicularBisector(ArrayList<GeoPointND> selectedPoints) {
+		return new DrawLine(this, selectedPoints, PreviewType.PERPENDICULAR_BISECTOR);
 	}
 
 	@Override
-	public Previewable createPreviewAngleBisector(
-			ArrayList<GeoPointND> selectedPoints) {
+	public Previewable createPreviewAngleBisector(ArrayList<GeoPointND> selectedPoints) {
 		return new DrawLine(this, selectedPoints, PreviewType.ANGLE_BISECTOR);
 	}
 
@@ -3388,15 +3373,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	public Previewable createPreviewConic(int mode1,
-			ArrayList<GeoPointND> selectedPoints) {
+	public Previewable createPreviewConic(int mode1, ArrayList<GeoPointND> selectedPoints) {
 		return new DrawConic(this, mode1, selectedPoints);
 	}
 
 	@Override
 	public Previewable createPreviewParabola(
-			ArrayList<GeoPointND> selectedPoints,
-			ArrayList<GeoLineND> selectedLines) {
+			ArrayList<GeoPointND> selectedPoints, ArrayList<GeoLineND> selectedLines) {
 		return new DrawConic(this, selectedPoints, selectedLines);
 	}
 
@@ -3411,16 +3394,15 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	public Previewable createPreviewPolyLine(
-			ArrayList<GeoPointND> selectedPoints) {
+	public Previewable createPreviewPolyLine(ArrayList<GeoPointND> selectedPoints) {
 		return new DrawPolyLine(this, selectedPoints);
 	}
 
 	@Override
 	public void updatePreviewable() {
 		GPoint mouseLoc = getEuclidianController().mouseLoc;
-		getPreviewDrawable().updateMousePos(toRealWorldCoordX(mouseLoc.x),
-				toRealWorldCoordY(mouseLoc.y));
+		getPreviewDrawable()
+				.updateMousePos(toRealWorldCoordX(mouseLoc.x), toRealWorldCoordY(mouseLoc.y));
 	}
 
 	@Override
@@ -3442,7 +3424,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * set if view has mouse
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -3453,14 +3435,14 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * @return whether mouse is hovering over this view
 	 */
-	final public boolean hasMouse() {
+	public final boolean hasMouse() {
 		return companion.hasMouse();
 	}
 
 	/**
 	 * @return whether mouse is hovering over this view
 	 */
-	final public boolean hasMouse2D() {
+	public final boolean hasMouse2D() {
 		return hasMouse;
 	}
 
@@ -3469,8 +3451,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			ArrayList<GeoPointND> selectedPoints,
 			ArrayList<GeoLineND> selectedLines,
 			ArrayList<GeoFunction> selectedFunctions) {
-		return new DrawLine(this, selectedPoints, selectedLines,
-				selectedFunctions, true);
+		return new DrawLine(this, selectedPoints, selectedLines, selectedFunctions, true);
 	}
 
 	@Override
@@ -3478,8 +3459,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			ArrayList<GeoPointND> selectedPoints,
 			ArrayList<GeoLineND> selectedLines,
 			ArrayList<GeoFunction> selectedFunctions) {
-		return new DrawLine(this, selectedPoints, selectedLines,
-				selectedFunctions, false);
+		return new DrawLine(this, selectedPoints, selectedLines, selectedFunctions, false);
 	}
 
 	/**
@@ -3501,8 +3481,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	public void updateFonts() {
 		setFontSize(getApplication().getFontSize());
 
-		setFontPoint(getApplication().getPlainFontCommon().deriveFont(
-				GFont.PLAIN, getFontSize()));
+		setFontPoint(getApplication().getPlainFontCommon().deriveFont(GFont.PLAIN, getFontSize()));
 
 		if (getSettings() != null) {
 			initFontCoords();
@@ -3513,10 +3492,9 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	void initFontCoords() {
 		if (getSettings() != null) {
-			setFontCoords(getApplication().getFontCommon(
-					getSettings().getAxesLabelsSerif(),
-					getSettings().getAxisFontStyle(),
-					(int) Math.max(Math.round(getFontSize() * 0.75), 10)));
+			setFontCoords(getApplication()
+					.getFontCommon(getSettings().getAxesLabelsSerif(), getSettings().getAxisFontStyle(), (int)
+							Math.max(Math.round(getFontSize() * 0.75), 10)));
 		}
 	}
 
@@ -3583,7 +3561,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Try to focus this view
-	 * 
+	 *
 	 * @return true if successful
 	 */
 	@Override
@@ -3591,7 +3569,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draws all geometric objects
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
@@ -3600,14 +3578,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		allDrawableList.drawAll(g2);
 
 		if (getEuclidianController().isMultiSelection()) {
-			getEuclidianController()
-					.setBoundingBoxFromList(app.getSelectionManager().getSelectedGeos());
+			getEuclidianController().setBoundingBoxFromList(app.getSelectionManager().getSelectedGeos());
 		}
 	}
 
 	/**
 	 * Draws all objects
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
@@ -3624,19 +3601,23 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Fills background with background color
-	 * 
+	 *
 	 * @param g
 	 *            graphics
 	 */
 	protected void clearBackground(GGraphics2D g) {
 		if (isTransparent()) {
-			g.clearRect(getMinXScreen(), getMinYScreen(),
+			g.clearRect(
+					getMinXScreen(),
+					getMinYScreen(),
 					getMaxXScreen() - getMinXScreen(),
 					getMaxYScreen() - getMinYScreen());
 		} else {
 			g.setColor(getBackgroundCommon());
 			g.updateCanvasColor();
-			g.fillRect(getMinXScreen(), getMinYScreen(),
+			g.fillRect(
+					getMinXScreen(),
+					getMinYScreen(),
 					getMaxXScreen() - getMinXScreen(),
 					getMaxYScreen() - getMinYScreen());
 		}
@@ -3671,11 +3652,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draw axes ratio next to the mouse when mouse zooming.
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
-	final protected void drawAxesRatio(GGraphics2D g2) {
+	protected final void drawAxesRatio(GGraphics2D g2) {
 		GPoint pos = euclidianController.mouseLoc;
 		if (pos == null) {
 			return;
@@ -3694,7 +3675,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Switches re-initing flag. If re-initing, also resets background.
-	 * 
+	 *
 	 * @param reiniting
 	 *            re-initing flag
 	 */
@@ -3709,7 +3690,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Paints content of this view.
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
@@ -3729,7 +3710,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Allows platform specific drawing of preview lines for performance
 	 * reasons.
-	 * 
+	 *
 	 * @return new preview polyline drawing utility
 	 */
 	protected PenPreviewLine newPenPreview() {
@@ -3765,7 +3746,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Updates background image
 	 */
-	final public void updateBackgroundImage() {
+	public final void updateBackgroundImage() {
 		tracing = false;
 		if (bgGraphics != null) {
 			drawBackgroundWithImages(bgGraphics, false);
@@ -3778,7 +3759,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draw MOW background;
-	 * 
+	 *
 	 * @param g2
 	 *            {@link GGraphics2D}
 	 */
@@ -3795,7 +3776,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Overridden for web
-	 * 
+	 *
 	 * @return svg background
 	 */
 	public MyImage getSVGBackground() {
@@ -3804,7 +3785,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draws zoom rectangle
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
@@ -3818,7 +3799,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draws preview of shape for ShapeTools
-	 * 
+	 *
 	 * @param g2
 	 *            - graphics
 	 * @param fillCol
@@ -3830,34 +3811,37 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param shape
 	 *            - shape to draw
 	 */
-	protected void drawShape(GGraphics2D g2, GColor fillCol, GColor objCol,
-			GBasicStroke stroke, GShape shape) {
+	protected void drawShape(
+			GGraphics2D g2, GColor fillCol, GColor objCol, GBasicStroke stroke, GShape shape) {
 		g2.setStroke(stroke);
 		if (fillCol != null) {
 			g2.setColor(fillCol);
 			g2.fill(shape);
 		}
 		g2.setColor(objCol);
-		if (!isRounded) {
-			g2.draw(shape);
-		} else {
-			// rectangle with rounded edges
-			g2.drawRoundRect((int) Math.round(((GRectangle) shape).getX()),
-					(int) Math.round(((GRectangle) shape).getY()),
-					(int) Math.round(((GRectangle) shape).getWidth()),
-					(int) Math.round(((GRectangle) shape).getHeight()), 20, 20);
-		}
+		g2.draw(shape);
 	}
 
 	protected void drawShape(GGraphics2D g2, GShape shape) {
 		if (shape != null) {
-			drawShape(g2, null, shapeObjCol, shapeStroke, shape);
+			drawShape(g2, null, shapeObjCol, getShapeStroke(), shape);
 		}
 	}
 
 	/**
+	 * stroke of shape
+	 */
+	private GBasicStroke getShapeStroke() {
+		return AwtFactory.getPrototype()
+				.newBasicStroke(
+						settings.getLineThicknessScaled() ? 2.0 * getXscale() / SCALE_STANDARD : 2.0,
+						GBasicStroke.CAP_BUTT,
+						GBasicStroke.JOIN_MITER);
+	}
+
+	/**
 	 * Draws rectangle with given options
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 * @param col
@@ -3867,8 +3851,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param rect
 	 *            rectangle to draw
 	 */
-	protected void drawRect(GGraphics2D g2, GColor col, GBasicStroke stroke,
-			GRectangle rect) {
+	protected void drawRect(GGraphics2D g2, GColor col, GBasicStroke stroke, GRectangle rect) {
 		g2.setColor(col);
 		g2.setStroke(stroke);
 		g2.draw(rect);
@@ -3876,11 +3859,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draws mouse coords next to the mouse
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
-	final protected void drawMouseCoords(GGraphics2D g2) {
+	protected final void drawMouseCoords(GGraphics2D g2) {
 		StringTemplate tpl = StringTemplate.defaultTemplate;
 		if (euclidianController.mouseLoc == null) {
 			return;
@@ -3888,15 +3871,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		StringBuilder sb = new StringBuilder();
 		sb.setLength(0);
 		sb.append('(');
-		sb.append(kernel.format(
-				DoubleUtil.checkDecimalFraction(euclidianController.xRW), tpl));
+		sb.append(kernel.format(DoubleUtil.checkDecimalFraction(euclidianController.xRW), tpl));
 		if (kernel.getCoordStyle() == Kernel.COORD_STYLE_AUSTRIAN) {
 			sb.append(" | ");
 		} else {
 			sb.append(", ");
 		}
-		sb.append(kernel.format(
-				DoubleUtil.checkDecimalFraction(euclidianController.yRW), tpl));
+		sb.append(kernel.format(DoubleUtil.checkDecimalFraction(euclidianController.yRW), tpl));
 		sb.append(')');
 
 		g2.setColor(GColor.DARK_GRAY);
@@ -3907,11 +3888,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draws axes, grid and background images. Does NOT clear background.
-	 * 
+	 *
 	 * @param g
 	 *            graphics
 	 */
-	final protected void drawBackground(GGraphics2D g) {
+	protected final void drawBackground(GGraphics2D g) {
 		g.setAntialiasing();
 
 		// handle drawing axes near the screen edge
@@ -3969,8 +3950,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	boolean showResetIcon() {
 		if (!getApplication().showResetIcon()
-				|| !(getApplication().isApplet() || getApplication()
-						.isHTML5Applet())
+				|| !(getApplication().isApplet() || getApplication().isHTML5Applet())
 				|| app.isWhiteboardActive()) {
 			return false;
 		}
@@ -3979,11 +3959,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draws grid
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
-	final protected void drawGrid(GGraphics2D g2) {
+	protected final void drawGrid(GGraphics2D g2) {
 		if (drawGrid == null) {
 			drawGrid = new DrawGrid(this);
 		}
@@ -3998,99 +3978,93 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		g2.setStroke(gridStroke);
 
 		switch (gridType) {
-		default:
-			break;
-		case GRID_CARTESIAN:
-			drawGrid.drawCartesianGrid(g2, xCrossPix, yCrossPix, false);
-			break;
-		case GRID_CARTESIAN_WITH_SUBGRID:
-			drawGrid.drawCartesianGrid(g2, xCrossPix, yCrossPix, true);
-			break;
-		case GRID_ISOMETRIC:
-			drawIsometricGrid(g2, xCrossPix, yCrossPix);
-			break;
-		case GRID_POLAR:
-			// find minimum grid radius
-			double min;
-			if ((getXZero() > 0) && (getXZero() < getWidth())
-					&& (getYZero() > 0) && (getYZero() < getHeight())) {
-				// origin onscreen: min = 0
-				min = 0;
-			} else {
-				// origin offscreen: min = distance to closest screen border
-				double minW = Math.min(Math.abs(getXZero()),
-						Math.abs(getXZero() - getWidth()));
-				double minH = Math.min(Math.abs(getYZero()),
-						Math.abs(getYZero() - getHeight()));
-				min = Math.min(minW, minH);
-			}
-
-			// find maximum grid radius
-			// max = max distance of origin to screen corners
-			double d1 = MyMath.length(getXZero(), getYZero()); // upper left
-			double d2 = MyMath.length(getXZero(), getYZero() - getHeight()); // lower
-																				// left
-			double d3 = MyMath.length(getXZero() - getWidth(), getYZero()); // upper
-																			// right
-			double d4 = MyMath.length(getXZero() - getWidth(), getYZero()
-					- getHeight()); // lower
-			// right
-			double max = Math.max(Math.max(d1, d2), Math.max(d3, d4));
-
-			// draw the grid circles
-			// note: x tick intervals are used for the radius intervals,
-			// it is assumed that the x/y scaling ratio is 1:1
-			double tickStepR = getXscale() * gridDistances[0];
-			double r = min - (min % tickStepR);
-			while (r <= max) {
-				circle.setFrame(getXZero() - r, getYZero() - r, 2 * r, 2 * r);
-				g2.draw(circle);
-				r = r + tickStepR;
-
-			}
-
-			// draw the radial grid lines
-			double angleStep = gridDistances[2];
-			double y1,
-			y2,
-			m;
-
-			// horizontal axis
-			tempLine.setLine(0, getYZero(), getWidth(), getYZero());
-			g2.draw(tempLine);
-
-			// radial lines
-			for (int idx = 1; idx * angleStep < Math.PI; idx ++) {
-				double angle = idx * angleStep;
-				if (Math.abs(angle - (Math.PI / 2)) < 0.0001) {
-					// vertical axis
-					tempLine.setLine(getXZero(), 0, getXZero(), getHeight());
+			default:
+				break;
+			case GRID_CARTESIAN:
+				drawGrid.drawCartesianGrid(g2, xCrossPix, yCrossPix, false);
+				break;
+			case GRID_CARTESIAN_WITH_SUBGRID:
+				drawGrid.drawCartesianGrid(g2, xCrossPix, yCrossPix, true);
+				break;
+			case GRID_ISOMETRIC:
+				drawIsometricGrid(g2, xCrossPix, yCrossPix);
+				break;
+			case GRID_POLAR:
+				// find minimum grid radius
+				double min;
+				if ((getXZero() > 0)
+						&& (getXZero() < getWidth())
+						&& (getYZero() > 0)
+						&& (getYZero() < getHeight())) {
+					// origin onscreen: min = 0
+					min = 0;
 				} else {
-					m = Math.tan(angle);
-					y1 = (m * getXZero()) + getYZero();
-					y2 = (m * (getXZero() - getWidth())) + getYZero();
-					tempLine.setLine(0, y1, getWidth(), y2);
+					// origin offscreen: min = distance to closest screen border
+					double minW = Math.min(Math.abs(getXZero()), Math.abs(getXZero() - getWidth()));
+					double minH = Math.min(Math.abs(getYZero()), Math.abs(getYZero() - getHeight()));
+					min = Math.min(minW, minH);
 				}
-				g2.draw(tempLine);
-			}
-			break;
-		case GRID_DOTS:
-			drawGrid.drawDotsGrid(g2);
-			break;
-		}
 
+				// find maximum grid radius
+				// max = max distance of origin to screen corners
+				double d1 = MyMath.length(getXZero(), getYZero()); // upper left
+				double d2 = MyMath.length(getXZero(), getYZero() - getHeight()); // lower
+				// left
+				double d3 = MyMath.length(getXZero() - getWidth(), getYZero()); // upper
+				// right
+				double d4 = MyMath.length(getXZero() - getWidth(), getYZero() - getHeight()); // lower
+				// right
+				double max = Math.max(Math.max(d1, d2), Math.max(d3, d4));
+
+				// draw the grid circles
+				// note: x tick intervals are used for the radius intervals,
+				// it is assumed that the x/y scaling ratio is 1:1
+				double tickStepR = getXscale() * gridDistances[0];
+				double r = min - (min % tickStepR);
+				while (r <= max) {
+					circle.setFrame(getXZero() - r, getYZero() - r, 2 * r, 2 * r);
+					g2.draw(circle);
+					r = r + tickStepR;
+				}
+
+				// draw the radial grid lines
+				double angleStep = gridDistances[2];
+				double y1, y2, m;
+
+				// horizontal axis
+				tempLine.setLine(0, getYZero(), getWidth(), getYZero());
+				g2.draw(tempLine);
+
+				// radial lines
+				for (int idx = 1; idx * angleStep < Math.PI; idx++) {
+					double angle = idx * angleStep;
+					if (Math.abs(angle - (Math.PI / 2)) < 0.0001) {
+						// vertical axis
+						tempLine.setLine(getXZero(), 0, getXZero(), getHeight());
+					} else {
+						m = Math.tan(angle);
+						y1 = (m * getXZero()) + getYZero();
+						y2 = (m * (getXZero() - getWidth())) + getYZero();
+						tempLine.setLine(0, y1, getWidth(), y2);
+					}
+					g2.draw(tempLine);
+				}
+				break;
+			case GRID_DOTS:
+				drawGrid.drawDotsGrid(g2, xCrossPix, yCrossPix);
+				break;
+		}
 	}
 
 	// =================================================
 	// Draw Axes
 	// =================================================
 
-	private void drawIsometricGrid(GGraphics2D g2, double xCrossPix,
-			double yCrossPix) {
+	private void drawIsometricGrid(GGraphics2D g2, double xCrossPix, double yCrossPix) {
 		boolean clipX = positiveAxes[1] && yCrossPix < getHeight();
-		int yAxisEnd = clipX ? (int) yCrossPix : getHeight();
+		final int yAxisEnd = clipX ? (int) yCrossPix : getHeight();
 		boolean clipY = positiveAxes[0] && xCrossPix > 0;
-		int xAxisStart = clipY ? (int) xCrossPix : 0;
+		final int xAxisStart = clipY ? (int) xCrossPix : 0;
 
 		// set the clipping region to the region defined by the axes
 
@@ -4112,26 +4086,24 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			pix = startX2 + (j * tickStepX / 2.0);
 		}
 		// extra lines needed because it's diagonal
-		int extra = (int) (getHeight() * getXscale() / getYscale() * Math
-				.sqrt(3.0) / tickStepX) + 3;
+		int extra = (int) (getHeight() * getXscale() / getYscale() * Math.sqrt(3.0) / tickStepX) + 3;
 
 		// negative gradient
 		pix = startX + (-(extra + 1) * tickStepX);
 		for (int j = -extra; pix <= getWidth(); j += 1) {
-			double endx = pix
-					+ ((getHeight() + tickStepY) * Math.sqrt(3) * getXscale()
-							/ getYscale());
+			double endx = pix + ((getHeight() + tickStepY) * Math.sqrt(3) * getXscale() / getYscale());
 			if (clipX || clipY) {
 				DrawSegment.drawClipped(
-						new double[] { pix, startY - tickStepY },
-						new double[] { endx,
-								startY - tickStepY + getHeight()
-										+ tickStepY },
-						tempLine, xAxisStart, getWidth(), 0, yAxisEnd,
+						new double[] {pix, startY - tickStepY},
+						new double[] {endx, startY - tickStepY + getHeight() + tickStepY},
+						tempLine,
+						xAxisStart,
+						getWidth(),
+						0,
+						yAxisEnd,
 						getTmpClipPoints());
 			} else {
-				tempLine.setLine(pix, startY - tickStepY, endx,
-						startY + getHeight());
+				tempLine.setLine(pix, startY - tickStepY, endx, startY + getHeight());
 			}
 			g2.draw(tempLine);
 			pix = startX + (j * tickStepX);
@@ -4139,23 +4111,24 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 		// positive gradient
 		pix = startX;
-		for (int j = 0; pix <= getWidth()
-				+ ((getHeight() * getXscale() / getYscale()) + tickStepY)
-						* Math.sqrt(3.0); j += 1) {
-			double endx = pix
-					- ((getHeight() + tickStepY) * Math.sqrt(3) * getXscale()
-							/ getYscale());
+		for (int j = 0;
+				pix
+						<= getWidth()
+								+ ((getHeight() * getXscale() / getYscale()) + tickStepY) * Math.sqrt(3.0);
+				j += 1) {
+			double endx = pix - ((getHeight() + tickStepY) * Math.sqrt(3) * getXscale() / getYscale());
 			if (clipX || clipY) {
 				DrawSegment.drawClipped(
-						new double[] { pix, startY - tickStepY },
-						new double[] { endx,
-								startY - tickStepY + getHeight()
-										+ tickStepY },
-						tempLine, xAxisStart, getWidth(), 0, yAxisEnd,
+						new double[] {pix, startY - tickStepY},
+						new double[] {endx, startY - tickStepY + getHeight() + tickStepY},
+						tempLine,
+						xAxisStart,
+						getWidth(),
+						0,
+						yAxisEnd,
 						getTmpClipPoints());
 			} else {
-				tempLine.setLine(pix, startY - tickStepY, endx,
-						startY + getHeight());
+				tempLine.setLine(pix, startY - tickStepY, endx, startY + getHeight());
 			}
 			g2.draw(tempLine);
 			pix = startX + (j * tickStepX);
@@ -4181,13 +4154,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	boolean xAxisOnscreen() {
-		return showAxes[0] && (getYmin() < axisCross[0])
-				&& (getYmax() > axisCross[0]);
+		return showAxes[0] && (getYmin() < axisCross[0]) && (getYmax() > axisCross[0]);
 	}
 
 	boolean yAxisOnscreen() {
-		return showAxes[1] && (getXmin() < axisCross[1])
-				&& (getXmax() > axisCross[1]);
+		return showAxes[1] && (getXmin() < axisCross[1]) && (getXmax() > axisCross[1]);
 	}
 
 	protected double getYOffsetForXAxis(double baseFontSize) {
@@ -4202,7 +4173,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Draw combos
-	 * 
+	 *
 	 * @param g
 	 *            graphics
 	 */
@@ -4264,7 +4235,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Switch antialiasing to true for given graphics
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 */
@@ -4285,7 +4256,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Update stylebar from settings
-	 * 
+	 *
 	 * @param evs
 	 *            settings
 	 */
@@ -4330,8 +4301,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	@Override
 	public void setGridLineStyle(int gridLineStyle) {
 		this.gridLineStyle = gridLineStyle;
-		gridStroke = EuclidianStatic.getStroke(gridIsBold ? 2f : 1f,
-				gridLineStyle);
+		gridStroke = EuclidianStatic.getStroke(gridIsBold ? 2f : 1f, gridLineStyle);
 	}
 
 	/**
@@ -4339,7 +4309,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 *            settings
 	 */
 	@Override
-	public void settingsChanged(AbstractSettings settings) {
+	public void settingsChanged(EuclidianSettings settings) {
 		companion.settingsChanged(settings);
 
 		if (styleBar != null) {
@@ -4385,21 +4355,9 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * @return true if shape is rounded (e.g. for ShapeRectangleRoundEdges)
+	 * @return path along border of this view
 	 */
-	public boolean isRounded() {
-		return isRounded;
-	}
-
-	/**
-	 * @param isRounded
-	 *            - true if shape is rounded (e.g. for ShapeRectangleRoundEdges)
-	 */
-	public void setRounded(boolean isRounded) {
-		this.isRounded = isRounded;
-	}
-
-	private GGeneralPath getBoundingPath() {
+	public GGeneralPath getBoundingPath() {
 		GeneralPathClipped gs = new GeneralPathClipped(this);
 		gs.resetWithThickness(1);
 		gs.moveTo(getMinXScreen(), getMinYScreen());
@@ -4422,11 +4380,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param img
 	 *            new background image
 	 */
-	final public void addBackgroundImage(DrawImage img) {
+	public final void addBackgroundImage(DrawImage img) {
 		bgImageList.add(img);
 		logToCrashlytics(
 				"EuclidianView.allDrawableList modified at ",
-						"EuclidianView.addBackgroundImage(DrawImage img)");
+				"EuclidianView.addBackgroundImage(DrawImage img)");
 		allDrawableList.remove(img);
 	}
 
@@ -4434,11 +4392,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param img
 	 *            background image
 	 */
-	final public void removeBackgroundImage(DrawImage img) {
+	public final void removeBackgroundImage(DrawImage img) {
 		bgImageList.remove(img);
 		logToCrashlytics(
 				"EuclidianView.allDrawableList modified at ",
-						"EuclidianView.removeBackgroundImage(DrawImage img)");
+				"EuclidianView.removeBackgroundImage(DrawImage img)");
 		allDrawableList.add(img);
 	}
 
@@ -4460,7 +4418,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Returns the bounding box of all Drawable objects in this view in screen
 	 * coordinates.
-	 * 
+	 *
 	 * @return bounds of this view
 	 */
 	public GRectangle getBounds() {
@@ -4499,33 +4457,30 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @return whether preview is needed on touch start
 	 */
 	public boolean wantsUpdatePreviewForTouchStartPhone(int mode) {
-        return getPreviewDrawable() == null && mode != EuclidianConstants.MODE_COPY_VISUAL_STYLE;
-    }
+		return getPreviewDrawable() == null && mode != EuclidianConstants.MODE_COPY_VISUAL_STYLE;
+	}
 
 	/**
 	 * Finds maximum pixel width and height needed to draw current x and y axis
 	 * labels. return[0] = max width, return[1] = max height
-	 * 
+	 *
 	 * @param g2
 	 *            graphics
 	 * @return point (width,height)
 	 */
-
 	public GPoint getMaximumLabelSize(GGraphics2D g2) {
 		GPoint max = new GPoint(0, 0);
 
 		g2.setFont(getFontAxes());
 
-		int yAxisHeight = positiveAxes[1] ? (int) getYZero() : getHeight();
-		int maxY = positiveAxes[1] ? (int) getYZero() : getHeight()
-				- SCREEN_BORDER;
+		final int yAxisHeight = positiveAxes[1] ? (int) getYZero() : getHeight();
+		int maxY = positiveAxes[1] ? (int) getYZero() : getHeight() - SCREEN_BORDER;
 
 		double rw = getYmax() - (getYmax() % axesNumberingDistances[1]);
 		double pix = getYZero() - (rw * getYscale());
 		double axesStep = getYscale() * axesNumberingDistances[1]; // pixelstep
 
-		axesNumberingDistances[1] = DoubleUtil
-				.checkDecimalFraction(axesNumberingDistances[1]);
+		axesNumberingDistances[1] = DoubleUtil.checkDecimalFraction(axesNumberingDistances[1]);
 
 		int count = 0;
 		double rwBase = DoubleUtil.checkDecimalFraction(rw);
@@ -4535,22 +4490,18 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		for (; pix <= yAxisHeight; count++, pix += axesStep) {
 
 			// 285, 285.1, 285.2 -> rounding problems
-			rw = rwBase
-					- DoubleUtil.checkDecimalFraction(axesNumberingDistances[1]
-							* count);
+			rw = rwBase - DoubleUtil.checkDecimalFraction(axesNumberingDistances[1] * count);
 
 			if (pix <= maxY) {
 				if (showAxesNumbers[1]) {
-					String strNum = kernel.formatPiE(rw, axesNumberFormat[1],
-							StringTemplate.defaultTemplate);
+					String strNum = kernel.formatPiE(rw, axesNumberFormat[1], StringTemplate.defaultTemplate);
 					StringBuilder sb = new StringBuilder();
 					sb.setLength(0);
 					sb.append(strNum);
 					if ((axesUnitLabels[1] != null) && !piAxisUnit[1]) {
 						sb.append(axesUnitLabels[1]);
 					}
-					double width = estimateTextWidth(sb.toString(),
-							getFontAxes());
+					double width = estimateTextWidth(sb.toString(), getFontAxes());
 					if (max.x < width) {
 						max.x = (int) width;
 					}
@@ -4565,7 +4516,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * change showing flag of the axis
-	 * 
+	 *
 	 * @param axis
 	 *            id of the axis
 	 * @param flag
@@ -4621,7 +4572,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Tells if there are any images in the background.
-	 * 
+	 *
 	 * @return whether there are any images in the background.
 	 */
 	protected boolean hasBackgroundImages() {
@@ -4630,7 +4581,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * returns settings in XML format
-	 * 
+	 *
 	 * @param sbxml
 	 *            string builder
 	 * @param asPreference
@@ -4643,14 +4594,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * start settings in XML format
-	 * 
+	 *
 	 * @param sbxml
 	 *            string builder
 	 * @param asPreference
 	 *            true for preferences
 	 */
 	public void startXML(XMLStringBuilder sbxml, boolean asPreference) {
-		StringTemplate tpl = StringTemplate.xmlTemplate;
 		sbxml.startOpeningTag("euclidianView", 0).endTag();
 
 		companion.getXMLid(sbxml);
@@ -4673,6 +4623,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		}
 		sbxml.startTag("coordSystem");
 		if (!isZoomable() && !asPreference) {
+			StringTemplate tpl = StringTemplate.xmlTemplate;
 			sbxml.attr("xMin", ((GeoNumeric) xminObject).getLabel(tpl));
 			sbxml.attr("xMax", ((GeoNumeric) xmaxObject).getLabel(tpl));
 			sbxml.attr("yMin", ((GeoNumeric) yminObject).getLabel(tpl));
@@ -4693,12 +4644,16 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		sbxml.attr("gridIsBold", gridIsBold);
 
 		// make sure POINT_CAPTURING_STICKY_POINTS isn't written to XML
-		sbxml.attr("pointCapturing",
+		sbxml.attr(
+				"pointCapturing",
 				getPointCapturingMode() > EuclidianStyleConstants.POINT_CAPTURING_XML_MAX
 						? EuclidianStyleConstants.POINT_CAPTURING_DEFAULT
-				: getPointCapturingMode());
+						: getPointCapturingMode());
 
 		sbxml.attr("rightAngleStyle", getApplication().rightAngleStyle);
+		if (settings != null && settings.getLineThicknessScaled()) {
+			sbxml.attr("lineThicknessScaled", true);
+		}
 		if (asPreference) {
 			sbxml.attr("allowShowMouseCoords", getAllowShowMouseCoords());
 
@@ -4707,7 +4662,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			sbxml.attr("deleteToolSize", getEuclidianController().getDeleteToolSize());
 		}
 
-		sbxml.attr("checkboxSize", 26) // checkbox size 13 deprecated
+		sbxml
+				.attr("checkboxSize", 26) // checkbox size 13 deprecated
 				.attr("gridType", getGridType()); // cartesian/isometric/polar
 
 		if (lockedAxesRatio > 0) {
@@ -4733,7 +4689,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 		int rulerType = settings.getBackgroundType().value();
 		if (app.isWhiteboardActive()) {
-			sbxml.startTag("rulerType")
+			sbxml
+					.startTag("rulerType")
 					.attr("val", rulerType)
 					.attr("bold", settings.isRulerBold())
 					.endTag();
@@ -4768,10 +4725,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		int style = getSettings().getAxisFontStyle();
 		boolean serif = getSettings().getAxesLabelsSerif();
 		if (style != GFont.PLAIN || serif) {
-			sbxml.startTag("labelStyle")
-					.attr("axes", style)
-					.attr("serif", serif)
-					.endTag();
+			sbxml.startTag("labelStyle").attr("axes", style).attr("serif", serif).endTag();
 		}
 
 		// axis settings
@@ -4787,12 +4741,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			sbxml.attr("distTheta", gridDistances[2]);
 			sbxml.endTag();
 		}
-
 	}
 
 	/**
 	 * end settings in XML format
-	 * 
+	 *
 	 * @param sbxml
 	 *            string builder
 	 */
@@ -4806,17 +4759,16 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	public void resetXYMinMaxObjects() {
 		if ((evNo == 1) || (evNo == 2)) {
-			EuclidianSettings es = getApplication().getSettings().getEuclidian(
-					evNo);
+			EuclidianSettings es = getApplication().getSettings().getEuclidian(evNo);
 
-			GeoNumeric xmao = new GeoNumeric(kernel.getConstruction(),
-					xmaxObject.getNumber().getDouble());
-			GeoNumeric xmio = new GeoNumeric(kernel.getConstruction(),
-					xminObject.getNumber().getDouble());
-			GeoNumeric ymao = new GeoNumeric(kernel.getConstruction(),
-					ymaxObject.getNumber().getDouble());
-			GeoNumeric ymio = new GeoNumeric(kernel.getConstruction(),
-					yminObject.getNumber().getDouble());
+			GeoNumeric xmao =
+					new GeoNumeric(kernel.getConstruction(), xmaxObject.getNumber().getDouble());
+			GeoNumeric xmio =
+					new GeoNumeric(kernel.getConstruction(), xminObject.getNumber().getDouble());
+			GeoNumeric ymao =
+					new GeoNumeric(kernel.getConstruction(), ymaxObject.getNumber().getDouble());
+			GeoNumeric ymio =
+					new GeoNumeric(kernel.getConstruction(), yminObject.getNumber().getDouble());
 			es.setXmaxObject(xmao, false);
 			es.setXminObject(xmio, false);
 			es.setYmaxObject(ymao, false);
@@ -4856,15 +4808,20 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		// check if animation is needed
 		if (steps == 0) {
 			setRealWorldCoordSystemVisible(
-					allObjectsRect.getMinX(), allObjectsRect.getMaxX(),
-					allObjectsRect.getMinY(), allObjectsRect.getMaxY(), true);
+					allObjectsRect.getMinX(),
+					allObjectsRect.getMaxX(),
+					allObjectsRect.getMinY(),
+					allObjectsRect.getMaxY(),
+					true);
 			if (storeUndo) {
 				getApplication().storeUndoInfo();
 			}
 		} else {
 			setAnimatedRealWorldCoordSystem(
-					allObjectsRect.getMinX(), allObjectsRect.getMaxX(),
-					allObjectsRect.getMinY(), allObjectsRect.getMaxY(),
+					allObjectsRect.getMinX(),
+					allObjectsRect.getMaxX(),
+					allObjectsRect.getMinY(),
+					allObjectsRect.getMaxY(),
 					steps,
 					storeUndo);
 		}
@@ -4877,13 +4834,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	protected Rectangle calculateRectangleOfAllObjects(boolean keepRatio) {
 
 		// check for functions
-		TreeSet<GeoElement> allFunctions = kernel.getConstruction()
-				.getGeoSetLabelOrder(GeoClass.FUNCTION);
+		TreeSet<GeoElement> allFunctions =
+				kernel.getConstruction().getGeoSetLabelOrder(GeoClass.FUNCTION);
 		boolean hasFunctions = hasVisibleObjects(allFunctions);
 
 		// check for curves
-		TreeSet<GeoElement> allCurves = kernel.getConstruction()
-				.getGeoSetLabelOrder(GeoClass.CURVE_CARTESIAN);
+		TreeSet<GeoElement> allCurves =
+				kernel.getConstruction().getGeoSetLabelOrder(GeoClass.CURVE_CARTESIAN);
 		boolean hasCurves = hasVisibleObjects(allCurves);
 
 		// check for points, circles etc.
@@ -5002,21 +4959,14 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 						} else if (i == 1) {
 							abscissa = fun.value(x1RW); // check far right
 						} else {
-							abscissa = fun.value(
-									x0RW
-									+ (Math.random() * (x1RW - x0RW)));
+							abscissa = fun.value(x0RW + (Math.random() * (x1RW - x0RW)));
 						}
 
-						if (!Double.isInfinite(abscissa)
-								&& !Double.isNaN(abscissa)) {
+						if (!Double.isInfinite(abscissa) && !Double.isNaN(abscissa)) {
 							ok = true;
-							if (abscissa > yMaxFunc) {
-								yMaxFunc = abscissa;
-							}
-							// no else: there **might** be just one value
-							if (abscissa < yMinFunc) {
-								yMinFunc = abscissa;
-							}
+							yMaxFunc = Math.max(abscissa, yMaxFunc);
+							// we may need to update both: there **might** be just one value
+							yMinFunc = Math.min(abscissa, yMinFunc);
 						}
 					}
 				}
@@ -5041,7 +4991,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		if (keepRatio) {
 			double visibleWidth = visibleRect.getMaxX() - visibleRect.getMinX();
 			double unobstructedWidth = app.isWhiteboardActive()
-					? visibleWidth - LEFT_MARGIN_NOTES * getInvXscale() : visibleWidth;
+					? visibleWidth - LEFT_MARGIN_NOTES * getInvXscale()
+					: visibleWidth;
 			double oldRatio = unobstructedWidth / visibleRect.getHeight();
 			double newRatio = (x1RW - x0RW) / (y1RW - y0RW);
 			if (newRatio > oldRatio) {
@@ -5064,8 +5015,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	private static boolean hasVisibleObjects(GRectangle rect) {
-		return !(DoubleUtil.isZero(rect.getHeight()) || DoubleUtil.isZero(rect
-				.getWidth()));
+		return !(DoubleUtil.isZero(rect.getHeight()) || DoubleUtil.isZero(rect.getWidth()));
 	}
 
 	/**
@@ -5101,10 +5051,16 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		return (int) selectionRectangle.getHeight();
 	}
 
+	/**
+	 * @return width of selection rectangle in pixels
+	 */
 	public int getSelectedWidthInPixels() {
 		return getSelectedWidth();
 	}
 
+	/**
+	 * @return height of selection rectangle in pixels
+	 */
 	public int getSelectedHeightInPixels() {
 		return getSelectedHeight();
 	}
@@ -5132,18 +5088,16 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		return getHeight();
 	}
 
-    /**
+	/**
 	 * default frame, for when no custom frame for exporting taking place
 	 */
 	private GRectangle getDefaultFrame() {
 		if (tempFrame == null) {
-			tempFrame = AwtFactory.getPrototype().newRectangle(0, 0, getWidth(),
-					getHeight());
+			tempFrame = AwtFactory.getPrototype().newRectangle(0, 0, getWidth(), getHeight());
 		} else {
 			tempFrame.setBounds(0, 0, getWidth(), getHeight());
 		}
 		return tempFrame;
-
 	}
 
 	/**
@@ -5168,12 +5122,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		double x2 = exportCoords[2];
 		double y2 = exportCoords[3];
 
-		return AwtFactory.getPrototype().newRectangle((int) x1, (int) y1,
-				(int) (x2 - x1), (int) (y2 - y1));
+		return AwtFactory.getPrototype()
+				.newRectangle((int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
 	}
 
 	/**
-	 * 
+	 *
 	 * @return {minX, minY, maxX, maxY} if Export_1 and Export_2 exist,
 	 *         otherwise null
 	 */
@@ -5238,7 +5192,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	// for use in AlgebraController
 	@Override
-	final public void clickedGeo(GeoElement geo, boolean isControlDown) {
+	public final void clickedGeo(GeoElement geo, boolean isControlDown) {
 		if (geo == null) {
 			return;
 		}
@@ -5251,8 +5205,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 				euclidianController.storeUndoInfo();
 			}
 		};
-		boolean changedKernel = euclidianController.processMode(tempArrayList,
-				isControlDown, false, callback);
+		boolean changedKernel =
+				euclidianController.processMode(tempArrayList, isControlDown, false, callback);
 
 		if (changedKernel) {
 			getEuclidianController().storeUndoInfo();
@@ -5262,7 +5216,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * instantiate new zoomer
-	 * 
+	 *
 	 * @return zoomer
 	 */
 	protected abstract CoordSystemAnimation newZoomer();
@@ -5271,8 +5225,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * Zooms around fixed point (px, py)
 	 */
 	@Override
-	public void zoom(double px, double py, double zoomFactor, int steps,
-			boolean storeUndo) {
+	public void zoom(double px, double py, double zoomFactor, int steps, boolean storeUndo) {
 		if (!isZoomable()) {
 			return;
 		}
@@ -5281,13 +5234,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		}
 		zoomer.init(px, py, zoomFactor, steps, storeUndo);
 		zoomer.startAnimation();
-
 	}
 
 	/**
 	 * Zooms towards the given axes scale ratio. Note: Only the y-axis is
 	 * changed here. newRatioX / newRatioY = yscale / xscale;
-	 * 
+	 *
 	 * @param newRatioX
 	 *            axis ratio numerator
 	 * @param newRatioY
@@ -5296,8 +5248,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 *            true to store undo step after
 	 */
 	@Override
-	public final void zoomAxesRatio(double newRatioX, double newRatioY,
-			boolean storeUndo) {
+	public final void zoomAxesRatio(double newRatioX, double newRatioY, boolean storeUndo) {
 		if (!isZoomable()) {
 			return;
 		}
@@ -5309,7 +5260,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			axesRatioZoomer = newZoomer();
 		}
 
-		coordSystemInfo.setXAxisZoom(true);
+		coordSystemInfo.setScaledAxis(ScaledAxis.BOTH);
 		axesRatioZoomer.initAxes(newRatioX, newRatioY, storeUndo);
 		axesRatioZoomer.startAnimation();
 	}
@@ -5324,7 +5275,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Restores standard zoom + origin position
-	 * 
+	 *
 	 * @param storeUndo
 	 *            true to store undo info
 	 */
@@ -5345,7 +5296,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			}
 			axesRatioZoomer.initAxes(2, 2, false);
 			axesRatioZoomer.setStandardViewAfter(xzero, yzero);
-			coordSystemInfo.setXAxisZoom(true);
+			coordSystemInfo.setScaledAxis(ScaledAxis.BOTH);
 			axesRatioZoomer.startAnimation();
 		} else {
 			setAnimatedCoordSystem(xzero, yzero, STANDARD_VIEW_STEPS, false);
@@ -5360,7 +5311,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if view is not zoomed;
 	 */
 	public boolean isStandardView() {
@@ -5370,20 +5321,18 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * Sets coord system of this view to standard. Just like setCoordSystem but
 	 * with previous animation.
-	 * 
-	 * 
+	 *
+	 *
 	 */
-	public void setAnimatedCoordSystem(double originX, double originY,
-			int steps, boolean storeUndo) {
-		setAnimatedCoordSystem(originX, originY, 0, SCALE_STANDARD, steps,
-				storeUndo);
+	public void setAnimatedCoordSystem(double originX, double originY, int steps, boolean storeUndo) {
+		setAnimatedCoordSystem(originX, originY, 0, SCALE_STANDARD, steps, storeUndo);
 	}
 
 	/**
 	 * Sets coord system of this view. Just like setCoordSystem but with
 	 * previous animation.
-	 * 
-	 * 
+	 *
+	 *
 	 * @param originX
 	 *            x coord of old origin
 	 * @param originY
@@ -5392,8 +5341,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 *            x scale
 	 */
 	@Override
-	public void setAnimatedCoordSystem(double originX, double originY,
-			double f, double newScale, int steps, boolean storeUndo) {
+	public void setAnimatedCoordSystem(
+			double originX, double originY, double f, double newScale, int steps, boolean storeUndo) {
 
 		double ox = originX + (getXZero() - originX) * f;
 		double oy = originY + (getYZero() - originY) * f;
@@ -5401,9 +5350,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		if (!DoubleUtil.isEqual(getXscale(), newScale)) {
 			// different scales: zoom back to standard view
 			double factor = newScale / getXscale();
-			zoom((ox - (getXZero() * factor)) / (1.0 - factor),
-					(oy - (getYZero() * factor)) / (1.0 - factor), factor,
-					steps, storeUndo);
+			zoom(
+					(ox - (getXZero() * factor)) / (1.0 - factor),
+					(oy - (getYZero() * factor)) / (1.0 - factor),
+					factor,
+					steps,
+					storeUndo);
 		} else {
 			// same scales: translate view to standard origin
 			// do this with the following action listener
@@ -5424,8 +5376,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * real world values.
 	 */
 	@Override
-	final public void setAnimatedRealWorldCoordSystem(double xmin, double xmax,
-			double ymin, double ymax, int steps, boolean storeUndo) {
+	public final void setAnimatedRealWorldCoordSystem(
+			double xmin, double xmax, double ymin, double ymax, int steps, boolean storeUndo) {
 		if (zoomerRW == null) {
 			zoomerRW = newZoomer();
 		}
@@ -5435,15 +5387,14 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	// for use in AlgebraController
 	@Override
-	final public void mouseMovedOver(GeoElement geo) {
+	public final void mouseMovedOver(GeoElement geo) {
 		Hits geos = null;
 		if (geo != null) {
 			tempArrayList.clear();
 			tempArrayList.add(geo);
 			geos = tempArrayList;
 		}
-		boolean repaintNeeded = getEuclidianController().refreshHighlighting(
-				geos, false, false);
+		boolean repaintNeeded = getEuclidianController().refreshHighlighting(geos, false, false);
 		if (repaintNeeded) {
 			kernel.notifyRepaint();
 		}
@@ -5464,12 +5415,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	final public void mouseMovedOverList(ArrayList<GeoElement> geoList) {
+	public final void mouseMovedOverList(ArrayList<GeoElement> geoList) {
 		tempArrayList.clear();
 		tempArrayList.addAll(geoList);
 
-		boolean repaintNeeded = getEuclidianController().refreshHighlighting(
-				tempArrayList, false, false);
+		boolean repaintNeeded =
+				getEuclidianController().refreshHighlighting(tempArrayList, false, false);
 		if (repaintNeeded) {
 			kernel.notifyRepaint();
 		}
@@ -5477,7 +5428,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Updates highlighting of animation buttons.
-	 * 
+	 *
 	 * @return whether status was changed
 	 */
 	@Override
@@ -5504,8 +5455,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			return true;
 		}
 		// eg ev1 just closed
-		GetViewId evp = gui.getLayout().getDockManager()
-				.getFocusedEuclidianPanel();
+		GetViewId evp = gui.getLayout().getDockManager().getFocusedEuclidianPanel();
 		if (evp == null || evp.getViewId() == App.VIEW_EUCLIDIAN3D) {
 			return isPrimaryEV();
 		}
@@ -5537,7 +5487,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Initializes basic properties of this view
-	 * 
+	 *
 	 * @param repaint
 	 *            true if should be repainted after
 	 */
@@ -5570,7 +5520,6 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		automaticGridDistance = true;
 
 		setStandardCoordSystem(repaint);
-
 	}
 
 	@Override
@@ -5600,7 +5549,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * sets the option panel for gui update
-	 * 
+	 *
 	 * @param optionPanel
 	 *            option panel
 	 */
@@ -5625,7 +5574,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Adjusts the bold bit in axes line style
-	 * 
+	 *
 	 * @param bold
 	 *            true for bold axes
 	 * @param axesLineStyle
@@ -5644,7 +5593,6 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	public boolean areAxesBold() {
 		return (axesLineType & EuclidianStyleConstants.AXES_BOLD) != 0;
-
 	}
 
 	static double estimateNumberHeight(GFont fontAxes2) {
@@ -5652,8 +5600,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	double estimateNumberWidth(double d, GFont fontAxes2) {
-		String s = kernel.formatPiE(d, axesNumberFormat[0],
-				StringTemplate.defaultTemplate);
+		String s = kernel.formatPiE(d, axesNumberFormat[0], StringTemplate.defaultTemplate);
 		return StringUtil.getPrototype().estimateLength(s, fontAxes2);
 	}
 
@@ -5671,16 +5618,22 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		return 70;
 	}
 
+	/**
+	 * @return absolute top position of the view, -1 if unknown, overridden where available
+	 */
 	public int getAbsoluteTop() {
 		return -1;
 	}
 
+	/**
+	 * @return absolute left position of the view, -1 if unknown, overridden where available
+	 */
 	public int getAbsoluteLeft() {
 		return -1;
 	}
 
 	@Override
-	final public EuclidianStyleBar getStyleBar() {
+	public final EuclidianStyleBar getStyleBar() {
 		if (styleBar == null) {
 			styleBar = newEuclidianStyleBar();
 		}
@@ -5689,19 +5642,19 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return new dynamic style bar
 	 */
-	abstract protected EuclidianStyleBar newEuclidianStyleBar();
+	protected abstract EuclidianStyleBar newEuclidianStyleBar();
 
 	/**
-	 * 
+	 *
 	 * Adds dynamic stylebar to DOM if not added yet
 	 */
-	abstract protected void addDynamicStylebarToEV(EuclidianStyleBar dynamicStylebar);
+	protected abstract void addDynamicStylebarToEV(EuclidianStyleBar dynamicStylebar);
 
 	@Override
-	final public EuclidianStyleBar getDynamicStyleBar() {
+	public final EuclidianStyleBar getDynamicStyleBar() {
 		if (dynamicStyleBar == null) {
 			dynamicStyleBar = newDynamicStyleBar();
 			if (dynamicStyleBar != null) {
@@ -5731,10 +5684,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return new euclidian style bar
 	 */
-	abstract protected EuclidianStyleBar newDynamicStyleBar();
+	protected abstract EuclidianStyleBar newDynamicStyleBar();
 
 	/**
 	 * @return last repaint, overridden in Web
@@ -5754,7 +5707,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return 2 for 2D and 3 for 3D
 	 */
 	public int getDimension() {
@@ -5763,7 +5716,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * draw background image to graphics
-	 * 
+	 *
 	 * @param g2d
 	 *            graphics
 	 */
@@ -5783,7 +5736,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Prepare export
-	 * 
+	 *
 	 * @param g2d
 	 *            graphics
 	 * @param scale
@@ -5791,16 +5744,14 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param transparency
 	 *            use transparency?
 	 */
-	public void exportPaintPre(GGraphics2D g2d, double scale,
-			boolean transparency) {
+	public void exportPaintPre(GGraphics2D g2d, double scale, boolean transparency) {
 		exportPaintPreScale(g2d, scale);
 
 		// clipping on selection rectangle
 		if (getSelectionRectangle() != null) {
 			GRectangle rect = getSelectionRectangle();
 
-			g2d.setClip(0, 0, (int) rect.getWidth(),
-						(int) rect.getHeight(), false);
+			g2d.setClip(0, 0, (int) rect.getWidth(), (int) rect.getHeight(), false);
 
 			g2d.translate(-rect.getX(), -rect.getY());
 		} else {
@@ -5844,21 +5795,21 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Scales construction and draws it to g2d.
-	 * 
+	 *
 	 * @param g2d
 	 *            export graphics
 	 * @param scale
 	 *            ratio of desired size and current size of the graphics
-	 * 
+	 *
 	 * @param transparency
 	 *            states if export should be optimized for eps. Note: if this is
 	 *            set to false, no traces are drawn.
 	 * @param exportType
 	 *            SVG, PNG etc
-	 * 
+	 *
 	 */
-	public void exportPaint(GGraphics2D g2d, double scale,
-			boolean transparency, ExportType exportType) {
+	public void exportPaint(
+			GGraphics2D g2d, double scale, boolean transparency, ExportType exportType) {
 		getApplication().setExporting(exportType, scale);
 
 		exportFrame = getFrame();
@@ -5881,7 +5832,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return maxx in screen pixels
 	 */
 	public int getMaxXScreen() {
@@ -5892,7 +5843,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return minx in pixels
 	 */
 	public int getMinXScreen() {
@@ -5903,7 +5854,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return maxx in pixels
 	 */
 	public int getMaxYScreen() {
@@ -5915,7 +5866,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return miny in pixels
 	 */
 	public int getMinYScreen() {
@@ -5927,7 +5878,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Returns image of drawing pad sized according to the given scale factor.
-	 * 
+	 *
 	 * @param scale
 	 *            ratio of desired size and current size of the graphics
 	 * @return image of drawing pad sized according to the given scale factor.
@@ -5945,20 +5896,18 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 *            export type
 	 * @return image
 	 */
-	public GBufferedImage getExportImage(double scale, boolean transparency,
-			ExportType exportType) {
+	public GBufferedImage getExportImage(double scale, boolean transparency, ExportType exportType) {
 
 		int width = (int) Math.floor(getExportWidth() * scale);
 		int height = (int) Math.floor(getExportHeight() * scale);
 		try {
-		GBufferedImage img = AwtFactory.getPrototype().createBufferedImage(
-				width, height, transparency);
-		exportPaint(img.createGraphics(), scale, transparency, exportType);
-		img.flush();
-		return img;
+			GBufferedImage img =
+					AwtFactory.getPrototype().createBufferedImage(width, height, transparency);
+			exportPaint(img.createGraphics(), scale, transparency, exportType);
+			img.flush();
+			return img;
 		} catch (Exception e) {
-			Log.debug("problem with creating image with dimensions " + width
-					+ " " + height);
+			Log.debug("problem with creating image with dimensions " + width + " " + height);
 			return null;
 		}
 	}
@@ -5970,8 +5919,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		double px = (toRealWorldCoordX(getWidth()) - toRealWorldCoordX(0)) / 2;
 		double py = (-toRealWorldCoordY(getHeight()) + toRealWorldCoordY(0)) / 2;
 
-		setRealWorldCoordSystem(p.getX() - px, p.getX() + px, p.getY() - py,
-				p.getY() + py);
+		setRealWorldCoordSystem(p.getX() - px, p.getX() + px, p.getY() - py, p.getY() + py);
 	}
 
 	/**
@@ -6059,7 +6007,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Mark combobox as opened and select it.
-	 * 
+	 *
 	 * @param openedComboBox
 	 *            combobox
 	 */
@@ -6114,6 +6062,9 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		// ignore
 	}
 
+	/**
+	 * @return text field of this view, or null if it has none
+	 */
 	public AutoCompleteTextField getTextField() {
 		return viewTextField == null ? null : viewTextField.getTextField();
 	}
@@ -6125,10 +6076,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 *            drawable
 	 * @return text input field
 	 */
-	public AutoCompleteTextField getTextField(GeoInputBox input,
-			DrawInputBox drawInputBox) {
-		return viewTextField == null ? null : viewTextField.getTextField(
-				input.getLength(), drawInputBox);
+	public AutoCompleteTextField getTextField(GeoInputBox input, DrawInputBox drawInputBox) {
+		return viewTextField == null
+				? null
+				: viewTextField.getTextField(input.getLength(), drawInputBox);
 	}
 
 	/**
@@ -6166,7 +6117,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Focus and show the textfield.
-	 * 
+	 *
 	 * @param inputBox
 	 *            input box
 	 */
@@ -6177,7 +6128,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	/**
 	 * Focus textfield and make sure it's shown.
-	 * 
+	 *
 	 * @param inputBox
 	 *            input box
 	 */
@@ -6233,7 +6184,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if coord system is translated by internal animation, like
 	 *         open/close toolbar in portrait.
 	 */
@@ -6249,7 +6200,9 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	public boolean intersects(GShape shape) {
 		// don't use getWidth()/ getHeight()
 		// doesn't work for export
-		return shape.intersects(getMinXScreen(), getMinYScreen(),
+		return shape.intersects(
+				getMinXScreen(),
+				getMinYScreen(),
 				getMaxXScreen() - getMinXScreen(),
 				getMaxYScreen() - getMinYScreen());
 	}
@@ -6257,10 +6210,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	/**
 	 * This default implementation does NOT draw "white" outlines (actually
 	 * outline color is taken from view's background color)
-	 * 
+	 *
 	 * It's currently over-ridden in web to draw white outlines for axes numbers
 	 * and GeoElement labels
-	 * 
+	 *
 	 * @param g2
 	 *            canvas
 	 * @param text
@@ -6272,8 +6225,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param col
 	 *            text color
 	 */
-	public void drawStringWithOutline(GGraphics2D g2, String text, double x,
-			double y, GColor col) {
+	public void drawStringWithOutline(GGraphics2D g2, String text, double x, double y, GColor col) {
 
 		// default implementation, no outline
 		// don't change, used when no outline wanted
@@ -6308,7 +6260,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @param geo
 	 *            construction element
 	 * @param firstCall
@@ -6320,10 +6272,10 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		return null;
 	}
 
-    /**
-     *
-     * @return true if stylebar needs to check selected geo still in hit
-     */
+	/**
+	 *
+	 * @return true if stylebar needs to check selected geo still in hit
+	 */
 	public boolean checkHitForStylebar() {
 		return false;
 	}
@@ -6365,12 +6317,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if XR is enabled
 	 */
-    public boolean isXREnabled() {
-        return false;
-    }
+	public boolean isXREnabled() {
+		return false;
+	}
 
 	/**
 	 * @return screen reader
@@ -6379,13 +6331,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 		return ScreenReaderSilent.INSTANCE;
 	}
 
-    /**
-     * reset settings
-     */
-    public void resetSettings() {
-        // settings should have been reset before
-        settingsChanged(getSettings());
-    }
+	/**
+	 * reset settings
+	 */
+	public void resetSettings() {
+		// settings should have been reset before
+		settingsChanged(getSettings());
+	}
 
 	/**
 	 * Attaches a symbolic-capable editor to the input box
@@ -6393,8 +6345,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param bounds where the editor should be attached to.
 	 * @param textRendererSettings to set.
 	 */
-	public void attachSymbolicEditor(GeoInputBox geoInputBox, GRectangle bounds,
-			TextRendererSettings textRendererSettings, GPoint caretPos) {
+	public void attachSymbolicEditor(
+			GeoInputBox geoInputBox,
+			GRectangle bounds,
+			TextRendererSettings textRendererSettings,
+			GPoint caretPos) {
 		if (symbolicEditor == null) {
 			symbolicEditor = createSymbolicEditor(textRendererSettings);
 		}
@@ -6448,9 +6403,12 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	void drawMaskPreview(GGraphics2D g2) {
 		if (maskPreview != null) {
-			drawShape(g2, GeoGebraColorConstants.MEBIS_MASK,
+			drawShape(
+					g2,
 					GeoGebraColorConstants.MEBIS_MASK,
-					null, maskPreview);
+					GeoGebraColorConstants.MEBIS_MASK,
+					null,
+					maskPreview);
 		}
 	}
 
@@ -6546,14 +6504,14 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param drawEmbed embedded widget
 	 */
 	public void embed(GGraphics2D g2, DrawWidget drawEmbed) {
-		//web only
+		// web only
 	}
 
 	/**
 	 * Update all inline drawables (needed after evalXML)
 	 */
 	public void updateInlines() {
-		for (Drawable drawable: allDrawableList) {
+		for (Drawable drawable : allDrawableList) {
 			if (drawable instanceof DrawInline) {
 				((DrawInline) drawable).updateContent();
 			}
@@ -6564,7 +6522,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * Store current editor values into the respective geos
 	 */
 	public void saveInlines() {
-		for (Drawable drawable: allDrawableList) {
+		for (Drawable drawable : allDrawableList) {
 			if (drawable instanceof DrawInline) {
 				((DrawInline) drawable).saveContent();
 			}
@@ -6594,7 +6552,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	public @CheckForNull EvPositioner getEvPositioner() {
+	public @Nullable EvPositioner getEvPositioner() {
 		return null;
 	}
 
@@ -6602,7 +6560,8 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @return center of the view in real world coords
 	 */
 	public GPoint2D getVisibleRectCenter() {
-		return new GPoint2D((visibleRect.getMinX() + visibleRect.getMaxX()) / 2,
+		return new GPoint2D(
+				(visibleRect.getMinX() + visibleRect.getMaxX()) / 2,
 				(visibleRect.getMinY() + visibleRect.getMaxY()) / 2);
 	}
 
@@ -6619,18 +6578,27 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 */
 	public void onResizeX() {
 		setCursor(EuclidianCursor.RESIZE_X);
-		coordSystemInfo.setXAxisZoom(true);
+		coordSystemInfo.setScaledAxis(ScaledAxis.X_AXIS);
 	}
 
 	/**
 	 * Runs when axis zoom is canceled.
 	 */
 	void onAxisZoomCancel() {
+		if (coordSystemInfo.hasScaledAxis()) {
+			notifyCoordSystemAxisZoomStop();
+		}
+
 		coordSystemInfo.setInteractive(false);
-		if (coordSystemInfo.isXAxisZoom()) {
-			coordSystemInfo.setXAxisZoom(false);
+		if (coordSystemInfo.hasScaledAxis()) {
+			coordSystemInfo.cancelScaledAxis();
 			euclidianController.notifyZoomerStopped();
 		}
+	}
+
+	private void notifyCoordSystemAxisZoomStop() {
+		euclidianController.notifyCoordSystemAxisZoomStop();
+		coordSystemInfo.cancelScaledAxis();
 	}
 
 	@Override
@@ -6665,13 +6633,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	public void applyRestrictions(@Nonnull Set<FeatureRestriction> featureRestrictions) {
-		restrictGraphSelectionForFunctions = featureRestrictions
-				.contains(FeatureRestriction.AUTOMATIC_GRAPH_SELECTION_FOR_FUNCTIONS);
+	public void applyRestrictions(@NonNull Set<FeatureRestriction> featureRestrictions) {
+		restrictGraphSelectionForFunctions =
+				featureRestrictions.contains(FeatureRestriction.AUTOMATIC_GRAPH_SELECTION_FOR_FUNCTIONS);
 	}
 
 	@Override
-	public void removeRestrictions(@Nonnull Set<FeatureRestriction> featureRestrictions) {
+	public void removeRestrictions(@NonNull Set<FeatureRestriction> featureRestrictions) {
 		restrictGraphSelectionForFunctions = false;
 	}
 
@@ -6681,5 +6649,15 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 
 	public void setHitHandler(ControlPointHandler controlPointHandler) {
 		this.hitHandler = controlPointHandler;
+	}
+
+	@Override
+	public void addDimensionListener(@NonNull DimensionListener dimensionListener) {
+		dimensionListeners.add(dimensionListener);
+	}
+
+	@Override
+	public void removeDimensionListener(@NonNull DimensionListener dimensionListener) {
+		dimensionListeners.remove(dimensionListener);
 	}
 }

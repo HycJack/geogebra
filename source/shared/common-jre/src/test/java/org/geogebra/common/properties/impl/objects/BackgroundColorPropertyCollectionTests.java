@@ -31,31 +31,32 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class BackgroundColorPropertyCollectionTests extends BaseAppTestSetup {
+class BackgroundColorPropertyCollectionTests extends BaseAppTestSetup {
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@Test
-	public void testApplicable() {
+	void testApplicable() {
 		GeoElement point = evaluateGeoElement("\"text\"");
-		assertDoesNotThrow(() ->
-				new BackgroundColorPropertyCollection(new GeoElementPropertiesFactory(),
-						getLocalization(), List.of(point)));
+		assertDoesNotThrow(() -> new BackgroundColorPropertyCollection(
+				new GeoElementPropertiesFactory(), getLocalization(), List.of(point)));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)",
-			"f(x) = x^2",
-			"a = 1 + 2",
-	})
-	public void testNotApplicable(String expression) {
+	@ValueSource(
+			strings = {
+				"(1, 2)",
+				"f(x) = x^2",
+				"a = 1 + 2",
+			})
+	void testNotApplicable(String expression) {
 		GeoElement point = evaluateGeoElement(expression);
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new BackgroundColorPropertyCollection(new GeoElementPropertiesFactory(),
-						getLocalization(), List.of(point)));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new BackgroundColorPropertyCollection(
+						new GeoElementPropertiesFactory(), getLocalization(), List.of(point)));
 	}
 }

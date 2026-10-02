@@ -22,18 +22,20 @@ import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.commands.EvalInfo;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.common.main.Localization;
 
 import com.google.j2objc.annotations.Weak;
 
 /**
  * Helper class to evaluate expressions with GeoText objects in it.
- * 
+ *
  * @see ExpressionNode#evaluate(StringTemplate)
  * @author Markus Hohenwarter
  */
 public class MyStringBuffer extends ValidExpression implements TextValue {
 
 	private StringBuilder sb;
+
 	@Weak
 	private Kernel kernel;
 
@@ -113,12 +115,12 @@ public class MyStringBuffer extends ValidExpression implements TextValue {
 	}
 
 	@Override
-	final public String toValueString(StringTemplate tpl) {
+	public final String toValueString(StringTemplate tpl) {
 		return sb.toString();
 	}
 
 	@Override
-	final public String toOutputValueString(StringTemplate tpl) {
+	public final String toOutputValueString(StringTemplate tpl) {
 		StringBuffer sb2 = new StringBuffer(sb.length() + 2);
 
 		sb2.append('"');
@@ -129,7 +131,7 @@ public class MyStringBuffer extends ValidExpression implements TextValue {
 	}
 
 	@Override
-	final public String toLaTeXString(boolean symbolic, StringTemplate tpl) {
+	public final String toLaTeXString(boolean symbolic, StringTemplate tpl) {
 		return sb.toString();
 	}
 
@@ -139,7 +141,7 @@ public class MyStringBuffer extends ValidExpression implements TextValue {
 	}
 
 	@Override
-	final public boolean contains(ExpressionValue ev) {
+	public final boolean contains(ExpressionValue ev) {
 		return ev == this;
 	}
 
@@ -148,6 +150,11 @@ public class MyStringBuffer extends ValidExpression implements TextValue {
 	 */
 	public Kernel getKernel() {
 		return kernel;
+	}
+
+	@Override
+	public Localization getLocalization() {
+		return kernel.getLocalization();
 	}
 
 	@Override

@@ -18,6 +18,7 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
+import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.Localization;
@@ -32,7 +33,7 @@ import org.geogebra.common.properties.impl.facade.BooleanPropertyListFacade;
  * and indicating whether the related {@code GeoElement} is visible at that location.
  */
 public final class LocationPropertyCollection extends AbstractPropertyCollection<BooleanProperty> {
-	private final static class AlgebraViewLocationProperty extends AbstractValuedProperty<Boolean>
+	private static final class AlgebraViewLocationProperty extends AbstractValuedProperty<Boolean>
 			implements BooleanProperty, GeoElementDependentProperty {
 		private final GeoElement element;
 
@@ -90,10 +91,14 @@ public final class LocationPropertyCollection extends AbstractPropertyCollection
 		public GeoElement getGeoElement() {
 			return element;
 		}
+
+		@Override
+		public boolean isAvailable() {
+			return !isSingle3D(element.getApp());
+		}
 	}
-	
-	private static final class GraphicsView2LocationProperty
-			extends AbstractValuedProperty<Boolean>
+
+	private static final class GraphicsView2LocationProperty extends AbstractValuedProperty<Boolean>
 			implements BooleanProperty, GeoElementDependentProperty {
 		private final GeoElement element;
 
@@ -101,7 +106,7 @@ public final class LocationPropertyCollection extends AbstractPropertyCollection
 			super(localization, "DrawingPad2");
 			this.element = element;
 		}
-		
+
 		@Override
 		protected void doSetValue(Boolean value) {
 			if (value) {
@@ -120,7 +125,7 @@ public final class LocationPropertyCollection extends AbstractPropertyCollection
 
 		@Override
 		public boolean isAvailable() {
-			return element.getApp().getEuclidianView2(1) != null;
+			return !element.getApp().isUnbundled();
 		}
 
 		@Override
@@ -129,8 +134,7 @@ public final class LocationPropertyCollection extends AbstractPropertyCollection
 		}
 	}
 
-	private static final class GraphicsView3DLocationProperty
-			extends AbstractValuedProperty<Boolean>
+	private static final class GraphicsView3DLocationProperty extends AbstractValuedProperty<Boolean>
 			implements BooleanProperty, GeoElementDependentProperty {
 		private final GeoElement element;
 
@@ -160,13 +164,19 @@ public final class LocationPropertyCollection extends AbstractPropertyCollection
 
 		@Override
 		public boolean isAvailable() {
-			return element.getApp().getEuclidianView3D() != null && element.hasDrawable3D();
+			App app = element.getApp();
+			return isSingle3D(app) || !app.isUnbundled() && app.supportsView(App.VIEW_EUCLIDIAN3D);
 		}
 
 		@Override
 		public GeoElement getGeoElement() {
 			return element;
 		}
+	}
+
+	private static boolean isSingle3D(App app) {
+		return app.isSuite() && SuiteSubApp.G3D == app.getConfig().getSubApp()
+				|| app.getConfig().hasSingleEuclidianViewWhichIs3D();
 	}
 
 	/**
@@ -176,22 +186,28 @@ public final class LocationPropertyCollection extends AbstractPropertyCollection
 	 * @param localization localization for translating property names
 	 * @param elements the elements to create the property for
 	 */
-	public LocationPropertyCollection(GeoElementPropertiesFactory propertiesFactory,
-			Localization localization, List<GeoElement> elements) {
+	public LocationPropertyCollection(
+			GeoElementPropertiesFactory propertiesFactory,
+			Localization localization,
+			List<GeoElement> elements) {
 		super(localization, "Location");
-		setProperties(new BooleanProperty[]{
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new AlgebraViewLocationProperty(localization, element),
-						BooleanPropertyListFacade::new),
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new GraphicsViewLocationProperty(localization, element),
-						BooleanPropertyListFacade::new),
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new GraphicsView2LocationProperty(localization, element),
-						BooleanPropertyListFacade::new),
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new GraphicsView3DLocationProperty(localization, element),
-						BooleanPropertyListFacade::new)
+		setProperties(new BooleanProperty[] {
+			propertiesFactory.createOptionalPropertyFacade(
+					elements,
+					element -> new AlgebraViewLocationProperty(localization, element),
+					BooleanPropertyListFacade::new),
+			propertiesFactory.createOptionalPropertyFacade(
+					elements,
+					element -> new GraphicsViewLocationProperty(localization, element),
+					BooleanPropertyListFacade::new),
+			propertiesFactory.createOptionalPropertyFacade(
+					elements,
+					element -> new GraphicsView2LocationProperty(localization, element),
+					BooleanPropertyListFacade::new),
+			propertiesFactory.createOptionalPropertyFacade(
+					elements,
+					element -> new GraphicsView3DLocationProperty(localization, element),
+					BooleanPropertyListFacade::new)
 		});
 	}
 }

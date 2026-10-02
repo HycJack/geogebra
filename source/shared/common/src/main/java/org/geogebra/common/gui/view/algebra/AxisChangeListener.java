@@ -17,19 +17,20 @@
 package org.geogebra.common.gui.view.algebra;
 
 import org.geogebra.common.kernel.Kernel;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.AlgebraStyle;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.main.settings.SettingListener;
 
 import com.google.j2objc.annotations.Weak;
 
-public class AxisChangeListener implements SettingListener {
+public class AxisChangeListener implements SettingListener<EuclidianSettings> {
 
 	@Weak
 	private AlgebraView view;
+
 	@Weak
 	private Kernel kernel;
+
 	private boolean isAnyAxisVisible;
 
 	/**
@@ -40,30 +41,27 @@ public class AxisChangeListener implements SettingListener {
 	 * @param defaultSetting
 	 *            view settings (for initialization)
 	 */
-	public AxisChangeListener(AlgebraView view, Kernel kernel,
-			EuclidianSettings defaultSetting) {
+	public AxisChangeListener(AlgebraView view, Kernel kernel, EuclidianSettings defaultSetting) {
 		this.view = view;
 		this.kernel = kernel;
 		this.isAnyAxisVisible = isAnyAxisVisible(defaultSetting);
 	}
 
 	private boolean isAnyAxisVisible(EuclidianSettings euclidianSettings) {
-		return euclidianSettings.getShowAxis(0)
-				|| euclidianSettings.getShowAxis(1);
+		return euclidianSettings.getShowAxis(0) || euclidianSettings.getShowAxis(1);
 	}
 
 	@Override
-	public void settingsChanged(AbstractSettings settings) {
-		if (settings instanceof EuclidianSettings) {
-			EuclidianSettings euclidianSettings = (EuclidianSettings) settings;
-			boolean anyAxisVisible = isAnyAxisVisible(euclidianSettings);
-			if (anyAxisVisible != isAnyAxisVisible) {
-				isAnyAxisVisible = anyAxisVisible;
-				kernel.getApplication().getSettings().getAlgebra().setStyle(anyAxisVisible
-						? AlgebraStyle.DEFINITION_AND_VALUE
-						: AlgebraStyle.DESCRIPTION);
-				view.repaintView();
-			}
+	public void settingsChanged(EuclidianSettings settings) {
+		boolean anyAxisVisible = isAnyAxisVisible(settings);
+		if (anyAxisVisible != isAnyAxisVisible) {
+			isAnyAxisVisible = anyAxisVisible;
+			kernel
+					.getApplication()
+					.getSettings()
+					.getAlgebra()
+					.setStyle(anyAxisVisible ? AlgebraStyle.DEFINITION_AND_VALUE : AlgebraStyle.DESCRIPTION);
+			view.repaintView();
 		}
 	}
 }

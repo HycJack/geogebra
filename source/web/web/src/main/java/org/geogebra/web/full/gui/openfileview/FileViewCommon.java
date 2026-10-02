@@ -26,6 +26,7 @@ import org.geogebra.web.full.gui.exam.ExamLogAndExitDialog;
 import org.geogebra.web.full.gui.layout.panels.AnimatingPanel;
 import org.geogebra.web.full.gui.layout.scientific.SettingsAnimator;
 import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.IconButton;
+import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.gui.laf.LoadSpinner;
 import org.geogebra.web.html5.gui.laf.SignInControllerI;
 import org.geogebra.web.html5.gui.util.Dom;
@@ -41,12 +42,11 @@ import org.geogebra.web.shared.components.ComponentSearchBar;
 import org.geogebra.web.shared.components.infoError.ComponentInfoErrorPanel;
 import org.geogebra.web.shared.components.infoError.InfoErrorData;
 import org.gwtproject.animation.client.AnimationScheduler;
-import org.gwtproject.user.client.ui.Button;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.Widget;
 
-public class FileViewCommon extends AnimatingPanel implements Persistable {
+public final class FileViewCommon extends AnimatingPanel implements Persistable {
 
 	private final AppW app;
 	private final String title;
@@ -59,7 +59,7 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 	// material panel
 	private FlowPanel materialPanel;
 	private final LocalizationW loc;
-	private Button signInTextButton;
+	private StandardButton signInTextButton;
 	private IconButton signInIconButton;
 	private ProfileAvatar profilePanel;
 	private IconButton examInfoBtn;
@@ -138,8 +138,8 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 	}
 
 	private void addExamInfoButton() {
-		examInfoBtn = new IconButton(app, () -> {}, new ImageIconSpec(SharedResources.INSTANCE
-				.info_black()), "exam_log_header");
+		examInfoBtn = new IconButton(
+				app, () -> {}, new ImageIconSpec(SharedResources.INSTANCE.info_black()), "exam_log_header");
 		examInfoBtn.addStyleName("examInfoBtn");
 		examInfoBtn.addFastClickHandler(source -> showExamDialog(examInfoBtn));
 		headerView.add(examInfoBtn);
@@ -150,10 +150,9 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 	}
 
 	private void buildSingInPanel() {
-		SignInControllerI signInController = app.getLAF()
-				.getSignInController(app);
+		SignInControllerI signInController = app.getLAF().getSignInController(app);
 		signInTextButton = getLoginTextButton(signInController);
-		signInTextButton.setStyleName("signIn");
+		signInTextButton.addStyleName("signIn");
 		getHeader().add(signInTextButton);
 
 		signInIconButton = getLoginIconButton(signInController);
@@ -162,8 +161,7 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 		profilePanel = new ProfileAvatar(app);
 		getHeader().add(profilePanel);
 
-		final GeoGebraTubeUser user = app.getLoginOperation().getModel()
-				.getLoggedInUser();
+		final GeoGebraTubeUser user = app.getLoginOperation().getModel().getLoggedInUser();
 		if (user == null) {
 			profilePanel.setVisible(false);
 		} else {
@@ -173,11 +171,12 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 		}
 	}
 
-	private Button getLoginTextButton(SignInControllerI signInController) {
-		Button button = new Button(app.getLocalization().getMenu("SignIn"));
+	private StandardButton getLoginTextButton(SignInControllerI signInController) {
+		StandardButton button =
+				BaseWidgetFactory.INSTANCE.newTextButton(app.getLocalization().getMenu("SignIn"));
 		button.getElement().setAttribute("type", "button");
 		button.addStyleName("signInButton");
-		button.addClickHandler(event -> {
+		button.addFastClickHandler(event -> {
 			signInController.login();
 			signInController.initLoginTimer();
 		});
@@ -189,15 +188,14 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 			signInController.login();
 			signInController.initLoginTimer();
 		};
-		IconButton button = new IconButton(app, onClick,
-				new ImageIconSpec(MaterialDesignResources.INSTANCE.login()), "SignIn");
+		IconButton button = new IconButton(
+				app, onClick, new ImageIconSpec(MaterialDesignResources.INSTANCE.login()), "SignIn");
 		button.addStyleName("signInIcon");
 		return button;
 	}
 
 	private void updateSignInButtonsVisibility(boolean smallScreen) {
-		final GeoGebraTubeUser user = app.getLoginOperation().getModel()
-				.getLoggedInUser();
+		final GeoGebraTubeUser user = app.getLoginOperation().getModel().getLoggedInUser();
 		if (user == null && signInIconButton != null && signInTextButton != null) {
 			signInIconButton.setVisible(smallScreen);
 			signInTextButton.setVisible(!smallScreen);
@@ -280,8 +278,7 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 	 * update header style on resize
 	 */
 	public void resizeHeader() {
-		boolean smallScreen = app.getAppletFrame()
-				.hasSmallWindowOrCompactHeader();
+		boolean smallScreen = app.getAppletFrame().hasSmallWindowOrCompactHeader();
 		headerView.resizeTo(smallScreen);
 		if (searchBar != null) {
 			Dom.toggleClass(searchBar, "compact", smallScreen);
@@ -400,8 +397,7 @@ public class FileViewCommon extends AnimatingPanel implements Persistable {
 	 */
 	public void onLogout() {
 		profilePanel.setVisible(false);
-		boolean isSmallScreen = app.getAppletFrame()
-				.hasSmallWindowOrCompactHeader();
+		boolean isSmallScreen = app.getAppletFrame().hasSmallWindowOrCompactHeader();
 		updateSignInButtonsVisibility(isSmallScreen);
 	}
 

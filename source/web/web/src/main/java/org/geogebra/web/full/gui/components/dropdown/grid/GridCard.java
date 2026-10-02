@@ -27,7 +27,7 @@ import org.gwtproject.user.client.ui.Image;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.SimplePanel;
 
-public class GridCard extends FlowPanel implements SetLabels {
+public final class GridCard extends FlowPanel implements SetLabels {
 	private final AppW appW;
 	private final ImageResource imageResource;
 	private final String titleTransKey;
@@ -58,8 +58,9 @@ public class GridCard extends FlowPanel implements SetLabels {
 		FlowPanel checkMarkPanel = new FlowPanel();
 		checkMarkPanel.addStyleName("checkMarkPanel");
 		SimplePanel checkMark = new SimplePanel();
-		checkMark.getElement().setInnerHTML(MaterialDesignResources
-				.INSTANCE.check_white().getSVG());
+		checkMark
+				.getElement()
+				.setInnerHTML(MaterialDesignResources.INSTANCE.check_white().getSVG());
 		checkMark.addStyleName("checkmark");
 		checkMarkPanel.add(checkMark);
 		imagePanel.add(checkMarkPanel);
@@ -78,6 +79,9 @@ public class GridCard extends FlowPanel implements SetLabels {
 		Dom.toggleClass(this, "selected", selected);
 	}
 
+	/**
+	 * @return whether this card is currently selected
+	 */
 	public boolean isSelected() {
 		return getStyleName().contains("selected");
 	}

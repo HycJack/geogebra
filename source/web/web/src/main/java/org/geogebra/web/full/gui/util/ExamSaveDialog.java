@@ -25,7 +25,7 @@ import org.geogebra.web.full.gui.dialog.DialogManagerW;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.components.dialog.DialogData;
 
-public class ExamSaveDialog {
+public final class ExamSaveDialog {
 
 	private ComponentInputDialog examSave;
 
@@ -56,8 +56,7 @@ public class ExamSaveDialog {
 			initString = app.getLocalization().getMenu("Untitled");
 		}
 
-		examSave = new ComponentInputDialog(app, data, false,
-				true, null, "Title", initString);
+		examSave = new ComponentInputDialog(app, data, false, true, null, "Title", initString);
 		examSave.setPreventHide(false);
 	}
 
@@ -65,8 +64,8 @@ public class ExamSaveDialog {
 		examSave.setOnPositiveAction(() -> saveAndConfirm(app, onDialogClosed));
 		examSave.setOnNegativeAction(onDialogClosed);
 
-		examSave.addInputHandler(() -> examSave.setPosBtnDisabled(
-				examSave.getInputText().length() < 1));
+		examSave.addInputHandler(
+				() -> examSave.setPosBtnDisabled(examSave.getInputText().length() < 1));
 	}
 
 	private void saveAndConfirm(AppW app, Runnable onDialogClosed) {
@@ -93,7 +92,6 @@ public class ExamSaveDialog {
 			}
 		}
 
-		app.getToolTipManager().showBottomMessage(
-				app.getLocalization().getMenu(msg), app);
+		app.getToolTipManager().showBottomMessage(app.getLocalization().getMenu(msg), app);
 	}
 }

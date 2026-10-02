@@ -1,34 +1,19 @@
 /*
- * 11/19/04 : 1.0 moved to LGPL.
- *            VBRI header support added, E.B javalayer@javazoom.net
- * 
- * 12/04/03 : VBR (XING) header support added, E.B javalayer@javazoom.net
+ * GeoGebra - Dynamic Mathematics for Everyone
+ * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
+ * https://www.geogebra.org
  *
- * 02/13/99 : Java Conversion by JavaZOOM , E.B javalayer@javazoom.net
+ * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
+ * may be used under the EUPL 1.2 in compatible projects (see Article 5
+ * and the Appendix of EUPL 1.2 for details).
+ * You may obtain a copy of the licence at:
+ * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
- * Declarations for MPEG header class
- * A few layer III, MPEG-2 LSF, and seeking modifications made by Jeff Tsay.
- * Last modified : 04/19/97
- *
- *  @(#) header.h 1.7, last edit: 6/15/94 16:55:33
- *  @(#) Copyright (C) 1993, 1994 Tobias Bading (bading@cs.tu-berlin.de)
- *  @(#) Berlin University of Technology
- *-----------------------------------------------------------------------
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU Library General Public License as published
- *   by the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU Library General Public License for more details.
- *
- *   You should have received a copy of the GNU Library General Public
- *   License along with this program; if not, write to the Free Software
- *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *----------------------------------------------------------------------
+ * Note: The overall GeoGebra software package is free to use for
+ * non-commercial purposes only.
+ * See https://www.geogebra.org/license for full licensing details
  */
+
 package org.geogebra.desktop.sound.mp3transform;
 
 import java.io.IOException;
@@ -38,8 +23,9 @@ import java.nio.charset.StandardCharsets;
  * Class for extracting information from a frame header.
  */
 public final class Header {
-	private static final int[][] FREQUENCIES = { { 22050, 24000, 16000, 1 },
-			{ 44100, 48000, 32000, 1 }, { 11025, 12000, 8000, 1 } };
+	private static final int[][] FREQUENCIES = {
+		{22050, 24000, 16000, 1}, {44100, 48000, 32000, 1}, {11025, 12000, 8000, 1}
+	};
 	static final int VERSION_MPEG2_LSF = 0;
 	static final int VERSION_MPEG25_LSF = 2;
 	static final int VERSION_MPEG1 = 1;
@@ -62,19 +48,17 @@ public final class Header {
 		while (true) {
 			int headerString = stream.syncHeader(syncMode);
 			if (syncMode == Bitstream.INITIAL_SYNC) {
-				version = ((headerString >>> 19) & 1);
+				version = (headerString >>> 19) & 1;
 				if (((headerString >>> 20) & 1) == 0) {
 					if (version == VERSION_MPEG2_LSF) {
 						version = VERSION_MPEG25_LSF;
 					} else {
-						throw new IOException(
-								"Unsupported version: " + version);
+						throw new IOException("Unsupported version: " + version);
 					}
 				}
-				sampleFrequency = ((headerString >>> 10) & 3);
+				sampleFrequency = (headerString >>> 10) & 3;
 				if (sampleFrequency == 3) {
-					throw new IOException(
-							"Unsupported sampleFrequency: " + sampleFrequency);
+					throw new IOException("Unsupported sampleFrequency: " + sampleFrequency);
 				}
 			}
 			int layer = 4 - (headerString >>> 17) & 3;
@@ -84,7 +68,7 @@ public final class Header {
 			protectionBit = ((headerString >>> 16) & 1) != 0;
 			bitrateIndex = (headerString >>> 12) & 0xF;
 			paddingBit = ((headerString >>> 9) & 1) != 0;
-			mode = ((headerString >>> 6) & 3);
+			mode = (headerString >>> 6) & 3;
 			modeExtension = (headerString >>> 4) & 3;
 			if (mode == MODE_JOINT_STEREO) {
 				intensityStereoBound = (modeExtension << 2) + 4;
@@ -163,7 +147,7 @@ public final class Header {
 				vbr = true;
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new IOException("Corrupt Xing VBR header");
+			throw new IOException("Corrupt Xing VBR header", e);
 		}
 		offset = 36 - 4;
 		try {
@@ -172,7 +156,7 @@ public final class Header {
 				vbr = true;
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new IOException("Corrupt VBRI VBR header");
+			throw new IOException("Corrupt VBRI VBR header", e);
 		}
 	}
 
@@ -184,7 +168,7 @@ public final class Header {
 		return sampleFrequency;
 	}
 
-	public int frequency() {
+	int frequency() {
 		return FREQUENCIES[version][sampleFrequency];
 	}
 
@@ -205,8 +189,7 @@ public final class Header {
 	}
 
 	private void calculateFramesize() {
-		frameSize = (144 * Constants.BITRATES[version][bitrateIndex])
-				/ frequency();
+		frameSize = 144 * Constants.BITRATES[version][bitrateIndex] / frequency();
 		if (version == VERSION_MPEG2_LSF || version == VERSION_MPEG25_LSF) {
 			frameSize >>= 1;
 		}
@@ -215,7 +198,7 @@ public final class Header {
 		}
 		// subtract header size
 		frameSize -= 4;
-		// side info size, crc size, header sidze
+		// side info size, crc size, header size
 		if (version == VERSION_MPEG1) {
 			slots = (mode == MODE_SINGLE_CHANNEL) ? 17 : 32;
 		} else {

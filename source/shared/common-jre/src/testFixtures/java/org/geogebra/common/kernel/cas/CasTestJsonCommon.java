@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -63,7 +63,7 @@ public abstract class CasTestJsonCommon {
 	protected static Kernel kernel;
 	protected static App app;
 	protected static CASTestLogger logger = new CASTestLogger();
-	protected static String missing = null;
+	protected static List<String> missing = new ArrayList<>();
 
 	static class CasTest {
 		protected String input;
@@ -88,8 +88,7 @@ public abstract class CasTestJsonCommon {
 	}
 
 	protected static void addTestcases(String json) throws JSONException {
-		JSONArray testsJSON = new JSONArray(
-				json.substring("var __giac = ".length()));
+		JSONArray testsJSON = new JSONArray(json.substring("var __giac = ".length()));
 		assertNotSame(0, testsJSON.length());
 		int i = 1;
 
@@ -112,13 +111,12 @@ public abstract class CasTestJsonCommon {
 				testcases.put(cat, new ArrayList<>());
 			}
 			if (test.has("round")) {
-				testcases.get(cat).add(new CasTest(test.getString("cmd"),
-						test.getString("round"), null));
+				testcases.get(cat).add(new CasTest(test.getString("cmd"), test.getString("round"), null));
 			} else {
-				testcases.get(cat)
-						.add(new CasTest(test.getString("cmd"),
-								test.getString("result"),
-								test.optString("rounding")));
+				testcases
+						.get(cat)
+						.add(new CasTest(
+								test.getString("cmd"), test.getString("result"), test.optString("rounding")));
 			}
 		}
 	}
@@ -128,12 +126,12 @@ public abstract class CasTestJsonCommon {
 		String marker = "at character ";
 		int pos = msg.indexOf(marker);
 		if (pos > 0) {
-			String characterNo = msg.substring(pos + marker.length(),
-					msg.indexOf(" ", pos + marker.length()));
+			String characterNo =
+					msg.substring(pos + marker.length(), msg.indexOf(" ", pos + marker.length()));
 			int err = Integer.parseInt(characterNo);
 			int sampleLength = 50;
-			fail("JSON parsing error at '" + json.substring(err - sampleLength / 2,
-					err + sampleLength / 2) + "'");
+			fail("JSON parsing error at '"
+					+ json.substring(err - sampleLength / 2, err + sampleLength / 2) + "'");
 		} else {
 			fail(msg);
 		}
@@ -141,22 +139,26 @@ public abstract class CasTestJsonCommon {
 
 	protected static void checkMissingCategories() {
 		for (String key : Ggb2giac.getMap().keySet()) {
-			if (testcases != null && testcases.get(key) == null
+			if (testcases != null
+					&& testcases.get(key) == null
 					&& testcases.get(key.substring(0, key.indexOf("."))) == null
 					&& forCAS(key)
 					&& !"Binomial.2".equals(key)
 					&& !"ExpSimplify.1".equals(key)
 					&& !"SolveODEPoint.2".equals(key)
 					&& !"SolveQuartic.1".equals(key)) {
-				missing = key;
+				missing.add(key);
 			}
 		}
 	}
 
 	private static boolean forCAS(String key) {
-		return !"Cell.2".equals(key) && !"CellRange.2".equals(key)
-				&& !"Column.1".equals(key) && !"CopyFreeObject.1".equals(key)
-				&& !"Object.1".equals(key) && !"Row.1".equals(key)
+		return !"Cell.2".equals(key)
+				&& !"CellRange.2".equals(key)
+				&& !"Column.1".equals(key)
+				&& !"CopyFreeObject.1".equals(key)
+				&& !"Object.1".equals(key)
+				&& !"Row.1".equals(key)
 				&& !"Segment.2".equals(key);
 	}
 
@@ -184,14 +186,13 @@ public abstract class CasTestJsonCommon {
 		assertEquals("", failures.toString());
 	}
 
-	private static void t(StringBuilder failures, String input,
-			String expectedResult) {
+	private static void t(StringBuilder failures, String input, String expectedResult) {
 		String[] validResults = expectedResult.split("\\|OR\\|");
 		ta(failures, input, validResults, validResults);
 	}
 
-	private static void ta(StringBuilder failures,
-			String input, String[] expectedResult, String... validResults) {
+	private static void ta(
+			StringBuilder failures, String input, String[] expectedResult, String... validResults) {
 		String result;
 
 		try {
@@ -208,16 +209,15 @@ public abstract class CasTestJsonCommon {
 			boolean includesNumericCommand = f.includesNumericCommand();
 			if (f.getValue() == null) {
 				result = f.getOutput(StringTemplate.testTemplate);
-			} else if (f.getValue()
-					.unwrap() instanceof GeoElement) {
-				result = f.getValue()
-						.toValueString(StringTemplate.testTemplateJSON);
+			} else if (f.getValue().unwrap() instanceof GeoElement) {
+				result = f.getValue().toValueString(StringTemplate.testTemplateJSON);
 			} else {
 				result = f.getValue()
 						.traverse(getGGBVectAdder())
-						.toString(includesNumericCommand
-								? StringTemplate.testNumeric
-								: StringTemplate.testTemplateJSON);
+						.toString(
+								includesNumericCommand
+										? StringTemplate.testNumeric
+										: StringTemplate.testTemplateJSON);
 			}
 		} catch (Exception | MyError t) {
 			String sts = stacktrace(t);
@@ -230,20 +230,26 @@ public abstract class CasTestJsonCommon {
 			}
 			try {
 				result = normalizeActual(result);
-				assertThat(result,
-						equalToIgnoreWhitespaces(logger, input,
-								normalizeExpected(expectedResult[i]),
-								validResults));
+				assertThat(
+						result,
+						equalToIgnoreWhitespaces(
+								logger, input, normalizeExpected(expectedResult[i]), validResults));
 				return;
 			} catch (Throwable t) {
 				if (i == expectedResult.length - 1) {
 					Log.debug(t);
-					String expected = expectedResult[0] == null ? "null"
-							: normalizeExpected(expectedResult[0]);
-					failures.append("\n  in: ").append(input)
-							.append("\n exp: ").append(expected)
-							.append("\n out: ").append(result)
-							.append("\n raw: ").append(toRaw(input)).append('\n');
+					String expected =
+							expectedResult[0] == null ? "null" : normalizeExpected(expectedResult[0]);
+					failures
+							.append("\n  in: ")
+							.append(input)
+							.append("\n exp: ")
+							.append(expected)
+							.append("\n out: ")
+							.append(result)
+							.append("\n raw: ")
+							.append(toRaw(input))
+							.append('\n');
 				}
 			}
 		}
@@ -251,7 +257,9 @@ public abstract class CasTestJsonCommon {
 
 	private static String toRaw(String input) {
 		try {
-			return app.getKernel().getParser().parseGeoGebraCAS(input, null)
+			return app.getKernel()
+					.getParser()
+					.parseGeoGebraCAS(input, null)
 					.toString(StringTemplate.giacTemplate);
 		} catch (ParseException e) {
 			Log.debug(e);
@@ -260,27 +268,26 @@ public abstract class CasTestJsonCommon {
 	}
 
 	private static String normalizeActual(String result) {
-		return result.replaceAll("c_[0-9]", "c_0")
+		return result
+				.replaceAll("c_[0-9]", "c_0")
 				.replaceAll("k_[0-9]", "k_0")
 				.replaceAll("c_\\{[0-9]+\\}", "c_0")
 				.replaceAll("k_\\{[0-9]+\\}", "k_0")
-				.replace("arccos", "acos").replace("arctan", "atan")
-				.replace("Wenn(", "If(").replace("arcsin", "asin")
+				.replace("arccos", "acos")
+				.replace("arctan", "atan")
+				.replace("Wenn(", "If(")
+				.replace("arcsin", "asin")
 				.replace("NteWurzel", "nroot");
 	}
 
 	private static String normalizeExpected(String s) {
-		return s.replaceAll("c_[0-9]+", "c_0")
-				.replaceAll("n_[0-9]+", "k_0");
+		return s.replaceAll("c_[0-9]+", "c_0").replaceAll("n_[0-9]+", "k_0");
 	}
 
 	private static Traversing getGGBVectAdder() {
 		return ev -> {
-			if (ev.unwrap() instanceof MyVecNDNode
-					&& ((MyVecNDNode) ev.unwrap()).isCASVector()) {
-				return new Variable(kernel, "ggbvect").wrap()
-						.apply(Operation.FUNCTION, ev);
-
+			if (ev.unwrap() instanceof MyVecNDNode && ((MyVecNDNode) ev.unwrap()).isCASVector()) {
+				return new Variable(kernel, "ggbvect").wrap().apply(Operation.FUNCTION, ev);
 			}
 			return ev;
 		};
@@ -296,9 +303,11 @@ public abstract class CasTestJsonCommon {
 
 		for (int i = 0; i < 10 && i < st.length; i++) {
 			StackTraceElement stElement = st[i];
-			sts.append(stElement.getClassName()).append(":")
+			sts.append(stElement.getClassName())
+					.append(":")
 					.append(stElement.getMethodName())
-					.append(stElement.getLineNumber()).append("\n");
+					.append(stElement.getLineNumber())
+					.append("\n");
 		}
 		return sts.toString();
 	}
@@ -319,7 +328,8 @@ public abstract class CasTestJsonCommon {
 	}
 
 	protected void testCatNoWindows(String category) {
-		String os = System.getProperty("os.version");;
+		String os = System.getProperty("os.version");
+		;
 		if (os != null && StringUtil.toLowerCaseUS(os).startsWith("windows")) {
 			testCat(category);
 		} else {
@@ -403,7 +413,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testAppend() {
-		testCat("Append");
+		testCat("Append.2");
 	}
 
 	@Test
@@ -413,8 +423,13 @@ public abstract class CasTestJsonCommon {
 	}
 
 	@Test
-	public void testBinomialDist() {
-		testCat("BinomialDist");
+	public void testBinomialDist3() {
+		testCat("BinomialDist.3");
+	}
+
+	@Test
+	public void testBinomialDist4() {
+		testCat("BinomialDist.4");
 	}
 
 	@Test
@@ -424,7 +439,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testCauchy() {
-		testCat("Cauchy");
+		testCat("Cauchy.3");
 	}
 
 	@Test
@@ -449,27 +464,32 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testCompleteSquare() {
-		testCat("CompleteSquare");
+		testCat("CompleteSquare.1");
 	}
 
 	@Test
 	public void testCommonDenominator() {
-		testCat("CommonDenominator");
+		testCat("CommonDenominator.2");
 	}
 
 	@Test
-	public void testCovariance() {
-		testCat("Covariance");
+	public void testCovariance1() {
+		testCat("Covariance.1");
+	}
+
+	@Test
+	public void testCovariance2() {
+		testCat("Covariance.2");
 	}
 
 	@Test
 	public void testCross() {
-		testCat("Cross");
+		testCat("Cross.2");
 	}
 
 	@Test
 	public void testComplexRoot() {
-		testCat("ComplexRoot");
+		testCat("ComplexRoot.1");
 	}
 
 	@Test
@@ -489,7 +509,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testDenominator() {
-		testCat("Denominator");
+		testCat("Denominator.1");
 	}
 
 	@Test
@@ -499,42 +519,42 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testDeterminant() {
-		testCat("Determinant");
+		testCat("Determinant.1");
 	}
 
 	@Test
 	public void testDimension() {
-		testCat("Dimension");
+		testCat("Dimension.1");
 	}
 
 	@Test
 	public void testDiv() {
-		testCat("Div");
+		testCat("Div.2");
 	}
 
 	@Test
 	public void testDivision() {
-		testCat("Division");
+		testCat("Division.2");
 	}
 
 	@Test
 	public void testDivisors() {
-		testCat("Divisors");
+		testCat("Divisors.1");
 	}
 
 	@Test
 	public void testDivisorsList() {
-		testCat("DivisorsList");
+		testCat("DivisorsList.1");
 	}
 
 	@Test
 	public void testDivisorsSum() {
-		testCat("DivisorsSum");
+		testCat("DivisorsSum.1");
 	}
 
 	@Test
 	public void testDot() {
-		testCat("Dot");
+		testCat("Dot.2");
 	}
 
 	@Test
@@ -544,27 +564,27 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testExpand() {
-		testCat("Expand");
+		testCat("Expand.1");
 	}
 
 	@Test
 	public void testExponential() {
-		testCat("Exponential");
+		testCat("Exponential.2");
 	}
 
 	@Test
 	public void testFactors() {
-		testCat("Factors");
+		testCat("Factors.1");
 	}
 
 	@Test
 	public void testFDistribution() {
-		testCat("FDistribution");
+		testCat("FDistribution.3");
 	}
 
 	@Test
 	public void testFlatten() {
-		testCat("Flatten");
+		testCat("Flatten.1");
 	}
 
 	@Test
@@ -574,27 +594,27 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testFitExp() {
-		testCat("FitExp");
+		testCat("FitExp.1");
 	}
 
 	@Test
 	public void testFitLog() {
-		testCat("FitLog");
+		testCat("FitLog.1");
 	}
 
 	@Test
 	public void testFitPoly() {
-		testCat("FitPoly");
+		testCat("FitPoly.2");
 	}
 
 	@Test
 	public void testFitPow() {
-		testCat("FitPow");
+		testCat("FitPow.1");
 	}
 
 	@Test
 	public void testGamma() {
-		testCat("Gamma");
+		testCat("Gamma.3");
 	}
 
 	@Test
@@ -604,12 +624,12 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testHyperGeometric() {
-		testCat("HyperGeometric");
+		testCat("HyperGeometric.5");
 	}
 
 	@Test
 	public void testIdentity() {
-		testCat("Identity");
+		testCat("Identity.1");
 	}
 
 	@Test
@@ -630,27 +650,27 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testIntersect() {
-		testCat("Intersect");
+		testCat("Intersect.2");
 	}
 
 	@Test
 	public void testIteration() {
-		testCat("Iteration");
+		testCat("Iteration.3");
 	}
 
 	@Test
 	public void testIterationList() {
-		testCat("IterationList");
+		testCat("IterationList.3");
 	}
 
 	@Test
 	public void testPointList() {
-		testCat("PointList");
+		testCat("PointList.1");
 	}
 
 	@Test
 	public void testRootList() {
-		testCat("RootList");
+		testCat("RootList.1");
 	}
 
 	@Test
@@ -665,17 +685,17 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testIsPrime() {
-		testCat("IsPrime");
+		testCat("IsPrime.1");
 	}
 
 	@Test
 	public void testJoin() {
-		testCat("Join");
+		testCat("Join.N");
 	}
 
 	@Test
 	public void testLine() {
-		testCat("Line");
+		testCat("Line.2");
 		testCat("OrthogonalLine.2");
 	}
 
@@ -721,7 +741,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testMatrixRank() {
-		testCat("MatrixRank");
+		testCat("MatrixRank.1");
 	}
 
 	@Test
@@ -732,7 +752,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testMedian() {
-		testCat("Median");
+		testCat("Median.1");
 		testCat("Median.2");
 	}
 
@@ -748,12 +768,12 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testMod() {
-		testCat("Mod");
+		testCat("Mod.2");
 	}
 
 	@Test
 	public void testNextPrime() {
-		testCat("NextPrime");
+		testCat("NextPrime.1");
 	}
 
 	@Test
@@ -809,7 +829,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testNumerator() {
-		testCat("Numerator");
+		testCat("Numerator.1");
 	}
 
 	@Test
@@ -829,37 +849,37 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testFunction() {
-		testCat("Function");
+		testCat("Function.3");
 	}
 
 	@Test
 	public void testSVD() {
-		testCat("SVD");
+		testCat("SVD.1");
 	}
 
 	@Test
 	public void testOrthogonalVector() {
-		testCat("OrthogonalVector");
+		testCat("OrthogonalVector.1");
 	}
 
 	@Test
 	public void testPascal() {
-		testCat("Pascal");
+		testCat("Pascal.4");
 	}
 
 	@Test
 	public void testPoisson() {
-		testCat("Poisson");
+		testCat("Poisson.3");
 	}
 
 	@Test
 	public void testPreviousPrime() {
-		testCat("PreviousPrime");
+		testCat("PreviousPrime.1");
 	}
 
 	@Test
 	public void testPrimeFactors() {
-		testCat("PrimeFactors");
+		testCat("PrimeFactors.1");
 	}
 
 	@Test
@@ -869,7 +889,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testMixedNumber() {
-		testCat("MixedNumber");
+		testCat("MixedNumber.1");
 	}
 
 	@Test
@@ -879,22 +899,22 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testRandomBinomial() {
-		testCat("RandomBinomial");
+		testCat("RandomBinomial.2");
 	}
 
 	@Test
 	public void testRandomElement() {
-		testCat("RandomElement");
+		testCat("RandomElement.1");
 	}
 
 	@Test
 	public void testRandomPoisson() {
-		testCat("RandomPoisson");
+		testCat("RandomPoisson.1");
 	}
 
 	@Test
 	public void testRandomNormal() {
-		testCat("RandomNormal");
+		testCat("RandomNormal.2");
 	}
 
 	@Test
@@ -904,12 +924,12 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testRationalize() {
-		testCat("Rationalize");
+		testCat("Rationalize.1");
 	}
 
 	@Test
 	public void testReverse() {
-		testCat("Reverse");
+		testCat("Reverse.1");
 	}
 
 	@Test
@@ -919,12 +939,12 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testRoot() {
-		testCat("Root");
+		testCat("Root.1");
 	}
 
 	@Test
 	public void testReducedRowEchelonForm() {
-		testCat("ReducedRowEchelonForm");
+		testCat("ReducedRowEchelonForm.1");
 	}
 
 	@Test
@@ -934,12 +954,12 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testSort() {
-		testCat("Sort");
+		testCat("Sort.1");
 	}
 
 	@Test
 	public void testSampleVariance() {
-		testCat("SampleVariance");
+		testCat("SampleVariance.1");
 	}
 
 	@Test
@@ -963,12 +983,12 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testShuffle() {
-		testCat("Shuffle"); // TODO
+		testCat("Shuffle.1"); // TODO
 	}
 
 	@Test
 	public void testSimplify() {
-		testCat("Simplify");
+		testCat("Simplify.1");
 	}
 
 	@Test
@@ -1024,7 +1044,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testSolveCubic() {
-		testCat("SolveCubic");
+		testCat("SolveCubic.1");
 	}
 
 	@Test
@@ -1074,7 +1094,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testTangent() {
-		testCat("Tangent");
+		testCat("Tangent.2");
 	}
 
 	@Test
@@ -1090,32 +1110,32 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testTDistribution() {
-		testCat("TDistribution");
+		testCat("TDistribution.2");
 	}
 
 	@Test
 	public void testToComplex() {
-		testCat("ToComplex");
+		testCat("ToComplex.1");
 	}
 
 	@Test
 	public void testToExponential() {
-		testCat("ToExponential");
+		testCat("ToExponential.1");
 	}
 
 	@Test
 	public void testToPolar() {
-		testCat("ToPolar");
+		testCat("ToPolar.1");
 	}
 
 	@Test
 	public void testToPoint() {
-		testCat("ToPoint");
+		testCat("ToPoint.1");
 	}
 
 	@Test
 	public void testTranspose() {
-		testCat("Transpose");
+		testCat("Transpose.1");
 	}
 
 	@Test
@@ -1133,7 +1153,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testUnique() {
-		testCat("Unique");
+		testCat("Unique.1");
 	}
 
 	@Test
@@ -1143,22 +1163,22 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testUnitVector() {
-		testCat("UnitVector");
+		testCat("UnitVector.1");
 	}
 
 	@Test
 	public void testVariance() {
-		testCat("Variance");
+		testCat("Variance.1");
 	}
 
 	@Test
 	public void testWeibull() {
-		testCat("Weibull");
+		testCat("Weibull.3");
 	}
 
 	@Test
 	public void testZipf() {
-		testCat("Zipf");
+		testCat("Zipf.4");
 	}
 
 	@Test
@@ -1193,7 +1213,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testChiSquared() {
-		testCat("ChiSquared");
+		testCat("ChiSquared.2");
 	}
 
 	@Test
@@ -1223,7 +1243,8 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testRound() {
-		testCat("Round");
+		testCat("Round.1");
+		testCat("Round.2");
 	}
 
 	@Test
@@ -1314,12 +1335,12 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testCircumference() {
-		testCat("Circumference");
+		testCat("Circumference.1");
 	}
 
 	@Test
 	public void testDistance() {
-		testCat("Distance");
+		testCat("Distance.2");
 	}
 
 	@Test
@@ -1329,7 +1350,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testCircle() {
-		testCat("Circle");
+		testCat("Circle.2");
 	}
 
 	@Test
@@ -1339,37 +1360,37 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testArea() {
-		testCat("Area");
+		testCat("Area.1");
 	}
 
 	@Test
 	public void testLineBisector() {
-		testCat("LineBisector");
+		testCat("LineBisector.2");
 	}
 
 	@Test
 	public void testEllipse() {
-		testCat("Ellipse");
+		testCat("Ellipse.3");
 	}
 
 	@Test
 	public void testConic() {
-		testCat("Conic");
+		testCat("Conic.5");
 	}
 
 	@Test
 	public void testHyperbola() {
-		testCat("Hyperbola");
+		testCat("Hyperbola.3");
 	}
 
 	@Test
 	public void testIntersection() {
-		testCat("Intersection");
+		testCat("Intersection.2");
 	}
 
 	@Test
 	public void testUnion() {
-		testCat("Union");
+		testCat("Union.2");
 	}
 
 	@Test
@@ -1379,7 +1400,7 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testPolynomial() {
-		testCat("Polynomial");
+		testCat("Polynomial.N");
 	}
 
 	@Test
@@ -1424,27 +1445,27 @@ public abstract class CasTestJsonCommon {
 
 	@Test
 	public void testZip() {
-		testCat("Zip");
+		testCat("Zip.N");
 	}
 
 	@Test
 	public void testTranslate() {
-		testCat("Translate");
+		testCat("Translate.2");
 	}
 
 	@Test
 	public void testFromBase() {
-		testCat("FromBase");
+		testCat("FromBase.2");
 	}
 
 	@Test
 	public void testToBase() {
-		testCat("ToBase");
+		testCat("ToBase.2");
 	}
 
 	@Test
 	public void testIndexOf() {
-		testCat("IndexOf");
+		testCat("IndexOf.2");
 	}
 
 	@Test

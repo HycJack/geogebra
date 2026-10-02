@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -20,21 +20,21 @@ import static org.geogebra.common.kernel.interval.IntervalConstants.undefined;
 import static org.geogebra.common.kernel.interval.IntervalConstants.zero;
 import static org.geogebra.common.kernel.interval.IntervalHelper.around;
 import static org.geogebra.common.kernel.interval.IntervalHelper.interval;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.interval.Interval;
 import org.geogebra.common.kernel.interval.function.GeoFunctionConverter;
 import org.geogebra.common.kernel.interval.function.IntervalNodeFunction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SqrtEvaluationTest extends BaseUnitTest {
+class SqrtEvaluationTest extends BaseUnitTest {
 
 	private final GeoFunctionConverter converter = new GeoFunctionConverter();
 
 	@Test
-	public void testSqrtX() {
+	void testSqrtX() {
 		assertEquals(zero(), functionValue("sqrt(x)", zero()));
 	}
 
@@ -48,7 +48,7 @@ public class SqrtEvaluationTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testNoWholeInInverseOfMinusSqrtMinusX() {
+	void testNoWholeInInverseOfMinusSqrtMinusX() {
 		IntervalNodeFunction function = createFunction("1/-sqrt(-x)");
 		for (double t = -5; t < 1; t += 1E-4) {
 			assertFalse(function.value(around(t)).isWhole());
@@ -56,13 +56,14 @@ public class SqrtEvaluationTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testSqrtXInverseEmptyOnNegative() {
+	void testSqrtXInverseEmptyOnNegative() {
 		assertEquals(undefined(), functionValue("1/sqrt(x)", interval(-2, -1)));
 	}
 
 	@Test
-	public void testNegativeOfSqrtXInverse() {
-		assertEquals(interval(Double.NEGATIVE_INFINITY, -100.0),
+	void testNegativeOfSqrtXInverse() {
+		assertEquals(
+				interval(Double.NEGATIVE_INFINITY, -100.0),
 				functionValue("-(1/sqrt(x))", interval(-1E-4, 1E-4)));
 	}
 }

@@ -2,22 +2,22 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,37 +27,37 @@ import java.util.Random;
 
 import org.geogebra.common.kernel.discrete.geom.Point2D;
 import org.geogebra.common.kernel.discrete.geom.algorithms.ConvexHull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /*
- * Convex hull algorithm - Test suite (Java)
- *
- * Copyright (c) 2017 Project Nayuki
- * https://www.nayuki.io/page/convex-hull-algorithm
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program (see COPYING.txt and COPYING.LESSER.txt).
- * If not, see <http://www.gnu.org/licenses/>.
- */
+Convex hull algorithm - Test suite (Java)
+*
+Copyright (c) 2017 Project Nayuki
+https://www.nayuki.io/page/convex-hull-algorithm
+*
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+*
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+*
+You should have received a copy of the GNU Lesser General Public License
+along with this program (see COPYING.txt and COPYING.LESSER.txt).
+If not, see <http://www.gnu.org/licenses/>.
+*/
 
-public final class ConvexHullTest {
+final class ConvexHullTest {
 
 	/*---- Fixed test vectors ----*/
 
 	private static final Random rand = new Random();
 
 	@Test
-	public void testEmpty() {
+	void testEmpty() {
 		List<Point2D> points = Collections.emptyList();
 		List<Point2D> actual = ConvexHull.makeHull(points);
 		List<Point2D> expect = Collections.emptyList();
@@ -65,7 +65,7 @@ public final class ConvexHullTest {
 	}
 
 	@Test
-	public void testOne() {
+	void testOne() {
 		List<Point2D> points = Arrays.asList(new Point2D(3, 1));
 		List<Point2D> actual = ConvexHull.makeHull(points);
 		List<Point2D> expect = points;
@@ -73,84 +73,75 @@ public final class ConvexHullTest {
 	}
 
 	@Test
-	public void testTwoDuplicate() {
-		List<Point2D> points = Arrays.asList(new Point2D(0, 0),
-				new Point2D(0, 0));
+	void testTwoDuplicate() {
+		List<Point2D> points = Arrays.asList(new Point2D(0, 0), new Point2D(0, 0));
 		List<Point2D> actual = ConvexHull.makeHull(points);
 		List<Point2D> expect = Arrays.asList(new Point2D(0, 0));
 		assertEquals(expect, actual);
 	}
 
 	@Test
-	public void testTwoHorizontal0() {
-		List<Point2D> points = Arrays.asList(new Point2D(2, 0),
-				new Point2D(5, 0));
+	void testTwoHorizontal0() {
+		List<Point2D> points = Arrays.asList(new Point2D(2, 0), new Point2D(5, 0));
 		List<Point2D> actual = ConvexHull.makeHull(points);
 		List<Point2D> expect = points;
 		assertEquals(expect, actual);
 	}
 
 	@Test
-	public void testTwoHorizontal1() {
-		List<Point2D> points = Arrays.asList(new Point2D(-6, -3),
-				new Point2D(-8, -3));
+	void testTwoHorizontal1() {
+		List<Point2D> points = Arrays.asList(new Point2D(-6, -3), new Point2D(-8, -3));
 		List<Point2D> actual = ConvexHull.makeHull(points);
-		List<Point2D> expect = Arrays.asList(new Point2D(-8, -3),
-				new Point2D(-6, -3));
+		List<Point2D> expect = Arrays.asList(new Point2D(-8, -3), new Point2D(-6, -3));
 		assertEquals(expect, actual);
 	}
 
 	@Test
-	public void testTwoVertical0() {
-		List<Point2D> points = Arrays.asList(new Point2D(1, -4),
-				new Point2D(1, 4));
+	void testTwoVertical0() {
+		List<Point2D> points = Arrays.asList(new Point2D(1, -4), new Point2D(1, 4));
 		List<Point2D> actual = ConvexHull.makeHull(points);
 		List<Point2D> expect = points;
 		assertEquals(expect, actual);
 	}
 
 	@Test
-	public void testTwoVertical1() {
-		List<Point2D> points = Arrays.asList(new Point2D(-1, 2),
-				new Point2D(-1, -3));
+	void testTwoVertical1() {
+		List<Point2D> points = Arrays.asList(new Point2D(-1, 2), new Point2D(-1, -3));
 		List<Point2D> actual = ConvexHull.makeHull(points);
-		List<Point2D> expect = Arrays.asList(new Point2D(-1, -3),
-				new Point2D(-1, 2));
+		List<Point2D> expect = Arrays.asList(new Point2D(-1, -3), new Point2D(-1, 2));
 		assertEquals(expect, actual);
 	}
 
 	@Test
-	public void testTwoDiagonal0() {
-		List<Point2D> points = Arrays.asList(new Point2D(-2, -3),
-				new Point2D(2, 0));
+	void testTwoDiagonal0() {
+		List<Point2D> points = Arrays.asList(new Point2D(-2, -3), new Point2D(2, 0));
 		List<Point2D> actual = ConvexHull.makeHull(points);
 		List<Point2D> expect = points;
 		assertEquals(expect, actual);
 	}
 
 	@Test
-	public void testTwoDiagonal1() {
-		List<Point2D> points = Arrays.asList(new Point2D(-2, 3),
-				new Point2D(2, 0));
+	void testTwoDiagonal1() {
+		List<Point2D> points = Arrays.asList(new Point2D(-2, 3), new Point2D(2, 0));
 		List<Point2D> actual = ConvexHull.makeHull(points);
 		List<Point2D> expect = points;
 		assertEquals(expect, actual);
 	}
 
 	@Test
-	public void testRectangle() {
-		List<Point2D> points = Arrays.asList(new Point2D(-3, 2),
-				new Point2D(1, 2), new Point2D(1, -4), new Point2D(-3, -4));
+	void testRectangle() {
+		List<Point2D> points = Arrays.asList(
+				new Point2D(-3, 2), new Point2D(1, 2), new Point2D(1, -4), new Point2D(-3, -4));
 		List<Point2D> actual = ConvexHull.makeHull(points);
-		List<Point2D> expect = Arrays.asList(new Point2D(-3, -4),
-				new Point2D(-3, 2), new Point2D(1, 2), new Point2D(1, -4));
+		List<Point2D> expect = Arrays.asList(
+				new Point2D(-3, -4), new Point2D(-3, 2), new Point2D(1, 2), new Point2D(1, -4));
 		assertEquals(expect, actual);
 	}
 
 	/*---- Randomized testing ----*/
 
 	@Test
-	public void testHorizontalRandomly() {
+	void testHorizontalRandomly() {
 		final int TRIALS = 100000;
 		for (int i = 0; i < TRIALS; i++) {
 			int len = rand.nextInt(30) + 1;
@@ -177,7 +168,7 @@ public final class ConvexHullTest {
 	}
 
 	@Test
-	public void testVerticalRandomly() {
+	void testVerticalRandomly() {
 		final int TRIALS = 100000;
 		for (int i = 0; i < TRIALS; i++) {
 			int len = rand.nextInt(30) + 1;
@@ -204,15 +195,14 @@ public final class ConvexHullTest {
 	}
 
 	@Test
-	public void testVsNaiveRandomly() {
+	void testVsNaiveRandomly() {
 		final int TRIALS = 100000;
 		for (int i = 0; i < TRIALS; i++) {
 			int len = rand.nextInt(100);
 			List<Point2D> points = new ArrayList<>();
 			if (rand.nextBoolean()) {
 				for (int j = 0; j < len; j++) {
-					points.add(new Point2D(rand.nextGaussian(),
-							rand.nextGaussian()));
+					points.add(new Point2D(rand.nextGaussian(), rand.nextGaussian()));
 				}
 			} else {
 				for (int j = 0; j < len; j++) {
@@ -226,7 +216,7 @@ public final class ConvexHullTest {
 	}
 
 	@Test
-	public void testHullPropertiesRandomly() {
+	void testHullPropertiesRandomly() {
 		final int TRIALS = 100000;
 		for (int i = 0; i < TRIALS; i++) {
 
@@ -235,8 +225,7 @@ public final class ConvexHullTest {
 			List<Point2D> points = new ArrayList<>();
 			if (rand.nextBoolean()) {
 				for (int j = 0; j < len; j++) {
-					points.add(new Point2D(rand.nextGaussian(),
-							rand.nextGaussian()));
+					points.add(new Point2D(rand.nextGaussian(), rand.nextGaussian()));
 				}
 			} else {
 				for (int j = 0; j < len; j++) {
@@ -280,8 +269,7 @@ public final class ConvexHullTest {
 				double bx = p.x - point.x;
 				double by = p.y - point.y;
 				double cross = ax * by - ay * bx;
-				if (cross > 0
-						|| cross == 0 && bx * bx + by * by > ax * ax + ay * ay) {
+				if (cross > 0 || cross == 0 && bx * bx + by * by > ax * ax + ay * ay) {
 					next = p;
 				}
 			}
@@ -296,8 +284,7 @@ public final class ConvexHullTest {
 			Point2D p = points.get(i + 0);
 			Point2D q = points.get(i + 1);
 			Point2D r = points.get(i + 2);
-			int sign = signum(
-					(q.x - p.x) * (r.y - q.y) - (q.y - p.y) * (r.x - q.x));
+			int sign = signum((q.x - p.x) * (r.y - q.y) - (q.y - p.y) * (r.x - q.x));
 			if (sign == 0) {
 				continue;
 			} else if (signum == 0) {
@@ -309,14 +296,12 @@ public final class ConvexHullTest {
 		return true;
 	}
 
-	private static boolean isPointInConvexPolygon(List<Point2D> polygon,
-			Point2D point) {
+	private static boolean isPointInConvexPolygon(List<Point2D> polygon, Point2D point) {
 		int signum = 0;
 		for (int i = 0; i < polygon.size(); i++) {
 			Point2D p = polygon.get(i);
 			Point2D q = polygon.get((i + 1) % polygon.size());
-			int sign = signum((q.x - p.x) * (point.y - q.y)
-					- (q.y - p.y) * (point.x - q.x));
+			int sign = signum((q.x - p.x) * (point.y - q.y) - (q.y - p.y) * (point.x - q.x));
 			if (sign == 0) {
 				continue;
 			} else if (signum == 0) {
@@ -337,5 +322,4 @@ public final class ConvexHullTest {
 			return 0;
 		}
 	}
-
 }

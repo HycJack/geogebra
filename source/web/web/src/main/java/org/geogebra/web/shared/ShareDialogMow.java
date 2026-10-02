@@ -30,6 +30,8 @@ import org.geogebra.common.move.ggtapi.models.MaterialRestAPI;
 import org.geogebra.common.move.ggtapi.requests.MaterialCallbackI;
 import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.common.util.StringUtil;
+import org.geogebra.common.util.debug.AccessibilityAnalytics;
+import org.geogebra.common.util.debug.AccessibilityAnalyticsContext;
 import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.gui.laf.VendorSettings;
 import org.geogebra.web.html5.gui.util.Dom;
@@ -52,7 +54,7 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  *  Joint share dialog for mow (group + link sharing)
  */
-public class ShareDialogMow extends ComponentDialog
+public final class ShareDialogMow extends ComponentDialog
 		implements FastClickHandler, SaveListener {
 	private Localization localization;
 	private ScrollPanel scrollPanel;
@@ -109,16 +111,23 @@ public class ShareDialogMow extends ComponentDialog
 	}
 
 	private boolean isMultiuserSwitchOn() {
-		return multiuserSwitch != null && multiuserSwitch.isSwitchOn()
+		return multiuserSwitch != null
+				&& multiuserSwitch.isSwitchOn()
 				&& !multiuserSharePanel.getElement().hasClassName("disabled");
 	}
 
 	private void updateMaterial(String visibility) {
 		boolean isMultiuser = isMultiuserSwitchOn();
-		app.getLoginOperation().getGeoGebraTubeAPI().uploadMaterial(
-				material.getSharingKeySafe(), visibility,
-				material.getTitle(), null, callback,
-				material.getType(), isMultiuser);
+		app.getLoginOperation()
+				.getGeoGebraTubeAPI()
+				.uploadMaterial(
+						material.getSharingKeySafe(),
+						visibility,
+						material.getTitle(),
+						null,
+						callback,
+						material.getType(),
+						isMultiuser);
 		Material activeMaterial = app.getActiveMaterial();
 		boolean currentlyEditing = activeMaterial != null
 				&& material.getSharingKeySafe().equals(activeMaterial.getSharingKeySafe());
@@ -152,8 +161,7 @@ public class ShareDialogMow extends ComponentDialog
 			return;
 		}
 		this.sharedGroups = sharedGroupList;
-		ArrayList<GroupIdentifier> groupNames = app.getLoginOperation().getModel()
-				.getUserGroups();
+		ArrayList<GroupIdentifier> groupNames = app.getLoginOperation().getModel().getUserGroups();
 		scrollPanel.clear();
 		FlowPanel groups = new FlowPanel();
 		// first add button for groups with which material was already shared
@@ -175,8 +183,7 @@ public class ShareDialogMow extends ComponentDialog
 	}
 
 	private void addGroup(FlowPanel groupsPanel, GroupIdentifier groupDesc, boolean shared) {
-		groupsPanel.add(new GroupButtonMow(groupDesc, shared,
-				this::updateChangedGroupList));
+		groupsPanel.add(new GroupButtonMow(groupDesc, shared, this::updateChangedGroupList));
 	}
 
 	/**
@@ -190,8 +197,7 @@ public class ShareDialogMow extends ComponentDialog
 		FlowPanel dialogContent = new FlowPanel();
 		getGroupsSharedWith();
 		// get list of groups of user
-		ArrayList<GroupIdentifier> groupNames = app.getLoginOperation().getModel()
-				.getUserGroups();
+		ArrayList<GroupIdentifier> groupNames = app.getLoginOperation().getModel().getUserGroups();
 		// user has no groups
 		if (groupNames.isEmpty()) {
 			buildNoGroupPanel(dialogContent);
@@ -213,8 +219,13 @@ public class ShareDialogMow extends ComponentDialog
 		Label multiuserHelpLbl = BaseWidgetFactory.INSTANCE.newSecondaryText(
 				localization.getMenu("shareDialog.multiUserHelp"), "linkShareHelp");
 
-		multiuserSharePanel = buildSwitcherPanel(dialogContent, multiuserSwitch,
-				SharedResources.INSTANCE.groups(), multiuserShareLbl, multiuserHelpLbl, null);
+		multiuserSharePanel = buildSwitcherPanel(
+				dialogContent,
+				multiuserSwitch,
+				SharedResources.INSTANCE.groups(),
+				multiuserShareLbl,
+				multiuserHelpLbl,
+				null);
 	}
 
 	private boolean isSharedGroupOrLink() {
@@ -223,17 +234,27 @@ public class ShareDialogMow extends ComponentDialog
 
 	private void buildShareByLinkPanel(FlowPanel dialogContent, String shareURL) {
 		shareSwitch = new ComponentSwitch(isMatShared(material), this::onSwitch);
-		linkShareOnOffLbl = BaseWidgetFactory.INSTANCE.newPrimaryText(localization.getMenu(
-				isShareLinkOn() ? "linkShareOn" : "linkShareOff"), "linkShareOnOff");
+		linkShareOnOffLbl = BaseWidgetFactory.INSTANCE.newPrimaryText(
+				localization.getMenu(isShareLinkOn() ? "linkShareOn" : "linkShareOff"), "linkShareOnOff");
 		linkShareHelpLbl = BaseWidgetFactory.INSTANCE.newSecondaryText(
 				localization.getMenu(getLinkShareHelpLabelTextKey()), "linkShareHelp");
 
-		buildSwitcherPanel(dialogContent, shareSwitch, SharedResources.INSTANCE.mow_link_black(),
-				linkShareOnOffLbl, linkShareHelpLbl, shareURL);
+		buildSwitcherPanel(
+				dialogContent,
+				shareSwitch,
+				SharedResources.INSTANCE.mow_link_black(),
+				linkShareOnOffLbl,
+				linkShareHelpLbl,
+				shareURL);
 	}
 
-	private FlowPanel buildSwitcherPanel(FlowPanel dialogContent, ComponentSwitch switcher,
-			SVGResource icon, Label label, Label helpMsg, String shareURL) {
+	private FlowPanel buildSwitcherPanel(
+			FlowPanel dialogContent,
+			ComponentSwitch switcher,
+			SVGResource icon,
+			Label label,
+			Label helpMsg,
+			String shareURL) {
 		FlowPanel shareByLinkPanel = new FlowPanel();
 		shareByLinkPanel.addStyleName("shareByLink");
 
@@ -266,12 +287,11 @@ public class ShareDialogMow extends ComponentDialog
 		noGroupPanel.addStyleName("noGroupPanel");
 		SimplePanel groupImgHolder = new SimplePanel();
 		groupImgHolder.addStyleName("groupImgHolder");
-		NoDragImage groupImg = new NoDragImage(
-				SharedResources.INSTANCE.groups(), 48);
+		NoDragImage groupImg = new NoDragImage(SharedResources.INSTANCE.groups(), 48);
 		groupImgHolder.add(groupImg);
 		noGroupPanel.add(groupImgHolder);
-		Label noGroupsLbl = BaseWidgetFactory.INSTANCE.newPrimaryText(
-				localization.getMenu("NoGroups"), "noGroupsLbl");
+		Label noGroupsLbl =
+				BaseWidgetFactory.INSTANCE.newPrimaryText(localization.getMenu("NoGroups"), "noGroupsLbl");
 		Label noGroupsHelpLbl = BaseWidgetFactory.INSTANCE.newSecondaryText(
 				localization.getMenu("NoGroupShareTxt"), "noGroupsHelpLbl");
 		noGroupPanel.add(noGroupsLbl);
@@ -290,7 +310,7 @@ public class ShareDialogMow extends ComponentDialog
 		dialogContent.add(groupPanel);
 	}
 
-	protected void updateChangedGroupList(GroupIdentifier groupID, Boolean shared) {
+	private void updateChangedGroupList(GroupIdentifier groupID, Boolean shared) {
 		if (changedGroups.containsKey(groupID)) {
 			changedGroups.remove(groupID);
 		} else {
@@ -323,9 +343,8 @@ public class ShareDialogMow extends ComponentDialog
 		linkPanel = new FlowPanel();
 		linkPanel.setStyleName("linkPanel");
 		linkBox = new ComponentLinkBox(true, shareURL, "linkBox");
-		// build and add copy button
-		copyBtn = new StandardButton(localization.getMenu("Copy"));
-		copyBtn.setStyleName("copyButton");
+
+		copyBtn = BaseWidgetFactory.INSTANCE.newTextButton(localization.getMenu("Copy"));
 		copyBtn.addFastClickHandler(this);
 		linkPanel.add(linkBox);
 		linkPanel.add(copyBtn);
@@ -335,14 +354,13 @@ public class ShareDialogMow extends ComponentDialog
 
 	/**
 	 * update switch dependent UI
-	 * 
+	 *
 	 * @param isSwitchOn
 	 *            true if switch is on
 	 */
 	public void onSwitch(boolean isSwitchOn) {
-		linkShareOnOffLbl
-				.setText(localization.getMenu(
-						isShareLinkOn() ? "linkShareOn" : "linkShareOff"));
+		linkShareOnOffLbl.setText(
+				localization.getMenu(isShareLinkOn() ? "linkShareOn" : "linkShareOff"));
 		linkShareHelpLbl.setText(localization.getMenu(getLinkShareHelpLabelTextKey()));
 		linkPanel.setVisible(isSwitchOn);
 		if (isSwitchOn) {
@@ -372,13 +390,21 @@ public class ShareDialogMow extends ComponentDialog
 	@Override
 	public void onClick(Widget source) {
 		if (source == copyBtn) {
+			logShareCompleted(AccessibilityAnalytics.Value.COPY);
 			linkBox.setFocused(false);
 			app.getCopyPaste().copyTextToSystemClipboard(linkBox.getText());
 			linkBox.focus();
-			((AppW) app).getToolTipManager()
-				.showBottomMessage(((AppW) app).getLocalization()
-				.getMenu("linkCopyClipboard"), (AppW) app);
+			((AppW) app)
+					.getToolTipManager()
+					.showBottomMessage(
+							((AppW) app).getLocalization().getMenu("linkCopyClipboard"), (AppW) app);
 		}
+	}
+
+	private void logShareCompleted(String action) {
+		AccessibilityAnalyticsContext context = app.getAccessibilityAnalyticsContext();
+		AccessibilityAnalytics.logShareCompleted(context.getTrigger(), action);
+		context.reset();
 	}
 
 	/**
@@ -393,32 +419,32 @@ public class ShareDialogMow extends ComponentDialog
 	 * @param groupCallback
 	 *            callback for share with group
 	 */
-	protected void shareWithGroups(AsyncOperation<Boolean> groupCallback) {
+	private void shareWithGroups(AsyncOperation<Boolean> groupCallback) {
 		for (Map.Entry<GroupIdentifier, Boolean> group : changedGroups.entrySet()) {
-			app.getLoginOperation().getResourcesAPI().setShared(material,
-					group.getKey(), group.getValue(), groupCallback);
+			app.getLoginOperation()
+					.getResourcesAPI()
+					.setShared(material, group.getKey(), group.getValue(), groupCallback);
 		}
 	}
 
-	protected void getGroupsSharedWith() {
-		final AsyncOperation<List<GroupIdentifier>> partial =
-				new AsyncOperation<>() {
-					private int counter = 2;
-					private List<GroupIdentifier> all = new ArrayList<>();
+	private void getGroupsSharedWith() {
+		final AsyncOperation<List<GroupIdentifier>> partial = new AsyncOperation<>() {
+			private int counter = 2;
+			private List<GroupIdentifier> all = new ArrayList<>();
 
-					@Override
-					public void callback(List<GroupIdentifier> obj) {
-						counter--;
-						if (obj == null) {
-							all = null;
-						} else if (all != null) {
-							all.addAll(obj);
-						}
-						if (counter == 0) {
-							updateOnSharedGroups(all);
-						}
-					}
-				};
+			@Override
+			public void callback(List<GroupIdentifier> obj) {
+				counter--;
+				if (obj == null) {
+					all = null;
+				} else if (all != null) {
+					all.addAll(obj);
+				}
+				if (counter == 0) {
+					updateOnSharedGroups(all);
+				}
+			}
+		};
 		MaterialRestAPI api = app.getLoginOperation().getResourcesAPI();
 		api.getGroups(material.getSharingKeySafe(), GroupIdentifier.GroupCategory.CLASS, partial);
 		api.getGroups(material.getSharingKeySafe(), GroupIdentifier.GroupCategory.COURSE, partial);
@@ -428,11 +454,11 @@ public class ShareDialogMow extends ComponentDialog
 	 * @param success
 	 *            shared with group successful or not
 	 */
-	protected void onGroupShareChanged(boolean success) {
-		((AppW) app).getToolTipManager().showBottomMessage(
-				app.getLocalization()
-						.getMenu(success ? "GroupShareOk"
-								: "GroupShareFail"), (AppW) app);
+	private void onGroupShareChanged(boolean success) {
+		((AppW) app)
+				.getToolTipManager()
+				.showBottomMessage(
+						app.getLocalization().getMenu(success ? "GroupShareOk" : "GroupShareFail"), (AppW) app);
 		if (success && callback != null) {
 			callback.onLoaded(Collections.singletonList(material), null);
 		}

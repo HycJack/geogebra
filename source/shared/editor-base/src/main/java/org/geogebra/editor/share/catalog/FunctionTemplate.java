@@ -18,7 +18,7 @@ package org.geogebra.editor.share.catalog;
 
 import java.util.Locale;
 
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Template for mathematical functions with parameters.
@@ -34,20 +34,19 @@ public class FunctionTemplate extends Template {
 	 * @param texName tex name
 	 * @param arguments arguments
 	 */
-	FunctionTemplate(Tag name, String texName, @Nonnull Parameter[] arguments,
-			int insertIndex, int defaultSize) {
+	FunctionTemplate(
+			Tag name, String texName, Parameter @NonNull [] arguments, int insertIndex, int defaultSize) {
 		super(name, texName);
 		this.arguments = arguments;
 		this.insertIndex = insertIndex;
 		this.defaultSize = defaultSize;
 	}
 
-	FunctionTemplate(Tag name, String texName, @Nonnull Parameter[] arguments,
-			int insertIndex) {
+	FunctionTemplate(Tag name, String texName, Parameter @NonNull [] arguments, int insertIndex) {
 		this(name, texName, arguments, insertIndex, -1);
 	}
 
-	FunctionTemplate(Tag name, String texName, @Nonnull Parameter... arguments) {
+	FunctionTemplate(Tag name, String texName, @NonNull Parameter... arguments) {
 		this(name, texName, arguments, 0, -1);
 	}
 
@@ -106,5 +105,4 @@ public class FunctionTemplate extends Template {
 	public char getClosingBracket() {
 		return getTag() == Tag.APPLY_SQUARE ? ']' : ')';
 	}
-
 }

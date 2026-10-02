@@ -27,7 +27,7 @@ import org.gwtproject.user.client.ui.FlowPanel;
  * Wrap MainMenu in composite
  *
  */
-public class GGWMenuBar extends Composite {
+public final class GGWMenuBar extends Composite {
 
 	private FlowPanel ggbmenubarwrapper;
 	private MainMenu menubar;
@@ -39,7 +39,6 @@ public class GGWMenuBar extends Composite {
 		ggbmenubarwrapper = new FlowPanel();
 		ggbmenubarwrapper.addStyleName("ggbmenubarwrapper");
 		initWidget(ggbmenubarwrapper);
-
 	}
 
 	/**
@@ -69,8 +68,7 @@ public class GGWMenuBar extends Composite {
 	public void setPixelSize(int w, int h) {
 		super.setPixelSize(w, h);
 		if (menubar != null && menubar.getElement().getParentElement() != null) {
-			menubar.getElement().getParentElement().getStyle()
-				.setHeight(h, Unit.PX);
+			menubar.getElement().getParentElement().getStyle().setHeight(h, Unit.PX);
 		}
 	}
 
@@ -92,5 +90,4 @@ public class GGWMenuBar extends Composite {
 	public void setVisible(boolean b) {
 		menubar.setVisible(b);
 	}
-
 }

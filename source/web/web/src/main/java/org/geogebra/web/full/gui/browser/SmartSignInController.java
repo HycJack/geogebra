@@ -25,7 +25,7 @@ import elemental2.dom.DomGlobal;
 /**
  * Signin button for SMART - navigates the whole page to login
  */
-public class SmartSignInController extends SignInController {
+public final class SmartSignInController extends SignInController {
 
 	/**
 	 * @param app
@@ -44,5 +44,4 @@ public class SmartSignInController extends SignInController {
 
 		DomGlobal.location.replace(url);
 	}
-
 }

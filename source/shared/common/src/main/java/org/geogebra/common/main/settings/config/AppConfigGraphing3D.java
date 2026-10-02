@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.gui.toolcategorization.AppType;
 import org.geogebra.common.io.layout.DockPanelData;
@@ -35,9 +33,11 @@ import org.geogebra.common.kernel.geos.properties.FillType;
 import org.geogebra.common.kernel.parser.function.ParserFunctionsFactory;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.settings.LabelVisibility;
+import org.geogebra.common.main.settings.config.equationforms.DefaultEquationBehaviour;
 import org.geogebra.common.main.syntax.suggestionfilter.SyntaxFilter;
 import org.geogebra.common.properties.factory.G3DPropertiesFactory;
 import org.geogebra.common.properties.factory.PropertiesFactory;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Config for 3D Graphing Calculator app
@@ -103,7 +103,7 @@ public class AppConfigGraphing3D extends AppConfigGraphing {
 
 	@Override
 	public int[] getDecimalPlaces() {
-		return new int[]{0, 1, 2, 3, 4, 5, 10, 15};
+		return new int[] {0, 1, 2, 3, 4, 5, 10, 15};
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public class AppConfigGraphing3D extends AppConfigGraphing {
 	}
 
 	@Override
-	public @CheckForNull SyntaxFilter newCommandSyntaxFilter() {
+	public @Nullable SyntaxFilter newCommandSyntaxFilter() {
 		return null;
 	}
 
@@ -194,6 +194,11 @@ public class AppConfigGraphing3D extends AppConfigGraphing {
 	@Override
 	public boolean shouldHideEquations() {
 		return false;
+	}
+
+	@Override
+	public void initializeEquationBehaviour() {
+		equationBehaviour = new DefaultEquationBehaviour();
 	}
 
 	@Override

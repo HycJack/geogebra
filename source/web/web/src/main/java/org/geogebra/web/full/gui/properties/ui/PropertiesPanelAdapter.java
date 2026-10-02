@@ -18,7 +18,6 @@ package org.geogebra.web.full.gui.properties.ui;
 
 import static org.geogebra.common.main.GeoGebraColorConstants.NEUTRAL_700;
 import static org.geogebra.common.properties.PropertyView.ActionableButtonRow;
-import static org.geogebra.common.properties.PropertyView.ButtonIconEditor;
 import static org.geogebra.common.properties.PropertyView.ButtonWithIcon;
 import static org.geogebra.common.properties.PropertyView.Checkbox;
 import static org.geogebra.common.properties.PropertyView.ColorSelectorRow;
@@ -32,12 +31,14 @@ import static org.geogebra.common.properties.PropertyView.HorizontalSplitView;
 import static org.geogebra.common.properties.PropertyView.ImagePicker;
 import static org.geogebra.common.properties.PropertyView.MultiSelectionIconRow;
 import static org.geogebra.common.properties.PropertyView.RelatedPropertyViewCollection;
-import static org.geogebra.common.properties.PropertyView.ScriptEditor;
 import static org.geogebra.common.properties.PropertyView.SingleSelectionIconRow;
 import static org.geogebra.common.properties.PropertyView.Slider;
+import static org.geogebra.common.properties.PropertyView.TabList;
+import static org.geogebra.common.properties.PropertyView.TextArea;
 import static org.geogebra.common.properties.PropertyView.TextField;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,35 +56,38 @@ import org.geogebra.web.full.gui.components.ComponentDropDown;
 import org.geogebra.web.full.gui.components.ComponentExpandableList;
 import org.geogebra.web.full.gui.components.ComponentInputField;
 import org.geogebra.web.full.gui.components.ComponentSlider;
+import org.geogebra.web.full.gui.components.ComponentTextArea;
 import org.geogebra.web.full.gui.properties.ui.panel.ActionableButtonPanel;
-import org.geogebra.web.full.gui.properties.ui.panel.ButtonIconEditorPanel;
 import org.geogebra.web.full.gui.properties.ui.panel.DimensionRatioPanel;
 import org.geogebra.web.full.gui.properties.ui.panel.IconButtonPanel;
 import org.geogebra.web.full.gui.properties.ui.panel.ImagePickerPanel;
 import org.geogebra.web.full.gui.properties.ui.panel.MultiSelectionIconRowPanel;
-import org.geogebra.web.full.gui.properties.ui.tabs.ScriptTabFactory;
 import org.geogebra.web.full.gui.toolbar.mow.popupcomponents.ColorChooserPanel;
+import org.geogebra.web.full.gui.view.probcalculator.ProbabilityResultRow;
 import org.geogebra.web.full.main.AppWFull;
+import org.geogebra.web.html5.gui.accessibility.HasFocus;
 import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.gui.view.button.StandardButton;
 import org.geogebra.web.html5.gui.zoompanel.FocusableWidget;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.components.tab.ComponentTab;
+import org.geogebra.web.shared.components.tab.TabData;
+import org.gwtproject.core.client.Scheduler;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.Widget;
 
-import elemental2.dom.KeyboardEvent;
-import jsinterop.base.Js;
-
 /**
  * Maps properties to UI components for the properties view.
  */
-public class PropertiesPanelAdapter {
+public final class PropertiesPanelAdapter {
 	private final Localization loc;
 	private final AppW app;
 	private final List<Widget> widgets = new ArrayList<>();
+	private final Map<String, ComponentExpandableList> expandableLists = new HashMap<>();
+
+	private String panelKey = "";
 
 	/**
 	 * @param loc localization
@@ -95,34 +99,68 @@ public class PropertiesPanelAdapter {
 	}
 
 	/**
+	 * Clears the widgets and prepares the adapter for building a new set of panels.
+	 * @param keepExpandedLists Whether lists that were expanded in the previous build should be
+	 * kept expanded
+	 */
+	public void reset(boolean keepExpandedLists) {
+		widgets.clear();
+		if (!keepExpandedLists) {
+			expandableLists.clear();
+		}
+	}
+
+	/**
 	 * @param props properties
 	 * @return panel with controls for all the properties
 	 */
 	public FlowPanel buildPanel(PropertiesArray props) {
+		panelKey = props.getRawName();
 		FlowPanel panel = new FlowPanel();
 		List<PropertyView> propertyViews = PropertyViewFactory.propertyViewListOf(props);
-		for (PropertyView prop: propertyViews) {
+		for (PropertyView prop : propertyViews) {
 			Widget widget = getWidget(prop);
 			panel.add(widget);
 		}
-		panel.addStyleName("sideSheetTab");
-		Dom.addEventListener(panel.getElement(), "keydown", event -> {
-			KeyboardEvent kbd = Js.uncheckedCast(event);
-			if ("Space".equals(kbd.code)) {
-				event.preventDefault(); // prevent scroll of panel on SPACE
-			}
-		});
+		addAccessibility(AccessibilityGroup.SETTINGS_ITEM);
+		return panel;
+	}
 
-		new FocusableWidget(AccessibilityGroup.SETTINGS_ITEM,
-				AccessibilityGroup.ViewControlId.SETTINGS_VIEW,
-				widgets.toArray(widgets.toArray(new Widget[0]))) {
-			@Override
-			public void focus(Widget widget) {
-				widget.addStyleName("keyboardFocus");
+	/**
+	 * @param accessibilityGroup accessibility group
+	 */
+	public void addAccessibility(AccessibilityGroup accessibilityGroup) {
+		new FocusableWidget(accessibilityGroup, null, widgets).attachTo(app);
+	}
+
+	/**
+	 * @return Index of the widget that currently has focus, -1 if there is none.
+	 */
+	public int getFocusedWidgetIndex() {
+		for (int i = 0; i < widgets.size(); i++) {
+			if (widgets.get(i).getElement().isOrHasChild(Dom.getActiveElement())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Focuses the widget with the given index.
+	 * @param index Index
+	 */
+	public void focusWidget(int index) {
+		if (index < 0 || index >= widgets.size()) {
+			return;
+		}
+		Widget widget = widgets.get(index);
+		Scheduler.get().scheduleDeferred(() -> {
+			if (widget instanceof HasFocus focusable) {
+				focusable.focus();
+			} else {
 				widget.getElement().focus();
 			}
-		}.attachTo(app);
-		return panel;
+		});
 	}
 
 	/**
@@ -131,11 +169,14 @@ public class PropertiesPanelAdapter {
 	 * @return {@link Widget}
 	 */
 	public Widget getWidget(PropertyView propertyView) {
+		int oldLength = widgets.size();
 		Widget ret = createWidget(propertyView);
 		ret.setVisible(propertyView.isVisible());
-		propertyView.setVisibilityUpdateDelegate(() ->
-				ret.setVisible(propertyView.isVisible()));
-		widgets.add(ret);
+		propertyView.setVisibilityUpdateDelegate(() -> ret.setVisible(propertyView.isVisible()));
+		if (oldLength == widgets.size()) {
+			// only add widget if it didn't contribute its parts to the widget list already
+			widgets.add(ret);
+		}
 		return ret;
 	}
 
@@ -144,50 +185,56 @@ public class PropertiesPanelAdapter {
 			return null;
 		}
 		if (propertyView instanceof Checkbox checkBoxProperty) {
-			return new ComponentCheckbox(loc, checkBoxProperty,
-					checkBoxProperty.getLabel(), checkBoxProperty::setSelected, false);
+			return new ComponentCheckbox(
+					loc, checkBoxProperty, checkBoxProperty.getLabel(), checkBoxProperty::setSelected, false);
 		}
 		if (propertyView instanceof ImagePicker imagePicker) {
 			return new ImagePickerPanel(app, imagePicker);
 		}
 		if (propertyView instanceof ConnectedButtonGroup connectedButtonGroup) {
 			return new ComponentConnectedButtonGroup(connectedButtonGroup, widgets);
-
 		}
 		if (propertyView instanceof ButtonWithIcon buttonWithIcon) {
-			IconSpec icon = ((AppWFull) app).getPropertiesIconResource()
-					.getImageResource(buttonWithIcon.getIcon()).withFill(NEUTRAL_700.toString());
-			StandardButton button = new StandardButton(icon,
-					app.getLocalization().getMenu(buttonWithIcon.getLabel()), 24, 24);
+			IconSpec icon = ((AppWFull) app)
+					.getPropertiesIconResource()
+					.getImageResource(buttonWithIcon.getIcon())
+					.withFill(NEUTRAL_700.toString());
+			StandardButton button = new StandardButton(
+					icon, app.getLocalization().getMenu(buttonWithIcon.getLabel()), 24, 24);
 			button.addFastClickHandler(event -> buttonWithIcon.performAction());
-			button.addStyleName("buttonWithIcon");
+			button.addStyleName(
+					switch (buttonWithIcon.getStyle()) {
+						case BORDERLESS -> "buttonWithIcon";
+						case OUTLINED -> "materialOutlinedButton";
+					});
 			return button;
 		}
 		if (propertyView instanceof Slider sliderProperty) {
 			return new ComponentSlider(app, sliderProperty);
 		}
-		if (propertyView instanceof ActionableButtonRow) {
-			return new ActionableButtonPanel((ActionableButtonRow) propertyView);
+		if (propertyView instanceof ActionableButtonRow buttonRow) {
+			return new ActionableButtonPanel(buttonRow);
 		}
-		if (propertyView instanceof MultiSelectionIconRow) {
-			return new MultiSelectionIconRowPanel((MultiSelectionIconRow) propertyView, app);
+		if (propertyView instanceof MultiSelectionIconRow multiSelectRow) {
+			return new MultiSelectionIconRowPanel(multiSelectRow, app);
 		}
-		if (propertyView instanceof DimensionRatioEditor) {
-			return new DimensionRatioPanel(app, this, (DimensionRatioEditor) propertyView);
+		if (propertyView instanceof DimensionRatioEditor dimensionRatioEditor) {
+			return new DimensionRatioPanel(app, this, dimensionRatioEditor);
 		}
 		if (propertyView instanceof GroupedIconButtonRow groupedIconButtonRow) {
-			return new IconButtonPanel(app, groupedIconButtonRow.getLabel(),
-					groupedIconButtonRow.getIconRowList());
+			return new IconButtonPanel(
+					app, groupedIconButtonRow.getLabel(), groupedIconButtonRow.getIconRowList());
 		}
-		if (propertyView instanceof HorizontalSplitView) {
+		if (propertyView instanceof HorizontalSplitView splitView) {
 			FlowPanel panel = new FlowPanel();
 			panel.addStyleName("horizontalSplitView");
-			panel.add(getWidget(((HorizontalSplitView) propertyView).getLeadingPropertyView()));
-			panel.add(getWidget(((HorizontalSplitView) propertyView).getTrailingPropertyView()));
+			Widget leading = getHalfWidthWidget(splitView.getLeadingPropertyView());
+			Widget trailing = getHalfWidthWidget(splitView.getTrailingPropertyView());
+			leading.setVisible(true);
+			trailing.setVisible(true);
+			panel.add(leading);
+			panel.add(trailing);
 			return panel;
-		}
-		if (propertyView instanceof ButtonIconEditor buttonIconEditor) {
-			return new ButtonIconEditorPanel(app, buttonIconEditor);
 		}
 		if (propertyView instanceof RelatedPropertyViewCollection relatedPropertyView) {
 			FlowPanel panel = new FlowPanel();
@@ -203,25 +250,48 @@ public class PropertiesPanelAdapter {
 			}
 			return panel;
 		}
-		if (propertyView instanceof ScriptEditor scriptEditor) {
-			ScriptTabFactory tabBuilder = new ScriptTabFactory(app, scriptEditor);
-			ComponentTab scriptTab = tabBuilder.create();
-			widgets.add(scriptTab);
-			return scriptTab;
+		if (propertyView instanceof TabList tabList) {
+			List<String> tabTitles = tabList.getTabTitles();
+			TabData[] tabData = new TabData[tabTitles.size()];
+			for (int index = 0; index < tabTitles.size(); index++) {
+				FlowPanel tabContent = new FlowPanel();
+				for (PropertyView contentPropertyView : tabList.getTabContents().get(index)) {
+					tabContent.add(getWidget(contentPropertyView));
+				}
+				tabData[index] = new TabData(tabTitles.get(index), tabContent);
+			}
+			int selectedTabIndex = tabList.getSelectedTabIndex();
+			ComponentTab componentTab = new ComponentTab(app, "Scripting", selectedTabIndex, tabData);
+			componentTab.addTabChangedListener(index -> {
+				if (tabList.getSelectedTabIndex() != index) {
+					tabList.setSelectedTabIndex(index);
+				}
+			});
+			tabList.setConfigurationUpdateDelegate(() -> {
+				int updatedIndex = tabList.getSelectedTabIndex();
+				if (componentTab.getSelectedTabIdx() != updatedIndex) {
+					componentTab.switchToTab(updatedIndex);
+				}
+			});
+			return componentTab;
 		}
-		if (propertyView instanceof ExpandableList) {
-			Checkbox leadProperty =
-					((ExpandableList) propertyView).getCheckbox();
-			ComponentExpandableList expandableList = new ComponentExpandableList(app,
-					leadProperty, ((ExpandableList) propertyView).getTitle());
-			for (PropertyView prop : ((ExpandableList) propertyView).getItems()) {
+		if (propertyView instanceof ExpandableList expandable) {
+			Checkbox leadProperty = expandable.getCheckbox();
+			ComponentExpandableList expandableList =
+					new ComponentExpandableList(app, leadProperty, expandable.getTitle());
+			for (PropertyView prop : expandable.getItems()) {
 				expandableList.addToContent(getWidget(prop));
+			}
+			ComponentExpandableList previous =
+					expandableLists.put(panelKey + "/" + expandable.getTitle(), expandableList);
+			if (previous != null && previous.isExpanded()) {
+				expandableList.setExpanded(true);
 			}
 			return expandableList;
 		}
 		if (propertyView instanceof Dropdown dropDownView) {
-			ComponentDropDown dropDown = new ComponentDropDown(app,
-					dropDownView.getPropertyName(), dropDownView, getItemStyler(dropDownView));
+			ComponentDropDown dropDown = new ComponentDropDown(
+					app, dropDownView.getPropertyName(), dropDownView, getItemStyler(dropDownView));
 			dropDown.setFullWidth(true);
 			return dropDown;
 		}
@@ -230,15 +300,17 @@ public class PropertiesPanelAdapter {
 			comboBox.setDisabled(!comboBoxProperty.isEnabled());
 			return comboBox;
 		}
-		if (propertyView instanceof SingleSelectionIconRow) {
-			return new IconButtonPanel(app, (SingleSelectionIconRow) propertyView, true);
+		if (propertyView instanceof SingleSelectionIconRow iconRow) {
+			return new IconButtonPanel(app, iconRow, true);
 		}
 		if (propertyView instanceof ColorSelectorRow colorSelectorRow) {
 			List<GColor> colors = colorSelectorRow.getColors();
 			// Copy and add null value to enable plus button
 			colors = new ArrayList<>(colors);
 			colors.add(null);
-			ColorChooserPanel colorPanel = new ColorChooserPanel(app, colors,
+			ColorChooserPanel colorPanel = new ColorChooserPanel(
+					app,
+					colors,
 					color -> {
 						boolean handled = false;
 						for (int i = 0; i < colorSelectorRow.getColors().size(); i++) {
@@ -259,25 +331,36 @@ public class PropertiesPanelAdapter {
 			colorPanel.addStyleName("colorPanel");
 			return colorPanel;
 		}
-		if (propertyView instanceof TextField) {
-			ComponentInputField inputField = new ComponentInputField(app, "", "",
-					(TextField) propertyView);
-			inputField.getTextField().getTextComponent().addEnterPressHandler(() -> {
-				String text = inputField.getText();
-				((TextField) propertyView).setValue(text);
-			});
-			inputField.setDisabled(!((TextField) propertyView).isEnabled());
+		if (propertyView instanceof TextField textField) {
+			ComponentInputField inputField = new ComponentInputField(app, "", "", textField);
+			inputField.setDisabled(!textField.isEnabled());
 			return inputField;
 		}
+		if (propertyView instanceof TextArea textAreaPropertyView) {
+			return new ComponentTextArea(app.getLocalization(), textAreaPropertyView);
+		}
+		if (propertyView instanceof PropertyView.ProbabilityResultRow probabilityResultRow) {
+			return new ProbabilityResultRow(app, probabilityResultRow, widgets);
+		}
 		return new Label(propertyView.toString());
+	}
+
+	/**
+	 * @param propertyView {@link PropertyView}
+	 * @return widget based on propertyView with defined half-width
+	 */
+	public Widget getHalfWidthWidget(PropertyView propertyView) {
+		Widget widget = getWidget(propertyView);
+		widget.addStyleName("halfWidth");
+		return widget;
 	}
 
 	private ComponentDropDown.Styler getItemStyler(Dropdown dropDownView) {
 		Map<Integer, FontProperty.FontFamily> fontFamilies = dropDownView.getFontFamilies();
 		if (!fontFamilies.isEmpty()) {
 			return (item, index) -> {
-				FontProperty.FontFamily font = fontFamilies
-						.getOrDefault(index, FontProperty.FontFamily.ARIAL);
+				FontProperty.FontFamily font =
+						fontFamilies.getOrDefault(index, FontProperty.FontFamily.ARIAL);
 				item.getElement().getStyle().setProperty("fontFamily", font.cssName());
 			};
 		}

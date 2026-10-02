@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,27 +16,27 @@
 
 package org.geogebra.common.kernel.batch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Iterator;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.geos.GeoElement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class EventOptimizedListTest extends BaseUnitTest {
+class EventOptimizedListTest extends BaseUnitTest {
 
 	private EventOptimizedList eventOptimizedList;
 
-	@Before
-	public void setupEventOptimizedListTest() {
+	@BeforeEach
+	void setupEventOptimizedListTest() {
 		eventOptimizedList = new EventOptimizedList();
 	}
 
 	@Test
-	public void testAddingSameUpdate() {
+	void testAddingSameUpdate() {
 		GeoElement element = getElementFactory().createGeoLine();
 
 		addUpdateEvent(element);
@@ -47,7 +47,7 @@ public class EventOptimizedListTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testAddingRemoveEvent() {
+	void testAddingRemoveEvent() {
 		GeoElement firstElement = getElementFactory().createGeoLine();
 		GeoElement secondElement = getElementFactory().createGeoLine();
 		GeoElement thirdElement = getElementFactory().createGeoLine();
@@ -83,7 +83,7 @@ public class EventOptimizedListTest extends BaseUnitTest {
 	}
 
 	private void addEvent(String name, GeoElement element) {
-		addEvent(new Event(name, new Object[] { element }));
+		addEvent(new Event(name, new Object[] {element}));
 	}
 
 	private void addEvent(Event event) {

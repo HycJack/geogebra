@@ -24,21 +24,23 @@ import org.geogebra.common.gui.menu.Icon;
 import org.geogebra.common.gui.menu.MenuItem;
 import org.geogebra.common.gui.menu.MenuItemGroup;
 import org.geogebra.common.main.App;
+import org.geogebra.common.main.localization.ByCSStrings;
 import org.geogebra.common.move.ggtapi.operations.LogInOperation;
 
 public class MebisDrawerMenuFactory extends DefaultDrawerMenuFactory {
 
 	/**
 	 * Create a new DrawerMenuFactory.
-	 *
-	 * @param platform       platform
-	 * @param version        version
+	 * @param platform platform
+	 * @param version version
 	 * @param logInOperation if loginOperation is not null, it creates menu options that require
 	 *                       login based on the {@link LogInOperation#isLoggedIn()} method.
 	 */
-	public MebisDrawerMenuFactory(GeoGebraConstants.Platform platform,
-								  GeoGebraConstants.Version version,
-								  LogInOperation logInOperation, boolean enableFileFeatures) {
+	public MebisDrawerMenuFactory(
+			GeoGebraConstants.Platform platform,
+			GeoGebraConstants.Version version,
+			LogInOperation logInOperation,
+			boolean enableFileFeatures) {
 		super(platform, version, null, logInOperation, false, enableFileFeatures);
 	}
 
@@ -50,39 +52,37 @@ public class MebisDrawerMenuFactory extends DefaultDrawerMenuFactory {
 	}
 
 	private MenuItemGroup createMainMenuItemGroup() {
-		MenuItem myFiles = isOffline() ? null : myFiles();
-		MenuItem share = (getLogInOperation() != null && getLogInOperation().canUserShare())
-				? share() : null;
+		return new MenuItemGroupImpl(removeNulls(clearConstruction(), showDownloadAs()));
+	}
 
-		return new MenuItemGroupImpl(removeNulls(newFile(), myFiles, openOfflineFile(),
-				save(), share, exportImage(), showDownloadAs(), previewPrint()));
+	@Override
+	protected MenuItem showDownloadAs() {
+		ActionableItem downloadPng =
+				new ActionableItemImpl(null, "Download.PNGImage", Action.EXPORT_IMAGE);
+		ActionableItem svg = new ActionableItemImpl(null, "Download.SVGImage", Action.DOWNLOAD_SVG);
+		ActionableItem pdf = new ActionableItemImpl(null, "Download.PDFDocument", Action.DOWNLOAD_PDF);
+		return new SubmenuItemImpl(Icon.DOWNLOAD, ByCSStrings.EXPORT, null, downloadPng, svg, pdf);
 	}
 
 	private MenuItemGroup createSecondaryMenuItemGroup() {
-		return new MenuItemGroupImpl(showSettings(), showLicence());
+		return new MenuItemGroupImpl(
+				showAboutBoard(), showHelpAndFeedback(), showTemplates(), showLicence());
 	}
 
-	private MenuItem newFile() {
-		return new ActionableItemImpl(Icon.CLEAR, "New.Mebis", Action.CLEAR_CONSTRUCTION);
+	private ActionableItem showAboutBoard() {
+		return new ActionableItemImpl(Icon.ABOUT_BOARD, ByCSStrings.ABOUT, Action.ABOUT_BOARD);
 	}
 
-	private MenuItem myFiles() {
-		return new ActionableItemImpl(Icon.SEARCH, "Open.Mebis", Action.SHOW_SEARCH_VIEW);
+	@Override
+	protected ActionableItem showHelpAndFeedback() {
+		return new ActionableItemImpl(Icon.HELP, ByCSStrings.TUTORIALS, Action.SHOW_TUTORIALS);
 	}
 
-	private MenuItem save() {
-		String label = isOffline() ? "SaveAs" : "Save";
-		Action action = isOffline() ? Action.DOWNLOAD_GGS : Action.SAVE_FILE;
-		return new ActionableItemImpl(Icon.SAVE, label, action);
-	}
-
-	private MenuItem openOfflineFile() {
-		String label = isOffline() ? "mow.openFile" : "mow.offlineMyFiles";
-		return enableFileFeatures()
-				? new ActionableItemImpl(Icon.FOLDER, label, Action.OPEN_OFFLINE_FILE) : null;
+	private ActionableItem showTemplates() {
+		return new ActionableItemImpl(Icon.TEMPLATES, ByCSStrings.TEMPLATES, Action.TEMPLATES);
 	}
 
 	private ActionableItem showLicence() {
-		return new ActionableItemImpl(Icon.INFO, "AboutLicense", Action.SHOW_LICENSE);
+		return new ActionableItemImpl(Icon.INFO, ByCSStrings.INFO, Action.SHOW_LICENSE);
 	}
 }

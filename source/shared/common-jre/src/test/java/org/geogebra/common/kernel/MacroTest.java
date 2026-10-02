@@ -2,24 +2,24 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 
@@ -33,15 +33,15 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.main.AppCommon3D;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class MacroTest extends BaseUnitTest {
+class MacroTest extends BaseUnitTest {
 	private AppCommon macroApp;
 	private Kernel macroKernel;
 
-	@Before
-	public void macroSetup() {
+	@BeforeEach
+	void macroSetup() {
 		macroApp = createAppCommon();
 		macroKernel = macroApp.getKernel();
 	}
@@ -52,7 +52,7 @@ public class MacroTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void lineMacro() {
+	void lineMacro() {
 		GeoElement a = add("A=(1,1)");
 		GeoElement b = add("B=(2,2)");
 		GeoElement f = add("f=Line(A,B)");
@@ -63,7 +63,7 @@ public class MacroTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-1496")
-	public void surfacesShouldWorkInMacros() {
+	void surfacesShouldWorkInMacros() {
 		GeoElement a = add("A=(0,1,0)");
 		add("f(u,v)=x(A)*u+y(A)*v");
 		GeoElement s = add("s=Surface(2*f(u,v),3*f(u,v),4*f(u,v),u,0,1,v,0,1)");
@@ -80,7 +80,7 @@ public class MacroTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-1496")
-	public void curvesShouldWorkInMacros() {
+	void curvesShouldWorkInMacros() {
 		GeoElement a = add("A=(0,1,0)");
 		add("f(u)=x(A)*u+y(A)");
 		GeoElement s = add("s=Curve(2*f(u),3*f(u),4*f(u),u,0,1)");
@@ -104,13 +104,13 @@ public class MacroTest extends BaseUnitTest {
 	}
 
 	protected <T extends GeoElementND> T addMacroCommand(String command) {
-		GeoElementND[] geoElements = getMacroKernel().getAlgebraProcessor()
-				.processAlgebraCommand(command, false);
+		GeoElementND[] geoElements =
+				getMacroKernel().getAlgebraProcessor().processAlgebraCommand(command, false);
 		return geoElements.length > 0 ? (T) geoElements[0] : null;
 	}
 
 	@Test
-	public void testMacroEditing() {
+	void testMacroEditing() {
 		// test openEditMacro
 		GeoElement a = addMacroCommand("A=(1,2)");
 		GeoElement b = addMacroCommand("B=(3,4)");
@@ -160,7 +160,7 @@ public class MacroTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-5988")
-	public void macroWithParametricCurves() {
+	void macroWithParametricCurves() {
 		GeoElement angle = add("angle=0");
 		GeoElement width = add("width=10");
 		GeoElement length = add("length=30");
@@ -173,14 +173,18 @@ public class MacroTest extends BaseUnitTest {
 		getKernel().clearConstruction(true);
 		GeoCurveCartesian gc1 = add("rect((1,1),2,3,4)");
 		GeoCurveCartesian gc2 = add("rect((1,1),2,5,6)");
-		assertThat(gc1, hasValue("(If(0 ≤ t ≤ 4, 1 + 0.5cos(2 + 90°) * 3 + cos(2) (t - 0.5 * 4),"
-				+ " 4 ≤ t ≤ 2 * 4, 1 + 0.5cos(2 - 90°) * 3 + cos(2) (4 * 1.5 - t)), "
-				+ "If(0 ≤ t ≤ 4, 1 + 0.5sin(2 + 90°) * 3 + sin(2) (t - 0.5 * 4), 4 ≤ t ≤ 2 * 4,"
-				+ " 1 + 0.5sin(2 - 90°) * 3 + sin(2) (4 * 1.5 - t)))"));
-		assertThat(gc2, hasValue("(If(0 ≤ t ≤ 6, 1 + 0.5cos(2 + 90°) * 5 + cos(2) (t - 0.5 * 6), "
-				+ "6 ≤ t ≤ 2 * 6, 1 + 0.5cos(2 - 90°) * 5 + cos(2) (6 * 1.5 - t)),"
-				+ " If(0 ≤ t ≤ 6, 1 + 0.5sin(2 + 90°) * 5 + sin(2) (t - 0.5 * 6), 6 ≤ t ≤ 2 * 6, "
-				+ "1 + 0.5sin(2 - 90°) * 5 + sin(2) (6 * 1.5 - t)))"));
+		assertThat(
+				gc1,
+				hasValue("(If(0 ≤ t ≤ 4, 1 + 0.5cos(2 + 90°) * 3 + cos(2) (t - 0.5 * 4),"
+						+ " 4 ≤ t ≤ 2 * 4, 1 + 0.5cos(2 - 90°) * 3 + cos(2) (4 * 1.5 - t)), "
+						+ "If(0 ≤ t ≤ 4, 1 + 0.5sin(2 + 90°) * 3 + sin(2) (t - 0.5 * 4), 4 ≤ t ≤ 2 * 4,"
+						+ " 1 + 0.5sin(2 - 90°) * 3 + sin(2) (4 * 1.5 - t)))"));
+		assertThat(
+				gc2,
+				hasValue("(If(0 ≤ t ≤ 6, 1 + 0.5cos(2 + 90°) * 5 + cos(2) (t - 0.5 * 6), "
+						+ "6 ≤ t ≤ 2 * 6, 1 + 0.5cos(2 - 90°) * 5 + cos(2) (6 * 1.5 - t)),"
+						+ " If(0 ≤ t ≤ 6, 1 + 0.5sin(2 + 90°) * 5 + sin(2) (t - 0.5 * 6), 6 ≤ t ≤ 2 * 6, "
+						+ "1 + 0.5sin(2 - 90°) * 5 + sin(2) (6 * 1.5 - t)))"));
 		gc1.update();
 		// verify that all used variables are in main construction rather than macro construction
 		gc1.getFun(0).getFunctionExpression().any(val -> {
@@ -192,12 +196,12 @@ public class MacroTest extends BaseUnitTest {
 	}
 
 	private void createMacro(AppCommon app, String name, GeoElement output, GeoElement... input) {
-		ToolCreationDialogModel macroBuilder = new ToolCreationDialogModel(app,
-				() -> {/* no UI to update */});
+		ToolCreationDialogModel macroBuilder = new ToolCreationDialogModel(app, () -> {
+			/* no UI to update */
+		});
 		Arrays.stream(input).forEach(macroBuilder::addToInput);
 		macroBuilder.addToOutput(output);
 		macroBuilder.createTool();
-		macroBuilder.finish(app, name, name, input.length + " inputs expected",
-				false, null);
+		macroBuilder.finish(app, name, name, input.length + " inputs expected", false, null);
 	}
 }

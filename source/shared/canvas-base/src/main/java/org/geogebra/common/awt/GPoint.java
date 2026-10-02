@@ -44,7 +44,7 @@ public class GPoint {
 
 	/**
 	 * Set x and y at the same time
-	 * 
+	 *
 	 * @param x
 	 *            x-coord
 	 * @param y
@@ -57,7 +57,7 @@ public class GPoint {
 
 	/**
 	 * Take both coords from a point
-	 * 
+	 *
 	 * @param p
 	 *            point
 	 */
@@ -74,18 +74,19 @@ public class GPoint {
 		return x;
 	}
 
+	/**
+	 * @return z-coordinate (0 for 2D points)
+	 */
 	public int getZ() {
 		return 0;
 	}
 
 	@Override
 	public boolean equals(Object o) {
-
-		if (!(o instanceof GPoint)) {
+		if (!(o instanceof GPoint point)) {
 			return false;
 		}
-		return ((GPoint) o).x == x && ((GPoint) o).y == y
-				&& ((GPoint) o).getZ() == getZ();
+		return point.x == x && point.y == y && point.getZ() == getZ();
 	}
 
 	@Override
@@ -98,7 +99,7 @@ public class GPoint {
 	 * @return distance to other point
 	 */
 	public double distance(GPoint d) {
-		return Math.sqrt((x - d.x) * (x - d.x) + (y - d.y) * (y - d.y));
+		return Math.hypot(x - d.x, y - d.y);
 	}
 
 	/**
@@ -115,5 +116,4 @@ public class GPoint {
 	public String toString() {
 		return x + " : " + y;
 	}
-
 }

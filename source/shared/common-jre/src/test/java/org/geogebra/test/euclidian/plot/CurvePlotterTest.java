@@ -2,22 +2,22 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.test.euclidian.plot;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 
@@ -34,81 +34,78 @@ import org.geogebra.common.kernel.geos.GeoFunction;
 import org.geogebra.common.kernel.kernelND.CurveEvaluable;
 import org.geogebra.test.OrderingComparison;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CurvePlotterTest extends BaseUnitTest {
+class CurvePlotterTest extends BaseUnitTest {
 
 	@Test
-	public void testPlotSinX() {
+	void testPlotSinX() {
 		CurveEvaluable curve = add("sin(x)");
 		resultShouldBeTheSame(curve, -1, 1);
 	}
 
 	@Test
-	public void testPlotSinX4() {
+	void testPlotSinX4() {
 		resultShouldBeTheSame(add("sin(x^4)"), -5, 0);
 	}
 
 	@Test
-	public void testPlotReciprocal() {
+	void testPlotReciprocal() {
 		resultShouldBeTheSame(add("1/x"), -5, 5);
 	}
 
 	@Test
-	public void testSingularity() {
+	void testSingularity() {
 		resultShouldBeTheSame(add("If(x==0, ?, sin(x))"), -5, 5);
 	}
 
 	@Test
-	public void testSinX() {
+	void testSinX() {
 		resultShouldBeTheSame(add("sin(x)"), -1, -0.243311111);
 	}
 
 	@Test
-	public void testSinXSquared() {
+	void testSinXSquared() {
 		resultShouldBeTheSame(add("sin(x^2)"), -50, 50);
 	}
 
 	@Test
-	public void testSinXPowerOf4() {
+	void testSinXPowerOf4() {
 		resultShouldBeTheSame(add("sin(x^4)"), -50, 50, 7000);
 	}
 
 	@Test
-	public void testCurve() {
+	void testCurve() {
 		resultShouldBeTheSame(add("Curve( t+abs(t), t+abs(t), t, -5, 0)"), -5, 5);
 	}
 
 	@Test
-	public void testSqrt() {
+	void testSqrt() {
 		resultShouldBeTheSame(add("sqrt(x)"), -10, 10);
 	}
 
 	@Test
-	public void testPiecewise() {
-		resultShouldBeTheSame(add("If(x < 1, x + 1,"
-				+ " If(x > 1, -x + 1, 1))"), -3.22724, 3.83963);
+	void testPiecewise() {
+		resultShouldBeTheSame(add("If(x < 1, x + 1," + " If(x > 1, -x + 1, 1))"), -3.22724, 3.83963);
 	}
 
 	@Test
-	public void testRational() {
+	void testRational() {
 		VerticalsCollectingClippedPath gp = new VerticalsCollectingClippedPath();
 		GeoFunction f = add("(x^4+1)/x");
 		EuclidianView view = getApp().getActiveEuclidianView();
 		add("ZoomIn(-7,-5,5,5)");
-		CurvePlotter.plotCurve(f, -7, 5, view,
-				gp, true, Gap.MOVE_TO);
+		CurvePlotter.plotCurve(f, -7, 5, view, gp, true, Gap.MOVE_TO);
 		assertThat(gp.getVerticals(), CoreMatchers.is(""));
 	}
 
 	@Test
-	public void testSteepLinearFunction() {
+	void testSteepLinearFunction() {
 		VerticalsCollectingClippedPath gp = new VerticalsCollectingClippedPath();
 		GeoFunction f = add("10000x");
 		EuclidianView view = getApp().getActiveEuclidianView();
 		add("ZoomIn(-7,-5,5,5)");
-		CurvePlotter.plotCurve(f, -7, 5, view,
-				gp, true, Gap.MOVE_TO);
+		CurvePlotter.plotCurve(f, -7, 5, view, gp, true, Gap.MOVE_TO);
 		assertThat(gp.getVerticals(), CoreMatchers.is("0.00049,0.00195"));
 	}
 
@@ -116,17 +113,16 @@ public class CurvePlotterTest extends BaseUnitTest {
 		resultShouldBeTheSame(f, tMin, tMax, 1500);
 	}
 
-	protected void resultShouldBeTheSame(CurveEvaluable f, double tMin, double tMax,
-			int maxEvaluations) {
+	protected void resultShouldBeTheSame(
+			CurveEvaluable f, double tMin, double tMax, int maxEvaluations) {
 		PathPlotterMock gp = new PathPlotterMock();
 		PathPlotterMock gpExpected = new PathPlotterMock();
 
 		EuclidianView view = getApp().getActiveEuclidianView();
-		GPoint pointExpected = CurvePlotterOriginal.plotCurve(f, tMin, tMax, view,
-				gpExpected, true, Gap.MOVE_TO);
+		GPoint pointExpected =
+				CurvePlotterOriginal.plotCurve(f, tMin, tMax, view, gpExpected, true, Gap.MOVE_TO);
 
-		GPoint pointActual = CurvePlotter.plotCurve(f, tMin, tMax, view,
-				gp, true, Gap.MOVE_TO);
+		GPoint pointActual = CurvePlotter.plotCurve(f, tMin, tMax, view, gp, true, Gap.MOVE_TO);
 		assertThat(gp.size(), OrderingComparison.lessThan(maxEvaluations));
 		assertEquals(gpExpected, gp);
 		assertEquals(pointExpected, pointActual);
@@ -137,7 +133,7 @@ public class CurvePlotterTest extends BaseUnitTest {
 		private double lastY;
 		private final NumberFormat nf = new NumberFormat("#.####", 5);
 
-		public VerticalsCollectingClippedPath() {
+		VerticalsCollectingClippedPath() {
 			super(CurvePlotterTest.this.getApp().getActiveEuclidianView());
 		}
 
@@ -150,7 +146,7 @@ public class CurvePlotterTest extends BaseUnitTest {
 			lastY = y;
 		}
 
-		public String getVerticals() {
+		String getVerticals() {
 			return String.join(",", verticals);
 		}
 	}

@@ -28,14 +28,17 @@ import org.geogebra.common.properties.impl.objects.ImageOpacityProperty;
 import org.geogebra.common.properties.impl.objects.NameCaptionProperty;
 import org.geogebra.common.properties.impl.objects.NotesColorWithOpacityProperty;
 import org.geogebra.common.properties.impl.objects.OldObjectColorProperty;
+import org.geogebra.common.properties.impl.objects.StyledNamedEnumeratedPropertyListFacade;
 import org.geogebra.common.properties.impl.objects.TextBackgroundColorProperty;
 import org.geogebra.common.properties.impl.objects.TextColorProperty;
 import org.geogebra.web.full.css.GuiResources;
 import org.geogebra.web.full.css.MaterialDesignResources;
 import org.geogebra.web.full.css.ToolbarSvgResourcesSync;
+import org.geogebra.web.full.euclidian.quickstylebar.SpecialSymbolProperty;
 import org.geogebra.web.html5.css.GuiResourcesSimple;
 import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.gui.view.ImageIconSpec;
+import org.geogebra.web.html5.main.toolbox.TextIconSpec;
 import org.geogebra.web.resources.SVGResource;
 
 public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
@@ -134,8 +137,7 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			case ICON_AXES_LINE_TYPE_ARROW -> GuiResources.INSTANCE.deco_axes_arrow();
 			case ICON_AXES_LINE_TYPE_ARROW_FILLED -> GuiResources.INSTANCE.deco_axes_arrow_filled();
 			case ICON_AXES_LINE_TYPE_TWO_ARROWS -> GuiResources.INSTANCE.deco_axes_arrows();
-			case ICON_AXES_LINE_TYPE_TWO_ARROWS_FILLED ->
-					GuiResources.INSTANCE.deco_axes_arrows_filled();
+			case ICON_AXES_LINE_TYPE_TWO_ARROWS_FILLED -> GuiResources.INSTANCE.deco_axes_arrows_filled();
 			case ICON_RIGHT_ANGLE_STYLE_NONE -> res.right_angle_style_off();
 			case ICON_RIGHT_ANGLE_STYLE_SQUARE -> res.right_angle_style_rectangle();
 			case ICON_RIGHT_ANGLE_STYLE_DOT -> res.right_angle_style_dot();
@@ -161,10 +163,8 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			case ICON_ANGLE_DECO_ARROW_ANTICLOCKWISE -> GuiResources.INSTANCE.deco_angle_arrow_up();
 			case ICON_ANGLE_DECO_ARROW_CLOCKWISE -> GuiResources.INSTANCE.deco_angle_arrow_down();
 			case ICON_ANGLE_DECO_NONE -> GuiResources.INSTANCE.deco_angle_1line();
-			case ICON_VECTOR_DECO_ARROW ->
-					MaterialDesignResources.INSTANCE.stylingbar_end_arrow_filled();
-			case ICON_VECTOR_DECO_DEFAULT ->
-					MaterialDesignResources.INSTANCE.stylingbar_end_arrow();
+			case ICON_VECTOR_DECO_ARROW -> MaterialDesignResources.INSTANCE.stylingbar_end_arrow_filled();
+			case ICON_VECTOR_DECO_DEFAULT -> MaterialDesignResources.INSTANCE.stylingbar_end_arrow();
 			case ICON_BUTTON_PLAY -> GuiResourcesSimple.INSTANCE.play();
 			case ICON_BUTTON_PAUSE -> GuiResourcesSimple.INSTANCE.pause();
 			case ICON_BUTTON_STOP -> GuiResourcesSimple.INSTANCE.stop();
@@ -190,16 +190,25 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			case ICON_BUTTON_CENTER_VIEW -> GuiResourcesSimple.INSTANCE.center_view();
 			case ICON_BUTTON_HELP -> GuiResourcesSimple.INSTANCE.help();
 			case ICON_BUTTON_SETTINGS -> GuiResourcesSimple.INSTANCE.settings();
+			case ICON_PROBABILITY_MODE_LEFT -> GuiResources.INSTANCE.interval_left();
+			case ICON_PROBABILITY_MODE_INTERVAL -> GuiResources.INSTANCE.interval_between();
+			case ICON_PROBABILITY_MODE_TWO_TAILED -> GuiResources.INSTANCE.interval_two_tailed();
+			case ICON_PROBABILITY_MODE_RIGHT -> GuiResources.INSTANCE.interval_right();
+			case ICON_TEXT_STYLE -> res.text_style();
 			default -> res.stylebar_empty();
 		};
 	}
 
 	@Override
 	public final IconSpec matchIconWithResource(Property property) {
+		if (property instanceof SpecialSymbolProperty) {
+			return getFontSpecialSymbolIcon();
+		}
 		if (property instanceof IconsEnumeratedProperty<?> enumeratedProperty) {
 			PropertyResource[] propertyIcons = enumeratedProperty.getValueIcons();
 			int selectedIndex = enumeratedProperty.getIndex();
-			return selectedIndex == -1 ? matchIconWithResource(propertyIcons[0])
+			return selectedIndex == -1
+					? matchIconWithResource(propertyIcons[0])
 					: matchIconWithResource(propertyIcons[selectedIndex]);
 		} else if (property instanceof AbstractPropertyListFacade<?> listFacade) {
 			Property firstProperty = listFacade.getFirstProperty();
@@ -216,11 +225,13 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			} else if (firstProperty instanceof TextColorProperty) {
 				return getTextColorIcon();
 			} else if (firstProperty instanceof FontRulingColorProperty) {
-				return getFontStyleIcon();
+				return getFontRulingIcon();
 			} else if (firstProperty instanceof BorderColorProperty) {
 				return matchIconWithResource(PropertyResource.ICON_BORDER_THIN);
 			} else if (firstProperty instanceof NameCaptionProperty) {
 				return new ImageIconSpec(ToolbarSvgResourcesSync.INSTANCE.mode_showhidelabel_32());
+			} else if (property instanceof StyledNamedEnumeratedPropertyListFacade fontProperty) {
+				return new TextIconSpec(fontProperty.getSelectedFontDisplayName());
 			}
 		}
 
@@ -239,8 +250,12 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 		return new ImageIconSpec(MaterialDesignResources.INSTANCE.text_color());
 	}
 
-	protected IconSpec getFontStyleIcon() {
-		return new ImageIconSpec(MaterialDesignResources.INSTANCE.text_color());
+	protected IconSpec getFontRulingIcon() {
+		return new ImageIconSpec(MaterialDesignResources.INSTANCE.font_ruling());
+	}
+
+	protected IconSpec getFontSpecialSymbolIcon() {
+		return new ImageIconSpec(MaterialDesignResources.INSTANCE.font_special_symbol());
 	}
 
 	protected IconSpec getColorIcon() {

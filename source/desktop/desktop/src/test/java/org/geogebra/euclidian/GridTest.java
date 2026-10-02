@@ -2,21 +2,21 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.euclidian;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,24 +28,24 @@ import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.desktop.export.GraphicExportDialog;
 import org.geogebra.desktop.headless.AppDNoGui;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Grid test
- * 
+ *
  * @author Zbynek
  *
  */
-public class GridTest {
+class GridTest {
 
 	private static AppDNoGui app;
 
 	/**
 	 * Create test app
 	 */
-	@BeforeClass
-	public static void setup() {
+	@BeforeAll
+	static void setup() {
 		app = AlgebraTest.createApp();
 	}
 
@@ -54,10 +54,10 @@ public class GridTest {
 	 * scale
 	 */
 	@Test
-	public void thereShouldBeGridInSVGExport() {
+	void thereShouldBeGridInSVGExport() {
 		EuclidianSettings settings = app.getActiveEuclidianView().getSettings();
-		app.getActiveEuclidianView().centerView(
-				new GeoPoint(app.getKernel().getConstruction(), 0, 0, 1));
+		app.getActiveEuclidianView()
+				.centerView(new GeoPoint(app.getKernel().getConstruction(), 0, 0, 1));
 		settings.setGridColor(GColor.BLUE);
 		settings.showGrid(true);
 		app.getActiveEuclidianView().updateBackground();
@@ -82,10 +82,9 @@ public class GridTest {
 
 	private static void hasBlueLines(int expectMinor, int expectMajor) {
 		ByteArrayOutputStream ss = new ByteArrayOutputStream();
-		String svg = "";
-		GraphicExportDialog.exportSVG(app, app.getActiveEuclidianView(), ss,
-				false, 800, 600, 8, 6, 1, false);
-		svg = new String(ss.toByteArray(), StandardCharsets.UTF_8);
+		GraphicExportDialog.exportSVG(
+				app, app.getActiveEuclidianView(), ss, false, 800, 600, 8, 6, 1, false);
+		String svg = ss.toString(StandardCharsets.UTF_8);
 		int start = 0;
 		// int lines = 0;
 		String[] lines = svg.split("\n");
@@ -99,7 +98,6 @@ public class GridTest {
 					major++;
 				}
 			}
-
 		}
 		assertEquals(expectMinor, minor);
 		assertEquals(expectMajor, major);

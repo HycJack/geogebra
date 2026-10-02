@@ -22,7 +22,7 @@ import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.components.dialog.ComponentDialog;
 import org.geogebra.web.shared.components.dialog.DialogData;
 
-public class GridDialog extends ComponentDialog {
+public final class GridDialog extends ComponentDialog {
 	private BackgroundType selectedRuling;
 	private final RulingStyleProperty rulingStyleProperty;
 
@@ -36,8 +36,10 @@ public class GridDialog extends ComponentDialog {
 		addStyleName("rulingDialog");
 		setOnPositiveAction(this::applyRuling);
 
-		rulingStyleProperty = new RulingStyleProperty(app.getLocalization(),
-				app.getActiveEuclidianView().getSettings(), app.getActiveEuclidianView());
+		rulingStyleProperty = new RulingStyleProperty(
+				app.getLocalization(),
+				app.getActiveEuclidianView().getSettings(),
+				app.getActiveEuclidianView());
 		selectedRuling = rulingStyleProperty.getValue();
 		buildGui();
 	}

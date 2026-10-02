@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,8 +16,8 @@
 
 package org.geogebra.common.plugin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,33 +29,33 @@ import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.euclidian.EuclidianController;
 import org.geogebra.common.jre.headless.AppCommon;
 import org.geogebra.test.EventAccumulator;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class EventDispatcherTest extends BaseUnitTest implements EventListener {
+class EventDispatcherTest extends BaseUnitTest implements EventListener {
 
 	private EventDispatcher eventDispatcher;
 	private ScriptManager scriptManager;
 	private boolean batch = false;
 	private int objectsAdded = 0;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		eventDispatcher = getApp().getEventDispatcher();
 		getApp().getEventDispatcher().removeEventListener(this);
 	}
 
 	@Test
-	public void addEventListener() {
+	void addEventListener() {
 		ScriptManager scriptManager = getApp().getScriptManager();
 		assertTrue(eventDispatcher.getListeners().contains(scriptManager));
 	}
 
 	@Test
-	public void dispatchEvent() {
+	void dispatchEvent() {
 		scriptManager = spy(ScriptManager.class);
 		eventDispatcher.addEventListener(scriptManager);
-
+		scriptManager.registerClientListener("fake");
 		verifyClientListenersNotified(EventType.SIDE_PANEL_CLOSED);
 		verifyClientListenersNotified(EventType.SIDE_PANEL_OPENED);
 		verifyClientListenersNotified(EventType.ALGEBRA_PANEL_SELECTED);
@@ -69,7 +69,7 @@ public class EventDispatcherTest extends BaseUnitTest implements EventListener {
 	}
 
 	@Test
-	public void cubeElementsShouldBeBatched() {
+	void cubeElementsShouldBeBatched() {
 		add("A=(0,0,0)");
 		add("B=(0,1,0)");
 		add("C=(1,1,0)");
@@ -79,7 +79,7 @@ public class EventDispatcherTest extends BaseUnitTest implements EventListener {
 	}
 
 	@Test
-	public void netElementsShouldBeBatched() {
+	void netElementsShouldBeBatched() {
 		add("A=(0,0,0)");
 		add("B=(0,1,0)");
 		add("C=(1,1,0)");
@@ -90,7 +90,7 @@ public class EventDispatcherTest extends BaseUnitTest implements EventListener {
 	}
 
 	@Test
-	public void prismNetElementsShouldBeBatched() {
+	void prismNetElementsShouldBeBatched() {
 		add("A=(0,0,0)");
 		add("B=(0,1,0)");
 		add("C=(1,1,0)");
@@ -102,7 +102,7 @@ public class EventDispatcherTest extends BaseUnitTest implements EventListener {
 	}
 
 	@Test
-	public void shouldNotNotifyAboutSpotlightUpdates() {
+	void shouldNotNotifyAboutSpotlightUpdates() {
 		EuclidianController ec = getApp().getActiveEuclidianView().getEuclidianController();
 		EventAccumulator acc = new EventAccumulator();
 		eventDispatcher.addEventListener(acc);
@@ -124,8 +124,9 @@ public class EventDispatcherTest extends BaseUnitTest implements EventListener {
 			batch = true;
 		} else if (evt.getType() == EventType.BATCH_ADD_COMPLETE) {
 			batch = false;
-		} if (evt.getType() == EventType.ADD) {
-			assertTrue(evt.getTarget() + "added outside of batch", batch);
+		}
+		if (evt.getType() == EventType.ADD) {
+			assertTrue(batch, evt.getTarget() + "added outside of batch");
 			objectsAdded++;
 		}
 	}
@@ -133,7 +134,6 @@ public class EventDispatcherTest extends BaseUnitTest implements EventListener {
 	private void verifyClientListenersNotified(EventType eventType) {
 		Event event = new Event(eventType);
 		eventDispatcher.dispatchEvent(event);
-		verify(scriptManager, times(1))
-				.callClientListeners(scriptManager.clientListeners, event);
+		verify(scriptManager, times(1)).callClientListeners(scriptManager.clientListeners, event);
 	}
 }

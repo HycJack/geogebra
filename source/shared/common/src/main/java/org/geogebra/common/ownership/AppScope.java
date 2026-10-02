@@ -11,17 +11,18 @@
  *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
- * See https://www.geogebra.org/license for full licensing details'
+ * See https://www.geogebra.org/license for full licensing details
  */
 
 package org.geogebra.common.ownership;
-
-import javax.annotation.Nonnull;
 
 import org.geogebra.common.main.App;
 import org.geogebra.common.properties.PropertiesRegistry;
 import org.geogebra.common.properties.impl.DefaultPropertiesRegistry;
 import org.geogebra.common.properties.impl.general.LanguageProperty;
+import org.geogebra.common.properties.remembered.RememberedProperties;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Property;
 import com.google.j2objc.annotations.Weak;
@@ -44,7 +45,9 @@ public final class AppScope {
 	private final App app;
 
 	@Property("readonly")
-	public final @Nonnull PropertiesRegistry propertiesRegistry = new DefaultPropertiesRegistry();
+	public final @NonNull PropertiesRegistry propertiesRegistry = new DefaultPropertiesRegistry();
+
+	private @Nullable RememberedProperties rememberedProperties;
 
 	/**
 	 * Constructor
@@ -60,11 +63,36 @@ public final class AppScope {
 	 * @return The language property for this app.
 	 * @throws IllegalStateException if no {@code SuiteScope} has been set up for this app instance
 	 */
-	public @Nonnull LanguageProperty getLanguageProperty() {
+	public @NonNull LanguageProperty getLanguageProperty() {
 		SuiteScope suiteScope = GlobalScope.getSuiteScope(app);
 		if (suiteScope == null) {
 			throw new IllegalStateException("suiteScope not set up");
 		}
 		return suiteScope.getLanguageProperty(app);
+	}
+
+	/**
+	 * Returns the coordinator for properties remembered during this application session.
+	 * The coordinator is created lazily because the application configuration may be set after
+	 * this scope is constructed. A missing coordinator is not cached for the same reason.
+	 *
+	 * @return the app-scoped coordinator, or {@code null} if the current configuration does not
+	 *         remember property values
+	 */
+	public @NonNull RememberedProperties getRememberedProperties() {
+		if (rememberedProperties == null) {
+			// inlined resetRememberedProperties to make nullness analysis pass
+			rememberedProperties =
+					new RememberedProperties(app.getConfig().getRememberedPropertyHandlers());
+		}
+		return rememberedProperties;
+	}
+
+	/**
+	 * Reset remembered properties from config.
+	 */
+	public void resetRememberedProperties() {
+		rememberedProperties =
+				new RememberedProperties(app.getConfig().getRememberedPropertyHandlers());
 	}
 }

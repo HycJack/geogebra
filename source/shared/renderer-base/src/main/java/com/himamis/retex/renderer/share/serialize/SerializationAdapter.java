@@ -19,9 +19,17 @@ public interface SerializationAdapter {
 
 	String convertCharacter(char character);
 
+	/**
+	 * @param unicode character
+	 * @return full name of the character
+	 */
+	default String getCharacterName(char unicode) {
+		return convertCharacter(unicode);
+	}
+
 	String fraction(String numerator, String denominator);
 
-	String nroot(String serialize, String serialize1);
+	String nroot(String base, String root);
 
 	String parenthesis(String paren);
 
@@ -39,4 +47,20 @@ public interface SerializationAdapter {
 	}
 
 	TableAdapter getTableAdapter();
+
+	String segment(String base);
+
+	String vector(String content);
+
+	String circled(String serialize);
+
+	String under(String decoration, String base);
+
+	String over(String decoration, String base);
+
+	String blank();
+
+	String operatorFromTo(String operator, String from, String to);
+
+	String hyperbolic(String baseName);
 }

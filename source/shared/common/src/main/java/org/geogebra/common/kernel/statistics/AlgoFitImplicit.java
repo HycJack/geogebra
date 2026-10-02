@@ -56,8 +56,7 @@ public class AlgoFitImplicit extends AlgoElement {
 	 * @param arg
 	 *            order of implicit polynomial to fit
 	 */
-	public AlgoFitImplicit(Construction cons, String label, GeoList pointlist,
-			GeoNumberValue arg) {
+	public AlgoFitImplicit(Construction cons, String label, GeoList pointlist, GeoNumberValue arg) {
 		super(cons);
 
 		this.pointlist = pointlist;
@@ -118,8 +117,7 @@ public class AlgoFitImplicit extends AlgoElement {
 				return;
 			}
 
-			SingularValueDecomposition svd = new SingularValueDecomposition(
-					M);
+			SingularValueDecomposition svd = new SingularValueDecomposition(M);
 
 			V = svd.getV();
 
@@ -132,8 +130,6 @@ public class AlgoFitImplicit extends AlgoElement {
 
 	// Get info from lists into matrixes and functionarray
 	private boolean makeMatrixes() {
-		GeoElement geo = null;
-		GeoPoint point = null;
 		double x, y;
 
 		int order = (int) orderGeo.evaluateDouble();
@@ -142,11 +138,11 @@ public class AlgoFitImplicit extends AlgoElement {
 		M = new Array2DRowRealMatrix(datasize, (order + 1) * (order + 2) / 2);
 
 		for (int r = 0; r < datasize; r++) {
-			geo = pointlist.get(r);
+			GeoElement geo = pointlist.get(r);
 			if (!geo.isGeoPoint()) {
 				return false;
 			}
-			point = (GeoPoint) geo;
+			GeoPoint point = (GeoPoint) geo;
 
 			x = point.getX() / point.getZ();
 			y = point.getY() / point.getZ();

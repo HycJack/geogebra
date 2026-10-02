@@ -31,7 +31,7 @@ import org.geogebra.web.html5.main.AppW;
  * Popup for axes and coordinate plane
  *
  */
-public class AxesAndPlanePopup extends PopupMenuButtonWithDefault {
+public final class AxesAndPlanePopup extends PopupMenuButtonWithDefault {
 
 	private EuclidianView3D ev;
 
@@ -83,9 +83,8 @@ public class AxesAndPlanePopup extends PopupMenuButtonWithDefault {
 
 	@Override
 	public void update(List<GeoElement> geos) {
-		this.setVisible(
-				geos.size() == 0 && !EuclidianView.isPenMode(app.getMode())
-						&& app.getMode() != EuclidianConstants.MODE_DELETE);
+		this.setVisible(geos.size() == 0
+				&& !EuclidianView.isPenMode(app.getMode())
+				&& app.getMode() != EuclidianConstants.MODE_DELETE);
 	}
-
 }

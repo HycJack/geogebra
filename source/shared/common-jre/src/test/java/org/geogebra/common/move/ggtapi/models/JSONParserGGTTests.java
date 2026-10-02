@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,11 +16,11 @@
 
 package org.geogebra.common.move.ggtapi.models;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -29,13 +29,13 @@ import java.nio.file.Paths;
 
 import org.geogebra.common.move.ggtapi.models.json.JSONArray;
 import org.geogebra.common.move.ggtapi.models.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class JSONParserGGTTests {
+class JSONParserGGTTests {
 
 	// Sample response: POST https://www.geogebra.org/api/json.php (post body?)
 	@Test
-	public void testToMaterial_TubeAPI_ggb() throws Exception {
+	void testToMaterial_TubeAPI_ggb() throws Exception {
 		String json = getContentsOf("tube-3d.json");
 		assertNotNull(json);
 		JSONObject root = new JSONObject(json);
@@ -51,7 +51,9 @@ public class JSONParserGGTTests {
 		assertEquals(Material.MaterialType.ggb, material.getType());
 		assertEquals("O", material.getVisibility());
 		assertEquals("https://ggbm.at/PB9Npbe7", material.getURL());
-		assertEquals("https://cdn.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q.png", material.getPreviewURL());
+		assertEquals(
+				"https://cdn.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q.png",
+				material.getPreviewURL());
 		// for Tube API, this is the base64-encoded thumbnail image
 		assertNotNull(material.getThumbnail());
 		assertTrue(material.thumbnailIsBase64());
@@ -61,7 +63,7 @@ public class JSONParserGGTTests {
 
 	// Sample response: GET https://api.geogebra.org/v1.0/materials/PB9Npbe7
 	@Test
-	public void testToMaterial_GeoAPI_ws() throws Exception {
+	void testToMaterial_GeoAPI_ws() throws Exception {
 		String json = getContentsOf("geoapi-3d.json");
 		assertNotNull(json);
 		JSONObject root = new JSONObject(json);
@@ -71,12 +73,14 @@ public class JSONParserGGTTests {
 		assertTrue(material.isDeleted());
 		assertEquals("3D Coordinate Systems", material.getTitle());
 		assertEquals("O", material.getVisibility());
-		assertEquals("https://www.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q-thumb.png", material.getThumbnail());
+		assertEquals(
+				"https://www.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q-thumb.png",
+				material.getThumbnail());
 	}
 
 	// Sample response: https://api.geogebra.org/v1.0/materials/gfnbcfxx
 	@Test
-	public void testToMaterial_GeoAPI_ws_NoThumbUrl() throws Exception {
+	void testToMaterial_GeoAPI_ws_NoThumbUrl() throws Exception {
 		String json = getContentsOf("geoapi-nothumb.json");
 		assertNotNull(json);
 		JSONObject root = new JSONObject(json);
@@ -91,7 +95,7 @@ public class JSONParserGGTTests {
 	// Sample response: GET https://api.geogebra.org/v1.0/materials/PB9Npbe7
 	// extract an element where "type": "G"
 	@Test
-	public void testToMaterial_GeoAPI_G() throws Exception {
+	void testToMaterial_GeoAPI_G() throws Exception {
 		String json = getContentsOf("geoapi-3d.json");
 		assertNotNull(json);
 		JSONObject root = new JSONObject(json);
@@ -102,8 +106,12 @@ public class JSONParserGGTTests {
 		assertEquals("PB9Npbe7", parent.getSharingKeySafe());
 		assertSame(Material.MaterialType.ggb, material.getType());
 		assertEquals("3D Coordinate Systems", material.getTitle());
-		assertEquals("https://www.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q.ggb", material.getURL());
-		assertEquals("https://www.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q-thumb$1.png", material.getThumbnail());
+		assertEquals(
+				"https://www.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q.ggb",
+				material.getURL());
+		assertEquals(
+				"https://www.geogebra.org/resource/Xsjejd9Q/Sse8BEEfloHR17hz/material-Xsjejd9Q-thumb$1.png",
+				material.getThumbnail());
 		assertTrue(material.getUndoRedo());
 		assertFalse(material.hasCas());
 		assertTrue(material.has3d());
@@ -112,7 +120,7 @@ public class JSONParserGGTTests {
 	// Sample response: GET from mow-back
 	// For more info, see https://git.geogebra.org/doc/general/-/wikis/MOW
 	@Test
-	public void testToMaterial_MowAPI() throws Exception {
+	void testToMaterial_MowAPI() throws Exception {
 		String json = getContentsOf("mow.json");
 		assertNotNull(json);
 		JSONObject root = new JSONObject(json);
@@ -123,8 +131,12 @@ public class JSONParserGGTTests {
 		assertTrue(material.isSharedWithGroup());
 		assertEquals("multipage", material.getTitle());
 		assertEquals("", material.getURL());
-		assertEquals("http://tafel.dlb-dev01.alp-dlg.net/files/k/kg/kgmqpmpf/4k1XSuRpjVWnqCSu/kgmqpmpf.ggs", material.getFileName());
-		assertEquals("http://tafel.dlb-dev01.alp-dlg.net/files/k/kg/kgmqpmpf/4k1XSuRpjVWnqCSu/kgmqpmpf-thumb.png", material.getThumbnail());
+		assertEquals(
+				"http://tafel.dlb-dev01.alp-dlg.net/files/k/kg/kgmqpmpf/4k1XSuRpjVWnqCSu/kgmqpmpf.ggs",
+				material.getFileName());
+		assertEquals(
+				"http://tafel.dlb-dev01.alp-dlg.net/files/k/kg/kgmqpmpf/4k1XSuRpjVWnqCSu/kgmqpmpf-thumb.png",
+				material.getThumbnail());
 	}
 
 	private String getContentsOf(String testResourcesFileName) throws Exception {

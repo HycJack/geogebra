@@ -28,7 +28,7 @@ import org.geogebra.web.resources.SVGResourcePrototype;
  * @author csilla
  *
  */
-public class ToolButton extends StandardButton {
+public final class ToolButton extends StandardButton {
 
 	private final int mode;
 	private final AppW appW;
@@ -96,8 +96,7 @@ public class ToolButton extends StandardButton {
 	public void updateSelected(int appMode) {
 
 		boolean selected = (mode == appMode) || isMeasurementToolSelected();
-		getElement().setAttribute("selected",
-				String.valueOf(selected));
+		getElement().setAttribute("selected", String.valueOf(selected));
 		setSelected(selected);
 	}
 
@@ -106,7 +105,6 @@ public class ToolButton extends StandardButton {
 	 * @return if a ruler or one of the protractors are selected.
 	 */
 	private boolean isMeasurementToolSelected() {
-		return mode == EuclidianConstants.MODE_RULER
-				|| mode == EuclidianConstants.MODE_PROTRACTOR;
+		return mode == EuclidianConstants.MODE_RULER || mode == EuclidianConstants.MODE_PROTRACTOR;
 	}
 }

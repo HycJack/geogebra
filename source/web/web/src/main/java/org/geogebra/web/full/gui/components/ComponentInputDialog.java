@@ -22,7 +22,6 @@ import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.web.full.gui.dialog.ProcessInput;
 import org.geogebra.web.html5.gui.HasKeyboardPopup;
 import org.geogebra.web.html5.gui.inputfield.AutoCompleteTextFieldW;
-import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.components.dialog.ComponentDialog;
 import org.geogebra.web.shared.components.dialog.DialogData;
@@ -44,8 +43,13 @@ public class ComponentInputDialog extends ComponentDialog
 	 * @param hasScrim - background should be greyed out
 	 * @param inputHandler - input handler
 	 */
-	public ComponentInputDialog(AppW app, DialogData dialogData,
-			boolean autoHide, boolean hasScrim, InputHandler inputHandler, String labelText,
+	public ComponentInputDialog(
+			AppW app,
+			DialogData dialogData,
+			boolean autoHide,
+			boolean hasScrim,
+			InputHandler inputHandler,
+			String labelText,
 			String initText) {
 		this(app, dialogData, autoHide, hasScrim, inputHandler);
 		createGUI(labelText, initText);
@@ -59,8 +63,12 @@ public class ComponentInputDialog extends ComponentDialog
 	 * @param hasScrim - background should be greyed out
 	 * @param inputHandler - input handler
 	 */
-	protected ComponentInputDialog(AppW app, DialogData dialogData,
-			boolean autoHide, boolean hasScrim, InputHandler inputHandler) {
+	protected ComponentInputDialog(
+			AppW app,
+			DialogData dialogData,
+			boolean autoHide,
+			boolean hasScrim,
+			InputHandler inputHandler) {
 		super(app, dialogData, autoHide, hasScrim);
 		addStyleName("inputDialogComponent");
 		setPreventHide(true);
@@ -76,8 +84,7 @@ public class ComponentInputDialog extends ComponentDialog
 	}
 
 	private void createGUI(String labelText, String initText) {
-		inputTextField = new ComponentInputField((AppW) app,
-				"", labelText, "", initText, "");
+		inputTextField = new ComponentInputField((AppW) app, "", labelText, "", initText, "", null);
 		addDialogContent(inputTextField);
 	}
 
@@ -89,13 +96,15 @@ public class ComponentInputDialog extends ComponentDialog
 		this.inputHandler = inputHandler;
 	}
 
-	protected void processInputHandler(String inputText,
-			AsyncOperation<Boolean> callback) {
+	protected void processInputHandler(String inputText, AsyncOperation<Boolean> callback) {
 		inputHandler.processInput(inputText, this, callback);
 	}
 
+	/**
+	 * @return the current text of the input field.
+	 */
 	public String getInputText() {
-		return inputTextField.getTextField().getText();
+		return inputTextField.getText();
 	}
 
 	/**
@@ -104,7 +113,7 @@ public class ComponentInputDialog extends ComponentDialog
 	 * @return single line text input
 	 */
 	protected AutoCompleteTextFieldW getTextComponent() {
-		return inputTextField == null ? null : inputTextField.getTextField().getTextComponent();
+		return inputTextField == null ? null : inputTextField.getTextWidget();
 	}
 
 	@Override
@@ -130,8 +139,7 @@ public class ComponentInputDialog extends ComponentDialog
 	}
 
 	@Override
-	public boolean onUndefinedVariables(String string,
-			AsyncOperation<String[]> callback) {
+	public boolean onUndefinedVariables(String string, AsyncOperation<String[]> callback) {
 		return app.getGuiManager().checkAutoCreateSliders(string, callback);
 	}
 
@@ -152,13 +160,12 @@ public class ComponentInputDialog extends ComponentDialog
 	 * otherwise hide dialog
 	 */
 	public void processInput() {
-		inputHandler.processInput(getInputText(), this,
-				ok -> {
-					if (ok) {
-						toolAction();
-						hide();
-					}
-				});
+		inputHandler.processInput(getInputText(), this, ok -> {
+			if (ok) {
+				toolAction();
+				hide();
+			}
+		});
 	}
 
 	/**
@@ -172,7 +179,6 @@ public class ComponentInputDialog extends ComponentDialog
 	 * @param inputHandler input event handler
 	 */
 	public void addInputHandler(ProcessInput inputHandler) {
-		Dom.addEventListener(getTextComponent().getTextBox().getElement(),
-				"input", event -> inputHandler.onInput());
+		inputTextField.addInputHandler(inputHandler);
 	}
 }

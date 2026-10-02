@@ -17,6 +17,7 @@
 package org.geogebra.web.html5.util;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import org.geogebra.common.gui.view.consprotocol.ConstructionProtocolNavigation;
 import org.geogebra.common.move.ggtapi.models.AjaxCallback;
@@ -72,9 +73,8 @@ public class ArchiveLoader {
 
 		// reiniting of navigation bar, to show the correct numbers on the label
 		if (app.getGuiManager() != null && app.isUsingFullGui()) {
-			ConstructionProtocolNavigation cpNav = this.getApplication()
-					.getGuiManager()
-					.getCPNavigationIfExists();
+			ConstructionProtocolNavigation cpNav =
+					this.getApplication().getGuiManager().getCPNavigationIfExists();
 			if (cpNav != null) {
 				cpNav.update();
 			}
@@ -101,8 +101,7 @@ public class ArchiveLoader {
 			binaryData = Base64.base64ToBytes(suffix);
 		} catch (RuntimeException ex) {
 			app.afterLoadFileAppOrNot(false);
-			handleError(JsPropertyMap.of("statusText", "Invalid Base64"),
-					"LoadFileFailed");
+			handleError(JsPropertyMap.of("statusText", "Invalid Base64"), "LoadFileFailed");
 			return;
 		}
 		DomGlobal.setTimeout(ignore -> populateArchiveContent(binaryData), 0);
@@ -123,20 +122,19 @@ public class ArchiveLoader {
 			GgbFile archiveContent = new GgbFile();
 			data.forEach(name -> {
 				int dotIndex = name.lastIndexOf('.');
-				String extension = dotIndex == -1
-						? "" : name.substring(dotIndex + 1).toLowerCase(Locale.US);
+				String extension =
+						dotIndex == -1 ? "" : name.substring(dotIndex + 1).toLowerCase(Locale.US);
 
 				if (extension.matches("(png|jpg|jpeg|gif|bmp|tif|tiff)")) {
 					Uint8Array obj = data.get(name);
 					archiveContent.put(name, new ArchiveEntry(name, obj));
 				} else {
-					archiveContent.put(name, new ArchiveEntry(name, FFlate.get()
-							.strFromU8(data.get(name))));
+					archiveContent.put(name, new ArchiveEntry(name, FFlate.get().strFromU8(data.get(name))));
 				}
 			});
 
-			Log.debug("GGB file unzipped and post-processed in "
-					+ (System.currentTimeMillis() - t) + "ms");
+			Log.debug(
+					"GGB file unzipped and post-processed in " + (System.currentTimeMillis() - t) + "ms");
 
 			maybeLoadFile(archiveContent);
 		});
@@ -144,7 +142,7 @@ public class ArchiveLoader {
 
 	/**
 	 * Open file as off / csv / ggb.
-	 * 
+	 *
 	 * @param url
 	 *            file URL
 	 */
@@ -174,8 +172,8 @@ public class ArchiveLoader {
 
 			XMLHttpRequest.OnerrorFn onError = (e) -> {
 				app.afterLoadFileAppOrNot(false);
-				handleError(JsPropertyMap.of("status", request.status, "statusText",
-								request.statusText),
+				handleError(
+						JsPropertyMap.of("status", request.status, "statusText", request.statusText),
 						Browser.isGeoGebraOrg() ? "FileLoadingError" : "LoadFileFailed");
 				return null;
 			};
@@ -183,7 +181,7 @@ public class ArchiveLoader {
 			request.onload = (e) -> {
 				if (request.readyState == 4) {
 					if (request.status == 200) {
-						processBinaryData(Js.uncheckedCast(request.response.asJsObject()));
+						processBinaryData(Js.uncheckedCast(request.response));
 					} else {
 						onError.onInvoke(e);
 					}
@@ -205,8 +203,7 @@ public class ArchiveLoader {
 		ggbApi.setFileLoadingError(errorDetails);
 		app.getSettings().getEuclidian(1).setShowAxes(false);
 		app.getSettings().getEuclidian(1).showGrid(false);
-		app.getToolTipManager().showBottomMessage(
-				app.getLocalization().getError(errorKey), app);
+		app.getToolTipManager().showBottomMessage(app.getLocalization().getError(errorKey), app);
 	}
 
 	/**
@@ -229,7 +226,7 @@ public class ArchiveLoader {
 		if (json.has("archive")) {
 			JsArray<JsPropertyMap<String>> content = Js.uncheckedCast(json.get("archive"));
 			for (int i = 0; i < content.length; i++) {
-				JsPropertyMap<String> entry = content.getAt(i);
+				JsPropertyMap<String> entry = Objects.requireNonNull(content.getAt(i));
 				String fileName = entry.get("fileName");
 				file.put(fileName, new ArchiveEntry(fileName, entry.get("fileContent")));
 			}
@@ -241,11 +238,12 @@ public class ArchiveLoader {
 	 *            JS object representing the ZIP file, see getFileJSON in GgbAPI
 	 */
 	public void processJSON(Object zip) {
-		DomGlobal.setTimeout(ignore -> {
-				GgbFile archiveContent = new GgbFile();
-				setFileFromJson(Js.uncheckedCast(zip), archiveContent);
-				maybeLoadFile(archiveContent);
-		}, 0);
+		DomGlobal.setTimeout(
+				ignore -> {
+					GgbFile archiveContent = new GgbFile();
+					setFileFromJson(Js.uncheckedCast(zip), archiveContent);
+					maybeLoadFile(archiveContent);
+				},
+				0);
 	}
-
 }

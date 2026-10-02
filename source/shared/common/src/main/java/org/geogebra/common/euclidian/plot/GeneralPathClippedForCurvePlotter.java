@@ -16,6 +16,7 @@
 
 package org.geogebra.common.euclidian.plot;
 
+import org.geogebra.common.awt.GPathIterator;
 import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.euclidian.EuclidianViewInterfaceSlim;
@@ -32,13 +33,12 @@ import org.geogebra.common.util.DoubleUtil;
  * @author mathieu
  *
  */
-public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped
-		implements PathPlotter {
+public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped implements PathPlotter {
 
 	private static final double EPSILON = 0.0001;
 
 	public static final double MIN_PIXEL_DISTANCE = 0.5; // pixels
-	private static final double OFFSCREEN_PX = 10;
+	public static final int VIEWPORT_CLIP_MARGIN_PX = 10;
 
 	private boolean lineDrawn;
 	private final Coords tmpCoords = new Coords(4);
@@ -50,9 +50,13 @@ public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped
 	 * @param view
 	 *            Euclidian view
 	 */
-	public GeneralPathClippedForCurvePlotter(EuclidianViewInterfaceSlim view) {
-		super(view);
+	public GeneralPathClippedForCurvePlotter(EuclidianViewInterfaceSlim view, int winding) {
+		super(view, winding);
 		default2dView = view.isDefault2D();
+	}
+
+	public GeneralPathClippedForCurvePlotter(EuclidianViewInterfaceSlim view) {
+		this(view, GPathIterator.WIND_EVEN_ODD);
 	}
 
 	@Override
@@ -90,7 +94,8 @@ public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped
 
 		boolean distant = !DoubleUtil.isEqual(x, point.getX(), MIN_PIXEL_DISTANCE)
 				|| !DoubleUtil.isEqual(y, point.getY(), MIN_PIXEL_DISTANCE);
-		if (lineTo == SegmentType.CONTROL || lineTo == SegmentType.CURVE_TO
+		if (lineTo == SegmentType.CONTROL
+				|| lineTo == SegmentType.CURVE_TO
 				|| lineTo == SegmentType.ARC_TO
 				|| lineTo == SegmentType.AUXILIARY) {
 			distant = true;
@@ -153,14 +158,14 @@ public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped
 		double y = pt.getY();
 
 		if ((x < 0 && x0 > w) || (x > w && x0 < 0)) {
-			drawTo(x, -OFFSCREEN_PX, true);
-			drawTo(x0, -OFFSCREEN_PX, true);
+			drawTo(x, -VIEWPORT_CLIP_MARGIN_PX, true);
+			drawTo(x0, -VIEWPORT_CLIP_MARGIN_PX, true);
 			return;
 		}
 
 		if ((y < 0 && y0 > h) || (y > h && y0 < 0)) {
-			drawTo(-OFFSCREEN_PX, y, true);
-			drawTo(-OFFSCREEN_PX, y0, true);
+			drawTo(-VIEWPORT_CLIP_MARGIN_PX, y, true);
+			drawTo(-VIEWPORT_CLIP_MARGIN_PX, y0, true);
 			return;
 		}
 
@@ -186,37 +191,36 @@ public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped
 		// point
 		if (moveToAllowed == Gap.MOVE_TO) {
 			drawTo(x0, y0, false);
-		} else if (moveToAllowed == Gap.LINE_TO
-				|| moveToAllowed == Gap.CORNER) {
+		} else if (moveToAllowed == Gap.LINE_TO || moveToAllowed == Gap.CORNER) {
 			drawTo(x0, y0, true);
 		} else if (moveToAllowed == Gap.RESET_XMIN) {
 			double d = getCurrentPoint().getY();
 			if (!DoubleUtil.isEqual(d, y0)) {
-				drawTo(-OFFSCREEN_PX, d, true);
-				drawTo(-OFFSCREEN_PX, y0, true);
+				drawTo(-VIEWPORT_CLIP_MARGIN_PX, d, true);
+				drawTo(-VIEWPORT_CLIP_MARGIN_PX, y0, true);
 			}
 			drawTo(x0, y0, true);
 
 		} else if (moveToAllowed == Gap.RESET_XMAX) {
 			double d = getCurrentPoint().getY();
 			if (!DoubleUtil.isEqual(d, y0)) {
-				drawTo(view.getWidth() + OFFSCREEN_PX, d, true);
-				drawTo(view.getWidth() + OFFSCREEN_PX, y0, true);
+				drawTo(view.getWidth() + VIEWPORT_CLIP_MARGIN_PX, d, true);
+				drawTo(view.getWidth() + VIEWPORT_CLIP_MARGIN_PX, y0, true);
 			}
 			drawTo(x0, y0, true);
 
 		} else if (moveToAllowed == Gap.RESET_YMIN) {
 			double d = getCurrentPoint().getX();
 			if (!DoubleUtil.isEqual(d, x0)) {
-				drawTo(d, -OFFSCREEN_PX, true);
-				drawTo(x0, -OFFSCREEN_PX, true);
+				drawTo(d, -VIEWPORT_CLIP_MARGIN_PX, true);
+				drawTo(x0, -VIEWPORT_CLIP_MARGIN_PX, true);
 			}
 			drawTo(x0, y0, true);
 		} else if (moveToAllowed == Gap.RESET_YMAX) {
 			double d = getCurrentPoint().getX();
 			if (!DoubleUtil.isEqual(d, x0)) {
-				drawTo(getCurrentPoint().getX(), view.getHeight() + OFFSCREEN_PX, true);
-				drawTo(x0, view.getHeight() + OFFSCREEN_PX, true);
+				drawTo(getCurrentPoint().getX(), view.getHeight() + VIEWPORT_CLIP_MARGIN_PX, true);
+				drawTo(x0, view.getHeight() + VIEWPORT_CLIP_MARGIN_PX, true);
 			}
 			drawTo(x0, y0, true);
 		}
@@ -228,8 +232,7 @@ public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped
 	}
 
 	@Override
-	public boolean copyCoords(MyPoint point, double[] ret,
-			CoordSys transformSys) {
+	public boolean copyCoords(MyPoint point, double[] ret, CoordSys transformSys) {
 		boolean noTransform = transformSys == CoordSys.XOY;
 		if (noTransform && default2dView) {
 			ret[0] = point.getX();
@@ -257,5 +260,4 @@ public class GeneralPathClippedForCurvePlotter extends GeneralPathClipped
 	public boolean supports(CoordSys transformSys) {
 		return view.isInPlane(transformSys);
 	}
-
 }

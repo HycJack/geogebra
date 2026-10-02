@@ -19,13 +19,12 @@ package org.geogebra.web.full.gui.view.algebra;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.gui.inputfield.HasLastItem;
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.common.util.ToStringConverter;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Serializes construction items for keyboard input.
@@ -42,8 +41,8 @@ public final class ConstructionItemProvider implements HasLastItem {
 	 * @param cons construction
 	 * @param algebraView Algebra view
 	 */
-	public ConstructionItemProvider(Construction cons, AlgebraViewW algebraView,
-									ToStringConverter converter) {
+	public ConstructionItemProvider(
+			Construction cons, AlgebraViewW algebraView, ToStringConverter converter) {
 		this.cons = cons;
 		this.algebraView = algebraView;
 		this.converter = converter;
@@ -61,7 +60,7 @@ public final class ConstructionItemProvider implements HasLastItem {
 		return "";
 	}
 
-	private @CheckForNull GeoElement getPreviousElementFrom(GeoElement element) {
+	private @Nullable GeoElement getPreviousElementFrom(GeoElement element) {
 		TreeSet<GeoElement> elements = cons.getGeoSetWithCasCellsConstructionOrder();
 		Iterator<GeoElement> iterator = elements.descendingIterator();
 		if (element == null) {

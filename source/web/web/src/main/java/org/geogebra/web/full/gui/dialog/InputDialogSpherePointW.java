@@ -27,7 +27,7 @@ import org.geogebra.web.shared.components.dialog.DialogData;
 /**
  * Sphere dialog
  */
-public class InputDialogSpherePointW extends InputDialogRadiusW {
+public final class InputDialogSpherePointW extends InputDialogRadiusW {
 
 	private GeoPointND geoPoint;
 
@@ -43,8 +43,8 @@ public class InputDialogSpherePointW extends InputDialogRadiusW {
 	 * @param kernel
 	 *            kernel
 	 */
-	public InputDialogSpherePointW(AppW app, DialogData data,
-			InputHandler handler, GeoPointND center, Kernel kernel) {
+	public InputDialogSpherePointW(
+			AppW app, DialogData data, InputHandler handler, GeoPointND center, Kernel kernel) {
 		super(app, data, handler, kernel);
 		this.geoPoint = center;
 	}

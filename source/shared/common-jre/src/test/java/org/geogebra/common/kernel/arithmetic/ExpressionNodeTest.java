@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -18,21 +18,21 @@ package org.geogebra.common.kernel.arithmetic;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ExpressionNodeTest extends BaseUnitTest {
+class ExpressionNodeTest extends BaseUnitTest {
 
 	@Test
-	public void testCopyAttributesToForcesVectorPrintingMode() {
-		MyVecNode vector = new MyVecNode(getKernel(),
-				new MyDouble(getKernel(), 1), new MyDouble(getKernel(), 2));
+	void testCopyAttributesToForcesVectorPrintingMode() {
+		MyVecNode vector =
+				new MyVecNode(getKernel(), new MyDouble(getKernel(), 1), new MyDouble(getKernel(), 2));
 		ExpressionNode originalNode = new ExpressionNode(getKernel(), vector);
 		ExpressionNode copiedNode = originalNode.deepCopy(getKernel());
 
@@ -43,20 +43,23 @@ public class ExpressionNodeTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-5662")
-	public void testIntegralWithMixedNumbers() {
+	void testIntegralWithMixedNumbers() {
 		Kernel k = getKernel();
 		FunctionVariable x = new FunctionVariable(k, "x");
 		ExpressionNode fraction =
 				new ExpressionNode(k, new MyDouble(k, 2), Operation.DIVIDE, new MyDouble(k, 3));
-		ExpressionNode en = new ExpressionNode(k, x, Operation.PLUS,
-				new ExpressionNode(k, new MyDouble(k, 1), Operation.INVISIBLE_PLUS,
-						fraction));
-		assertThat(en.integral(x, k).toString(StringTemplate.testTemplate),
+		ExpressionNode en = new ExpressionNode(
+				k,
+				x,
+				Operation.PLUS,
+				new ExpressionNode(k, new MyDouble(k, 1), Operation.INVISIBLE_PLUS, fraction));
+		assertThat(
+				en.integral(x, k).toString(StringTemplate.testTemplate),
 				is("x^(2) / 2 + 1 * x + (2 * x) / 3"));
 	}
 
 	@Test
-	public void testValueTypeOfMatrixElement() {
+	void testValueTypeOfMatrixElement() {
 		MyList matrix = new MyList(getKernel());
 		MyList row = new MyList(getKernel());
 		matrix.addListElement(row);
@@ -64,16 +67,14 @@ public class ExpressionNodeTest extends BaseUnitTest {
 		row.addListElement(num);
 		MyList indices = new MyList(getKernel());
 		indices.addListElement(num);
-		ExpressionNode elementOf = new ExpressionNode(getKernel(),
-				matrix, Operation.ELEMENT_OF, indices);
+		ExpressionNode elementOf =
+				new ExpressionNode(getKernel(), matrix, Operation.ELEMENT_OF, indices);
 		assertEquals(ListValueType.of(ValueType.NUMBER), elementOf.getValueType());
 		indices.addListElement(num);
-		elementOf = new ExpressionNode(getKernel(),
-				matrix, Operation.ELEMENT_OF, indices);
+		elementOf = new ExpressionNode(getKernel(), matrix, Operation.ELEMENT_OF, indices);
 		assertEquals(ValueType.NUMBER, elementOf.getValueType());
 		indices.addListElement(num);
-		elementOf = new ExpressionNode(getKernel(),
-				matrix, Operation.ELEMENT_OF, indices);
+		elementOf = new ExpressionNode(getKernel(), matrix, Operation.ELEMENT_OF, indices);
 		assertEquals(ValueType.UNKNOWN, elementOf.getValueType());
 	}
 }

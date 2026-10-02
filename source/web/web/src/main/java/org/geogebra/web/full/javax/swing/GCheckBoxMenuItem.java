@@ -28,7 +28,7 @@ import org.gwtproject.user.client.ui.FlowPanel;
 /**
  * Menu item with a checkbox (for new UI use the checkmark version)
  */
-public class GCheckBoxMenuItem {
+public final class GCheckBoxMenuItem {
 
 	private ComponentCheckbox checkBox;
 	private AriaMenuItem menuItem;
@@ -54,8 +54,8 @@ public class GCheckBoxMenuItem {
 	 * @param cmd - callback
 	 * @param app - app
 	 */
-	public GCheckBoxMenuItem(ResourcePrototype icon, String text, final ScheduledCommand cmd,
-			App app) {
+	public GCheckBoxMenuItem(
+			ResourcePrototype icon, String text, final ScheduledCommand cmd, App app) {
 		this(icon, text, app);
 		setCommand(cmd);
 	}

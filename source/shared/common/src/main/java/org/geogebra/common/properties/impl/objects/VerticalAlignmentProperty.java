@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.draw.HasTextFormat;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
@@ -32,17 +30,17 @@ import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.GeoElementDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.impl.objects.delegate.TextFormatterDelegate;
+import org.jspecify.annotations.Nullable;
 
 public class VerticalAlignmentProperty extends AbstractEnumeratedProperty<VerticalAlignment>
 		implements IconsEnumeratedProperty<VerticalAlignment> {
 
 	private static final PropertyResource[] icons = {
-			PropertyResource.ICON_ALIGNMENT_TOP, PropertyResource.ICON_ALIGNMENT_MIDDLE,
-			PropertyResource.ICON_ALIGNMENT_BOTTOM
+		PropertyResource.ICON_ALIGNMENT_TOP,
+		PropertyResource.ICON_ALIGNMENT_MIDDLE,
+		PropertyResource.ICON_ALIGNMENT_BOTTOM
 	};
-	private static final String[] rawLabels = {
-			"stylebar.Top", "stylebar.Middle", "stylebar.Bottom"
-	};
+	private static final String[] rawLabels = {"stylebar.Top", "stylebar.Middle", "stylebar.Bottom"};
 
 	private final GeoElementDelegate delegate;
 
@@ -54,9 +52,7 @@ public class VerticalAlignmentProperty extends AbstractEnumeratedProperty<Vertic
 			throws NotApplicablePropertyException {
 		super(localization, "stylebar.VerticalAlign");
 		delegate = new TextFormatterDelegate(element);
-		setValues(List.of(VerticalAlignment.TOP,
-				VerticalAlignment.MIDDLE,
-				VerticalAlignment.BOTTOM));
+		setValues(List.of(VerticalAlignment.TOP, VerticalAlignment.MIDDLE, VerticalAlignment.BOTTOM));
 	}
 
 	@Override
@@ -65,7 +61,7 @@ public class VerticalAlignmentProperty extends AbstractEnumeratedProperty<Vertic
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return rawLabels;
 	}
 
@@ -73,8 +69,9 @@ public class VerticalAlignmentProperty extends AbstractEnumeratedProperty<Vertic
 	protected void doSetValue(VerticalAlignment value) {
 		HasTextFormatter element = (HasTextFormatter) delegate.getElement();
 		HasTextFormat formatter = element.getFormatter();
-		if (getLocalization() != null && formatter != null && !value.equals(formatter
-				.getVerticalAlignment())) {
+		if (getLocalization() != null
+				&& formatter != null
+				&& value != formatter.getVerticalAlignment()) {
 			formatter.setVerticalAlignment(value);
 		}
 		((GeoElement) element).updateVisualStyle(GProperty.COMBINED);

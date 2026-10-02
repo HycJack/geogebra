@@ -54,15 +54,18 @@ import com.google.j2objc.annotations.Weak;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-//@SuppressWarnings("javadoc")
+// @SuppressWarnings("javadoc")
 public class ConstructionProtocolView implements ConstructionStepper {
 
 	@Weak
 	protected final App app;
+
 	@Weak
 	protected final Kernel kernel;
+
 	@SuppressFBWarnings
 	protected ConstructionTableData data;
+
 	protected boolean isViewAttached;
 	protected ArrayList<ConstructionProtocolNavigation> navigationBars = new ArrayList<>();
 
@@ -79,8 +82,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 
 	protected static String getAlgebra(GeoElement geo) {
 		if (geo instanceof GeoText) {
-			return "\"" + geo.toValueString(StringTemplate.defaultTemplate)
-					+ "\"";
+			return "\"" + geo.toValueString(StringTemplate.defaultTemplate) + "\"";
 		}
 		return geo.getAlgebraDescriptionTextOrHTMLDefault(
 				new IndexHTMLBuilder(!geo.getApp().isHTML5Applet()));
@@ -91,12 +93,11 @@ public class ConstructionProtocolView implements ConstructionStepper {
 	}
 
 	protected static String getCaption(GeoElement geo, boolean wrapHTML) {
-		return geo.getCaptionDescriptionHTML(wrapHTML,
-				StringTemplate.defaultTemplate);
+		return geo.getCaptionDescriptionHTML(wrapHTML, StringTemplate.defaultTemplate);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param geo
 	 *            geo
 	 * @param addHTMLtag
@@ -108,7 +109,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param geo
 	 *            geo
 	 * @param addHTMLtag
@@ -147,11 +148,9 @@ public class ConstructionProtocolView implements ConstructionStepper {
 
 		if (!"".equals(base64)) {
 
-			String altText = "Icon for mode "
-					+ EuclidianConstants.getModeText(m);
+			String altText = "Icon for mode " + EuclidianConstants.getModeText(m);
 
-			return "<img alt='" + altText + "' height='32' width='32' src=\""
-					+ base64 + "\">";
+			return "<img alt='" + altText + "' height='32' width='32' src=\"" + base64 + "\">";
 		}
 
 		return "";
@@ -160,8 +159,8 @@ public class ConstructionProtocolView implements ConstructionStepper {
 	public class RowData {
 		int rowNumber = -1;
 		int index; // construction index of line: may be different
-					// to geo.getConstructionIndex() as not every
-					// geo is shown in the protocol
+		// to geo.getConstructionIndex() as not every
+		// geo is shown in the protocol
 		GeoElement geo;
 		GImageIcon toolbarIcon;
 		String name;
@@ -268,10 +267,8 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			int index1;
 			int prevIndex;
 
-			index1 = (rowNumber < 0) ? -1
-					: getConstructionIndex(rowNumber);
-			prevIndex = (rowNumber < 1) ? -1
-					: getConstructionIndex(rowNumber - 1);
+			index1 = (rowNumber < 0) ? -1 : getConstructionIndex(rowNumber);
+			prevIndex = (rowNumber < 1) ? -1 : getConstructionIndex(rowNumber - 1);
 
 			// TODO: This logic could be merged with the HTML export logic.
 			int m;
@@ -295,10 +292,8 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			}
 
 			updateAlgebraAndName();
-			description = ConstructionProtocolView.getDescription(geo,
-					!app.isHTML5Applet());
-			definition = ConstructionProtocolView.getDefinition(geo,
-					!app.isHTML5Applet());
+			description = ConstructionProtocolView.getDescription(geo, !app.isHTML5Applet());
+			definition = ConstructionProtocolView.getDefinition(geo, !app.isHTML5Applet());
 			updateCaption();
 			consProtocolVisible = ConstructionProtocolView.getBreakpoint(geo);
 
@@ -317,7 +312,6 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		protected GImageIcon getModeIcon(int mode) {
 			return app.wrapGetModeIcon(mode);
 		}
-
 	}
 
 	public class ColumnData {
@@ -340,8 +334,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		 * @param initShow
 		 *            whether to show on startup
 		 */
-		public ColumnData(String title, int prefWidth, int minWidth,
-				int alignment, boolean initShow) {
+		public ColumnData(String title, int prefWidth, int minWidth, int alignment, boolean initShow) {
 			this.title = title;
 			this.prefWidth = prefWidth;
 			this.minWidth = minWidth;
@@ -355,6 +348,9 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			return title;
 		}
 
+		/**
+		 * @return translated title of the column
+		 */
 		public String getTranslatedTitle() {
 			return app.getLocalization().getMenu(title);
 		}
@@ -386,14 +382,16 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			return initShow;
 		}
 
-		public void setVisible(boolean isVisible) {
-			this.isVisible = isVisible;
+		/**
+		 * @param visible whether the column is visible
+		 */
+		public void setVisible(boolean visible) {
+			this.isVisible = visible;
 		}
 
 		public boolean isVisible() {
 			return isVisible;
 		}
-
 	}
 
 	/**
@@ -512,22 +510,15 @@ public class ConstructionProtocolView implements ConstructionStepper {
 	public class ConstructionTableData implements View, SetLabels {
 
 		public final ColumnData[] columns = {
-				new ColumnData(Columns.NUMBER.translationKey, 35, 35,
-						SwingConstants.RIGHT, true),
-				new ColumnData(Columns.NAME.translationKey, 80, 50,
-						SwingConstants.LEFT, true),
-				new ColumnData(Columns.TOOLBARICON.translationKey, 35, 35,
-						SwingConstants.CENTER, false),
-				new ColumnData(Columns.DESCRIPTION.translationKey, 150, 50,
-						SwingConstants.LEFT, true),
-				new ColumnData(Columns.DEFINITION.translationKey, 150, 50,
-						SwingConstants.LEFT, false),
-				new ColumnData(Columns.VALUE.translationKey, 150, 50,
-						SwingConstants.LEFT, true),
-				new ColumnData(Columns.CAPTION.translationKey, 150, 50,
-						SwingConstants.LEFT, true),
-				new ColumnData(Columns.BREAKPOINT.translationKey, 70, 35,
-						SwingConstants.CENTER, false) };
+			new ColumnData(Columns.NUMBER.translationKey, 35, 35, SwingConstants.RIGHT, true),
+			new ColumnData(Columns.NAME.translationKey, 80, 50, SwingConstants.LEFT, true),
+			new ColumnData(Columns.TOOLBARICON.translationKey, 35, 35, SwingConstants.CENTER, false),
+			new ColumnData(Columns.DESCRIPTION.translationKey, 150, 50, SwingConstants.LEFT, true),
+			new ColumnData(Columns.DEFINITION.translationKey, 150, 50, SwingConstants.LEFT, false),
+			new ColumnData(Columns.VALUE.translationKey, 150, 50, SwingConstants.LEFT, true),
+			new ColumnData(Columns.CAPTION.translationKey, 150, 50, SwingConstants.LEFT, true),
+			new ColumnData(Columns.BREAKPOINT.translationKey, 70, 35, SwingConstants.CENTER, false)
+		};
 		protected ArrayList<RowData> rowList;
 		protected HashMap<GeoElement, RowData> geoMap;
 		protected int columnsCount = columns.length;
@@ -570,7 +561,6 @@ public class ConstructionProtocolView implements ConstructionStepper {
 				updateAll();
 			}
 			updateNavBarsAndRepaint();
-
 		}
 
 		@Override
@@ -621,8 +611,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			int size = rowList.size();
 			for (int i = 0; i < size; i++) {
 				RowData rd = rowList.get(i);
-				if (rd.getGeo().getConstructionIndex() == kernel
-						.getClosestStep(step)) {
+				if (rd.getGeo().getConstructionIndex() == kernel.getClosestStep(step)) {
 					return rd.getIndex();
 				}
 			}
@@ -631,7 +620,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 
 		/**
 		 * Set construction step to match geo on given row
-		 * 
+		 *
 		 * @param row
 		 *            row
 		 */
@@ -668,6 +657,9 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			// mode does not affect CP
 		}
 
+		/**
+		 * @return the number of rows in the construction protocol table.
+		 */
 		public int getRowCount() {
 			return rowList.size();
 		}
@@ -717,8 +709,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		 * @return whether it's editable
 		 */
 		public boolean isCellEditable(int nCol) {
-			return this.columns[nCol].getTitle()
-					.equals(Columns.CAPTION.translationKey);
+			return this.columns[nCol].getTitle().equals(Columns.CAPTION.translationKey);
 		}
 
 		/***********************
@@ -727,12 +718,12 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		@Override
 		public void add(GeoElement geo) {
 			if ((!geo.isLabelSet() && !geo.isGeoCasCell())
-					|| (kernel.getConstruction().showOnlyBreakpoints()
-							&& !geo.isConsProtocolBreakpoint())) {
+					|| (kernel.getConstruction().showOnlyBreakpoints() && !geo.isConsProtocolBreakpoint())) {
 				return;
 			}
 			// if we already have twin geo, ignore CAS cell
-			if (geo.isGeoCasCell() && ((GeoCasCell) geo).getTwinGeo() != null
+			if (geo.isGeoCasCell()
+					&& ((GeoCasCell) geo).getTwinGeo() != null
 					&& ((GeoCasCell) geo).getTwinGeo().isAlgebraVisible()) {
 				return;
 			}
@@ -742,8 +733,8 @@ public class ConstructionProtocolView implements ConstructionStepper {
 				remove(geo.getCorrespondingCasCell());
 				// remove also twinGeo of geoCasCell
 				// needed for GGB-810
-				if (geo.getCorrespondingCasCell().getTwinGeo() != null && geo
-						.getCorrespondingCasCell().getTwinGeo().equals(geo)) {
+				if (geo.getCorrespondingCasCell().getTwinGeo() != null
+						&& geo.getCorrespondingCasCell().getTwinGeo().equals(geo)) {
 					remove(geo);
 				}
 			}
@@ -760,8 +751,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 				}
 				int pos = 0; // there may be more rows with same index
 				int size = rowList.size();
-				while (pos < size && index >= rowList.get(pos).getGeo()
-						.getConstructionIndex()) {
+				while (pos < size && index >= rowList.get(pos).getGeo().getConstructionIndex()) {
 					pos++;
 				}
 
@@ -834,25 +824,21 @@ public class ConstructionProtocolView implements ConstructionStepper {
 				// remove row if only breakpoints
 				// are shown and this is no longer a breakpoint (while loading a
 				// construction)
-				if (!geo.isConsProtocolBreakpoint()
-						&& kernel.getConstruction().showOnlyBreakpoints()) {
+				if (!geo.isConsProtocolBreakpoint() && kernel.getConstruction().showOnlyBreakpoints()) {
 					remove(geo);
 				} else {
 					row.updateAlgebraAndName();
 					row.updateCaption();
-					fireTableRowsUpdated(row.getRowNumber(),
-							row.getRowNumber());
+					fireTableRowsUpdated(row.getRowNumber(), row.getRowNumber());
 				}
 			} else {
 				// missing row: should be added if only breakpoints
 				// are shown and this became a breakpoint (while loading a
 				// construction)
-				if (kernel.getConstruction().showOnlyBreakpoints()
-						&& geo.isConsProtocolBreakpoint()) {
+				if (kernel.getConstruction().showOnlyBreakpoints() && geo.isConsProtocolBreakpoint()) {
 					add(geo);
 				}
 			}
-
 		}
 
 		/**
@@ -959,7 +945,6 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			kernel.notifyAddAll(this, kernel.getLastConstructionStep());
 			notifyUpdateCalled = false;
 			updateAll();
-
 		}
 
 		/**
@@ -978,7 +963,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		/**
 		 * Detach from kernel
 		 */
-		final public void detachView() {
+		public final void detachView() {
 			// only detach view if there are
 			// no registered navigation bars
 			if (isViewAttached && navigationBars.size() == 0) {
@@ -1000,7 +985,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 
 	/**
 	 * Add view settings to XML
-	 * 
+	 *
 	 * @param sb
 	 *            XML builder
 	 */
@@ -1024,8 +1009,9 @@ public class ConstructionProtocolView implements ConstructionStepper {
 	 * Show only breakpoints
 	 */
 	public void showOnlyBreakpointsAction() {
-		app.getKernel().getConstruction().setShowOnlyBreakpoints(
-				!app.getKernel().getConstruction().showOnlyBreakpoints());
+		app.getKernel()
+				.getConstruction()
+				.setShowOnlyBreakpoints(!app.getKernel().getConstruction().showOnlyBreakpoints());
 		getData().initView();
 		getData().repaintView();
 		if (app.getGuiManager() != null) {
@@ -1035,7 +1021,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 
 	/**
 	 * Returns a html representation of the construction protocol.
-	 * 
+	 *
 	 * @param imgBase64
 	 *            : image file to be included
 	 * @param loc
@@ -1048,16 +1034,18 @@ public class ConstructionProtocolView implements ConstructionStepper {
 	 *            colorize
 	 * @return HTML
 	 */
-	public static String getHTML(String imgBase64, Localization loc,
-			Kernel kernel, ArrayList<Columns> columns, boolean useColors) {
+	public static String getHTML(
+			String imgBase64,
+			Localization loc,
+			Kernel kernel,
+			ArrayList<Columns> columns,
+			boolean useColors) {
 
 		StringBuilder sb = new StringBuilder();
 
 		// Let's be W3C compliant:
-		sb.append(
-				"<!DOCTYPE html>\n");
-		sb.append(
-				"<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">");
+		sb.append("<!DOCTYPE html>\n");
+		sb.append("<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">");
 		sb.append("<head>\n");
 		sb.append("<title>");
 		sb.append(StringUtil.toHTMLString(GeoGebraConstants.APPLICATION_NAME));
@@ -1065,8 +1053,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		sb.append(loc.getMenu("ConstructionProtocol"));
 		sb.append("</title>\n");
 
-		sb.append(
-				"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
+		sb.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
 		sb.append("</head>\n");
 
 		sb.append("<body>\n");
@@ -1107,8 +1094,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			sb.append(StringUtil.pngMarker);
 			sb.append(imgBase64);
 			sb.append("\" alt=\"");
-			sb.append(StringUtil
-					.toHTMLString(GeoGebraConstants.APPLICATION_NAME));
+			sb.append(StringUtil.toHTMLString(GeoGebraConstants.APPLICATION_NAME));
 			sb.append(' ');
 			sb.append(StringUtil.toHTMLString(loc.getMenu("DrawingPad")));
 			sb.append("\" border=\"1\">\n");
@@ -1150,41 +1136,40 @@ public class ConstructionProtocolView implements ConstructionStepper {
 				String str = "";
 
 				switch (column) {
-				default:
-					str = "";
-					break;
+					default:
+						str = "";
+						break;
 
-				case NUMBER:
-					str = (nRow + 1) + "";
-					break;
-				case CAPTION:
-					str = getCaption(geo, false);
-					break;
+					case NUMBER:
+						str = (nRow + 1) + "";
+						break;
+					case CAPTION:
+						str = getCaption(geo, false);
+						break;
 
-				case NAME:
-					str = getName(geo);
-					break;
+					case NAME:
+						str = getName(geo);
+						break;
 
-				case TOOLBARICON:
-					str = getModeIcon(geo);
-					break;
+					case TOOLBARICON:
+						str = getModeIcon(geo);
+						break;
 
-				case DESCRIPTION:
-					str = getDescription(geo, false);
-					break;
+					case DESCRIPTION:
+						str = getDescription(geo, false);
+						break;
 
-				case DEFINITION:
-					str = getDefinition(geo, false);
-					break;
+					case DEFINITION:
+						str = getDefinition(geo, false);
+						break;
 
-				case VALUE:
-					str = getAlgebra(geo);
-					break;
+					case VALUE:
+						str = getAlgebra(geo);
+						break;
 
-				case BREAKPOINT:
-					str = getBreakpoint(geo) + "";
-					break;
-
+					case BREAKPOINT:
+						str = getBreakpoint(geo) + "";
+						break;
 				}
 
 				sb.append("<td>");
@@ -1192,14 +1177,12 @@ public class ConstructionProtocolView implements ConstructionStepper {
 					sb.append("&nbsp;"); // space
 				} else {
 
-					GColor color = useColors ? geo.getAlgebraColor()
-							: GColor.BLACK;
+					GColor color = useColors ? geo.getAlgebraColor() : GColor.BLACK;
 
 					if (!GColor.BLACK.equals(color)) {
 						sb.append("<span style=\"color:#");
-						sb.append(StringUtil.toHexString((byte) color.getRed(),
-								(byte) color.getGreen(),
-								(byte) color.getBlue()));
+						sb.append(StringUtil.toHexString(
+								(byte) color.getRed(), (byte) color.getGreen(), (byte) color.getBlue()));
 						sb.append("\">");
 						sb.append(str);
 						sb.append("</span>");
@@ -1224,8 +1207,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		// append base64 string so that file can be reloaded with File -> Open
 		sb.append("\n<!-- Base64 string so that this file can be ");
 		sb.append("opened in GeoGebra with File -> Open -->");
-		sb.append(
-				"\n<applet width='1' height='1' code='' style=\"display:none\">");
+		sb.append("\n<applet width='1' height='1' code='' style=\"display:none\">");
 		sb.append("\n<param name=\"ggbBase64\" value=\"");
 		sb.append(kernel.getApplication().getGgbApi().getBase64());
 		sb.append("\">\n</applet>");
@@ -1236,8 +1218,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		return sb.toString();
 	}
 
-	private static void addCAS(StringBuilder sb, Localization loc,
-			Kernel kernel2) {
+	private static void addCAS(StringBuilder sb, Localization loc, Kernel kernel2) {
 		GuiManagerInterface gm = kernel2.getApplication().getGuiManager();
 
 		if (gm == null || !gm.hasCasView()) {
@@ -1288,8 +1269,7 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		sb.append(StringUtil.toHTMLString(s));
 	}
 
-	private static void addSpreadsheet(StringBuilder sb,
-			Kernel kernel2) {
+	private static void addSpreadsheet(StringBuilder sb, Kernel kernel2) {
 
 		App app = kernel2.getApplication();
 		GuiManagerInterface gm = app.getGuiManager();
@@ -1304,18 +1284,14 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		if (maxRow == -1 || maxCol == -1) {
 			return;
 		}
-
-		int rows = maxRow + 1;
 		int cols = maxCol + 1;
 
 		sb.append("<table border=\"1\">\n");
-		
+
 		String widthPercent = (100d / (cols + 1)) + "";
 
 		// headers
-		sb.append("<tr>\n");
-		sb.append("<th>&nbsp;");
-		sb.append("</th>");
+		sb.append("<tr>\n<th>&nbsp;</th>");
 
 		for (int col = 0; col < cols; col++) {
 			sb.append("<th>");
@@ -1326,17 +1302,18 @@ public class ConstructionProtocolView implements ConstructionStepper {
 		// end headers
 		sb.append("</tr>\n");
 		IndexHTMLBuilder ib = new IndexHTMLBuilder(false);
-		for (int row = 0 ; row < rows ; row++) {
-			
+		int rows = maxRow + 1;
+		for (int row = 0; row < rows; row++) {
+
 			sb.append("<tr>\n");
 
 			sb.append("<td>");
 			sb.append(row + 1);
 			sb.append("</td>\n");
 
-			for (int col = 0 ; col < cols ; col++) {
-				
-				String label = GeoElementSpreadsheet.getSpreadsheetCellName(col,  row);
+			for (int col = 0; col < cols; col++) {
+
+				String label = GeoElementSpreadsheet.getSpreadsheetCellName(col, row);
 
 				String cellText = "&nbsp;";
 
@@ -1377,15 +1354,14 @@ public class ConstructionProtocolView implements ConstructionStepper {
 	}
 
 	private static String wrapLink(String string) {
-		return "<a href=\"" + GeoGebraConstants.GEOGEBRA_WEBSITE
-				+ "\" target=\"_blank\" >" + string + "</a>";
+		return "<a href=\"" + GeoGebraConstants.GEOGEBRA_WEBSITE + "\" target=\"_blank\" >" + string
+				+ "</a>";
 	}
 
 	/**
 	 * Available column types.
 	 */
 	public enum Columns {
-
 		NUMBER("No."),
 
 		NAME("Name"),
@@ -1427,9 +1403,6 @@ public class ConstructionProtocolView implements ConstructionStepper {
 			}
 			Log.error("column " + str + " not found");
 			return Columns.NAME;
-
 		}
-
 	}
-
 }

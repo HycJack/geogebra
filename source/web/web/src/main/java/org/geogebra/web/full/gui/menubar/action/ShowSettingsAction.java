@@ -22,10 +22,11 @@ import org.geogebra.web.full.main.AppWFull;
 /**
  * Shows settings.
  */
-public class ShowSettingsAction extends DefaultMenuAction<AppWFull> {
+public final class ShowSettingsAction extends DefaultMenuAction<AppWFull> {
 
 	@Override
 	public void execute(AppWFull app) {
+		app.getSelectionManager().clearSelectedGeos();
 		app.getActivity().showSettingsView(app);
 	}
 }

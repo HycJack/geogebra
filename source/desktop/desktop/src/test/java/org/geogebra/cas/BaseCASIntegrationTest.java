@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -36,11 +36,12 @@ import org.geogebra.common.util.debug.Log;
 import org.geogebra.desktop.headless.AppDNoGui;
 import org.geogebra.desktop.main.LocalizationD;
 import org.geogebra.test.CASTestLogger;
-import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class BaseCASIntegrationTest {
-	static public boolean silent = false;
+	public static boolean silent = false;
 
 	protected Kernel kernel;
 	private AppDNoGui app;
@@ -51,15 +52,17 @@ public class BaseCASIntegrationTest {
 	static CASTestLogger logger;
 
 	ArbitraryConstantRegistry arbconst;
+	private SuiteScope suiteScope;
 
 	/**
 	 * Create app and CAS.
 	 */
-	@Before
-	public void setupCas() {
-		SuiteScope suiteScope = GlobalScope.registerNewSuiteScope();
+	@BeforeEach
+	void setupCas() {
+		suiteScope = GlobalScope.registerNewSuiteScope();
 
 		app = new AppDNoGui(new LocalizationD(3), false);
+		suiteScope.registerApp(app);
 
 		if (silent) {
 			Log.setLogger(null);
@@ -71,32 +74,33 @@ public class BaseCASIntegrationTest {
 		// app.fillCasCommandDict();
 
 		kernel = app.getKernel();
-		arbconst = new ArbitraryConstantRegistry(
-				new GeoCasCell(kernel.getConstruction()));
+		arbconst = new ArbitraryConstantRegistry(new GeoCasCell(kernel.getConstruction()));
 		logger = new CASTestLogger();
 
 		// Setting the general timeout to 9 seconds. Feel free to change this.
-		kernel.getApplication().getSettings().getCasSettings()
-				.setTimeoutMilliseconds(9000);
+		kernel.getApplication().getSettings().getCasSettings().setTimeoutMilliseconds(9000);
+	}
+
+	@AfterEach
+	void unregister() {
+		GlobalScope.unregisterSuiteScope(suiteScope);
 	}
 
 	/**
 	 * Handles the logs about test warnings.
 	 */
-	@AfterClass
-	public static void handleLogs() {
+	@AfterAll
+	static void handleLogs() {
 		if (!silent) {
 			logger.handleLogs();
 		}
 	}
 
-	protected void t(String input, String expectedResult,
-			String... validResults) {
+	protected void t(String input, String expectedResult, String... validResults) {
 		ta(false, input, expectedResult, validResults);
 	}
 
-	void ta(boolean keepInput, String input,
-			String expectedResult, String... validResults) {
+	void ta(boolean keepInput, String input, String expectedResult, String... validResults) {
 		GeoCasCell f = new GeoCasCell(kernel.getConstruction());
 		ta(f, keepInput, input, expectedResult, validResults);
 	}
@@ -105,11 +109,11 @@ public class BaseCASIntegrationTest {
 	 * Evaluates input in given CAS cell.
 	 * If keepInput is false, it behaves like the default CAS mode ({@code Evaluate}).
 	 * If keepInput is true, it simulates evaluation with {@code Keepinput} mode.
-	 * 
+	 *
 	 * <p>
 	 * Note: Direct calls to ta are "Not Recommended". Use {@link #t} and {@link #tk} instead.
 	 * </p>
-	 * 
+	 *
 	 * @param f
 	 *            CAS cell
 	 * @param keepInput
@@ -121,9 +125,12 @@ public class BaseCASIntegrationTest {
 	 * @param validResults
 	 *            Valid, but undesired results.
 	 */
-	protected void ta(GeoCasCell f, boolean keepInput, String input,
-			String expectedResult, String... validResults) {
-		String result;
+	protected void ta(
+			GeoCasCell f,
+			boolean keepInput,
+			String input,
+			String expectedResult,
+			String... validResults) {
 		f.setInput(input);
 		if (keepInput) {
 			f.setEvalCommand("Keepinput");
@@ -139,26 +146,21 @@ public class BaseCASIntegrationTest {
 			for (Command cmd : commands) {
 				String cmdName = cmd.getName();
 				// Numeric used
-				includesNumericCommand = includesNumericCommand
-						|| ("Numeric".equals(cmdName)
-								&& cmd.getArgumentNumber() > 1);
+				includesNumericCommand =
+						includesNumericCommand || ("Numeric".equals(cmdName) && cmd.getArgumentNumber() > 1);
 			}
 		}
 
-		result = f.getValue() != null
+		String result = f.getValue() != null
 				? f.getValue()
-						.toString(includesNumericCommand
-								? StringTemplate.testNumeric
-								: StringTemplate.testTemplate)
+						.toString(
+								includesNumericCommand ? StringTemplate.testNumeric : StringTemplate.testTemplate)
 				: f.getOutput(StringTemplate.testTemplate);
-		if (f.getValue() != null
-				&& f.getValue().unwrap() instanceof GeoElement) {
-			result = f.getValue().unwrap()
-					.toValueString(StringTemplate.testTemplate);
+		if (f.getValue() != null && f.getValue().unwrap() instanceof GeoElement) {
+			result = f.getValue().unwrap().toValueString(StringTemplate.testTemplate);
 		}
 
-		assertThat(result, equalToIgnoreWhitespaces(logger, input,
-				expectedResult, validResults));
+		assertThat(result, equalToIgnoreWhitespaces(logger, input, expectedResult, validResults));
 	}
 
 	protected void processCasCell(GeoCasCell f) {
@@ -180,8 +182,7 @@ public class BaseCASIntegrationTest {
 	 * @param validResults
 	 *            alternative results
 	 */
-	void tk(String input, String expectedResult,
-			String... validResults) {
+	void tk(String input, String expectedResult, String... validResults) {
 		ta(true, input, expectedResult, validResults);
 	}
 

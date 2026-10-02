@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -51,9 +51,9 @@ import org.geogebra.desktop.main.LocalizationD;
 /**
  * Extended JPanel that contains interactive sub-panels for performing one
  * variable inference with the current data set.
- * 
+ *
  * @author G. Sturr
- * 
+ *
  */
 public class OneVarInferencePanelD extends JPanel
 		implements ActionListener, FocusListener, StatPanelInterface {
@@ -127,7 +127,7 @@ public class OneVarInferencePanelD extends JPanel
 		btnTwo.addActionListener(this);
 		btnTwo.setSelected(true);
 
-		cbAltHyp = new JComboBox();
+		cbAltHyp = new JComboBox<>();
 		cbAltHyp.addActionListener(this);
 
 		lblNull = new JLabel();
@@ -248,54 +248,53 @@ public class OneVarInferencePanelD extends JPanel
 		DefaultTableModel model1 = resultTable.getModel();
 
 		evaluate();
-		String cInt = statDialog.format(model.getMean()) + " \u00B1 "
-				+ statDialog.format(model.getMe());
+		String cInt =
+				statDialog.format(model.getMean()) + " \u00B1 " + statDialog.format(model.getMe());
 
 		switch (model.selectedPlot) {
-		default:
-			// do nothing
-			break;
-		case StatisticsModel.INFER_Z_TEST:
-			model1.setValueAt(statDialog.format(model.getP()), 0, 0);
-			model1.setValueAt(statDialog.format(model.getTestStat()), 1, 0);
-			model1.setValueAt("", 2, 0);
-			model1.setValueAt(statDialog.format(model.getN()), 3, 0);
-			model1.setValueAt(statDialog.format(model.getMean()), 4, 0);
-			break;
+			default:
+				// do nothing
+				break;
+			case StatisticsModel.INFER_Z_TEST:
+				model1.setValueAt(statDialog.format(model.getP()), 0, 0);
+				model1.setValueAt(statDialog.format(model.getTestStat()), 1, 0);
+				model1.setValueAt("", 2, 0);
+				model1.setValueAt(statDialog.format(model.getN()), 3, 0);
+				model1.setValueAt(statDialog.format(model.getMean()), 4, 0);
+				break;
 
-		case StatisticsModel.INFER_T_TEST:
-			model1.setValueAt(statDialog.format(model.getP()), 0, 0);
-			model1.setValueAt(statDialog.format(model.getTestStat()), 1, 0);
-			model1.setValueAt(statDialog.format(model.getDf()), 2, 0);
-			model1.setValueAt(statDialog.format(model.getSe()), 3, 0);
-			model1.setValueAt("", 4, 0);
-			model1.setValueAt(statDialog.format(model.getN()), 5, 0);
-			model1.setValueAt(statDialog.format(model.getMean()), 6, 0);
-			break;
+			case StatisticsModel.INFER_T_TEST:
+				model1.setValueAt(statDialog.format(model.getP()), 0, 0);
+				model1.setValueAt(statDialog.format(model.getTestStat()), 1, 0);
+				model1.setValueAt(statDialog.format(model.getDf()), 2, 0);
+				model1.setValueAt(statDialog.format(model.getSe()), 3, 0);
+				model1.setValueAt("", 4, 0);
+				model1.setValueAt(statDialog.format(model.getN()), 5, 0);
+				model1.setValueAt(statDialog.format(model.getMean()), 6, 0);
+				break;
 
-		case StatisticsModel.INFER_Z_INT:
-			model1.setValueAt(cInt, 0, 0);
-			model1.setValueAt(statDialog.format(model.getLower()), 1, 0);
-			model1.setValueAt(statDialog.format(model.getUpper()), 2, 0);
-			model1.setValueAt(statDialog.format(model.getMe()), 3, 0);
-			model1.setValueAt("", 4, 0);
-			model1.setValueAt(statDialog.format(model.getN()), 5, 0);
-			model1.setValueAt(statDialog.format(model.getMean()), 6, 0);
-			break;
+			case StatisticsModel.INFER_Z_INT:
+				model1.setValueAt(cInt, 0, 0);
+				model1.setValueAt(statDialog.format(model.getLower()), 1, 0);
+				model1.setValueAt(statDialog.format(model.getUpper()), 2, 0);
+				model1.setValueAt(statDialog.format(model.getMe()), 3, 0);
+				model1.setValueAt("", 4, 0);
+				model1.setValueAt(statDialog.format(model.getN()), 5, 0);
+				model1.setValueAt(statDialog.format(model.getMean()), 6, 0);
+				break;
 
-		case StatisticsModel.INFER_T_INT:
-			model1.setValueAt(cInt, 0, 0);
-			model1.setValueAt(statDialog.format(model.getLower()), 1, 0);
-			model1.setValueAt(statDialog.format(model.getUpper()), 2, 0);
-			model1.setValueAt(statDialog.format(model.getMe()), 3, 0);
-			model1.setValueAt(statDialog.format(model.getDf()), 4, 0);
-			model1.setValueAt(statDialog.format(model.getSe()), 5, 0);
-			model1.setValueAt("", 6, 0);
-			model1.setValueAt(statDialog.format(model.getN()), 7, 0);
-			model1.setValueAt(statDialog.format(model.getMean()), 8, 0);
-			break;
+			case StatisticsModel.INFER_T_INT:
+				model1.setValueAt(cInt, 0, 0);
+				model1.setValueAt(statDialog.format(model.getLower()), 1, 0);
+				model1.setValueAt(statDialog.format(model.getUpper()), 2, 0);
+				model1.setValueAt(statDialog.format(model.getMe()), 3, 0);
+				model1.setValueAt(statDialog.format(model.getDf()), 4, 0);
+				model1.setValueAt(statDialog.format(model.getSe()), 5, 0);
+				model1.setValueAt("", 6, 0);
+				model1.setValueAt(statDialog.format(model.getN()), 7, 0);
+				model1.setValueAt(statDialog.format(model.getMean()), 8, 0);
+				break;
 		}
-
 	}
 
 	// ============================================================
@@ -328,7 +327,6 @@ public class OneVarInferencePanelD extends JPanel
 		fld.setText(statDialog.format(n));
 		// fld.setCaretPosition(0);
 		fld.addActionListener(this);
-
 	}
 
 	private void updateGUI() {
@@ -362,16 +360,15 @@ public class OneVarInferencePanelD extends JPanel
 				+ OneVarModel.tail_two
 				+ " " + statDialog.format(model.hypMean));
 
-		if (model.tail == OneVarModel.tail_right) {
+		if (OneVarModel.tail_right.equals(model.tail)) {
 			cbAltHyp.setSelectedIndex(0);
-		} else if (model.tail == OneVarModel.tail_left) {
+		} else if (OneVarModel.tail_left.equals(model.tail)) {
 			cbAltHyp.setSelectedIndex(1);
 		} else {
 			cbAltHyp.setSelectedIndex(2);
 		}
 
 		cbAltHyp.addActionListener(this);
-
 	}
 
 	@Override
@@ -383,9 +380,7 @@ public class OneVarInferencePanelD extends JPanel
 
 		if (source instanceof JTextField) {
 			doTextFieldActionPerformed((JTextField) source);
-		}
-
-		else if (source == cbAltHyp) {
+		} else if (source == cbAltHyp) {
 
 			if (cbAltHyp.getSelectedIndex() == 0) {
 				model.tail = OneVarModel.tail_right;
@@ -398,7 +393,6 @@ public class OneVarInferencePanelD extends JPanel
 			evaluate();
 			updateResultTable();
 		}
-
 	}
 
 	private void doTextFieldActionPerformed(JTextField source) {
@@ -406,27 +400,21 @@ public class OneVarInferencePanelD extends JPanel
 			return;
 		}
 
-		double value = model.evaluateExpression(kernel,
-				source.getText().trim());
+		double value = model.evaluateExpression(kernel, source.getText().trim());
 
 		if (source == fldConfLevel) {
 			model.confLevel = value;
 			evaluate();
 			updateGUI();
-		}
-
-		else if (source == fldNullHyp) {
+		} else if (source == fldNullHyp) {
 			model.hypMean = value;
 			evaluate();
 			updateGUI();
-		}
-
-		else if (source == fldSigma) {
+		} else if (source == fldSigma) {
 			model.sigma = value;
 			evaluate();
 			updateGUI();
 		}
-
 	}
 
 	@Override
@@ -436,7 +424,7 @@ public class OneVarInferencePanelD extends JPanel
 
 	@Override
 	public void focusLost(FocusEvent e) {
-		doTextFieldActionPerformed((JTextField) (e.getSource()));
+		doTextFieldActionPerformed((JTextField) e.getSource());
 	}
 
 	/**
@@ -486,5 +474,4 @@ public class OneVarInferencePanelD extends JPanel
 		}
 		return b;
 	}
-
 }

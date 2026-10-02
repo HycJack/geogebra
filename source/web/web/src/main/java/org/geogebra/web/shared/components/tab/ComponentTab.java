@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.gui.AccessibilityGroup;
 import org.geogebra.common.gui.SetLabels;
 import org.geogebra.common.main.Localization;
@@ -33,15 +31,14 @@ import org.geogebra.web.html5.gui.view.button.StandardButton;
 import org.geogebra.web.html5.gui.zoompanel.FocusableWidget;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.resources.SVGResource;
-import org.gwtproject.dom.style.shared.Unit;
+import org.gwtproject.dom.style.shared.Display;
 import org.gwtproject.user.client.ui.FlowPanel;
-import org.gwtproject.user.client.ui.RequiresResize;
 import org.gwtproject.user.client.ui.ScrollPanel;
 import org.gwtproject.user.client.ui.Widget;
 
 import elemental2.dom.KeyboardEvent;
 
-public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels {
+public final class ComponentTab extends FlowPanel implements SetLabels {
 	private final AppW appW;
 	private final Localization loc;
 	private ScrollPanel scrollPanel;
@@ -61,12 +58,12 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 	 * @param appW {@link org.geogebra.web.html5.main.AppW}
 	 * @param ariaLabel aria-label trans key (title of parent element)
 	 * @param initialTab index of initial tab
-	 * @param optionTypeName The name (trans key) of the
 	 * {@link org.geogebra.common.main.OptionType} that should be selected
+	 * @param animateInitialTab Whether the animation should occur for the initial tab
 	 * @param tabData {@link TabData} including title and panel widget
 	 */
-	public ComponentTab(AppW appW, String ariaLabel, int initialTab,
-			@CheckForNull String optionTypeName, TabData... tabData) {
+	public ComponentTab(
+			AppW appW, String ariaLabel, int initialTab, boolean animateInitialTab, TabData... tabData) {
 		this.appW = appW;
 		this.loc = appW.getLocalization();
 		this.ariaLabel = ariaLabel;
@@ -75,14 +72,11 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 		buildTab(tabData);
 
 		boolean switchedTab = false;
-		if (optionTypeName != null) {
-			switchedTab = switchToTab(optionTypeName);
-		}
 		if (!switchedTab && initialTab < tabData.length) {
-			switchToTab(initialTab);
+			switchToTab(initialTab, animateInitialTab);
 		}
 
-		Dom.addEventListener(scrollPanel.getElement(),  "keydown", event -> {
+		Dom.addEventListener(scrollPanel.getElement(), "keydown", event -> {
 			KeyboardEvent e = (KeyboardEvent) event;
 			if ("ArrowLeft".equals(e.code) || "ArrowRight".equals(e.code)) {
 				moveTabSelection("ArrowLeft".equals(e.code) ? -1 : 1);
@@ -92,13 +86,21 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 	}
 
 	/**
+	 * Same as {@link #ComponentTab(AppW, String, int, boolean, TabData...)}
+	 * with {@code animateInitialTab} set to {@code true}.
+	 */
+	public ComponentTab(AppW appW, String ariaLabel, int initialTab, TabData... tabData) {
+		this(appW, ariaLabel, initialTab, true, tabData);
+	}
+
+	/**
 	 * Creates a tab component with optional scroll indicator buttons.
 	 * @param appW {@link org.geogebra.web.html5.main.AppW}
 	 * @param ariaLabel aria-label trans key (title of parent element)
 	 * @param tabData {@link TabData} including title and panel widget
 	 */
 	public ComponentTab(AppW appW, String ariaLabel, TabData... tabData) {
-		this(appW, ariaLabel, 0, null, tabData);
+		this(appW, ariaLabel, 0, tabData);
 	}
 
 	private void buildTab(TabData... tabData) {
@@ -113,12 +115,10 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 		add(scrollPanel);
 
 		initPanelContainer();
-		panelContainer.setWidth((tabData.length * 100) + "%");
 		fillTabList(tabList, tabData);
-		new FocusableWidget(AccessibilityGroup.SETTINGS_TAB_BUTTON,
-				AccessibilityGroup.ViewControlId.SETTINGS_VIEW, tabList) {
+		new FocusableWidget(AccessibilityGroup.SETTINGS_TAB_BUTTON, null, tabList) {
 			@Override
-			public void focus(Widget widget) {
+			protected void focus(Widget widget) {
 				for (int i = 0; i < tabList.getWidgetCount(); i++) {
 					if (tabList.getWidget(i) == selectedBtn) {
 						tabList.getWidget(i).getElement().focus();
@@ -143,16 +143,14 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 	}
 
 	private void buildHeaderWithScrollIndicator(FlowPanel wrapPanel, FlowPanel tabList) {
-		left = buildScrollButton(KeyboardResources.INSTANCE
-				.keyboard_arrowLeft_black(), "left");
-		left.addFastClickHandler(source ->
-				scrollPanel.setHorizontalScrollPosition(getLeftScroll75Percent()));
+		left = buildScrollButton(KeyboardResources.INSTANCE.keyboard_arrowLeft_black(), "left");
+		left.addFastClickHandler(
+				source -> scrollPanel.setHorizontalScrollPosition(getLeftScroll75Percent()));
 		left.setVisible(false);
 
-		right = buildScrollButton(KeyboardResources.INSTANCE
-				.keyboard_arrowRight_black(), "right");
-		right.addFastClickHandler(source ->
-				scrollPanel.setHorizontalScrollPosition(getRightScroll75Percent()));
+		right = buildScrollButton(KeyboardResources.INSTANCE.keyboard_arrowRight_black(), "right");
+		right.addFastClickHandler(
+				source -> scrollPanel.setHorizontalScrollPosition(getRightScroll75Percent()));
 		right.setVisible(false);
 
 		wrapPanel.add(left);
@@ -193,12 +191,11 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 
 	private void fillTabList(FlowPanel tabList, TabData... tabData) {
 		int i = 0;
-		double width = 100.0 / tabData.length;
 		for (TabData tab : tabData) {
 			StandardButton tabBtn = getTabBtn(i, loc.getMenu(tab.getTabTitle()));
 			tabButton.add(tabBtn);
 			tabList.add(tabBtn);
-			tab.getTabPanel().getElement().getStyle().setWidth(width, Unit.PCT);
+			updateTabPanelVisibility(tab.getTabPanel(), false);
 			panelContainer.add(tab.getTabPanel());
 			i++;
 		}
@@ -206,48 +203,89 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 
 	private int getLeftScroll75Percent() {
 		int scroll75 = (int) (scrollPanel.getOffsetWidth() * 0.75);
-		return Math.max(scrollPanel.getMinimumHorizontalScrollPosition(),
+		return Math.max(
+				scrollPanel.getMinimumHorizontalScrollPosition(),
 				scrollPanel.getHorizontalScrollPosition() - scroll75);
 	}
 
 	private int getRightScroll75Percent() {
 		int scroll75 = (int) (scrollPanel.getOffsetWidth() * 0.75);
-		return Math.min(scrollPanel.getMaximumHorizontalScrollPosition(),
+		return Math.min(
+				scrollPanel.getMaximumHorizontalScrollPosition(),
 				scrollPanel.getHorizontalScrollPosition() + scroll75);
 	}
 
 	/**
-	 * switch to tab
-	 * @param tabIdx - index of tab to switch to
+	 * Switch to tab
+	 * @param tabIdx Index of tab to switch to
 	 */
 	public void switchToTab(int tabIdx) {
+		switchToTab(tabIdx, true);
+	}
+
+	/**
+	 * Switch to tab
+	 * @param tabIdx Index of tab to switch to
+	 * @param animate Whether tab switching animation should occur
+	 */
+	private void switchToTab(int tabIdx, boolean animate) {
 		if (selectedBtn != null) {
 			updateSelection(selectedBtn, false);
 		}
 
+		int toHide = selectedTabIdx;
+		if (animate) {
+			fadeTab(toHide, "fadeOut", false);
+		} else {
+			updateTabPanelVisibility(panelContainer.getWidget(toHide), false);
+		}
 		selectedBtn = tabButton.get(tabIdx);
 		selectedBtn.getElement().scrollIntoView();
 		updateSelection(selectedBtn, true);
 		selectedTabIdx = tabIdx;
-
-		panelContainer.addStyleName("transition");
+		if (animate) {
+			fadeTab(selectedTabIdx, "fadeIn", true);
+		} else {
+			updateTabPanelVisibility(panelContainer.getWidget(selectedTabIdx), true);
+		}
 		tabChanged.notifyListeners(tabIdx);
-		panelContainer.getElement().getStyle().setRight(tabIdx * 100, Unit.PCT);
+	}
+
+	/**
+	 * Attach animation to tab with given tab index and remove style name after animation is ended.
+	 * @param tabIdx tab index
+	 * @param animationName animation class name
+	 * @param visible whether it should be visible, or hidden
+	 */
+	private void fadeTab(int tabIdx, String animationName, boolean visible) {
+		panelContainer.getWidget(tabIdx).getElement().getStyle().setDisplay(Display.INITIAL);
+		panelContainer.getWidget(tabIdx).addStyleName(animationName);
+		Dom.addEventListener(panelContainer.getWidget(tabIdx).getElement(), "animationend", e -> {
+			panelContainer.getWidget(tabIdx).removeStyleName(animationName);
+			updateTabPanelVisibility(panelContainer.getWidget(tabIdx), visible);
+		});
 	}
 
 	/**
 	 * Find tab with given title and switch to it
 	 * @param tabTransKey title of searched tab
-	 * @return Whether the tab was switched successfully
 	 */
-	public boolean switchToTab(String tabTransKey) {
+	public void switchToTab(String tabTransKey) {
+		switchToTab(Math.max(0, indexOf(tabData, tabTransKey)));
+	}
+
+	/**
+	 * @param tabData tab data
+	 * @param name tab name (translation key)
+	 * @return index of matching tab in data, -1 if not found
+	 */
+	public static int indexOf(List<TabData> tabData, String name) {
 		for (int i = 0; i < tabData.size(); i++) {
-			if (tabData.get(i).getTabTitle().equals(tabTransKey)) {
-				switchToTab(i);
-				return true;
+			if (tabData.get(i).getTabTitle().equals(name)) {
+				return i;
 			}
 		}
-		return false;
+		return -1;
 	}
 
 	private void updateSelection(StandardButton button, boolean selected) {
@@ -304,13 +342,6 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 	}
 
 	@Override
-	public void onResize() {
-		panelContainer.removeStyleName("transition");
-		panelContainer.getElement().getStyle().setRight(selectedTabIdx * getOffsetWidth(),
-				Unit.PX);
-	}
-
-	@Override
 	public void setLabels() {
 		AriaHelper.setLabel(tabList, loc.getMenu(ariaLabel));
 		for (int i = 0; i < tabData.size(); i++) {
@@ -323,6 +354,13 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 	}
 
 	/**
+	 * @return The content panel of the currently selected tab
+	 */
+	public Widget getSelectedTabPanel() {
+		return tabData.get(selectedTabIdx).getTabPanel();
+	}
+
+	/**
 	 * Registers a listener to be notified whenever the active tab changes.
 	 * <p>
 	 * The listener is invoked after a tab switch occurs and receives the
@@ -332,5 +370,10 @@ public class ComponentTab extends FlowPanel implements RequiresResize, SetLabels
 	 */
 	public void addTabChangedListener(MulticastEvent.Listener<Integer> listener) {
 		tabChanged.addListener(listener);
+	}
+
+	private void updateTabPanelVisibility(Widget tabPanel, boolean visible) {
+		tabPanel.getElement().getStyle().setOpacity(visible ? 1 : 0);
+		tabPanel.getElement().getStyle().setDisplay(visible ? Display.BLOCK : Display.NONE);
 	}
 }

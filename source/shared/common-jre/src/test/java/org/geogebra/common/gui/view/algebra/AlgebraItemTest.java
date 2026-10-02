@@ -20,9 +20,9 @@ import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -44,333 +44,336 @@ import org.geogebra.common.scientific.LabelController;
 import org.geogebra.common.util.IndexHTMLBuilder;
 import org.geogebra.test.EventAccumulator;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AlgebraItemTest extends BaseUnitTest {
+class AlgebraItemTest extends BaseUnitTest {
 
-    private static final int LATEX_MAX_EDIT_LENGTH = 1500;
-    private static final String line = "Line((0,0), (1,1))";
-    private static final String fitLine = "FitLine((0,0), (1,1))";
-    private static final String circle = "Circle((0,0), (1,1))";
+	private static final int LATEX_MAX_EDIT_LENGTH = 1500;
+	private static final String line = "Line((0,0), (1,1))";
+	private static final String fitLine = "FitLine((0,0), (1,1))";
+	private static final String circle = "Circle((0,0), (1,1))";
 
-    @Override
-    public AppCommon createAppCommon() {
-        return AppCommonFactory.create3D();
-    }
+	@Override
+	public AppCommon createAppCommon() {
+		return AppCommonFactory.create3D();
+	}
 
-    @Test
-    public void testShouldShowBothRowsInGraphing() {
-        getApp().setGraphingConfig();
+	@Test
+	void testShouldShowBothRowsInGraphing() {
+		getApp().setGraphingConfig();
 
-        checkShouldShowBothRowsFor(line);
-        checkShouldShowBothRowsFor(fitLine);
-        checkShouldShowBothRowsFor("0.6");
-        checkShouldShowBothRowsFor("0.6+2");
-    }
+		checkShouldShowBothRowsFor(line);
+		checkShouldShowBothRowsFor(fitLine);
+		checkShouldShowBothRowsFor("0.6");
+		checkShouldShowBothRowsFor("0.6+2");
+	}
 
-    @Test
-    public void testTwoRowsFrenchCoords() {
-        getSettings().getGeneral().setCoordFormat(CoordinatesFormat.COORD_FORMAT_FRENCH);
-        GeoPoint point = add("(1,2)");
-        assertThat(AlgebraItem.shouldShowBothRows(point, getSettings().getAlgebra()), is(false));
-    }
+	@Test
+	void testTwoRowsFrenchCoords() {
+		getSettings().getGeneral().setCoordFormat(CoordinatesFormat.COORD_FORMAT_FRENCH);
+		GeoPoint point = add("(1,2)");
+		assertThat(AlgebraItem.shouldShowBothRows(point, getSettings().getAlgebra()), is(false));
+	}
 
-    private void checkShouldShowBothRowsFor(String definition) {
-        GeoElement line = addAvInput(definition);
-        assertThat(AlgebraItem.shouldShowBothRows(line, getSettings().getAlgebra()), is(true));
-    }
+	private void checkShouldShowBothRowsFor(String definition) {
+		GeoElement line = addAvInput(definition);
+		assertThat(AlgebraItem.shouldShowBothRows(line, getSettings().getAlgebra()), is(true));
+	}
 
-    @Test
-    public void testShouldShowBothRowsInGeometry() {
-        getApp().setGeometryConfig();
-        getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
+	@Test
+	void testShouldShowBothRowsInGeometry() {
+		getApp().setGeometryConfig();
+		getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
 
-        checkShouldShowBothRowsFor(line);
-        checkShouldShowBothRowsFor(fitLine);
-        checkShouldShowBothRowsFor(circle);
-    }
+		checkShouldShowBothRowsFor(line);
+		checkShouldShowBothRowsFor(fitLine);
+		checkShouldShowBothRowsFor(circle);
+	}
 
-    @Test
-    public void testShouldShowBothRowsForAngle() {
-        getApp().setGeometryConfig();
-        getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DESCRIPTION);
+	@Test
+	void testShouldShowBothRowsForAngle() {
+		getApp().setGeometryConfig();
+		getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DESCRIPTION);
 
-        addAvInput("A = (0, 0)");
-        addAvInput("B = (1, 1)");
-        addAvInput("C = (1, -1)");
-        GeoAngle angle = addAvInput("a = Angle(A, B, C)");
-        boolean shouldShowOutputRow = AlgebraItem.shouldShowBothRows(angle,
-                getSettings().getAlgebra());
-        assertThat(shouldShowOutputRow, is(true));
-    }
+		addAvInput("A = (0, 0)");
+		addAvInput("B = (1, 1)");
+		addAvInput("C = (1, -1)");
+		GeoAngle angle = addAvInput("a = Angle(A, B, C)");
+		boolean shouldShowOutputRow =
+				AlgebraItem.shouldShowBothRows(angle, getSettings().getAlgebra());
+		assertThat(shouldShowOutputRow, is(true));
+	}
 
-    @Test
-    public void getLatexString() {
-        addAvInput("a = ?");
-        GeoVector vector = addAvInput("v = (a, 1)");
-        String latexString =
-                AlgebraItem.getContentString(vector, LATEX_MAX_EDIT_LENGTH, false,
-						StringTemplate.latexTemplate);
-        assertThat(latexString, equalTo("v\\, = \\,?"));
-    }
+	@Test
+	void getLatexString() {
+		addAvInput("a = ?");
+		GeoVector vector = addAvInput("v = (a, 1)");
+		String latexString = AlgebraItem.getContentString(
+				vector, LATEX_MAX_EDIT_LENGTH, false, StringTemplate.latexTemplate);
+		assertThat(latexString, equalTo("v\\, = \\,?"));
+	}
 
-    @Test
-    @Issue("APPS-6269")
-    public void getLatexStringConic() {
-        GeoElement conic = addAvInput("x^2/sqrt(2)=1");
-        GeoElement quadric = addAvInput("x^2/sqrt(2)=z");
-        String latexStringConic =
-                AlgebraItem.getContentString(conic, LATEX_MAX_EDIT_LENGTH, false,
-						StringTemplate.latexTemplate);
-        String latexStringQuadric =
-                AlgebraItem.getContentString(quadric, LATEX_MAX_EDIT_LENGTH, false,
-						StringTemplate.latexTemplate);
-        assertThat(latexStringConic,
-                equalTo("eq1\\mathpunct{:}\\,\\frac{x^{2}}{\\sqrt{2}}\\, = \\,1"));
-        assertThat(latexStringQuadric,
-                equalTo("eq2\\mathpunct{:}\\,\\frac{x^{2}}{\\sqrt{2}}\\, = \\,z"));
-    }
+	@Test
+	@Issue("APPS-6269")
+	void getLatexStringConic() {
+		GeoElement conic = addAvInput("x^2/sqrt(2)=1");
+		GeoElement quadric = addAvInput("x^2/sqrt(2)=z");
+		String latexStringConic = AlgebraItem.getContentString(
+				conic, LATEX_MAX_EDIT_LENGTH, false, StringTemplate.latexTemplate);
+		String latexStringQuadric = AlgebraItem.getContentString(
+				quadric, LATEX_MAX_EDIT_LENGTH, false, StringTemplate.latexTemplate);
+		assertThat(latexStringConic, equalTo("eq1\\mathpunct{:}\\,\\frac{x^{2}}{\\sqrt{2}}\\, = \\,1"));
+		assertThat(
+				latexStringQuadric, equalTo("eq2\\mathpunct{:}\\,\\frac{x^{2}}{\\sqrt{2}}\\, = \\,z"));
+	}
 
-    @Test
-    public void shouldShowBothRowsForMinusOneCalc() {
-        getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
-        getApp().setGraphingConfig();
-        GeoElement geo = addAvInput("(-1)(9)");
-        assertThat(AlgebraItem.shouldShowBothRows(geo, getSettings().getAlgebra()), is(true));
-    }
+	@Test
+	void shouldShowBothRowsForMinusOneCalc() {
+		getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
+		getApp().setGraphingConfig();
+		GeoElement geo = addAvInput("(-1)(9)");
+		assertThat(AlgebraItem.shouldShowBothRows(geo, getSettings().getAlgebra()), is(true));
+	}
 
-    @Test
-    public void shouldShowBothRowsForMinusTwoCalc() {
-        getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
-        getApp().setGraphingConfig();
-        GeoElement geo = addAvInput("(-2)(9)");
-        assertThat(AlgebraItem.shouldShowBothRows(geo, getSettings().getAlgebra()), is(true));
-    }
+	@Test
+	void shouldShowBothRowsForMinusTwoCalc() {
+		getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
+		getApp().setGraphingConfig();
+		GeoElement geo = addAvInput("(-2)(9)");
+		assertThat(AlgebraItem.shouldShowBothRows(geo, getSettings().getAlgebra()), is(true));
+	}
 
-    @Test
-    public void shouldNotShowBothRowsForText() {
-        GeoElement geoElement = addAvInput("text1 = \"my text\"");
-        assertThat(AlgebraItem.shouldShowBothRows(geoElement, getSettings().getAlgebra()),
-                is(false));
-    }
+	@Test
+	void shouldNotShowBothRowsForText() {
+		GeoElement geoElement = addAvInput("text1 = \"my text\"");
+		assertThat(AlgebraItem.shouldShowBothRows(geoElement, getSettings().getAlgebra()), is(false));
+	}
 
-    @Test
-    public void shouldShowBothRowsForTakeStringAlgorithm() {
-        GeoElement geoElement = addAvInput("Take(\"hello\", 2, 4)");
-        assertThat(AlgebraItem.shouldShowBothRows(geoElement, getSettings().getAlgebra()),
-                is(true));
-    }
+	@Test
+	void shouldShowBothRowsForTakeStringAlgorithm() {
+		GeoElement geoElement = addAvInput("Take(\"hello\", 2, 4)");
+		assertThat(AlgebraItem.shouldShowBothRows(geoElement, getSettings().getAlgebra()), is(true));
+	}
 
-    @Test
-    public void testMinusPiForm() {
-        getApp().setGraphingConfig();
-        getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
-        GeoNumeric minusPi = addAvInput("-pi");
-        minusPi.setSymbolicMode(true, true);
-        assertThat(
-                minusPi.getLaTeXDescriptionRHS(true, StringTemplate.latexTemplate),
-                equalTo("-\\pi "));
-    }
+	@Test
+	void testMinusPiForm() {
+		getApp().setGraphingConfig();
+		getApp().getSettings().getAlgebra().setStyle(AlgebraStyle.DEFINITION_AND_VALUE);
+		GeoNumeric minusPi = addAvInput("-pi");
+		minusPi.setSymbolicMode(true, true);
+		assertThat(
+				minusPi.getLaTeXDescriptionRHS(true, StringTemplate.latexTemplate), equalTo("-\\pi "));
+	}
 
-    @Test
-    public void percentageDefinition() {
-        GeoElement geo = addAvInput("5%*5+5");
-        assertThat(
-                geo.getNameAndDefinition(StringTemplate.latexTemplate),
-                is("a\\, = \\,5\\% \\cdot 5 + 5"));
-    }
+	@Test
+	void percentageDefinition() {
+		GeoElement geo = addAvInput("5%*5+5");
+		assertThat(
+				geo.getNameAndDefinition(StringTemplate.latexTemplate), is("a\\, = \\,5\\% \\cdot 5 + 5"));
+	}
 
-    @Test
-    public void addingToAVShouldNotCallUpdate() {
-        EventAccumulator eventAccumulator = new EventAccumulator();
-        getApp().getEventDispatcher().addEventListener(eventAccumulator);
-        GeoElement geo = addAvInput("a=1+3");
-        InputHelper.updateProperties(new GeoElement[]{geo}, getApp().getActiveEuclidianView(),
-                getKernel().getConstructionStep());
-        assertThat(Collections.singletonList("ADD a"), is(eventAccumulator.getEvents()));
-    }
+	@Test
+	void addingToAVShouldNotCallUpdate() {
+		EventAccumulator eventAccumulator = new EventAccumulator();
+		getApp().getEventDispatcher().addEventListener(eventAccumulator);
+		GeoElement geo = addAvInput("a=1+3");
+		InputHelper.updateProperties(
+				new GeoElement[] {geo},
+				getApp().getActiveEuclidianView(),
+				getKernel().getConstructionStep());
+		assertThat(Collections.singletonList("ADD a"), is(eventAccumulator.getEvents()));
+	}
 
-    @Test
-    public void testTangents() {
-        getApp().setGeometryConfig();
-        addAvInput("c: Circle((0, 0), 5)");
-        addAvInput("A = (6, 6)");
-        GeoElement[] tangents = getElements("Tangent(A, c)");
-        assertFalse(AlgebraItem.shouldShowBothRows(tangents[0], getSettings().getAlgebra()));
-        assertFalse(AlgebraItem.shouldShowBothRows(tangents[1], getSettings().getAlgebra()));
-        assertEquals("\\text{f = Tangent to c through A}",
-                AlgebraItem.getPreviewLatexForGeoElement(tangents[0]));
-        assertEquals("\\text{g = Tangent to c through A}",
-                AlgebraItem.getPreviewLatexForGeoElement(tangents[1]));
-        assertFalse(AlgebraItem.isCompactItem(tangents[0]));
-        assertFalse(AlgebraItem.isCompactItem(tangents[1]));
-        IndexHTMLBuilder builder = new IndexHTMLBuilder(false);
-        AlgebraItem.buildPlainTextItemSimple(tangents[0], builder);
-        assertEquals("f = Tangent to c through A", builder.toString());
-        AlgebraItem.buildPlainTextItemSimple(tangents[1], builder);
-        assertEquals("g = Tangent to c through A", builder.toString());
-    }
+	@Test
+	void testTangents() {
+		getApp().setGeometryConfig();
+		addAvInput("c: Circle((0, 0), 5)");
+		addAvInput("A = (6, 6)");
+		GeoElement[] tangents = getElements("Tangent(A, c)");
+		assertFalse(AlgebraItem.shouldShowBothRows(tangents[0], getSettings().getAlgebra()));
+		assertFalse(AlgebraItem.shouldShowBothRows(tangents[1], getSettings().getAlgebra()));
+		assertEquals(
+				"\\text{f = Tangent to c through A}",
+				AlgebraItem.getPreviewLatexForGeoElement(tangents[0]));
+		assertEquals(
+				"\\text{g = Tangent to c through A}",
+				AlgebraItem.getPreviewLatexForGeoElement(tangents[1]));
+		assertFalse(AlgebraItem.isCompactItem(tangents[0]));
+		assertFalse(AlgebraItem.isCompactItem(tangents[1]));
+		IndexHTMLBuilder builder = new IndexHTMLBuilder(false);
+		AlgebraItem.buildPlainTextItemSimple(tangents[0], builder);
+		assertEquals("f = Tangent to c through A", builder.toString());
+		AlgebraItem.buildPlainTextItemSimple(tangents[1], builder);
+		assertEquals("g = Tangent to c through A", builder.toString());
+	}
 
-    @Test
-    public void testEditingTangents() {
-        getApp().setGeometryConfig();
-        addAvInput("c: Circle((0, 0), 5)");
-        addAvInput("A = (6, 6)");
-        addAvInput("B = (-6, 6)");
-        addAvInput("Tangent(A, c)");
+	@Test
+	void testEditingTangents() {
+		getApp().setGeometryConfig();
+		addAvInput("c: Circle((0, 0), 5)");
+		addAvInput("A = (6, 6)");
+		addAvInput("B = (-6, 6)");
+		addAvInput("Tangent(A, c)");
 
-        editGeoElement(lookup("f"), "Tangent(B, c)");
-        assertFalse(AlgebraItem.shouldShowBothRows(lookup("f"), getSettings().getAlgebra()));
-        assertFalse(AlgebraItem.shouldShowBothRows(lookup("f_{2}"), getSettings().getAlgebra()));
-        assertEquals("\\text{f = Tangent to c through B}",
-                AlgebraItem.getPreviewLatexForGeoElement(lookup("f")));
-        assertEquals("\\text{f$_2$ = Tangent to c through B}",
-                AlgebraItem.getPreviewLatexForGeoElement(lookup("f_{2}")));
-        assertFalse(AlgebraItem.isCompactItem(lookup("f")));
-        assertFalse(AlgebraItem.isCompactItem(lookup("f_{2}")));
-    }
+		editGeoElement(lookup("f"), "Tangent(B, c)");
+		assertFalse(AlgebraItem.shouldShowBothRows(lookup("f"), getSettings().getAlgebra()));
+		assertFalse(AlgebraItem.shouldShowBothRows(lookup("f_{2}"), getSettings().getAlgebra()));
+		assertEquals(
+				"\\text{f = Tangent to c through B}",
+				AlgebraItem.getPreviewLatexForGeoElement(lookup("f")));
+		assertEquals(
+				"\\text{f$_2$ = Tangent to c through B}",
+				AlgebraItem.getPreviewLatexForGeoElement(lookup("f_{2}")));
+		assertFalse(AlgebraItem.isCompactItem(lookup("f")));
+		assertFalse(AlgebraItem.isCompactItem(lookup("f_{2}")));
+	}
 
-    @Test
-    public void testTangentsWhileSwitchingToDescriptionMode() {
-        getApp().setUnrestrictedGraphingConfig();
-        addAvInput("c: Circle((0, 0), 5)");
-        addAvInput("A = (6, 6)");
-        addAvInput("Tangent(A, c)");
+	@Test
+	void testTangentsWhileSwitchingToDescriptionMode() {
+		getApp().setUnrestrictedGraphingConfig();
+		addAvInput("c: Circle((0, 0), 5)");
+		addAvInput("A = (6, 6)");
+		addAvInput("Tangent(A, c)");
 
-        assertTrue(AlgebraItem.shouldShowBothRows(lookup("f"), getSettings().getAlgebra()));
-        assertFalse(AlgebraItem.shouldShowBothRows(lookup("g"), getSettings().getAlgebra()));
-        assertEquals("Tangent\\left(A, c \\right)",
-                AlgebraItem.getPreviewLatexForGeoElement(lookup("f")));
-        assertEquals("Tangent\\left(A, c \\right)",
-                AlgebraItem.getPreviewLatexForGeoElement(lookup("g")));
+		assertTrue(AlgebraItem.shouldShowBothRows(lookup("f"), getSettings().getAlgebra()));
+		assertFalse(AlgebraItem.shouldShowBothRows(lookup("g"), getSettings().getAlgebra()));
+		assertEquals(
+				"Tangent\\left(A, c \\right)", AlgebraItem.getPreviewLatexForGeoElement(lookup("f")));
+		assertEquals(
+				"Tangent\\left(A, c \\right)", AlgebraItem.getPreviewLatexForGeoElement(lookup("g")));
 
-        getSettings().getAlgebra().setStyle(AlgebraStyle.DESCRIPTION);
+		getSettings().getAlgebra().setStyle(AlgebraStyle.DESCRIPTION);
 
-        assertFalse(AlgebraItem.shouldShowBothRows(lookup("f"), getSettings().getAlgebra()));
-        assertFalse(AlgebraItem.shouldShowBothRows(lookup("g"), getSettings().getAlgebra()));
-        assertEquals("\\text{f = Tangent to c through A}",
-                AlgebraItem.getPreviewLatexForGeoElement(lookup("f")));
-        assertEquals("\\text{g = Tangent to c through A}",
-                AlgebraItem.getPreviewLatexForGeoElement(lookup("g")));
-    }
+		assertFalse(AlgebraItem.shouldShowBothRows(lookup("f"), getSettings().getAlgebra()));
+		assertFalse(AlgebraItem.shouldShowBothRows(lookup("g"), getSettings().getAlgebra()));
+		assertEquals(
+				"\\text{f = Tangent to c through A}",
+				AlgebraItem.getPreviewLatexForGeoElement(lookup("f")));
+		assertEquals(
+				"\\text{g = Tangent to c through A}",
+				AlgebraItem.getPreviewLatexForGeoElement(lookup("g")));
+	}
 
-    @Test
-    @Issue("APPS-6636")
-    public void testFractionPreviewKeepsOriginalInput() {
-        getApp().setGraphingConfig();
-        GeoNumeric numeric = addAvInput("0.5");
-        assertThat(AlgebraItem.getPreviewLatexForGeoElement(numeric),
-                equalTo("a\\, = \\,0.5"));
-    }
+	@Test
+	@Issue("APPS-6636")
+	void testFractionPreviewKeepsOriginalInput() {
+		getApp().setGraphingConfig();
+		GeoNumeric numeric = addAvInput("0.5");
+		assertThat(AlgebraItem.getPreviewLatexForGeoElement(numeric), equalTo("a\\, = \\,0.5"));
+	}
 
-    @Test
-    @Issue("APPS-4059")
-    public void testCoordStyleAustrianPreview() {
-        getApp().setGraphingConfig();
-        getSettings().getGeneral().setCoordFormat(CoordinatesFormat.COORD_FORMAT_AUSTRIAN);
-        GeoPoint point = addAvInput("A=(1,2)");
-        assertThat(AlgebraItem.getPreviewLatexForGeoElement(point),
-                endsWith("\\left(1\\;|\\;2 \\right)"));
-    }
+	@Test
+	@Issue("APPS-4059")
+	void testCoordStyleAustrianPreview() {
+		getApp().setGraphingConfig();
+		getSettings().getGeneral().setCoordFormat(CoordinatesFormat.COORD_FORMAT_AUSTRIAN);
+		GeoPoint point = addAvInput("A=(1,2)");
+		assertThat(
+				AlgebraItem.getPreviewLatexForGeoElement(point), endsWith("\\left(1\\;|\\;2 \\right)"));
+	}
 
-    @Test
-    @Issue("APPS-6704")
-    public void testCoordStyleAustrianForSpecialPoints() {
-        getKernel().setPrintDecimals(2);
-        getApp().setGraphingConfig();
-        getSettings().getGeneral().setCoordFormat(CoordinatesFormat.COORD_FORMAT_AUSTRIAN);
+	@Test
+	@Issue("APPS-6704")
+	void testCoordStyleAustrianForSpecialPoints() {
+		getKernel().setPrintDecimals(2);
+		getApp().setGraphingConfig();
+		getSettings().getGeneral().setCoordFormat(CoordinatesFormat.COORD_FORMAT_AUSTRIAN);
 
-        // Add function and create special points
-        GeoFunction function = addAvInput("f(x) = x^2-3x");
-        Objects.requireNonNull(SuggestionIntersectExtremum.get(function)).execute(function);
+		// Add function and create special points
+		GeoFunction function = addAvInput("f(x) = x^2-3x");
+		Objects.requireNonNull(SuggestionIntersectExtremum.get(function)).execute(function);
 
-        // Assert that input row shows the definition
-        // and the output row shows the coordinates in austrian format
-        GeoElement intersectionPoint = lookup("A");
-        assertThat(AlgebraItem.getPreviewLatexForGeoElement(intersectionPoint),
-                equalTo("Intersect\\left(f, xAxis \\right)"));
-        assertThat(AlgebraItem.getOutputTextForGeoElement(intersectionPoint),
-                equalTo("A\\left(0 | 0 \\right)"));
+		// Assert that input row shows the definition
+		// and the output row shows the coordinates in austrian format
+		GeoElement intersectionPoint = lookup("A");
+		assertThat(
+				AlgebraItem.getPreviewLatexForGeoElement(intersectionPoint),
+				equalTo("Intersect\\left(f, xAxis \\right)"));
+		assertThat(
+				AlgebraItem.getOutputTextForGeoElement(intersectionPoint),
+				equalTo("A\\left(0 | 0 \\right)"));
 
-        GeoElement extremumPoint = lookup("C");
-        assertThat(AlgebraItem.getPreviewLatexForGeoElement(extremumPoint),
-                equalTo("C\\, = \\,Extremum\\left(f \\right)"));
-        assertThat(AlgebraItem.getOutputTextForGeoElement(extremumPoint),
-                equalTo("\\left(1.5 | -2.25 \\right)"));
-    }
+		GeoElement extremumPoint = lookup("C");
+		assertThat(
+				AlgebraItem.getPreviewLatexForGeoElement(extremumPoint),
+				equalTo("C\\, = \\,Extremum\\left(f \\right)"));
+		assertThat(
+				AlgebraItem.getOutputTextForGeoElement(extremumPoint),
+				equalTo("\\left(1.5 | -2.25 \\right)"));
+	}
 
-    @Test
-    public void testPreviewLatexForAngleWithGivenSize() {
-        getSettings().getAlgebra().setStyle(AlgebraStyle.DESCRIPTION);
-        add("A=(1, 2)");
-        add("B=(3, 0)");
-        GeoElement angle = add("Angle(A,B,45)");
-        assertThat(AlgebraItem.getPreviewLatexForGeoElement(angle),
-                equalTo("\\text{α = Angle between A, B, A'}"));
-    }
+	@Test
+	void testPreviewLatexForAngleWithGivenSize() {
+		getSettings().getAlgebra().setStyle(AlgebraStyle.DESCRIPTION);
+		add("A=(1, 2)");
+		add("B=(3, 0)");
+		GeoElement angle = add("Angle(A,B,45)");
+		assertThat(
+				AlgebraItem.getPreviewLatexForGeoElement(angle),
+				equalTo("\\text{α = Angle between A, B, A'}"));
+	}
 
-    @Test
-    public void testIsGeoFraction() {
-        GeoElement fraction1 = add("1+1/3");
-        GeoElement fraction2 = add("-5/3");
-        GeoElement solve = add("Solve(2x=3)");
+	@Test
+	void testIsGeoFraction() {
+		GeoElement fraction1 = add("1+1/3");
+		GeoElement fraction2 = add("-5/3");
+		GeoElement solve = add("Solve(2x=3)");
 		assertThat(AlgebraItem.evaluatesToFraction(fraction1), is(true));
 		assertThat(AlgebraItem.evaluatesToFraction(fraction2), is(true));
 		assertThat(AlgebraItem.evaluatesToFraction(solve), is(false));
-    }
+	}
 
-    @Test
-    public void testGetDefinitionLabeled() {
-        GeoElement element = add("A=(1,2)");
-        String definition = AlgebraItem.getDefinitionLatexForGeoElement(element);
-        assertThat(definition, is("A=$point(1,2)"));
-    }
+	@Test
+	void testGetDefinitionLabeled() {
+		GeoElement element = add("A=(1,2)");
+		String definition = AlgebraItem.getDefinitionLatexForGeoElement(element);
+		assertThat(definition, is("A=$point(1,2)"));
+	}
 
-    @Test
-    public void testGetDefinitionUnlabeled() {
-        GeoElement element = add("A=(1,2)");
-        new LabelController().hideLabel(element);
-        String definition = AlgebraItem.getDefinitionLatexForGeoElement(element);
-        assertThat(definition, is("$point(1,2)"));
-    }
+	@Test
+	void testGetDefinitionUnlabeled() {
+		GeoElement element = add("A=(1,2)");
+		new LabelController().hideLabel(element);
+		String definition = AlgebraItem.getDefinitionLatexForGeoElement(element);
+		assertThat(definition, is("$point(1,2)"));
+	}
 
-    @Test
-    public void testGetDefinitionVector() {
-        GeoElement element = add("v=(1,2)");
-        String definition = AlgebraItem.getDefinitionLatexForGeoElement(element);
-        assertThat(definition, is("v=$vector(1,2)"));
-    }
+	@Test
+	void testGetDefinitionVector() {
+		GeoElement element = add("v=(1,2)");
+		String definition = AlgebraItem.getDefinitionLatexForGeoElement(element);
+		assertThat(definition, is("v=$vector(1,2)"));
+	}
 
-    @Test
-    public void limitNMultiplyPiForm() {
-        GeoElement element = add("17!");
-        String definition = element.getAlgebraDescriptionForPreviewOutput();
-        assertThat(definition, is("355687428096000"));
-    }
+	@Test
+	void limitNMultiplyPiForm() {
+		GeoElement element = add("17!");
+		String definition = element.getAlgebraDescriptionForPreviewOutput();
+		assertThat(definition, is("355687428096000"));
+	}
 
-    @Issue({"APPS-6267", "APPS-6353"})
-    @Test
-    public void testIsRationalizableFraction() {
-        assertThat(AlgebraItem.isRationalizableFraction(add("1/3")), equalTo(false));
-        assertThat(AlgebraItem.isRationalizableFraction(add("1 + 3")), equalTo(false));
-        assertThat(AlgebraItem.isRationalizableFraction(add("-3 + 3")), equalTo(false));
-        assertThat(AlgebraItem.isRationalizableFraction(add("1/(3 + 2)")), equalTo(false));
-        assertThat(AlgebraItem.isRationalizableFraction(add("1/sqrt(3)")), equalTo(true));
-        assertThat(AlgebraItem.isRationalizableFraction(add("(1 + sqrt(2))/sqrt(3)")),
-                equalTo(true));
-        assertThat(AlgebraItem.isRationalizableFraction(add("(1 + sqrt(2))/(7 - sqrt(3))")),
-                equalTo(true));
-        assertThat(AlgebraItem.isRationalizableFraction(add("(1 + sqrt(2))/(sqrt(7) - sqrt(3))")),
-                equalTo(false));
-    }
+	@Issue({"APPS-6267", "APPS-6353"})
+	@Test
+	void testIsRationalizableFraction() {
+		assertThat(AlgebraItem.isRationalizableFraction(add("1/3")), equalTo(false));
+		assertThat(AlgebraItem.isRationalizableFraction(add("1 + 3")), equalTo(false));
+		assertThat(AlgebraItem.isRationalizableFraction(add("-3 + 3")), equalTo(false));
+		assertThat(AlgebraItem.isRationalizableFraction(add("1/(3 + 2)")), equalTo(false));
+		assertThat(AlgebraItem.isRationalizableFraction(add("1/sqrt(3)")), equalTo(true));
+		assertThat(AlgebraItem.isRationalizableFraction(add("(1 + sqrt(2))/sqrt(3)")), equalTo(true));
+		assertThat(
+				AlgebraItem.isRationalizableFraction(add("(1 + sqrt(2))/(7 - sqrt(3))")), equalTo(true));
+		assertThat(
+				AlgebraItem.isRationalizableFraction(add("(1 + sqrt(2))/(sqrt(7) - sqrt(3))")),
+				equalTo(false));
+	}
 
-    @Test
-    @Issue("APPS-6366")
-    public void testBuildPlainTextItemSimple() {
-        GeoElement point = add("A_{1}=1+i");
-        IndexHTMLBuilder builder = new IndexHTMLBuilder(false);
-        AlgebraItem.buildPlainTextItemSimple(point, builder);
-        assertEquals("A<sub><font size=\"-1\">1</font></sub> = 1 + &#943;",
-                builder.toString());
-    }
+	@Test
+	@Issue("APPS-6366")
+	void testBuildPlainTextItemSimple() {
+		GeoElement point = add("A_{1}=1+i");
+		IndexHTMLBuilder builder = new IndexHTMLBuilder(false);
+		AlgebraItem.buildPlainTextItemSimple(point, builder);
+		assertEquals("A<sub><font size=\"-1\">1</font></sub> = 1 + &#943;", builder.toString());
+	}
 }

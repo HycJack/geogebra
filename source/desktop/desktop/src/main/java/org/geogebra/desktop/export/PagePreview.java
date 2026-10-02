@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -31,6 +31,7 @@ import javax.swing.border.MatteBorder;
 
 import org.geogebra.common.kernel.arithmetic.MyDouble;
 import org.geogebra.common.util.DoubleUtil;
+import org.geogebra.common.util.debug.Log;
 import org.geogebra.desktop.euclidian.EuclidianViewD;
 import org.geogebra.desktop.main.AppD;
 
@@ -46,12 +47,11 @@ class PagePreview extends JPanel {
 	protected double scale = 1.0;
 	protected BufferedImage img;
 
-	private int targetIndex;
+	private final int targetIndex;
 
-	private AppD app;
+	private final AppD app;
 
-	public PagePreview(Printable target, PageFormat format, int pageIndex,
-			int targetIndex, AppD app) {
+	PagePreview(Printable target, PageFormat format, int pageIndex, int targetIndex, AppD app) {
 		this.target = target;
 		this.format = format;
 		this.app = app;
@@ -65,22 +65,22 @@ class PagePreview extends JPanel {
 		// update();
 	}
 
-	public int getTarget() {
+	int getTarget() {
 		return targetIndex;
 	}
 
-	public void setPageFormat(PageFormat format) {
+	void setPageFormat(PageFormat format) {
 		this.format = format;
 		m_w = (int) (format.getWidth() * scale);
 		m_h = (int) (format.getHeight() * scale);
 		update();
 	}
 
-	public PageFormat getPageFormat() {
+	PageFormat getPageFormat() {
 		return format;
 	}
 
-	public void setScale(int scale) {
+	void setScale(int scale) {
 		double newScale = scale / 100.0;
 		if (MyDouble.exactEqual(newScale, this.scale)) {
 			this.scale = newScale;
@@ -93,8 +93,7 @@ class PagePreview extends JPanel {
 	@Override
 	public Dimension getPreferredSize() {
 		Insets ins = getInsets();
-		return new Dimension(m_w + ins.left + ins.right,
-				m_h + ins.top + ins.bottom);
+		return new Dimension(m_w + ins.left + ins.right, m_h + ins.top + ins.bottom);
 	}
 
 	@Override
@@ -120,8 +119,7 @@ class PagePreview extends JPanel {
 			String scaleStr = null;
 			if (!(target instanceof EuclidianViewD)) {
 
-				int height = EuclidianViewD.printTitle(g2, scaleStr,
-						this.format, this.app);
+				int height = EuclidianViewD.printTitle(g2, scaleStr, this.format, this.app);
 				g2.setTransform(new AffineTransform());
 				if (!DoubleUtil.isEqual(scale, 1.0)) {
 					g2.scale(scale, scale);
@@ -135,17 +133,15 @@ class PagePreview extends JPanel {
 			}
 			target.print(g2, format, pageIndex);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.debug(e);
 		}
 	}
 
-	public void update() {
+	void update() {
 		try {
 			updateBufferedImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} catch (OutOfMemoryError e) {
-			e.printStackTrace();
+		} catch (Exception | OutOfMemoryError e) {
+			Log.debug(e);
 		}
 		repaint();
 	}

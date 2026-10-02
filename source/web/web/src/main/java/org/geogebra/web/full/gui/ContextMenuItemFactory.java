@@ -18,8 +18,6 @@ package org.geogebra.web.full.gui;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.draw.HasTextFormat;
 import org.geogebra.common.main.App;
 import org.geogebra.web.full.gui.menubar.MainMenu;
@@ -32,6 +30,7 @@ import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.main.AppW;
 import org.gwtproject.core.client.Scheduler.ScheduledCommand;
 import org.gwtproject.resources.client.ResourcePrototype;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Factory to create popup menus.
@@ -78,8 +77,8 @@ public class ContextMenuItemFactory {
 	 * @param submenu Submenu if any.
 	 * @return a new AriaMenuItem instance.
 	 */
-	public AriaMenuItem newAriaMenuItem(String text,
-			@CheckForNull ResourcePrototype icon, AriaMenuBar submenu) {
+	public AriaMenuItem newAriaMenuItem(
+			String text, @Nullable ResourcePrototype icon, AriaMenuBar submenu) {
 		return new AriaMenuItem(text, icon, submenu);
 	}
 
@@ -103,8 +102,8 @@ public class ContextMenuItemFactory {
 	 * @param command command
 	 * @return the new checkmark capable item.
 	 */
-	public GCheckmarkMenuItem newCheckmarkMenuItem(IconSpec icon,
-			String title, boolean checked, ScheduledCommand command) {
+	public GCheckmarkMenuItem newCheckmarkMenuItem(
+			IconSpec icon, String title, boolean checked, ScheduledCommand command) {
 		return new GCheckmarkMenuItem(icon, title, checked, command);
 	}
 }

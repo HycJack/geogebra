@@ -61,22 +61,20 @@ public class MyXMLioW extends MyXMLio {
 	@Override
 	protected void parseXML(MyXMLHandler xmlHandler, XMLStream stream)
 			throws IOException, XMLParseException {
-		xmlParser.parse(xmlHandler,
-				new StringReader(((XMLStreamStringW) stream).getString()));
+		xmlParser.parse(xmlHandler, new StringReader(((XMLStreamStringW) stream).getString()));
 	}
 
-	protected static class XMLStreamStringW implements XMLStream {
+	static class XMLStreamStringW implements XMLStream {
 
-		private String str;
+		private final String str;
 
-		public XMLStreamStringW(String str) {
+		XMLStreamStringW(String str) {
 			this.str = str;
 		}
 
-		public String getString() {
+		String getString() {
 			return str;
 		}
-
 	}
 
 	@Override
@@ -93,7 +91,5 @@ public class MyXMLioW extends MyXMLio {
 		((AppW) app).resetPerspectiveParam();
 		ArchiveLoader view = ((AppW) app).getArchiveLoader();
 		view.processBase64String(base64);
-
 	}
-
 }

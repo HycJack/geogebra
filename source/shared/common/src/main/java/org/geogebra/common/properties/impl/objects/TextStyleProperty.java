@@ -22,6 +22,8 @@ import java.util.Objects;
 
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
+import org.geogebra.common.properties.IconAssociatedProperty;
+import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.ToggleableIconProperty;
 import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
 import org.geogebra.common.properties.impl.collections.AbstractPropertyCollection;
@@ -31,8 +33,10 @@ import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropert
 /**
  * {@code Property} responsible for setting text style,
  * including bold, italic, and serif styles independently.
+ * Implements {@code IconAssociatedProperty} to provide an icon resource.
  */
-public class TextStyleProperty extends AbstractPropertyCollection<ToggleableIconProperty> {
+public class TextStyleProperty extends AbstractPropertyCollection<ToggleableIconProperty>
+		implements IconAssociatedProperty {
 	/**
 	 * Constructs the property for the given elements.
 	 * @param propertiesFactory properties factory for creating property facades for the given list
@@ -43,25 +47,38 @@ public class TextStyleProperty extends AbstractPropertyCollection<ToggleableIcon
 	 * elements
 	 */
 	public TextStyleProperty(
-			GeoElementPropertiesFactory propertiesFactory, Localization localization,
-			List<GeoElement> elements) throws NotApplicablePropertyException {
+			GeoElementPropertiesFactory propertiesFactory,
+			Localization localization,
+			List<GeoElement> elements)
+			throws NotApplicablePropertyException {
 		super(localization, "Properties.TextStyle");
-		setProperties(Arrays.stream(new ToggleableIconProperty[]{
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new BoldProperty(localization, element),
-						ToggleableIconPropertyListFacade::new),
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new ItalicProperty(localization, element),
-						ToggleableIconPropertyListFacade::new),
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new UnderlineProperty(localization, element),
-						ToggleableIconPropertyListFacade::new),
-				propertiesFactory.createOptionalPropertyFacade(elements,
-						element -> new SerifProperty(localization, element),
-						ToggleableIconPropertyListFacade::new)
-		}).filter(Objects::nonNull).toArray(ToggleableIconProperty[]::new));
+		setProperties(Arrays.stream(new ToggleableIconProperty[] {
+					propertiesFactory.createOptionalPropertyFacade(
+							elements,
+							element -> new BoldProperty(localization, element),
+							ToggleableIconPropertyListFacade::new),
+					propertiesFactory.createOptionalPropertyFacade(
+							elements,
+							element -> new ItalicProperty(localization, element),
+							ToggleableIconPropertyListFacade::new),
+					propertiesFactory.createOptionalPropertyFacade(
+							elements,
+							element -> new UnderlineProperty(localization, element),
+							ToggleableIconPropertyListFacade::new),
+					propertiesFactory.createOptionalPropertyFacade(
+							elements,
+							element -> new SerifProperty(localization, element),
+							ToggleableIconPropertyListFacade::new)
+				})
+				.filter(Objects::nonNull)
+				.toArray(ToggleableIconProperty[]::new));
 		if (getProperties().length == 0) {
 			throw new NotApplicablePropertyException(elements.get(0));
 		}
+	}
+
+	@Override
+	public PropertyResource getIcon() {
+		return PropertyResource.ICON_TEXT_STYLE;
 	}
 }

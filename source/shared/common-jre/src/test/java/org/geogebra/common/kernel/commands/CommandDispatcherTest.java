@@ -31,21 +31,21 @@ import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CommandDispatcherTest extends BaseAppTestSetup {
+class CommandDispatcherTest extends BaseAppTestSetup {
 
 	@BeforeEach
-	public void setup() {
+	void setup() {
 		setupClassicApp();
 	}
 
 	@Test
 	void testAllCommandsInSwitch() {
 		CommandDispatcher dispatcher = new CommandDispatcher3DJre(getKernel());
-		List<Commands> undef = Arrays.stream(Commands.values()).filter(cmd ->
-			dispatcher.commandTableSwitch(
-					new Command(getKernel(), cmd.name(), false)) == null).toList();
+		List<Commands> undef = Arrays.stream(Commands.values())
+				.filter(cmd ->
+						dispatcher.commandTableSwitch(new Command(getKernel(), cmd.name(), false)) == null)
+				.toList();
 		// Evaluate is an internal CAS command, the others are unreleased
 		assertEquals(List.of(ImplicitSurface, Polyhedron, Evaluate, SolveQuartic), undef);
 	}
-
 }

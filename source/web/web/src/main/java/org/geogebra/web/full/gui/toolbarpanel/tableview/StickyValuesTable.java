@@ -17,23 +17,26 @@
 package org.geogebra.web.full.gui.toolbarpanel.tableview;
 
 import java.util.List;
-
-import javax.annotation.CheckForNull;
+import java.util.Objects;
 
 import org.geogebra.common.awt.GPoint;
 import org.geogebra.common.gui.view.table.TableUtil;
 import org.geogebra.common.gui.view.table.TableValuesListener;
 import org.geogebra.common.gui.view.table.TableValuesModel;
+import org.geogebra.common.gui.view.table.TableValuesStatisticsViewModel.Content;
 import org.geogebra.common.gui.view.table.TableValuesView;
 import org.geogebra.common.gui.view.table.keyboard.TableValuesKeyboardNavigationController;
 import org.geogebra.common.gui.view.table.keyboard.TableValuesKeyboardNavigationControllerDelegate;
 import org.geogebra.common.kernel.geos.GeoFunctionable;
 import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
+import org.geogebra.common.states.State;
 import org.geogebra.common.util.AttributedString;
 import org.geogebra.web.full.css.MaterialDesignResources;
+import org.geogebra.web.full.gui.components.sideSheet.SideSheetData;
 import org.geogebra.web.full.gui.toolbarpanel.ContextMenuTV;
 import org.geogebra.web.full.gui.toolbarpanel.DefineFunctionsDialogTV;
+import org.geogebra.web.full.gui.toolbarpanel.StatsSideSheetTV;
 import org.geogebra.web.full.gui.toolbarpanel.TVRowData;
 import org.geogebra.web.full.main.AppWFull;
 import org.geogebra.web.full.util.StickyTable;
@@ -41,6 +44,7 @@ import org.geogebra.web.html5.gui.Shades;
 import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.gui.util.MathKeyboardListener;
 import org.geogebra.web.html5.gui.view.button.StandardButton;
+import org.geogebra.web.html5.util.CopyPasteW;
 import org.geogebra.web.html5.util.TestHarness;
 import org.geogebra.web.shared.components.dialog.DialogData;
 import org.gwtproject.cell.client.Cell;
@@ -54,21 +58,24 @@ import org.gwtproject.user.cellview.client.SafeHtmlHeader;
 import org.gwtproject.user.client.DOM;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
+import org.jspecify.annotations.Nullable;
 
+import elemental2.dom.KeyboardEvent;
 import elemental2.dom.NodeList;
 import jsinterop.base.Js;
 
 /**
  * Sticky table of values.
  */
-public class StickyValuesTable extends StickyTable<TVRowData> implements TableValuesListener {
+public final class StickyValuesTable extends StickyTable<TVRowData> implements TableValuesListener {
 
 	private static final int CONTEXT_MENU_OFFSET = 4; // distance from three-dot button
 	private static final int LINE_HEIGHT = 56;
-	protected final TableValuesModel tableModel;
-	protected final TableValuesView view;
+	final TableValuesModel tableModel;
+	private final TableValuesView view;
 	private final AppWFull app;
 	private final HeaderCell headerCell = new HeaderCell();
+	private final State.@Nullable Subscription contentSubscription;
 	private boolean transitioning;
 	private ContextMenuTV contextMenu;
 	private final TableEditor editor;
@@ -79,10 +86,24 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 	private final boolean shadedColumns;
 	DefineFunctionsDialogTV defFuncDialog;
 	private final TableValuesKeyboardNavigationController controller;
+	private Element focusedNonEditableCell;
 	GPoint lastEdit = null;
+	StatsSideSheetTV sideSheetTV;
 
+	/**
+	 * @return the keyboard listener of the editor used for cell editing.
+	 */
 	public MathKeyboardListener getKeyboardListener() {
 		return editor.getKeyboardListener();
+	}
+
+	/**
+	 * Cancel existing subscriptions.
+	 */
+	public void dispose() {
+		if (contentSubscription != null) {
+			contentSubscription.cancel();
+		}
 	}
 
 	private static class HeaderCell {
@@ -96,8 +117,8 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 			main.setStyleName("content");
 			main.addStyleName(Shades.NEUTRAL_900.getFgColName());
 			main.add(new Label("%s"));
-			StandardButton menuButton = new StandardButton(MaterialDesignResources.INSTANCE
-					.more_vert_black(), 24);
+			StandardButton menuButton =
+					new StandardButton(MaterialDesignResources.INSTANCE.more_vert_black(), 24);
 			TestHarness.setAttr(menuButton, "btn_tvHeader3dot");
 			main.add(menuButton);
 			value = main.getElement().getString();
@@ -132,6 +153,13 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 				tableModel.registerListener(this);
 			}
 		});
+		State<Content> contentState = view.getStatisticsViewModel().getContent();
+		contentSubscription = contentState.subscribe(content -> {
+			if (sideSheetTV == null) {
+				sideSheetTV = new StatsSideSheetTV(app, new SideSheetData(""));
+			}
+			sideSheetTV.update(content, view.getStatisticsViewModel());
+		});
 		this.shadedColumns = shadedColumns;
 		editor = new TableEditor(this, app);
 		controller = new TableValuesKeyboardNavigationController(
@@ -139,50 +167,89 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 				new TableValuesKeyboardNavigationControllerDelegate() {
 					@Override
 					public void focusCell(int row, int column) {
-						lastEdit = new GPoint(column, row);
-						editor.startEditing(row, column, false);
+						app.closePopups();
+						StickyValuesTable.this.focusCell(row, column, false);
 					}
 
 					@Override
 					public void refocusCell(int row, int column) {
-						editor.startEditing(row, column, true);
+						StickyValuesTable.this.focusCell(row, column, true);
 					}
 
 					@Override
 					public void unfocusCell(int row, int column, boolean isTransferringFocus) {
 						editor.stopEditing();
+						unfocusNonEditableCell();
 					}
 
 					@Override
-					public @CheckForNull String getCellEditorContent(int row, int column) {
-						return editor.getText();
+					public @Nullable String getCellEditorContent(int row, int column) {
+						return editor.getText(row, column);
 					}
 
 					@Override
 					public void invalidCellContentDetected(int row, int column) {
 						// not needed
 					}
+
+					@Override
+					public void showContextMenu(int column) {
+						if (tableModel.getColumnCount() > column) {
+							int selRow = controller.getSelectedRow();
+							int selCol = controller.getSelectedColumn();
+							Element source = getCellIfExists(selRow, selCol);
+							if (source == null) {
+								return;
+							}
+							contextMenu =
+									new ContextMenuTV(app, view, column, () -> controller.select(selRow, selCol));
+							contextMenu.show(source, 0, source.getClientHeight() + CONTEXT_MENU_OFFSET);
+						}
+					}
+
+					@Override
+					public void copyContent(int row, int column) {
+						CopyPasteW.writeToExternalClipboardWithFallback(
+								getCellEditorContent(row, column), null);
+					}
 				});
 		editor.controller = controller;
 		reset();
 		addHeadClickHandler((row, column, evt) -> {
 			Element el = Js.uncheckedCast(evt.target);
-			if (el != null && (el.hasClassName("button") || el.getParentNode() != null
-					&& el.getParentElement().hasClassName("button"))) {
+			if (el != null
+					&& (el.hasClassName("button")
+							|| el.getParentNode() != null && el.getParentElement().hasClassName("button"))) {
 				onHeaderClick(el, column);
 			}
 			return false;
 		});
 		addBodyPointerDownHandler((row, column, evt) -> {
-			if (row <= tableModel.getRowCount()
-					&& column <= tableModel.getColumnCount()) {
+			if (row <= tableModel.getRowCount() && column <= tableModel.getColumnCount()) {
 				if (column == tableModel.getColumnCount() || isColumnEditable(column)) {
 					controller.select(row, column);
 					editor.adjustCursor(evt);
 					return true;
 				}
+				if (row < tableModel.getRowCount() && column < tableModel.getColumnCount()) {
+					controller.deselect();
+				}
 			}
 			return false;
+		});
+		addBodyKeyDownHandler((row, column, evt) -> {
+			Element cell = getCell(row, column);
+			if (!cell.hasClassName("keyboardFocusedCell")) {
+				return false;
+			}
+			TableValuesKeyboardNavigationController.Key key =
+					getNavigationKey(Js.<KeyboardEvent>uncheckedCast(evt).key);
+			if (key == null) {
+				return false;
+			}
+			evt.stopPropagation();
+			controller.keyPressed(key);
+			return true;
 		});
 		addMouseOverHandler((row, column, evt) -> {
 			Element el = Js.uncheckedCast(evt.target);
@@ -206,11 +273,91 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 		});
 	}
 
+	private void focusCell(int row, int column, boolean refocus) {
+		if (!isSelectedCell(row, column)) {
+			return;
+		}
+		if (controller.isColumnEditable(column)) {
+			unfocusNonEditableCell();
+			lastEdit = new GPoint(column, row);
+			editor.startEditing(row, column, refocus);
+		} else {
+			editor.stopEditing();
+			focusNonEditableCell(row, column);
+		}
+	}
+
+	private void focusNonEditableCell(int row, int column) {
+		app.invokeLater(() -> {
+			if (!isSelectedCell(row, column)) {
+				return;
+			}
+			if (row < 0
+					|| column < 0
+					|| row >= tableModel.getRowCount()
+					|| column >= tableModel.getColumnCount()) {
+				controller.deselect();
+				return;
+			}
+			if (controller.isColumnEditable(column)) {
+				controller.select(row, column);
+				return;
+			}
+			Element cell = getCellIfExists(row, column);
+			if (cell == null) {
+				return;
+			}
+			unfocusNonEditableCell();
+			focusedNonEditableCell = cell;
+			focusedNonEditableCell.setTabIndex(-1);
+			focusedNonEditableCell.addClassName("keyboardFocusedCell");
+			scrollIntoView(focusedNonEditableCell);
+			focusedNonEditableCell.focus();
+		});
+	}
+
+	private boolean isSelectedCell(int row, int column) {
+		return row == controller.getSelectedRow() && column == controller.getSelectedColumn();
+	}
+
+	@Nullable Element getCellIfExists(int row, int column) {
+		if (row < 0
+				|| column < 0
+				|| row >= getTable().getRowCount()
+				|| column >= getTable().getColumnCount()) {
+			return null;
+		}
+		return getCell(row, column);
+	}
+
+	private void unfocusNonEditableCell() {
+		if (focusedNonEditableCell != null) {
+			focusedNonEditableCell.removeClassName("keyboardFocusedCell");
+			focusedNonEditableCell.removeAttribute("tabindex");
+			focusedNonEditableCell = null;
+		}
+	}
+
+	private TableValuesKeyboardNavigationController.Key getNavigationKey(String key) {
+		switch (key) {
+			case "ArrowLeft":
+				return TableValuesKeyboardNavigationController.Key.ARROW_LEFT;
+			case "ArrowRight":
+				return TableValuesKeyboardNavigationController.Key.ARROW_RIGHT;
+			case "ArrowUp":
+				return TableValuesKeyboardNavigationController.Key.ARROW_UP;
+			case "ArrowDown":
+				return TableValuesKeyboardNavigationController.Key.ARROW_DOWN;
+			default:
+				return null;
+		}
+	}
+
 	@Override
 	public void openDefineFunctions() {
 		if (defFuncDialog == null) {
 			DialogData data = new DialogData("DefineFunctions", "Cancel", "OK");
-			defFuncDialog = new DefineFunctionsDialogTV(app, data);
+			defFuncDialog = new DefineFunctionsDialogTV(app, data, () -> controller.select(0, 0));
 		}
 		defFuncDialog.setLabels();
 		defFuncDialog.show();
@@ -225,7 +372,7 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 	}
 
 	private void onHeaderClick(Element source, int column) {
-		contextMenu = new ContextMenuTV(app, view, column);
+		contextMenu = new ContextMenuTV(app, view, column, null);
 		contextMenu.show(source, 0, source.getClientHeight() + CONTEXT_MENU_OFFSET);
 	}
 
@@ -275,8 +422,7 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 			} else {
 				if (!el.hasAttribute("data-listeners")) {
 					el.setAttribute("data-listeners", "true");
-					Dom.addEventListener(el, "animationend",
-							e -> removeAnimationStyleName(el, className));
+					Dom.addEventListener(el, "animationend", e -> removeAnimationStyleName(el, className));
 				}
 			}
 			columnsChange = 0;
@@ -288,14 +434,14 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 		el.removeClassName(styleName);
 	}
 
-	protected void addColumn() {
+	private void addColumn() {
 		addColumn(tableModel.getColumnCount() - 1);
 	}
 
 	/**
 	 * Decreases the number of columns by removing the last column.
 	 */
-	protected void decreaseColumnNumber() {
+	private void decreaseColumnNumber() {
 		// In AbstractCellTable model each column remembers its index
 		// so deleting last column and let dataProvider do the rest we need.
 		getTable().removeColumn(getTable().getColumnCount() - 1);
@@ -377,8 +523,10 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 			int rowsDeleted = elems.getLength() - 2 - tableModel.getRowCount();
 			for (int i = 1; i <= Math.abs(rowsDeleted); i++) {
 				elemental2.dom.Element e = elems.getAt(elems.getLength() - i);
-				elemental2.dom.Element parent = e.parentElement;
-				parent.classList.add("deleteRowAut");
+				if (e != null) {
+					elemental2.dom.Element parent = Objects.requireNonNull(e.parentElement);
+					parent.classList.add("deleteRowAut");
+				}
 			}
 		}
 		rowsChange = 0;
@@ -408,7 +556,7 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 
 		for (int i = 0; i < elems.getLength(); i++) {
 			elemental2.dom.Element e = elems.getAt(i);
-			e.classList.add("deleteCol");
+			Objects.requireNonNull(e).classList.add("deleteCol");
 		}
 	}
 
@@ -416,6 +564,8 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 	protected void reset() {
 		super.reset();
 		transitioning = false;
+		app.invokeLater(
+				() -> controller.select(controller.getSelectedRow(), controller.getSelectedColumn()));
 	}
 
 	/**
@@ -464,8 +614,7 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 	}
 
 	@Override
-	public void notifyColumnRemoved(TableValuesModel model,
-			GeoEvaluatable evaluatable, int column) {
+	public void notifyColumnRemoved(TableValuesModel model, GeoEvaluatable evaluatable, int column) {
 		if (column != tableModel.getColumnCount()) {
 			deleteColumn(column);
 			removedColumnByUser = column;
@@ -476,14 +625,13 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 	}
 
 	@Override
-	public void notifyColumnChanged(TableValuesModel model, GeoEvaluatable evaluatable,
-			int column) {
+	public void notifyColumnChanged(TableValuesModel model, GeoEvaluatable evaluatable, int column) {
 		reset();
 	}
 
 	@Override
-	public void notifyCellChanged(TableValuesModel model, GeoEvaluatable evaluatable, int column,
-			int row) {
+	public void notifyCellChanged(
+			TableValuesModel model, GeoEvaluatable evaluatable, int column, int row) {
 		reset();
 	}
 
@@ -519,8 +667,8 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 	}
 
 	@Override
-	public void notifyColumnHeaderChanged(TableValuesModel model, GeoEvaluatable evaluatable,
-			int column) {
+	public void notifyColumnHeaderChanged(
+			TableValuesModel model, GeoEvaluatable evaluatable, int column) {
 		refresh();
 	}
 
@@ -542,8 +690,7 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 		if (top - headerHeight < verticalScrollPosition) {
 			getScroller().setVerticalScrollPosition(top - headerHeight);
 		} else if (top - verticalScrollPosition > getScroller().getOffsetHeight() - headerHeight) {
-			getScroller().setVerticalScrollPosition(
-					top - getScroller().getOffsetHeight() + headerHeight);
+			getScroller().setVerticalScrollPosition(top - getScroller().getOffsetHeight() + headerHeight);
 		}
 
 		int left = cell.getOffsetLeft();
@@ -554,15 +701,15 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 		if (left < horizontalScrollPosition) {
 			getScroller().setHorizontalScrollPosition(left);
 		} else if (left + cellWidth > horizontalScrollPosition + scrollerContentWidth) {
-			getScroller().setHorizontalScrollPosition(left +  cellWidth - scrollerContentWidth);
+			getScroller().setHorizontalScrollPosition(left + cellWidth - scrollerContentWidth);
 		}
 	}
 
-	private class DataTableSafeHtmlColumn extends Column<TVRowData, SafeHtml> {
+	private final class DataTableSafeHtmlColumn extends Column<TVRowData, SafeHtml> {
 
 		private final int col;
 
-		public DataTableSafeHtmlColumn(int col) {
+		private DataTableSafeHtmlColumn(int col) {
 			super(new SafeHtmlCell());
 			this.col = col;
 		}
@@ -598,5 +745,4 @@ public class StickyValuesTable extends StickyTable<TVRowData> implements TableVa
 	public void selectFirstCell() {
 		controller.select(0, 0);
 	}
-
 }

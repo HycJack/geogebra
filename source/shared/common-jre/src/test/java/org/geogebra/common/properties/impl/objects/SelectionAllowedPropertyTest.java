@@ -17,24 +17,37 @@
 package org.geogebra.common.properties.impl.objects;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.common.main.SelectionManager;
 import org.geogebra.test.BaseAppTestSetup;
+import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SelectionAllowedPropertyTest extends BaseAppTestSetup {
+class SelectionAllowedPropertyTest extends BaseAppTestSetup {
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@Test
-	public void testApplicable() {
+	void testApplicable() {
 		GeoElement point = evaluateGeoElement("(1, 1)");
-		assertDoesNotThrow(() ->
-				new SelectionAllowedProperty(getLocalization(), point));
+		assertDoesNotThrow(() -> new SelectionAllowedProperty(getLocalization(), point));
+	}
+
+	@Test
+	@Issue("APPS-7768")
+	void testDisablingSelectionAllowedDoesNotDeselectSelectedGeo() {
+		SelectionManager selectionManager = getApp().getSelectionManager();
+		GeoElement point = evaluateGeoElement("(6, 7)");
+		selectionManager.addSelectedGeo(point);
+
+		new SelectionAllowedProperty(getLocalization(), point).setValue(false);
+		assertTrue(selectionManager.getSelectedGeos().contains(point));
 	}
 }

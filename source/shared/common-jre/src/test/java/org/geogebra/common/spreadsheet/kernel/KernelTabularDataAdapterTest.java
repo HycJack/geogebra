@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -18,46 +18,55 @@ package org.geogebra.common.spreadsheet.kernel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
-import org.junit.Before;
-import org.junit.Test;
+import org.geogebra.common.spreadsheet.core.TabularData;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class KernelTabularDataAdapterTest extends BaseUnitTest {
+class KernelTabularDataAdapterTest extends BaseUnitTest {
 
 	private KernelTabularDataAdapter tabularData;
 
-	@Before
-	public void setupData() {
+	@BeforeEach
+	void setupData() {
 		tabularData = new KernelTabularDataAdapter(getApp());
 		getKernel().attach(tabularData);
 	}
 
 	@Test
-	public void numberOfRowsShouldAdjust() {
+	void numberOfRowsShouldAdjust() {
 		add("A987=1");
 		assertThat(tabularData.numberOfRows(), equalTo(987));
 	}
 
 	@Test
-	public void numberOfColumnsShouldAdjust() {
+	void numberOfColumnsShouldAdjust() {
 		add("ZZ1=1");
 		assertThat(tabularData.numberOfColumns(), equalTo(702));
 	}
 
 	@Test
-	public void testContentSerialization() {
+	void testContentSerialization() {
 		add("A1:x=y");
+		add("A2:Slope(A1)");
 		// this should be the default string template, not the one for editor
-		assertThat(tabularData.serializeContentAt(0, 0), equalTo("x = y"));
+		assertThat(
+				tabularData.serializeContentAt(0, 0, TabularData.SerializationFormat.FORMULAS),
+				equalTo("x = y"));
+		assertThat(
+				tabularData.serializeContentAt(1, 0, TabularData.SerializationFormat.FORMULAS),
+				equalTo("Slope(A1)"));
+		assertThat(
+				tabularData.serializeContentAt(1, 0, TabularData.SerializationFormat.VALUES), equalTo("1"));
 	}
 
 	@Test
-	public void updateShouldNotChangeStyle() {
+	void updateShouldNotChangeStyle() {
 		GeoElementND a1 = add("A1:x=y");
 		assertTrue(a1.isEuclidianVisible());
 		tabularData.update(a1.toGeoElement());
@@ -65,7 +74,7 @@ public class KernelTabularDataAdapterTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void columnOperationsShouldUpdateRange() {
+	void columnOperationsShouldUpdateRange() {
 		add("A1=1");
 		add("A2=2");
 		add("A3=3");
@@ -77,7 +86,7 @@ public class KernelTabularDataAdapterTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void rowOperationsShouldUpdateRange() {
+	void rowOperationsShouldUpdateRange() {
 		add("A1=1");
 		add("A2=2");
 		add("A3=3");

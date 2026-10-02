@@ -18,26 +18,24 @@ package org.geogebra.common.util;
 
 import java.util.HashMap;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.awt.MyImage;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class ImageManagerCommon extends ImageManager {
 
 	private final HashMap<String, MyImage> externalImages = new HashMap<>();
 
 	@Override
-	public void addExternalImage(String filename0, String urlBase64) {
+	public void addExternalImage(String filename0, String urlBase64) {}
+
+	@Override
+	public void addExternalImage(@NonNull MyImage image, @NonNull String path) {
+		externalImages.put(path, image);
 	}
 
 	@Override
-	public void addExternalImage(@Nonnull MyImage image, @Nonnull String path) {
-		externalImages.put(path, image);
-	}
-	
-	@Override
-	public @CheckForNull MyImage getExternalImage(@Nonnull String path) {
+	public @Nullable MyImage getExternalImage(@NonNull String path) {
 		return externalImages.get(path);
 	}
 }

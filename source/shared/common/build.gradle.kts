@@ -5,7 +5,6 @@ import java.util.*
 plugins {
     alias(libs.plugins.geogebra.java.library)
     alias(libs.plugins.geogebra.pmd)
-    alias(libs.plugins.geogebra.checkstyle)
     alias(libs.plugins.geogebra.spotbugs)
     alias(libs.plugins.geogebra.javacc)
 }
@@ -21,7 +20,7 @@ dependencies {
     api(project(":canvas-base"))
     api(libs.apache.math)
     api(libs.spotbugs.annotations)
-    api(libs.findbugs.annotations)
+    api(libs.jspecify.annotations)
     implementation(libs.j2objc.annotations)
 }
 

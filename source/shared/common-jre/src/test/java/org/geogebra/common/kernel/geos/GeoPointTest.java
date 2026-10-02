@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -20,15 +20,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.AppCommonFactory;
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.jre.headless.AppCommon;
 import org.geogebra.common.main.settings.CoordinatesFormat;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GeoPointTest extends BaseUnitTest {
+class GeoPointTest extends BaseUnitTest {
 
 	@Override
 	public AppCommon createAppCommon() {
@@ -36,42 +36,42 @@ public class GeoPointTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testDefinitionForEditor() {
+	void testDefinitionForEditor() {
 		getApp().setGraphingConfig();
 		GeoPoint point = addAvInput("A=(1,2)");
 		assertThat(point.getDefinitionForEditor(), equalTo("A=$point(1,2)"));
 	}
 
 	@Test
-	public void testDefinitionForEditorAustrianCoords() {
+	void testDefinitionForEditorAustrianCoords() {
 		getSettings().getGeneral().setCoordFormat(CoordinatesFormat.COORD_FORMAT_AUSTRIAN);
 		GeoPoint point = getKernel().getAlgoDispatcher().point(1, 2, false);
 		assertThat(point.getDefinitionForEditor(), endsWith("(1,2)"));
 	}
 
 	@Test
-	public void testMovedPointPrintsCorrectAmountOfDecimals1() {
+	void testMovedPointPrintsCorrectAmountOfDecimals1() {
 		getKernel().setPrintDecimals(5);
 		GeoPoint point = getKernel().getAlgoDispatcher().point(1.23456, 2, false);
 		assertThat(GeoPoint.pointMovedAural(getLocalization(), point), containsString("1.23456 "));
 	}
 
 	@Test
-	public void testMovedPointPrintsCorrectAmountOfDecimals2() {
+	void testMovedPointPrintsCorrectAmountOfDecimals2() {
 		getKernel().setPrintDecimals(3);
 		GeoPoint point = getKernel().getAlgoDispatcher().point(1.23456, 2, false);
 		assertThat(GeoPoint.pointMovedAural(getLocalization(), point), containsString("1.235 "));
 	}
 
 	@Test
-	public void testMovedPointPrintsCorrectAmountOfDecimals3() {
+	void testMovedPointPrintsCorrectAmountOfDecimals3() {
 		getKernel().setPrintDecimals(4);
 		GeoPoint point = getKernel().getAlgoDispatcher().point(1.23456, 2, false);
 		assertThat(GeoPoint.pointMovedAural(getLocalization(), point), containsString("1.2346 "));
 	}
 
 	@Test
-	public void testMoveGrid() {
+	void testMoveGrid() {
 		add("grid=Sequence(Sequence[(i, j), i, 0, 10],j,0,10)");
 		GeoPoint pt = add("A=Point(grid)");
 		pt.setCoords(4, 4, 1);

@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -24,7 +24,7 @@ import org.geogebra.web.html5.euclidian.EuclidianControllerW;
 /**
  * euclidian controller for 2D view with 3D geos
  */
-public class EuclidianControllerFor3DW extends EuclidianControllerW {
+public final class EuclidianControllerFor3DW extends EuclidianControllerW {
 
 	/**
 	 * @param kernel
@@ -38,5 +38,4 @@ public class EuclidianControllerFor3DW extends EuclidianControllerW {
 	protected EuclidianControllerCompanion newCompanion() {
 		return new EuclidianControllerFor3DCompanion(this);
 	}
-
 }

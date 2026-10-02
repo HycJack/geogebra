@@ -22,7 +22,7 @@ import org.geogebra.web.html5.gui.util.Dom;
 
 import elemental2.dom.KeyboardEvent;
 
-public class TextFieldFocusablePart extends FocusablePartW {
+public final class TextFieldFocusablePart extends FocusablePartW {
 	/**
 	 * Creates a focusable part for the given widget.
 	 * @param textField the underlying {@link AutoCompleteTextFieldW} to be focused
@@ -30,8 +30,11 @@ public class TextFieldFocusablePart extends FocusablePartW {
 	 * @param accessibleLabel the aria label for the widget
 	 * @param onFocusCallback on focus callback
 	 */
-	public TextFieldFocusablePart(AutoCompleteTextFieldW textField, String focusKey,
-			String accessibleLabel, Runnable onFocusCallback) {
+	public TextFieldFocusablePart(
+			AutoCompleteTextFieldW textField,
+			String focusKey,
+			String accessibleLabel,
+			Runnable onFocusCallback) {
 		super(textField, focusKey, accessibleLabel, onFocusCallback);
 		Dom.addEventListener(textField.getElement(), "keyup", (event) -> {
 			KeyboardEvent e = (KeyboardEvent) event;

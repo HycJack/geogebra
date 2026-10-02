@@ -28,7 +28,7 @@ import jsinterop.base.JsPropertyMap;
  * It gives a default file name and sets the extension filter depending on the app.
  *
  */
-public class LocalSaveOptions {
+public final class LocalSaveOptions {
 
 	private final App app;
 	private final MimeType mimeType;
@@ -56,10 +56,8 @@ public class LocalSaveOptions {
 
 	private String getSuggestedName() {
 		String consTitle = app.getKernel().getConstruction().getTitle();
-		return (StringUtil.empty(consTitle)
-				? app.getLocalization().getMenu("Untitled")
-				: consTitle
-		) + mimeType.dotExtension();
+		return (StringUtil.empty(consTitle) ? app.getLocalization().getMenu("Untitled") : consTitle)
+				+ mimeType.dotExtension();
 	}
 
 	private JsArray<Object> getAcceptedMimeTypes() {
@@ -70,5 +68,4 @@ public class LocalSaveOptions {
 		types.set("accept", mimeTypes);
 		return JsArray.of(types);
 	}
-
 }

@@ -28,7 +28,7 @@ import org.geogebra.web.shared.components.dialog.DialogData;
 /**
  * Dialog for segment with fixed radius.
  */
-public class InputDialogSegmentFixedW extends ComponentInputDialog {
+public final class InputDialogSegmentFixedW extends ComponentInputDialog {
 	private GeoPointND geoPoint1;
 	private Kernel kernel;
 
@@ -44,20 +44,17 @@ public class InputDialogSegmentFixedW extends ComponentInputDialog {
 	 * @param kernel
 	 *            kernel
 	 */
-	public InputDialogSegmentFixedW(AppW app, DialogData data,
-			InputHandler handler, GeoPointND point1, Kernel kernel) {
-		super(app, data, false, false, handler, app.getLocalization().getMenu("Length"),
-				"");
+	public InputDialogSegmentFixedW(
+			AppW app, DialogData data, InputHandler handler, GeoPointND point1, Kernel kernel) {
+		super(app, data, false, false, handler, app.getLocalization().getMenu("Length"), "");
 		this.kernel = kernel;
 		geoPoint1 = point1;
 	}
 
 	@Override
 	public void processInput() {
-		new SegmentHandler(geoPoint1, kernel).doSegmentFixedAsync(
-				getInputText(),
-				(NumberInputHandler) getInputHandler(), this,
-				ok -> {
+		new SegmentHandler(geoPoint1, kernel)
+				.doSegmentFixedAsync(getInputText(), (NumberInputHandler) getInputHandler(), this, ok -> {
 					if (ok) {
 						hide();
 					}

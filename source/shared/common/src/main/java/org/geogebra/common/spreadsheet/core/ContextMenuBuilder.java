@@ -40,20 +40,25 @@ import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.Q1
 import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.Q3;
 import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.SAMPLE_SD;
 import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.SD;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_FREQUENCY_TABLE;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_ONE_VARIABLE;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_REGRESSION;
+import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.STATISTICS_TWO_VARIABLES;
 import static org.geogebra.common.spreadsheet.core.ContextMenuItem.Identifier.SUM;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.statistics.Statistic;
 import org.geogebra.common.spreadsheet.core.ContextMenuItem.ActionableItem;
 import org.geogebra.common.spreadsheet.core.ContextMenuItem.Divider;
 import org.geogebra.common.spreadsheet.core.ContextMenuItem.SubMenuItem;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Weak;
 
@@ -62,237 +67,299 @@ import com.google.j2objc.annotations.Weak;
  */
 public final class ContextMenuBuilder {
 
-    static final int HEADER_INDEX = -1;
+	static final int HEADER_INDEX = -1;
 
-    @Weak
-    private SpreadsheetController spreadsheetController;
-    @Weak
-    private SpreadsheetConstructionDelegate constructionDelegate;
+	@Weak
+	private SpreadsheetController spreadsheetController;
 
-    /**
-     * @param spreadsheetController {@link SpreadsheetController}
-     */
-    ContextMenuBuilder(SpreadsheetController spreadsheetController) {
-        this.spreadsheetController = spreadsheetController;
-    }
+	@Weak
+	private SpreadsheetConstructionDelegate constructionDelegate;
 
-    /**
-     * Set the construction delegate (to check if certain features are available).
-     * @param constructionDelegate construction delegate
-     */
-    public void setSpreadsheetConstructionDelegate(
-            @CheckForNull SpreadsheetConstructionDelegate constructionDelegate) {
-        this.constructionDelegate = constructionDelegate;
-    }
+	@Weak
+	private SpreadsheetStatisticsView.@Nullable Delegate statisticsViewDelegate;
 
-    /**
-     * Gets the context menu items for the specific <b>single</b> cell / row / column
-     * @param row of the cell.
-     * @param column of the cell.
-     * @return list of menu items.
-     */
-    public List<ContextMenuItem> build(int row, int column) {
-        return build(row, row, column, column);
-    }
+	/**
+	 * @param spreadsheetController {@link SpreadsheetController}
+	 */
+	ContextMenuBuilder(SpreadsheetController spreadsheetController) {
+		this.spreadsheetController = spreadsheetController;
+	}
 
-    /**
-     * Gets the context menu items for the specific <b>multiple</b> cells / rows / columns
-     * @param fromRow Index of the uppermost row
-     * @param toRow Index of the bottommost row
-     * @param fromCol Index of the leftmost column
-     * @param toCol Index of the rightmost column
-     * @return list of the menu key and its action.
-     */
-    public List<ContextMenuItem> build(int fromRow, int toRow, int fromCol, int toCol) {
-        if (shouldShowTableItems(fromRow, fromCol)) {
-            return tableItems(fromRow, fromCol);
-        } else if (fromRow == HEADER_INDEX) {
-            return columnItems(fromCol, toCol);
-        } else if (fromCol == HEADER_INDEX) {
-            return rowItems(fromRow, toRow);
-        }
-        return cellItems(fromRow, toRow, fromCol, toCol);
-    }
+	/**
+	 * Set the construction delegate (to check if certain features are available).
+	 * @param constructionDelegate construction delegate
+	 */
+	public void setSpreadsheetConstructionDelegate(
+			@Nullable SpreadsheetConstructionDelegate constructionDelegate) {
+		this.constructionDelegate = constructionDelegate;
+	}
 
-    /**
-     * @param fromRow Index of the uppermost row
-     * @param fromCol Index of the leftmost column
-     * @return Whether the table items should be shown. This is the case if either all cells are
-     * selected or the user clicked the top left cell (between A and 1).
-     */
-    private boolean shouldShowTableItems(int fromRow, int fromCol) {
-        return spreadsheetController.areAllCellsSelected()
-                || (fromRow == HEADER_INDEX && fromCol == HEADER_INDEX);
-    }
+	/**
+	 * @param statisticsViewDelegate the delegate notified when the statistics view changes,
+	 * or {@code null} to disable the Statistics menu item.
+	 */
+	public void setSpreadsheetStatisticsDelegate(
+			SpreadsheetStatisticsView.@Nullable Delegate statisticsViewDelegate) {
+		this.statisticsViewDelegate = statisticsViewDelegate;
+	}
 
-    private List<ContextMenuItem> tableItems(int row, int column) {
-        return List.of(
-                new ActionableItem(CUT, () -> spreadsheetController.cutCells(row, column)),
-                new ActionableItem(COPY, () -> spreadsheetController.copyCells(row, column)),
-                new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(row, column))
-        );
-    }
+	/**
+	 * Gets the context menu items for the specific <b>single</b> cell / row / column
+	 * @param row of the cell.
+	 * @param column of the cell.
+	 * @return list of menu items.
+	 */
+	public List<ContextMenuItem> build(int row, int column) {
+		return build(row, row, column, column);
+	}
 
-    private List<ContextMenuItem> cellItems(int fromRow, int toRow, int fromCol, int toCol) {
-        boolean allRows = isAllRows(fromRow, toRow);
-        boolean allColumns = isAllColumns(fromCol, toCol);
-        return Stream.of(
-                new ActionableItem(CUT, () -> spreadsheetController.cutCells(fromRow, fromCol)),
-                new ActionableItem(COPY, () -> spreadsheetController.copyCells(fromRow, fromCol)),
-                new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(fromRow, fromCol)),
-                new Divider(),
-                getCalculateItem(),
-                getChartMenuItem(),
-                new Divider(),
-                getInsertRowItem(fromRow, false),
-                getInsertRowItem(toRow + 1, true),
-                getInsertColItem(fromCol, false),
-                getInsertColItem(toCol + 1, true),
-                allRows && allColumns ? null : new Divider(),
-                allRows ? null : new ActionableItem(DELETE_ROW,
-                        () -> spreadsheetController.deleteRowAt(fromRow)),
-                allColumns ? null : new ActionableItem(DELETE_COLUMN,
-                        () -> spreadsheetController.deleteColumnAt(fromCol))
-        ).filter(Objects::nonNull).collect(Collectors.toList());
-    }
+	/**
+	 * Gets the context menu items for the specific <b>multiple</b> cells / rows / columns
+	 * (Web platform).
+	 * @param fromRow Index of the uppermost row
+	 * @param toRow Index of the bottommost row
+	 * @param fromCol Index of the leftmost column
+	 * @param toCol Index of the rightmost column
+	 * @return list of the menu key and its action.
+	 */
+	public List<ContextMenuItem> build(int fromRow, int toRow, int fromCol, int toCol) {
+		return build(fromRow, toRow, fromCol, toCol, false);
+	}
 
-    private @CheckForNull ContextMenuItem getInsertRowItem(int fromRow, boolean below) {
-        return spreadsheetController.canAddRow() ? new ActionableItem(
-                below ? INSERT_ROW_BELOW : INSERT_ROW_ABOVE,
-                () -> spreadsheetController.insertRowAt(fromRow, below)) : null;
-    }
+	/**
+	 * Gets the context menu items for the specific <b>multiple</b> cells / rows / columns
+	 * @param fromRow Index of the uppermost row
+	 * @param toRow Index of the bottommost row
+	 * @param fromCol Index of the leftmost column
+	 * @param toCol Index of the rightmost column
+	 * @param mobile Build context menu for mobile platforms?
+	 * @return list of the menu key and its action.
+	 */
+	public List<ContextMenuItem> build(
+			int fromRow, int toRow, int fromCol, int toCol, boolean mobile) {
+		if (shouldShowTableItems(fromRow, fromCol)) {
+			return tableItems(fromRow, fromCol);
+		} else if (fromRow == HEADER_INDEX) {
+			return columnItems(fromCol, toCol, mobile);
+		} else if (fromCol == HEADER_INDEX) {
+			return rowItems(fromRow, toRow, mobile);
+		}
+		return cellItems(fromRow, toRow, fromCol, toCol, mobile);
+	}
 
-    private @CheckForNull ContextMenuItem getInsertColItem(int fromCol, boolean right) {
-        return spreadsheetController.canAddColumn() ? new ActionableItem(
-                right ? INSERT_COLUMN_RIGHT : INSERT_COLUMN_LEFT,
-                () -> spreadsheetController.insertColumnAt(fromCol, right)) : null;
-    }
+	/**
+	 * @param fromRow Index of the uppermost row
+	 * @param fromCol Index of the leftmost column
+	 * @return Whether the table items should be shown. This is the case if either all cells are
+	 * selected or the user clicked the top left cell (between A and 1).
+	 */
+	private boolean shouldShowTableItems(int fromRow, int fromCol) {
+		return spreadsheetController.areAllCellsSelected()
+				|| (fromRow == HEADER_INDEX && fromCol == HEADER_INDEX);
+	}
 
-    private @CheckForNull ContextMenuItem getCalculateItem() {
-        List<ContextMenuItem> items = getCalculateItems();
-        return items.isEmpty() ? null : new SubMenuItem(CALCULATE, items);
-    }
+	private List<ContextMenuItem> tableItems(int row, int column) {
+		return List.of(
+				new ActionableItem(CUT, () -> spreadsheetController.cutCells(row, column)),
+				new ActionableItem(COPY, () -> spreadsheetController.copyCells(row, column)),
+				new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(row, column)));
+	}
 
-    private @CheckForNull ContextMenuItem getChartMenuItem() {
-        List<ContextMenuItem> items = getChartItems();
-        return items.isEmpty() ? null : new SubMenuItem(CREATE_CHART, items);
-    }
+	private List<ContextMenuItem> cellItems(
+			int fromRow, int toRow, int fromCol, int toCol, boolean mobile) {
+		boolean allRows = isAllRows(fromRow, toRow);
+		boolean allColumns = isAllColumns(fromCol, toCol);
+		return Stream.of(
+						new ActionableItem(CUT, () -> spreadsheetController.cutCells(fromRow, fromCol)),
+						new ActionableItem(COPY, () -> spreadsheetController.copyCells(fromRow, fromCol)),
+						new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(fromRow, fromCol)),
+						new Divider(),
+						mobile ? null : getCalculateItem(),
+						mobile ? null : getStatisticsItem(),
+						mobile ? null : getChartMenuItem(),
+						mobile ? null : new Divider(),
+						getInsertRowItem(fromRow, false),
+						getInsertRowItem(toRow + 1, true),
+						getInsertColItem(fromCol, false),
+						getInsertColItem(toCol + 1, true),
+						allRows && allColumns ? null : new Divider(),
+						allRows
+								? null
+								: new ActionableItem(DELETE_ROW, () -> spreadsheetController.deleteRowAt(fromRow)),
+						allColumns
+								? null
+								: new ActionableItem(
+										DELETE_COLUMN, () -> spreadsheetController.deleteColumnAt(fromCol)))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
 
-    List<ContextMenuItem> getChartItems() {
-        List<ContextMenuItem> chartItems = new ArrayList<>();
-        if (constructionDelegate == null || constructionDelegate.supportsLineGraph()) {
-            chartItems.add(new ActionableItem(LINE_CHART,
-                    () -> spreadsheetController.createChart(LINE_CHART)));
-        }
-        if (constructionDelegate == null || constructionDelegate.supportsBarChart()) {
-            chartItems.add(new ActionableItem(BAR_CHART,
-                    () -> spreadsheetController.createChart(BAR_CHART)));
-        }
-        if (constructionDelegate == null || constructionDelegate.supportsHistogram()) {
-            chartItems.add(new ActionableItem(HISTOGRAM,
-                    () -> spreadsheetController.createChart(HISTOGRAM)));
-        }
-        if (constructionDelegate == null || constructionDelegate.supportsBoxPlot()) {
-            chartItems.add(new ActionableItem(BOX_PLOT,
-                    () -> spreadsheetController.createChart(BOX_PLOT)));
-        }
-        if (constructionDelegate == null || constructionDelegate.supportsPieChart()) {
-            chartItems.add(new ActionableItem(PIE_CHART,
-                    () -> spreadsheetController.createChart(PIE_CHART)));
-        }
-        return chartItems;
-    }
+	private @Nullable ContextMenuItem getInsertRowItem(int fromRow, boolean below) {
+		return spreadsheetController.canAddRow()
+				? new ActionableItem(
+						below ? INSERT_ROW_BELOW : INSERT_ROW_ABOVE,
+						() -> spreadsheetController.insertRowAt(fromRow, below))
+				: null;
+	}
 
-    /**
-     * @return a (possibly empty) list of context menu items for the "Calculate" submenu
-     */
-    List<ContextMenuItem> getCalculateItems() {
-        List<ContextMenuItem> items = new ArrayList<>();
-        if (supportsStatistic(Statistic.SUM)) {
-            items.add(new ActionableItem(SUM, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.SUM)));
-        }
-        if (supportsStatistic(Statistic.MEAN)) {
-            items.add(new ActionableItem(MEAN, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.MEAN)));
-        }
-        if (supportsStatistic(Statistic.SAMPLE_SD)) {
-            items.add(new ActionableItem(SAMPLE_SD, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.SAMPLE_SD)));
-        }
-        if (supportsStatistic(Statistic.SD)) {
-            items.add(new ActionableItem(SD, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.SD)));
-        }
-        if (supportsStatistic(Statistic.MIN)) {
-            items.add(new ActionableItem(MIN, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.MIN)));
-        }
-        if (supportsStatistic(Statistic.Q1)) {
-            items.add(new ActionableItem(Q1, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.Q1)));
-        }
-        if (supportsStatistic(Statistic.MEDIAN)) {
-            items.add(new ActionableItem(MEDIAN, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.MEDIAN)));
-        }
-        if (supportsStatistic(Statistic.Q3)) {
-            items.add(new ActionableItem(Q3, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.Q3)));
-        }
-        if (supportsStatistic(Statistic.MAX)) {
-            items.add(new ActionableItem(MAX, () ->
-                    spreadsheetController.calculate1VarStatistics(Statistic.MAX)));
-        }
-        return items;
-    }
-	
+	private @Nullable ContextMenuItem getInsertColItem(int fromCol, boolean right) {
+		return spreadsheetController.canAddColumn()
+				? new ActionableItem(
+						right ? INSERT_COLUMN_RIGHT : INSERT_COLUMN_LEFT,
+						() -> spreadsheetController.insertColumnAt(fromCol, right))
+				: null;
+	}
+
+	private @Nullable ContextMenuItem getCalculateItem() {
+		List<ContextMenuItem> items = getCalculateItems();
+		return items.isEmpty() ? null : new SubMenuItem(CALCULATE, items);
+	}
+
+	private @Nullable ContextMenuItem getStatisticsItem() {
+		List<ContextMenuItem> items = getStatisticsItems();
+		if (items.isEmpty()) {
+			return null;
+		}
+		return new SubMenuItem(STATISTICS, items);
+	}
+
+	List<ContextMenuItem> getStatisticsItems() {
+		// Require explicit statistics support
+		if (statisticsViewDelegate == null) {
+			return Collections.emptyList();
+		}
+		return List.of(
+				new ActionableItem(STATISTICS_ONE_VARIABLE, spreadsheetController::showOneVarStatistics),
+				new ActionableItem(STATISTICS_TWO_VARIABLES, spreadsheetController::showTwoVarStatistics),
+				new ActionableItem(STATISTICS_FREQUENCY_TABLE, spreadsheetController::showFrequencyTable),
+				new ActionableItem(STATISTICS_REGRESSION, spreadsheetController::showRegression));
+	}
+
+	private @Nullable ContextMenuItem getChartMenuItem() {
+		List<ContextMenuItem> items = getChartItems();
+		return items.isEmpty() ? null : new SubMenuItem(CREATE_CHART, items);
+	}
+
+	List<ContextMenuItem> getChartItems() {
+		List<ContextMenuItem> chartItems = new ArrayList<>();
+		if (constructionDelegate == null || constructionDelegate.supportsLineGraph()) {
+			chartItems.add(
+					new ActionableItem(LINE_CHART, () -> spreadsheetController.createChart(LINE_CHART)));
+		}
+		if (constructionDelegate == null || constructionDelegate.supportsBarChart()) {
+			chartItems.add(
+					new ActionableItem(BAR_CHART, () -> spreadsheetController.createChart(BAR_CHART)));
+		}
+		if (constructionDelegate == null || constructionDelegate.supportsHistogram()) {
+			chartItems.add(
+					new ActionableItem(HISTOGRAM, () -> spreadsheetController.createChart(HISTOGRAM)));
+		}
+		if (constructionDelegate == null || constructionDelegate.supportsBoxPlot()) {
+			chartItems.add(
+					new ActionableItem(BOX_PLOT, () -> spreadsheetController.createChart(BOX_PLOT)));
+		}
+		if (constructionDelegate == null || constructionDelegate.supportsPieChart()) {
+			chartItems.add(
+					new ActionableItem(PIE_CHART, () -> spreadsheetController.createChart(PIE_CHART)));
+		}
+		return chartItems;
+	}
+
+	/**
+	 * @return a (possibly empty) list of context menu items for the "Calculate" submenu
+	 */
+	List<ContextMenuItem> getCalculateItems() {
+		List<ContextMenuItem> items = new ArrayList<>();
+		if (supportsStatistic(Statistic.SUM)) {
+			items.add(new ActionableItem(
+					SUM, () -> spreadsheetController.calculate1VarStatistics(Statistic.SUM)));
+		}
+		if (supportsStatistic(Statistic.MEAN)) {
+			items.add(new ActionableItem(
+					MEAN, () -> spreadsheetController.calculate1VarStatistics(Statistic.MEAN)));
+		}
+		if (supportsStatistic(Statistic.SAMPLE_SD)) {
+			items.add(new ActionableItem(
+					SAMPLE_SD, () -> spreadsheetController.calculate1VarStatistics(Statistic.SAMPLE_SD)));
+		}
+		if (supportsStatistic(Statistic.SD)) {
+			items.add(new ActionableItem(
+					SD, () -> spreadsheetController.calculate1VarStatistics(Statistic.SD)));
+		}
+		if (supportsStatistic(Statistic.MIN)) {
+			items.add(new ActionableItem(
+					MIN, () -> spreadsheetController.calculate1VarStatistics(Statistic.MIN)));
+		}
+		if (supportsStatistic(Statistic.Q1)) {
+			items.add(new ActionableItem(
+					Q1, () -> spreadsheetController.calculate1VarStatistics(Statistic.Q1)));
+		}
+		if (supportsStatistic(Statistic.MEDIAN)) {
+			items.add(new ActionableItem(
+					MEDIAN, () -> spreadsheetController.calculate1VarStatistics(Statistic.MEDIAN)));
+		}
+		if (supportsStatistic(Statistic.Q3)) {
+			items.add(new ActionableItem(
+					Q3, () -> spreadsheetController.calculate1VarStatistics(Statistic.Q3)));
+		}
+		if (supportsStatistic(Statistic.MAX)) {
+			items.add(new ActionableItem(
+					MAX, () -> spreadsheetController.calculate1VarStatistics(Statistic.MAX)));
+		}
+		return items;
+	}
+
 	private boolean supportsStatistic(Statistic statistic) {
 		return constructionDelegate == null || constructionDelegate.supportsStatistic(statistic);
 	}
 
-    private List<ContextMenuItem> rowItems(int fromRow, int toRow) {
-        boolean allRows = isAllRows(fromRow, toRow);
-        return Stream.of(
-                new ActionableItem(CUT, () -> spreadsheetController.cutCells(fromRow, -1)),
-                new ActionableItem(COPY, () -> spreadsheetController.copyCells(fromRow, -1)),
-                new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(fromRow, -1)),
-                new Divider(),
-                getCalculateItem(),
-                getChartMenuItem(),
-                new Divider(),
-                getInsertRowItem(fromRow, false),
-                getInsertRowItem(toRow + 1, true),
-                allRows ? null : new Divider(),
-                allRows ? null : new ActionableItem(DELETE_ROW,
-                        () -> spreadsheetController.deleteRowAt(fromRow))
-        ).filter(Objects::nonNull).collect(Collectors.toList());
-    }
+	private List<ContextMenuItem> rowItems(int fromRow, int toRow, boolean mobile) {
+		boolean allRows = isAllRows(fromRow, toRow);
+		return Stream.of(
+						new ActionableItem(CUT, () -> spreadsheetController.cutCells(fromRow, -1)),
+						new ActionableItem(COPY, () -> spreadsheetController.copyCells(fromRow, -1)),
+						new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(fromRow, -1)),
+						new Divider(),
+						mobile ? null : getCalculateItem(),
+						mobile ? null : getChartMenuItem(),
+						mobile ? null : new Divider(),
+						getInsertRowItem(fromRow, false),
+						getInsertRowItem(toRow + 1, true),
+						allRows ? null : new Divider(),
+						allRows
+								? null
+								: new ActionableItem(DELETE_ROW, () -> spreadsheetController.deleteRowAt(fromRow)))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
 
-    private List<ContextMenuItem> columnItems(int fromCol, int toCol) {
-        boolean allColumns = isAllColumns(fromCol, toCol);
-        return Stream.of(
-                new ActionableItem(CUT, () -> spreadsheetController.cutCells(-1, fromCol)),
-                new ActionableItem(COPY, () -> spreadsheetController.copyCells(-1, fromCol)),
-                new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(-1, fromCol)),
-                new Divider(),
-                getCalculateItem(),
-                getChartMenuItem(),
-                new Divider(),
-                getInsertColItem(fromCol, false),
-                getInsertColItem(toCol + 1, true),
-                allColumns ? null : new Divider(),
-                allColumns ? null : new ActionableItem(DELETE_COLUMN,
-                        () -> spreadsheetController.deleteColumnAt(fromCol))
-        ).filter(Objects::nonNull).collect(Collectors.toList());
-    }
+	private List<ContextMenuItem> columnItems(int fromCol, int toCol, boolean mobile) {
+		boolean allColumns = isAllColumns(fromCol, toCol);
+		return Stream.of(
+						new ActionableItem(CUT, () -> spreadsheetController.cutCells(-1, fromCol)),
+						new ActionableItem(COPY, () -> spreadsheetController.copyCells(-1, fromCol)),
+						new ActionableItem(PASTE, () -> spreadsheetController.pasteCells(-1, fromCol)),
+						new Divider(),
+						mobile ? null : getCalculateItem(),
+						mobile ? null : getStatisticsItem(),
+						mobile ? null : getChartMenuItem(),
+						mobile ? null : new Divider(),
+						getInsertColItem(fromCol, false),
+						getInsertColItem(toCol + 1, true),
+						allColumns ? null : new Divider(),
+						allColumns
+								? null
+								: new ActionableItem(
+										DELETE_COLUMN, () -> spreadsheetController.deleteColumnAt(fromCol)))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
 
-    private boolean isAllColumns(int fromCol, int toCol) {
-        return fromCol == 0 && toCol == spreadsheetController.getLayout().numberOfColumns() - 1;
-    }
+	private boolean isAllColumns(int fromCol, int toCol) {
+		return fromCol == 0 && toCol == spreadsheetController.getLayout().numberOfColumns() - 1;
+	}
 
-    private boolean isAllRows(int fromRow, int toRow) {
-        return fromRow == 0 && toRow == spreadsheetController.getLayout().numberOfRows() - 1;
-    }
-
+	private boolean isAllRows(int fromRow, int toRow) {
+		return fromRow == 0 && toRow == spreadsheetController.getLayout().numberOfRows() - 1;
+	}
 }

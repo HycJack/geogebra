@@ -123,13 +123,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 	.dialogComponent.Checkbox {
 		max-width: 391px;
 
-		.panelTitle {
-			display: block;
-			cursor: default;
-			color: colors.$teal-default;
-			border-bottom: 1px solid colors.$teal-default;
-		}
-
 		.panelRow {
 			display: flex;
 		}
@@ -147,9 +140,152 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 		}
 	}
 
-	/* button tool dialog*/
 	.dialogComponent.buttonDialog {
-		max-width: 448px;
+		max-width: 560px;
+
+		.inputTextField {
+			margin-bottom: 16px;
+		}
+
+		.scriptLabel {
+			font-size: 14px;
+			margin: 8px 0;
+		}
+
+		.codeMirrorEditorHost {
+			height: 120px;
+			border: 1px solid neutral(300);
+			border-radius: 8px;
+
+			.cm-editor {
+				color: #333;
+				font-family: Consolas, Monaco, monospace;
+				height: 100%;
+				.cm-scroller {
+					font-family: inherit;
+					line-height: normal;
+				}
+				.cm-content {
+					caret-color: #333,
+				}
+				.cm-line, .cm-line span {
+					font-family: inherit !important;
+					font-size: inherit !important;
+					font-weight: inherit !important;
+					line-height: inherit !important;
+				}
+				&.cm-focused {
+					outline: none;
+				}
+				&.cm-focused .cm-cursor {
+					border-left-color: #333;
+				}
+				.cm-activeLineGutter {
+					background-color: #f5f5f5;
+				}
+				.cm-gutters {
+					background-color: #fafafa;
+					border-right: 1px solid #ddd;
+					color: #767676;
+				}
+				.cm-tooltip-autocomplete .ggb-command-info {
+					max-width: 360px;
+					padding: 4px 2px;
+				}
+				.cm-tooltip-autocomplete .ggb-command-info-title {
+					color: #00695c;
+					font-weight: 500;
+					margin-bottom: 4px;
+				}
+				.cm-tooltip-autocomplete .ggb-command-info-syntax {
+					color: #333;
+					font-family: Consolas, Monaco, monospace;
+					white-space: nowrap;
+				}
+
+				.cm-gutters.cm-gutters-before {
+					border-radius: 8px 0 0 8px;
+
+					.cm-gutterElement {
+						font-size: 10px;
+						line-height: 20px;
+					}
+				}
+
+				.cm-content {
+					font-size: 14px;
+					padding: 8px;
+				}
+			}
+		}
+
+		.suggestionLabel {
+			margin: 16px 0 4px 0;
+			font-size: 12px;
+			height: 16px;
+			line-height: 16px;
+		}
+
+		.chipsHolder {
+			display: flex;
+			gap: 8px;
+			padding: 8px 0;
+		}
+
+		.objectsHintButton {
+			position: absolute;
+			display: flex;
+			gap: 8px;
+			margin: 29px 0;
+			cursor: default;
+
+			img {
+				padding: 6px;
+				border-radius: 4px;
+				border: 1px solid neutral(300);
+				background-color: neutral(100);
+			}
+
+			.gwt-Label {
+				height: 20px;
+				line-height: 20px;
+				padding: 5px 0;
+				font-size: 12px;
+				color: neutral(500);
+			}
+		}
+	}
+
+	.objectsPopup {
+		width: 360px;
+		height: 176px;
+		overflow: auto;
+
+		&.empty {
+			display: flex;
+			align-items: center;
+
+			.noObjectsHint {
+				margin: auto;
+			}
+		}
+
+		.objectsPanel {
+			display: flex;
+			flex-wrap: wrap;
+			padding: 8px 16px;
+
+			.gwt-Label {
+				flex-basis: 50%;
+				box-sizing: border-box;
+				padding: 4px;
+				cursor: pointer;
+
+				&:hover {
+					background-color: neutral(200);
+				}
+			}
+		}
 	}
 
 	.dialogComponent.inputboxDialog {
@@ -167,107 +303,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				font-size: 100%;
 				margin-bottom: 24px;
 			}
-	}
-
-	.dialogComponent.GeoGebraFileChooser {
-		max-width: 530px;
-
-		.titlePanel .coloredLabel {
-			font-size: 80%;
-		}
-
-		.titlePanel input[type="text"] {
-			border: none;
-			box-shadow: none;
-			border-bottom: 1px solid colors.$teal-default;
-			border-radius: 0px;
-			margin-bottom: 8px;
-
-		}
-
-		.checkboxPanel {
-			margin-top: 4px;
-			margin-bottom: 28px;
-
-			.checkbox {
-				&.selected {
-					.background {
-						border-color: colors.$teal-default;
-						background-color: colors.$teal-default;
-					}
-				}
-			}
-		}
-
-		.visibilityPanel {
-			.visibility {
-				position: absolute;
-				bottom: 12px;
-				width: 131px;
-				left: 76px;
-				top: auto;
-			 }
-
-			.IconButton {
-				border-radius: 2px;
-				bottom: 15px;
-				left: 24px !important;
-			}
-		}
-	}
-
-	/* text tool dialog */
-	.dialogComponent.TextInputDialog {
-		.ToggleButton {
-			border-radius: 2px;
-			line-height: 24px;
-			vertical-align: middle;
-			text-align: center;
-			min-width: 24px;
-			height: 24px;
-			font-size: 90%;
-			line-height: 24px;
-			text-align: center;
-			text-decoration: none;
-			overflow: hidden;
-			vertical-align: middle;
-			box-shadow: none;
-			padding: 3px;
-			margin-right: 8px;
-
-			img {
-				opacity: 0.54;
-			}
-		 }
-
-		.textEditor {
-			margin-right: 16px;
-			margin-top: 10px;
-			padding: 4px;
-			color: neutral(900);
-		}
-
-		.gwt-DisclosurePanel {
-			.textEditorAdvancedPanel.textEditorDisclosurePanelContent {
-				.latexPanel canvas:hover {
-					cursor: pointer;
-				}
-			}
-
-			.gwt-TabLayoutPanelTab {
-				padding-top: 6px;
-				height: 28px;
-			}
-
-			.SymbolTable td:hover, .GeoGebraFrame .SymbolTable td.focus {
-				background: colors.$white;
-				color: colors.$teal-default;
-			}
-		}
-
-		.gwt-TabLayoutPanelTabInner:hover {
-			color: colors.$teal-light;
-		}
 	}
 
 	.flatDialogBtn {
@@ -318,30 +353,8 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 			color: colors.$teal-default;
 		}
 
-		.Dialog-messagePanel {
-			margin-bottom: 0px;
-
-			.gwt-Label {
-				margin-top: 0px;
-				color: colors.$teal-default;
-			}
-		}
-
-		.coloredLabel {
-			font-size: 80%;
-			color: colors.$teal-default;
-		}
-
 		.gwt-RadioButton label {
 			padding-left: 8px;
-		}
-
-		.gwt-CheckBox label {
-			padding-left: 8px;
-		}
-
-		.gwt-CheckBox {
-			margin-right: 16px;
 		}
 
 		.gwt-ListBox {
@@ -361,19 +374,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 			}
 		}
 
-		.sliderIntervalPanel {
-			margin-top: 10px;
-
-			.gwt-TextBox {
-				border-bottom: 1px solid colors.$teal-default !important;
-				border-radius: 0px;
-			}
-
-			.gwt-Label {
-				margin-top: 0px;
-			}
-		}
-
 		.gwt-TabBar {
 			.gwt-Label {
 				font-size: 100% !important;
@@ -389,16 +389,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				.gwt-ListBox {
 					border-radius: 2px;
 					box-shadow: none;
-				}
-			}
-
-			.sliderWidthPanel {
-				.AutoCompleteTextFieldW {
-					 display: block;
-
-					 .unitLabel {
-						float: right;
-					 }
 				}
 			}
 		}
@@ -708,24 +698,8 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 			.linkBox::selection {
 				background: colors.$teal-default-20;
 			}
-			.copyButton {
-				cursor: pointer;
-				min-width: 64px;
-				height: 36px;
-				border-radius: 2px;
-				padding: 0 8px;
+			.materialTextButton {
 				margin-left: 32px;
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				vertical-align: middle;
-				color: neutral(900);
-				text-transform: uppercase;
-				transition: background-color 0.15s;
-
-				&:hover {
-					background-color: colors.$mow_card_background_hover;
-				}
 			}
 		}
 
@@ -1127,24 +1101,8 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 					background: rgba(colors.$mow_primary, 0.2);
 				}
 
-				.copyButton {
-					cursor: pointer;
-					min-width: 64px;
-					height: 36px;
-					border-radius: 2px;
-					padding: 0 8px;
+				.materialTextButton {
 					margin-left: 32px;
-					display: inline-flex;
-					align-items: center;
-					justify-content: center;
-					vertical-align: middle;
-					color: neutral(900);
-					text-transform: uppercase;
-					transition: background-color 0.15s;
-
-					&:hover {
-						background-color: colors.$mow_card_background_hover;
-					}
 				}
 			}
 
@@ -1374,17 +1332,22 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 	.dialogComponent.sliderDialog {
 		max-width: 504px;
 
-		.radioButtonPanel {
+		.firstRow {
 			display: flex;
 
-			.radioButton {
-				margin-right: 20px;
+			.nameField {
+				width: 100%;
+				margin-right: 16px;
+			}
+			.buttonsHolder {
+				display: flex;
+				gap: 8px;
+				margin-top: 14px;
 			}
 		}
-
-		.AutoCompleteTextFieldW {
-			// ignore this for now, we need new design
-			border-bottom: 1px solid colors.$teal-default !important;
+		.secondRow {
+			display: flex;
+			gap: 16px;
 		}
 	}
 
@@ -1426,32 +1389,37 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 		}
 	}
 
-	.TextInputDialog {
-		max-width: 430px;
-		height: auto;
-
-		.textEditorDisclosurePanelContent .gwt-Label {
-			font-size: 100%;
-			margin-top: 0px;
-		}
-	}
-
 	.calcChooser {
-			 max-width: 984px;
-			 min-height: 232px;
-			 left: 0px;
-			 padding: 48px 36px;
-			 border-radius: 2px;
-			 box-shadow: 0 9px 46px 8px rgba(0, 0, 0, 0.14), 0 11px 15px -7px rgba(0, 0, 0, 0.12), 0 24px 38px 3px rgba(0, 0, 0, 0.2);
-			 box-sizing: border-box;
+			width: 100%;
+			max-width: 984px;
+			min-height: 232px;
+			padding: 24px 36px 48px 36px;
+			box-shadow: 0 9px 46px 8px rgba(0, 0, 0, 0.14), 0 11px 15px -7px rgba(0, 0, 0, 0.12), 0 24px 38px 3px rgba(0, 0, 0, 0.2);
+			box-sizing: border-box;
 
-			.title {
+			.dialogMainPanel .dialogTitle {
 				height: 48px;
-				font-size: 175%;
+				font-size: 28px;
 				line-height: 48px;
 				max-width: 912px;
 				margin-bottom: 32px;
+				margin-left: 0;
 				text-align: center;
+			}
+
+			.dialogMainPanel .dialogContent {
+				padding: 0;
+
+				.calcBtn.keyboardFocus:focus-visible {
+					outline-width: 0;
+
+					.imgHolder {
+						outline-color: var(--ggb-dark-color);
+						outline-width: 2px;
+						outline-style: solid;
+						outline-offset: 2px;
+					}
+				}
 			}
 
 			.calcBtn {
@@ -1459,7 +1427,7 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				max-height: 152px;
 				width: 100%;
 				height: 100%;
-				margin: 0px 16px;
+				margin: 4px 16px 0 16px;
 				display: inline-table;
 				cursor: pointer;
 				transition: background-color 0.15s;
@@ -1513,25 +1481,24 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 		}
 	}
 
-	.dialogComponent.statistics {
-		.dialogTitle {
-			height: 24px;
-			font-size: 125%;
-			line-height: 1.2;
-		}
+	.statistics.error .sideSheet {
+		.contentPanel {
+			border: none;
+			padding-top: 0;
 
-		&.error {
-			max-width: 468px;
-			.dialogContent {
-				border: none;
+			.infoErrorPanel {
+				position: relative;
+				top: calc(50% - 106px);
 			}
 		}
+	}
 
-		.dialogContent {
-			max-height: 426px;
+	.statistics .sideSheet {
+		.contentPanel {
+			overflow: auto;
+			padding: 8px 16px 0 16px;
 			box-sizing: border-box;
 			border-top: 1px solid colors.$black-12;
-			border-bottom: 1px solid colors.$black-12;
 
 			select:focus:not([readonly]) {
 				border: none;
@@ -1549,9 +1516,60 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				}
 			}
 
-			.dropDown {
-				margin-top: 20px;
+			.dropDown, .inputTextField, .checkboxPanel {
+				margin: 8px 0 16px 0;
 				width: 100%;
+
+				.checkbox {
+					margin-left: 0;
+				}
+			}
+
+			.subTitle {
+				height: 32px;
+				line-height: 32px;
+			}
+
+			.sideSheetStats .infoErrorPanel {
+				margin-top: 48px;
+			}
+
+			.frequencyTable {
+				width: 100%;
+				table-layout: fixed;
+				border: 1px solid neutral(300);
+				border-radius: 12px;
+				border-spacing: 0;
+				overflow: hidden;
+
+				.cell {
+					height: 24px;
+					line-height: 24px;
+					padding: 8px 16px;
+					text-align: center;
+					font-weight: 400;
+				}
+
+				tbody > :first-child { // header
+					background-color: neutral(100);
+
+					.cell {
+						font-weight: 500;
+					}
+				}
+
+				td {
+					border-right: 1px solid neutral(300);
+					border-bottom: 1px solid neutral(300);
+				}
+
+				td:last-child {
+					border-right: 0;
+				}
+
+				tr:last-child td {
+					border-bottom: 0;
+				}
 			}
 		}
 	}
@@ -1565,12 +1583,9 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 		}
 
 		.toolButtons {
-			display: inline-block;
+			display: inline-flex;
+			gap: 8px;
 			margin-bottom: 16px;
-		}
-
-		.containedButton {
-			margin-right: 8px;
 		}
 	}
 
@@ -1640,16 +1655,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 			.materialOutlinedButton {
 				min-width: 94px;
 			}
-
-			.materialOutlinedButton:disabled {
-				color: colors.$black-38;
-				opacity: 1;
-
-				&:hover {
-					background: white;
-				}
-
-			}
 		}
 	}
 
@@ -1709,15 +1714,22 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 	}
 
 	.imageDialog {
-		.infoErrorPanel {
-			margin: auto;
+		.panelContainer {
+			width: 100%;
+			height: 364px;
+		}
+
+		.tabPanel {
+			position: absolute;
+		}
+
+		.tabPanel.infoErrorPanel {
+			top: calc(50% - 108px);
 		}
 
 		.cameraPanel {
-			height: 367px;
-
 			&.error {
-				height: 367px;
+				top: calc(50% - 100px);
 				display: inline-flex;
 			}
 		}
@@ -1797,47 +1809,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				&.with {
 					margin-right: 0px;
 				}
-			}
-		}
-	}
-
-	.defineFunctionsDialog {
-		.functionPanel {
-			display: flex;
-
-			.gwt-Label {
-				height: 20px;
-				margin: 20px 4px 16px 0;
-				color: colors.$text-primary;
-				white-space: nowrap;
-			}
-
-			.mathTextField {
-				border: none;
-				border-bottom: 1px colors.$black-42 solid;
-				margin-bottom: 1px;
-				border-radius: 0;
-				cursor: pointer;
-				padding-top: 0;
-				width: 100%;
-				margin-top: 16px;
-
-				&:hover {
-					border-bottom-color: colors.$black-87;
-				}
-			}
-		}
-
-		.functionPanel.focusState {
-			.mathTextField {
-				margin-bottom: 0;
-				border-bottom: 2px solid colors.$purple-default;
-			}
-		}
-
-		.functionPanel.error {
-			.mathTextField {
-				border-bottom: 2px solid colors.$error;
 			}
 		}
 	}
@@ -1957,9 +1928,9 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 
 					.gwt-Image {
 						width: 24px;
-                        height: 24px;
-                        padding: 4px 0;
-                        transition: transform 200ms ease-in-out;
+						height: 24px;
+						padding: 4px 0;
+						transition: transform 200ms ease-in-out;
 					}
 
 					.gwt-Label {

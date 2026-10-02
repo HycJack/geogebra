@@ -2,30 +2,28 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.interval.function;
 
 import static org.geogebra.common.kernel.interval.IntervalConstants.one;
 import static org.geogebra.common.kernel.interval.IntervalConstants.pi;
-import static org.geogebra.common.kernel.interval.IntervalConstants.piHalf;
 import static org.geogebra.common.kernel.interval.IntervalConstants.undefined;
-import static org.geogebra.common.kernel.interval.IntervalConstants.whole;
 import static org.geogebra.common.kernel.interval.IntervalConstants.zero;
 import static org.geogebra.common.kernel.interval.IntervalHelper.around;
 import static org.geogebra.common.kernel.interval.IntervalHelper.interval;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,73 +36,78 @@ import org.geogebra.common.kernel.interval.IntervalConstants;
 import org.geogebra.common.kernel.interval.node.IntervalExpressionNode;
 import org.geogebra.common.kernel.interval.node.IntervalFunctionVariable;
 import org.geogebra.common.kernel.interval.node.IntervalOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GeoFunctionConverterTest extends BaseUnitTest {
-	private GeoFunctionConverter converter = new GeoFunctionConverter();
+class GeoFunctionConverterTest extends BaseUnitTest {
+	private final GeoFunctionConverter converter = new GeoFunctionConverter();
 
 	@Test
-	public void testConvertSinX() {
+	void testConvertSinX() {
 		IntervalExpressionNode expression = convert("sin(x)").getRoot();
 		assertTrue(expression.getLeft() instanceof IntervalFunctionVariable);
 		assertEquals(IntervalOperation.SIN, expression.getOperation());
 	}
 
 	@Test
-	public void testConvertSinXPlus1() {
+	void testConvertSinXPlus1() {
 		IntervalNodeFunction function = convert("sin(x)+1");
 		assertEquals(one(), function.value(pi()));
-		assertEquals(new Interval(2), function.value(piHalf()));
+		assertEquals(
+				new Interval(2),
+				function.value(
+						new Interval(IntervalConstants.PI_HALF_LOW, IntervalConstants.PI_HALF_HIGH)));
 	}
 
 	@Test
-	public void testConvertDivide() {
+	void testConvertDivide() {
 		IntervalNodeFunction function = convert("x/2");
 		assertEquals(one(), function.value(interval(2)));
 		assertEquals(interval(2, 4), function.value(interval(4, 8)));
 	}
 
 	@Test
-	public void testConvertSinBracketXPlus1Bracket() {
+	void testConvertSinBracketXPlus1Bracket() {
 		IntervalNodeFunction function = convert("sin(x+pi+pi)");
-		assertEquals(one(), function.value(piHalf()));
+		assertEquals(
+				one(),
+				function.value(
+						new Interval(IntervalConstants.PI_HALF_LOW, IntervalConstants.PI_HALF_HIGH)));
 		assertEquals(zero(), function.value(pi()));
 	}
 
 	@Test
-	public void testConvertX() {
+	void testConvertX() {
 		IntervalNodeFunction function = convert("x");
 		assertEquivalent(Interval::new, function, -5, 5);
 	}
 
 	@Test
-	public void testConvertAbsX() {
+	void testConvertAbsX() {
 		IntervalNodeFunction function = convert("|x|");
 		assertEquivalent(x -> new Interval(Math.abs(x)), function, -5, 5);
 	}
 
 	@Test
-	public void testConvertLnX() {
+	void testConvertLnX() {
 		IntervalNodeFunction function = convert("ln(x)");
-		assertEquivalent(x -> x < 0 ? undefined() : new Interval(Math.log(x)),
-				function, -5, 5);
+		assertEquivalent(x -> x < 0 ? undefined() : new Interval(Math.log(x)), function, -5, 5);
 	}
 
 	@Test
-	public void testConvertInverse() {
+	void testConvertInverse() {
 		IntervalNodeFunction function = convert("1/x");
 		assertEquals(one(), function.value(one()));
 		assertEquals(new Interval(0.5), function.value(new Interval(2)));
 	}
 
 	@Test
-	public void testConvertTanSquaredXInverse() {
+	void testConvertTanSquaredXInverse() {
 		IntervalNodeFunction function = convert("1/(tan^(2)(x))");
-		assertEquals(whole(), function.value(around(Math.PI / 2, 1E-7)));
+		assertEquals(zero(), function.value(around(Math.PI / 2, 1E-7)));
 	}
 
 	@Test
-	public void testUndefinedInFunction() {
+	void testUndefinedInFunction() {
 		add("b=2");
 		addAvInput("SetValue(b, ?)");
 		IntervalNodeFunction function = convert("x^b");
@@ -112,20 +115,20 @@ public class GeoFunctionConverterTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testDependentFunctions() {
+	void testDependentFunctions() {
 		add("f(x)=x");
 		IntervalNodeFunction g = convert("f(x) + 1");
 		assertEquivalent(x -> new Interval(x + 1), g, 0, 10);
 	}
 
 	@Test
-	public void testFitFunction() {
+	void testFitFunction() {
 		IntervalNodeFunction g = convert("FitPoly({(1,3),(2,5)},1)");
 		assertEquivalent(x -> new Interval(2 * x + 1), g, 0, 10);
 	}
 
 	@Test
-	public void testFunctionOfConstant() {
+	void testFunctionOfConstant() {
 		IntervalNodeFunction g = convert("x * ld(64)");
 		assertEquivalent(x -> new Interval(6 * x), g, 0, 10);
 	}
@@ -147,23 +150,33 @@ public class GeoFunctionConverterTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testNormal() {
+	void testNormal() {
 		GeoFunction f = add("Normal(1, 2, x, false)");
 		IntervalNodeFunction g = converter.convert(f);
 		assertEquivalent(x -> new Interval(f.value(x)), g, 0, 10);
 	}
 
 	@Test
-	public void testDivBelowZeroThreshold() {
+	void testDivBelowZeroThreshold() {
 		GeoFunction f = add("((1*10^(-13))/(1*10^(-13)))x");
 		IntervalNodeFunction g = converter.convert(f);
 		assertEquals(one(), g.value(one()));
 	}
 
 	@Test
-	public void testExpShouldBeNoUndefined() {
+	void testExpShouldBeNoUndefined() {
 		GeoFunction f = add("1-exp(-5x)");
 		IntervalNodeFunction g = converter.convert(f);
 		assertEquals(one(), g.value(interval(7.484375, 7.5)));
+	}
+
+	@Test
+	void testLnLnExpExp() {
+		GeoFunction f = add("ln(ln(exp(exp(x))))");
+		IntervalNodeFunction g = converter.convert(f);
+		Interval x = interval(800, 800);
+		assertEquals(x, g.value(x));
+		Interval interval = interval(700, 701);
+		assertEquals(interval, g.value(interval));
 	}
 }

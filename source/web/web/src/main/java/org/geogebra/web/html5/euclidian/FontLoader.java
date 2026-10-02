@@ -20,37 +20,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.geogebra.common.properties.impl.objects.FontProperty;
-import org.geogebra.web.html5.util.WebFont;
+import org.geogebra.common.util.debug.Log;
 import org.gwtproject.dom.client.StyleInjector;
 
-import elemental2.core.JsArray;
-import jsinterop.annotations.JsFunction;
-import jsinterop.base.JsPropertyMap;
+import elemental2.dom.DomGlobal;
 
 public final class FontLoader {
-	private static Map<String, FontState> injected = new HashMap<>();
-	private static FontProperty.FontFamily[] bundled = new FontProperty.FontFamily[]{
-			FontProperty.FontFamily.BY_DRUCK,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_SCHWARZ,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_SCHWARZ_FARBBAND,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_TUERKIS,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_TUERKIS_FARBBAND,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_ORANGE_FARBBAND,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_ORANGE,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_GRUEN_FARBBAND,
-			FontProperty.FontFamily.BY_DRUCK_LINEATUR_GRUEN,
-			FontProperty.FontFamily.BY_LESEN,
-			FontProperty.FontFamily.DYSLEXIC};
+	private static final Map<String, FontState> injected = new HashMap<>();
 
-	private enum FontState { LOADING, ACTIVE }
+	private enum FontState {
+		LOADING,
+		ACTIVE
+	}
 
 	private FontLoader() {
 		// utility class: font shared for all app instances
-	}
-
-	@JsFunction
-	interface FontLoadCallback {
-		void fontLoaded(String familyName, String variation);
 	}
 
 	/**
@@ -62,12 +46,16 @@ public final class FontLoader {
 		if (baseUrl.isEmpty()) {
 			return;
 		}
-		for (FontProperty.FontFamily family: bundled) {
-			if (family.cssName().equals(familyName)) {
+		for (FontProperty.FontFamily family : FontProperty.FontFamily.values()) {
+			if (isBundled(family) && family.cssName().equals(familyName)) {
 				loadFontFile(familyName.split(",")[0], baseUrl, callback);
 				return;
 			}
 		}
+	}
+
+	private static boolean isBundled(FontProperty.FontFamily family) {
+		return family == FontProperty.FontFamily.DYSLEXIC || family.name().startsWith("BY_DS");
 	}
 
 	/**
@@ -78,8 +66,10 @@ public final class FontLoader {
 		if (baseUrl.isEmpty()) {
 			return;
 		}
-		for (FontProperty.FontFamily family: bundled) {
-			loadFontFile(family.cssName().split(",")[0], baseUrl, () -> {});
+		for (FontProperty.FontFamily family : FontProperty.FontFamily.values()) {
+			if (isBundled(family)) {
+				loadFontFile(family.cssName().split(",")[0], baseUrl, () -> {});
+			}
 		}
 	}
 
@@ -93,22 +83,24 @@ public final class FontLoader {
 			injected.put(familyName, FontState.LOADING);
 		}
 		if (injected.get(familyName) != FontState.ACTIVE) {
-			loadWebFont(familyName, (activeFontName, variation) -> {
-				injected.put(activeFontName, FontState.ACTIVE);
-				callback.run();
-			});
+			loadWebFont(familyName, callback);
 		}
 	}
 
-	private static void loadWebFont(String family, FontLoadCallback callback) {
-		JsPropertyMap<?> toLoad = JsPropertyMap.of(
-			"fontactive", callback,
-			"custom", JsPropertyMap.of(
-				"families", JsArray.of(family)
-			)
-		);
-		if (WebFont.get() != null) {
-			WebFont.get().load(toLoad);
-		}
+	private static void loadWebFont(String familyName, Runnable callback) {
+		// the WOFF files are valid for all sizes, pick arbitrary single digit size here
+		DomGlobal.document
+				.fonts
+				.load("8px " + familyName)
+				.then(ignore -> {
+					injected.put(familyName, FontState.ACTIVE);
+					callback.run();
+					return null;
+				})
+				.catch_(err -> {
+					callback.run();
+					Log.warn(err);
+					return null;
+				});
 	}
 }

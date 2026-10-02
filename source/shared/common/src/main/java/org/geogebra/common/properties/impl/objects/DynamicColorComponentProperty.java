@@ -23,16 +23,16 @@ import static org.geogebra.common.kernel.geos.GeoElement.COLORSPACE_RGB;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.arithmetic.ValidExpression;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.parser.ParseException;
 import org.geogebra.common.main.Localization;
+import org.geogebra.common.main.MyError;
 import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting the component of an advanced color for an object.
@@ -44,8 +44,13 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	private final int colorIndex;
 	private final boolean useColorTranslationKey;
 
-	private DynamicColorComponentProperty(Localization localization, boolean useColorTranslationKey,
-			GeoElement geoElement, String name, Integer requiredColorSpace, int colorIndex) {
+	private DynamicColorComponentProperty(
+			Localization localization,
+			boolean useColorTranslationKey,
+			GeoElement geoElement,
+			String name,
+			Integer requiredColorSpace,
+			int colorIndex) {
 		super(localization, name);
 		this.geoElement = geoElement;
 		this.requiredColorSpace = requiredColorSpace;
@@ -60,8 +65,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forRed(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, true, geoElement,
-				"red", COLORSPACE_RGB, 0);
+		return new DynamicColorComponentProperty(
+				localization, true, geoElement, "red", COLORSPACE_RGB, 0);
 	}
 
 	/**
@@ -71,8 +76,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forGreen(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, true, geoElement,
-				"green", COLORSPACE_RGB, 1);
+		return new DynamicColorComponentProperty(
+				localization, true, geoElement, "green", COLORSPACE_RGB, 1);
 	}
 
 	/**
@@ -82,8 +87,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forBlue(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, true, geoElement,
-				"blue", COLORSPACE_RGB, 2);
+		return new DynamicColorComponentProperty(
+				localization, true, geoElement, "blue", COLORSPACE_RGB, 2);
 	}
 
 	/**
@@ -93,8 +98,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forHueHSL(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, false, geoElement,
-				"Hue", COLORSPACE_HSL, 0);
+		return new DynamicColorComponentProperty(
+				localization, false, geoElement, "Hue", COLORSPACE_HSL, 0);
 	}
 
 	/**
@@ -104,8 +109,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forHueHSB(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, false, geoElement,
-				"Hue", COLORSPACE_HSB, 0);
+		return new DynamicColorComponentProperty(
+				localization, false, geoElement, "Hue", COLORSPACE_HSB, 0);
 	}
 
 	/**
@@ -115,8 +120,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forSaturationHSL(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, false, geoElement,
-				"Saturation", COLORSPACE_HSL, 1);
+		return new DynamicColorComponentProperty(
+				localization, false, geoElement, "Saturation", COLORSPACE_HSL, 1);
 	}
 
 	/**
@@ -126,8 +131,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forSaturationHSB(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, false, geoElement,
-				"Saturation", COLORSPACE_HSB, 1);
+		return new DynamicColorComponentProperty(
+				localization, false, geoElement, "Saturation", COLORSPACE_HSB, 1);
 	}
 
 	/**
@@ -137,8 +142,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forBrightness(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, false, geoElement,
-				"Value", COLORSPACE_HSB, 2);
+		return new DynamicColorComponentProperty(
+				localization, false, geoElement, "Value", COLORSPACE_HSB, 2);
 	}
 
 	/**
@@ -148,8 +153,8 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forLightness(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, false, geoElement,
-				"Lightness", COLORSPACE_HSL, 2);
+		return new DynamicColorComponentProperty(
+				localization, false, geoElement, "Lightness", COLORSPACE_HSL, 2);
 	}
 
 	/**
@@ -159,21 +164,20 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 	 */
 	public static DynamicColorComponentProperty forOpacity(
 			Localization localization, GeoElement geoElement) {
-		return new DynamicColorComponentProperty(localization, false, geoElement,
-				"Opacity", null, 3);
+		return new DynamicColorComponentProperty(localization, false, geoElement, "Opacity", null, 3);
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
+	public @Nullable String validateValue(String value) {
 		try {
-			ValidExpression validExpression = geoElement.getKernel().getParser()
-					.parseGeoGebraExpression(value);
+			ValidExpression validExpression =
+					geoElement.getKernel().getParser().parseGeoGebraExpression(value);
 			if (!validExpression.evaluatesToNumber(false) || evaluateToList(value) == null) {
 				return getLocalization().getError("NumberExpected");
 			}
 			return null;
-		} catch (ParseException parseException) {
-			return parseException.getLocalizedMessage();
+		} catch (ParseException | MyError validationError) {
+			return validationError.getLocalizedMessage();
 		}
 	}
 
@@ -225,12 +229,12 @@ public final class DynamicColorComponentProperty extends AbstractValuedProperty<
 
 	private GeoList evaluateToList(String value) {
 		GeoList currentColorComponentValues = geoElement.getColorFunction();
-		List<String> colorComponentValues = currentColorComponentValues.elements()
+		List<String> colorComponentValues = currentColorComponentValues
+				.elements()
 				.map(element -> element.getLabel(StringTemplate.editTemplate))
 				.collect(Collectors.toList());
 		colorComponentValues.set(colorIndex, value);
 		String newAdvancedColorInput = "{" + String.join(",", colorComponentValues) + "}";
-		return geoElement.getKernel().getAlgebraProcessor()
-				.evaluateToList(newAdvancedColorInput);
+		return geoElement.getKernel().getAlgebraProcessor().evaluateToList(newAdvancedColorInput);
 	}
 }

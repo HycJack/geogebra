@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.geogebra.common.awt.AwtFactory;
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.euclidian.EuclidianViewInterfaceCommon;
 import org.geogebra.common.gui.layout.DockManager;
 import org.geogebra.common.gui.toolbar.ToolBar;
@@ -41,11 +42,12 @@ import org.geogebra.common.util.debug.Log;
 
 /**
  * @author gabor
- * 
+ *
  *         Abstract class for Web and Desktop Layout
  *
  */
-public abstract class Layout implements SettingListener {
+@HasNativeSubclass
+public abstract class Layout implements SettingListener<LayoutSettings> {
 	private static final double PORTRAIT_DIVIDER = 0.45;
 
 	/**
@@ -62,19 +64,19 @@ public abstract class Layout implements SettingListener {
 
 	/**
 	 * Initialize the default perspectives
-	 * 
+	 *
 	 * @param app
 	 *            app
 	 * @param avPercent
 	 *            algebra width (relative to screen width, eg 0.2)
-	 * 
+	 *
 	 */
 	public void initializeDefaultPerspectives(App app, double avPercent) {
 		List<Perspective> perspectives = new ArrayList<>();
 
 		DockSplitPaneData[] spData = getSPData(app, avPercent);
-		String defToolbar = ToolBar.getAllToolsNoMacros(app.isHTML5Applet(),
-				GlobalScope.isExamActive(app), app);
+		String defToolbar =
+				ToolBar.getAllToolsNoMacros(app.isHTML5Applet(), GlobalScope.isExamActive(app), app);
 
 		// algebra & graphics (default settings of GeoGebra < 3.2)
 		Perspective graphing = createGraphingPerspective(app, spData, defToolbar);
@@ -94,14 +96,15 @@ public abstract class Layout implements SettingListener {
 		perspectives.add(cas);
 
 		boolean supports3D = app.supportsView(App.VIEW_EUCLIDIAN3D);
-		Perspective graphing3D = supports3D
-				? createGraphing3DPerspective(app, spData, defToolbar)
-				: null;
+		Perspective graphing3D =
+				supports3D ? createGraphing3DPerspective(app, spData, defToolbar) : null;
 
 		perspectives.add(graphing3D);
 
 		boolean needAV = app.isSuite();
-		Perspective probability = createProbabilityPerspective(app, spData, defToolbar, needAV);
+		Perspective probability = app.getSettings().getProbCalcSettings().isEnabled()
+				? createProbabilityPerspective(app, spData, defToolbar, needAV)
+				: null;
 		perspectives.add(probability);
 
 		if (app.isWhiteboardActive()) {
@@ -118,72 +121,146 @@ public abstract class Layout implements SettingListener {
 		defaultPerspectives = perspectives.toArray(new Perspective[0]);
 	}
 
-	private static Perspective createGraphingPerspective(App app, DockSplitPaneData[] spData,
-														 String defToolbar) {
+	private static Perspective createGraphingPerspective(
+			App app, DockSplitPaneData[] spData, String defToolbar) {
 		DockPanelData[] dpData = new DockPanelData[6];
-		dpData[0] = new DockPanelData(App.VIEW_EUCLIDIAN, null, true, false,
+		dpData[0] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
+				true,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
 				app.isPortrait() ? "3" : "1",
 				500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null, true, false,
+		dpData[1] = new DockPanelData(
+				App.VIEW_ALGEBRA,
+				null,
+				true,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
 				app.isPortrait() ? "1" : "3",
 				200);
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, false, false,
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, false, false, false,
+				"1,1",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				false,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,3", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false, false,
+				"1,3",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				false,
 				true,
 				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1,1", 400);
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, false, false,
+				"1,1,1,1",
+				400);
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1,1", 500);
+				"1,1,1",
+				500);
 
-		return new Perspective(Perspective.GRAPHING, spData, dpData, defToolbar,
-				true, true, true, true, true, InputPosition.algebraView);
+		return new Perspective(
+				Perspective.GRAPHING,
+				spData,
+				dpData,
+				defToolbar,
+				true,
+				true,
+				true,
+				true,
+				true,
+				InputPosition.algebraView);
 	}
 
-	private static Perspective createGeometryPerspective(App app, DockSplitPaneData[] spData,
-														 String defToolbar) {
+	private static Perspective createGeometryPerspective(
+			App app, DockSplitPaneData[] spData, String defToolbar) {
 		DockPanelData[] dpData = new DockPanelData[6];
-		dpData[0] = new DockPanelData(App.VIEW_EUCLIDIAN, null, true, false,
+		dpData[0] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
+				true,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
 				app.isPortrait() ? "3" : "1",
 				500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null,
-				app.isUnbundled(),
+		dpData[1] = new DockPanelData(
+						App.VIEW_ALGEBRA,
+						null,
+						app.isUnbundled(),
+						false,
+						false,
+						AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
+						app.isPortrait() ? "1" : "3",
+						200)
+				.setTabId(getGeometryTabId(app));
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
 				false,
 				false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
-				app.isPortrait() ? "1" : "3",
-				200).setTabId(getGeometryTabId(app));
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, false, false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, false, false, false,
+				"1,1",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				false,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,3", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false, false,
+				"1,3",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				false,
 				true,
 				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1,1", 400);
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, false, false,
+				"1,1,1,1",
+				400);
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1,1", 500);
+				"1,1,1",
+				500);
 
-		Perspective perspective = new Perspective(Perspective.GEOMETRY, spData,
-				dpData, defToolbar, true, false, false, false, true,
+		Perspective perspective = new Perspective(
+				Perspective.GEOMETRY,
+				spData,
+				dpData,
+				defToolbar,
+				true,
+				false,
+				false,
+				false,
+				true,
 				InputPosition.algebraView);
 		perspective.setUnitAxesRatio(true);
 		perspective.setLabelingStyle(ConstructionDefaults.LABEL_VISIBLE_POINTS_ONLY);
@@ -196,178 +273,374 @@ public abstract class Layout implements SettingListener {
 	}
 
 	private static DockPanelData.TabIds getProbabilityTabId(App app) {
-		return app.isUnbundled() ? DockPanelData.TabIds.DISTRIBUTION
-				: DockPanelData.TabIds.ALGEBRA;
+		return app.isUnbundled() ? DockPanelData.TabIds.DISTRIBUTION : DockPanelData.TabIds.ALGEBRA;
 	}
 
 	private static Perspective createSpreadsheetPerspective(String defToolbar) {
 		// Table & Graphics - spreadsheet and euclidian view
 		DockSplitPaneData[] spData = new DockSplitPaneData[1];
-		spData[0] = new DockSplitPaneData("", 0.45,
-				SwingConstants.HORIZONTAL_SPLIT);
+		spData[0] = new DockSplitPaneData("", 0.45, SwingConstants.HORIZONTAL_SPLIT);
 
 		DockPanelData[] dpData = new DockPanelData[6];
-		dpData[0] = new DockPanelData(App.VIEW_EUCLIDIAN, null, true, false,
+		dpData[0] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
+				true,
 				false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400), "1",
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
+				"1",
 				500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null, false, false,
+		dpData[1] = new DockPanelData(
+				App.VIEW_ALGEBRA,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
-				"3,3", 200);
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, true, false,
+				"3,3",
+				200);
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
+				true,
 				false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400), "3",
-				300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, false, false, false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"3,1", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false, false,
+				"3",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				false,
+				false,
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
+				"3,1",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				false,
 				true,
 				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1", 400);
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, false, false,
+				"1,1,1",
+				400);
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 500);
+				"1,1",
+				500);
 
-		return new Perspective(Perspective.SPREADSHEET, spData, dpData,
-				defToolbar, true, false, true, false, true,
+		return new Perspective(
+				Perspective.SPREADSHEET,
+				spData,
+				dpData,
+				defToolbar,
+				true,
+				false,
+				true,
+				false,
+				true,
 				InputPosition.algebraView);
 	}
 
 	private static Perspective createCasPerspective(DockSplitPaneData[] spData, String defToolbar) {
 		DockPanelData[] dpData = new DockPanelData[6];
-		dpData[0] = new DockPanelData(App.VIEW_EUCLIDIAN, null, true, false,
+		dpData[0] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
+				true,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1", 500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null, false, false,
+				"1",
+				500);
+		dpData[1] = new DockPanelData(
+				App.VIEW_ALGEBRA,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
-				"3,3", 200);
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, false,
-				false, false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"3,1", 300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, true, false,
+				"3,3",
+				200);
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"3", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false,
-				true, true,
-				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1", 400);
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, false,
-				false, false,
+				"3,1",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				true,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 500);
+				"3",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				true,
+				true,
+				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
+				"1,1,1",
+				400);
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				false,
+				false,
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
+				"1,1",
+				500);
 
-		return new Perspective(Perspective.CAS, spData, dpData,
-				defToolbar, true, false, true, false, true,
+		return new Perspective(
+				Perspective.CAS,
+				spData,
+				dpData,
+				defToolbar,
+				true,
+				false,
+				true,
+				false,
+				true,
 				InputPosition.algebraView);
 	}
 
-	private static Perspective createGraphing3DPerspective(App app, DockSplitPaneData[] spData,
-														   String defToolbar) {
+	private static Perspective createGraphing3DPerspective(
+			App app, DockSplitPaneData[] spData, String defToolbar) {
 		DockPanelData[] dpData = new DockPanelData[6];
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN, null, false,
-				false, false,
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
+				false,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,3", 500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null, true, false,
+				"1,3",
+				500);
+		dpData[1] = new DockPanelData(
+				App.VIEW_ALGEBRA,
+				null,
+				true,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
-				app.isPortrait() ? "1" : "3", 200);
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, false,
-				false, false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, false, false,
+				app.isPortrait() ? "1" : "3",
+				200);
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,3,3", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false,
-				true, true,
-				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1,1", 400);
-		dpData[0] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, true,
-				false, false,
+				"1,1",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				false,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				app.isPortrait() ? "3" : "1", 500);
+				"1,3,3",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				true,
+				true,
+				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
+				"1,1,1,1",
+				400);
+		dpData[0] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				true,
+				false,
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
+				app.isPortrait() ? "3" : "1",
+				500);
 
 		// Note: toolbar definition is always for EV1, for 3D we use
 		// definition from the 3D dock panel classes
-		return new Perspective(Perspective.GRAPHER_3D, spData, dpData,
-				defToolbar, true, false, true, true, true,
+		return new Perspective(
+				Perspective.GRAPHER_3D,
+				spData,
+				dpData,
+				defToolbar,
+				true,
+				false,
+				true,
+				true,
+				true,
 				InputPosition.algebraView);
 	}
 
-	private static Perspective createProbabilityPerspective(App app, DockSplitPaneData[] spData,
-			String defToolbar, boolean needAV) {
+	private static Perspective createProbabilityPerspective(
+			App app, DockSplitPaneData[] spData, String defToolbar, boolean needAV) {
 		DockPanelData[] dpData = new DockPanelData[7];
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN, null, false, false,
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
 				false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400), "1,1",
+				false,
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
+				"1,1",
 				500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null, needAV, false,
+		dpData[1] = new DockPanelData(
+						App.VIEW_ALGEBRA,
+						null,
+						needAV,
+						false,
+						false,
+						AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
+						app.isPortrait() ? "1" : "3",
+						200)
+				.setTabId(getProbabilityTabId(app));
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
 				false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
-				app.isPortrait() ? "1" : "3", 200).setTabId(getProbabilityTabId(app));
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, false, false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, false, false, false,
+				"1,1",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				false,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,3,3", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false, false,
+				"1,3,3",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				false,
 				true,
 				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1,1", 400);
-		dpData[6] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, false, false,
+				"1,1,1,1",
+				400);
+		dpData[6] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 500);
-		dpData[0] = new DockPanelData(App.VIEW_PROBABILITY_CALCULATOR, null,
-				true, false, false,
+				"1,1",
+				500);
+		dpData[0] = new DockPanelData(
+				App.VIEW_PROBABILITY_CALCULATOR,
+				null,
+				true,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 600),
-				app.isPortrait() ? "3" : "1", 500);
+				app.isPortrait() ? "3" : "1",
+				500);
 
-		return new Perspective(Perspective.PROBABILITY, spData, dpData,
-				defToolbar, false, false, true, false, true,
+		return new Perspective(
+				Perspective.PROBABILITY,
+				spData,
+				dpData,
+				defToolbar,
+				false,
+				false,
+				true,
+				false,
+				true,
 				InputPosition.algebraView);
 	}
 
 	private static Perspective createWhiteboardPerspective(DockSplitPaneData[] spData) {
 		DockPanelData[] dpData = new DockPanelData[6];
-		dpData[0] = new DockPanelData(App.VIEW_EUCLIDIAN, null, true, false,
+		dpData[0] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
+				true,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1", 500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null, false, false,
+				"1",
+				500);
+		dpData[1] = new DockPanelData(
+				App.VIEW_ALGEBRA,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
-				"3", 200);
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, false,
-				false, false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, false, false,
+				"3",
+				200);
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,3", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false,
-				true, true,
-				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1,1", 400);
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, false,
-				false, false,
+				"1,1",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				false,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1,1", 500);
+				"1,3",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				true,
+				true,
+				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
+				"1,1,1,1",
+				400);
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				false,
+				false,
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
+				"1,1,1",
+				500);
 
-		Perspective whiteboard = new Perspective(Perspective.NOTES, spData, dpData,
-				"", true, false, false, false, true,
+		Perspective whiteboard = new Perspective(
+				Perspective.NOTES,
+				spData,
+				dpData,
+				"",
+				true,
+				false,
+				false,
+				false,
+				true,
 				InputPosition.algebraView);
 		whiteboard.setToolBarPosition(SwingConstants.SOUTH);
 
@@ -376,46 +649,91 @@ public abstract class Layout implements SettingListener {
 
 	private static Perspective createScientificPerspective(App app, double avPercent) {
 		DockPanelData[] dpData = new DockPanelData[6];
-		dpData[0] = new DockPanelData(App.VIEW_EUCLIDIAN, null, false, false,
+		dpData[0] = new DockPanelData(
+				App.VIEW_EUCLIDIAN,
+				null,
 				false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400), "3",
+				false,
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
+				"3",
 				500);
-		dpData[1] = new DockPanelData(App.VIEW_ALGEBRA, null, true, false,
+		dpData[1] = new DockPanelData(
+				App.VIEW_ALGEBRA,
+				null,
+				true,
 				false,
-				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400), "1",
+				false,
+				AwtFactory.getPrototype().newRectangle(100, 100, 250, 400),
+				"1",
 				200);
-		dpData[2] = new DockPanelData(App.VIEW_SPREADSHEET, null, false, false,
+		dpData[2] = new DockPanelData(
+				App.VIEW_SPREADSHEET,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1", 300);
-		dpData[3] = new DockPanelData(App.VIEW_CAS, null, false, false, false,
+				"1,1",
+				300);
+		dpData[3] = new DockPanelData(
+				App.VIEW_CAS,
+				null,
+				false,
+				false,
+				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,3", 300);
-		dpData[4] = new DockPanelData(App.VIEW_PROPERTIES, null, false, false,
+				"1,3",
+				300);
+		dpData[4] = new DockPanelData(
+				App.VIEW_PROPERTIES,
+				null,
+				false,
+				false,
 				true,
 				AwtFactory.getPrototype().newRectangle(100, 100, 700, 550),
-				"1,1,1,1", 400);
-		dpData[5] = new DockPanelData(App.VIEW_EUCLIDIAN3D, null, false, false,
+				"1,1,1,1",
+				400);
+		dpData[5] = new DockPanelData(
+				App.VIEW_EUCLIDIAN3D,
+				null,
+				false,
+				false,
 				false,
 				AwtFactory.getPrototype().newRectangle(100, 100, 600, 400),
-				"1,1,1", 500);
+				"1,1,1",
+				500);
 
 		DockSplitPaneData[] spData = new DockSplitPaneData[1];
-		spData[0] = new DockSplitPaneData("", avPercent,
-				SwingConstants.HORIZONTAL_SPLIT);
+		spData[0] = new DockSplitPaneData("", avPercent, SwingConstants.HORIZONTAL_SPLIT);
 
-		String defToolbar = ToolBar.getAllToolsNoMacros(app.isHTML5Applet(),
-				GlobalScope.isExamActive(app), app);
+		String defToolbar =
+				ToolBar.getAllToolsNoMacros(app.isHTML5Applet(), GlobalScope.isExamActive(app), app);
 
-		return new Perspective(Perspective.SCIENTIFIC, spData, dpData,
-				defToolbar, true, true, true, true, true,
+		return new Perspective(
+				Perspective.SCIENTIFIC,
+				spData,
+				dpData,
+				defToolbar,
+				true,
+				true,
+				true,
+				true,
+				true,
 				InputPosition.algebraView);
 	}
 
 	private static Perspective createEvaluatorPerspective() {
-		return new Perspective(Perspective.EVALUATOR,
-				new DockSplitPaneData[0], new DockPanelData[0], "", false, false,
-				false, true, false,
+		return new Perspective(
+				Perspective.EVALUATOR,
+				new DockSplitPaneData[0],
+				new DockPanelData[0],
+				"",
+				false,
+				false,
+				false,
+				true,
+				false,
 				InputPosition.algebraView);
 	}
 
@@ -458,24 +776,21 @@ public abstract class Layout implements SettingListener {
 
 	/**
 	 * Sets the grid and axes from perspective
-	 * 
+	 *
 	 * @param app
 	 *            app to receive the settings
 	 * @param perspective
 	 *            perspective
 	 * @return true if changed
 	 */
-	protected boolean setEVsettingsFromPerspective(App app,
-			Perspective perspective) {
+	protected boolean setEVsettingsFromPerspective(App app, Perspective perspective) {
 		boolean changed = false;
 		if (!perspective.isUserDefined()) {
 			EuclidianViewInterfaceCommon ev = app.getActiveEuclidianView();
 			EuclidianSettings euclidianSettings = getEuclidianSettings(app);
 			if (euclidianSettings != null) {
 				changed =
-						euclidianSettings.setShowAxes(
-								perspective.getShowAxes(),
-								perspective.getShowAxes());
+						euclidianSettings.setShowAxes(perspective.getShowAxes(), perspective.getShowAxes());
 				changed |= euclidianSettings.showGrid(perspective.getShowGrid());
 
 				if (app.isEuclidianView3D(ev)) {
@@ -497,8 +812,7 @@ public abstract class Layout implements SettingListener {
 		Settings settings = app.getSettings();
 		if (app.getEuclidianView1() == ev) {
 			return settings.getEuclidian(1);
-		} else if (app.hasEuclidianView2EitherShowingOrNot(1)
-				&& app.getEuclidianView2(1) == ev) {
+		} else if (app.hasEuclidianView2EitherShowingOrNot(1) && app.getEuclidianView2(1) == ev) {
 			return settings.getEuclidian(2);
 		} else if (app.isEuclidianView3D(ev)) {
 			return settings.getEuclidian(3);
@@ -509,7 +823,7 @@ public abstract class Layout implements SettingListener {
 
 	/**
 	 * Append current perspective XML to builder
-	 * 
+	 *
 	 * @param sb
 	 *            xml builder
 	 */
@@ -525,12 +839,11 @@ public abstract class Layout implements SettingListener {
 		if (tmpPerspective != null) {
 			tmpPerspective.getXml(sb);
 		}
-
 	}
 
 	/**
 	 * Return the layout as XML.
-	 * 
+	 *
 	 * @param sb
 	 *            string builder
 	 * @param asPreference
@@ -557,7 +870,6 @@ public abstract class Layout implements SettingListener {
 			sb.attr("allowStyleBar", settings.isAllowingStyleBar());
 			sb.endTag();
 		}
-
 	}
 
 	/**
@@ -603,12 +915,10 @@ public abstract class Layout implements SettingListener {
 	private static DockSplitPaneData[] getSPData(App app, double avPercent) {
 		DockSplitPaneData[] spData = new DockSplitPaneData[1];
 		if (app.isPortrait()) {
-			spData[0] = new DockSplitPaneData("", PORTRAIT_DIVIDER,
-					SwingConstants.VERTICAL_SPLIT);
+			spData[0] = new DockSplitPaneData("", PORTRAIT_DIVIDER, SwingConstants.VERTICAL_SPLIT);
 
 		} else {
-			spData[0] = new DockSplitPaneData("", avPercent,
-					SwingConstants.HORIZONTAL_SPLIT);
+			spData[0] = new DockSplitPaneData("", avPercent, SwingConstants.HORIZONTAL_SPLIT);
 		}
 		return spData;
 	}

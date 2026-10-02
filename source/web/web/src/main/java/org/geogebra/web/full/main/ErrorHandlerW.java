@@ -28,7 +28,7 @@ import org.gwtproject.user.client.ui.Label;
 /**
  * Default error handler
  */
-public class ErrorHandlerW implements ErrorHandler {
+public final class ErrorHandlerW implements ErrorHandler {
 	private final AppW app;
 
 	/**
@@ -53,8 +53,7 @@ public class ErrorHandlerW implements ErrorHandler {
 	}
 
 	@Override
-	public boolean onUndefinedVariables(String string,
-			AsyncOperation<String[]> callback) {
+	public boolean onUndefinedVariables(String string, AsyncOperation<String[]> callback) {
 		return app.getGuiManager().checkAutoCreateSliders(string, callback);
 	}
 
@@ -63,15 +62,19 @@ public class ErrorHandlerW implements ErrorHandler {
 		if (!app.isErrorDialogsActive()) {
 			return;
 		}
-		showErrorDialog(app.getLocalization().getError("Error"), "Close",
-				"ShowOnlineHelp", message, () -> openCommandHelp(command));
+		showErrorDialog(
+				app.getLocalization().getError("Error"),
+				"Close",
+				"ShowOnlineHelp",
+				message,
+				() -> openCommandHelp(command));
 	}
 
 	/**
 	 * @param command
 	 *            command name
 	 */
-	protected void openCommandHelp(String command) {
+	private void openCommandHelp(String command) {
 		if (app.getGuiManager() != null) {
 			app.getGuiManager().openHelp(ManualPage.COMMAND, command);
 		}
@@ -82,8 +85,8 @@ public class ErrorHandlerW implements ErrorHandler {
 		return null;
 	}
 
-	private void showErrorDialog(String title, String negBtn, String posBtn,
-			String message, Runnable posBtnAction) {
+	private void showErrorDialog(
+			String title, String negBtn, String posBtn, String message, Runnable posBtnAction) {
 		DialogData data = new DialogData(title, negBtn, posBtn);
 		ComponentDialog dialog = new ComponentDialog(app, data, false, true);
 		FlowPanel messagePanel = new FlowPanel();

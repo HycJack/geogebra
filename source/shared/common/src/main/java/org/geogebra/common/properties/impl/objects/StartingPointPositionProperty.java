@@ -16,12 +16,13 @@
 
 package org.geogebra.common.properties.impl.objects;
 
+import static org.geogebra.common.properties.impl.objects.PlacementProperty.isDependentTextCommand;
+import static org.geogebra.common.util.Classifier.isSlider;
+
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.Locateable;
-import org.geogebra.common.kernel.geos.AbsoluteScreenLocateable;
+import org.geogebra.common.kernel.algos.AlgoVector;
 import org.geogebra.common.kernel.geos.GeoBoolean;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoImage;
@@ -30,6 +31,7 @@ import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.impl.objects.PlacementProperty.Placement;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting the starting point of an object used as an anchor.
@@ -45,8 +47,20 @@ public class StartingPointPositionProperty extends AbstractValuedProperty<String
 	public StartingPointPositionProperty(Localization localization, GeoElement geoElement)
 			throws NotApplicablePropertyException {
 		super(localization, "StartingPoint");
-		if (geoElement instanceof GeoImage || geoElement instanceof GeoBoolean
-				|| !(geoElement instanceof AbsoluteScreenLocateable) || geoElement.isGeoAngle()) {
+
+		if (geoElement instanceof GeoImage || geoElement instanceof GeoBoolean) {
+			throw new NotApplicablePropertyException(geoElement);
+		}
+		// numerics that are not sliders don't have placement
+		// on the other hand, angles that are sliders do
+		if (geoElement.isGeoNumeric() && !isSlider(geoElement)) {
+			throw new NotApplicablePropertyException(geoElement);
+		}
+
+		if (!(geoElement instanceof Locateable)
+				|| isDependentTextCommand(geoElement)
+				// vectors
+				|| geoElement.getParentAlgorithm() instanceof AlgoVector) {
 			throw new NotApplicablePropertyException(geoElement);
 		}
 		this.geoElement = geoElement;
@@ -58,9 +72,9 @@ public class StartingPointPositionProperty extends AbstractValuedProperty<String
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
-		return PositionPropertyCollection.validatePointExpression(geoElement.getKernel()
-						.getParser(), geoElement.getKernel().getLocalization(), value);
+	public @Nullable String validateValue(String value) {
+		return PositionPropertyCollection.validatePointExpression(
+				geoElement.getKernel().getParser(), geoElement.getKernel().getLocalization(), value);
 	}
 
 	@Override

@@ -20,10 +20,11 @@ import org.geogebra.common.awt.GColor;
 import org.geogebra.common.euclidian.EuclidianConstants;
 import org.geogebra.common.io.XMLStringBuilder;
 import org.geogebra.common.kernel.geos.XMLBuilder;
+import org.geogebra.common.main.GeoGebraColorConstants;
 
-public class PenToolsSettings extends AbstractSettings {
+public class PenToolsSettings extends AbstractSettings<PenToolsSettings> {
 
-	private GColor lastSelectedPenColor = GColor.BLACK;
+	private GColor lastSelectedPenColor = GeoGebraColorConstants.NEUTRAL_900;
 	private GColor lastSelectedHighlighterColor = GColor.newColorRGB(0x388C83);
 	private int lastPenThickness = EuclidianConstants.DEFAULT_PEN_SIZE;
 	private int lastHighlighterThickness = EuclidianConstants.DEFAULT_HIGHLIGHTER_SIZE;
@@ -63,14 +64,14 @@ public class PenToolsSettings extends AbstractSettings {
 	}
 
 	/**
-	 * @return last selected size for pen
+	 * @return last selected size for pen, in half-pixels
 	 */
 	public int getLastPenThickness() {
 		return lastPenThickness;
 	}
 
 	/**
-	 * @param lastPenThickness size of pen
+	 * @param lastPenThickness size of pen, in half-pixels
 	 */
 	public void setLastPenThickness(int lastPenThickness) {
 		this.lastPenThickness = lastPenThickness;
@@ -78,14 +79,14 @@ public class PenToolsSettings extends AbstractSettings {
 	}
 
 	/**
-	 * @return last selected size of highlighter
+	 * @return last selected size of highlighter, in half-pixels
 	 */
 	public int getLastHighlighterThickness() {
 		return lastHighlighterThickness;
 	}
 
 	/**
-	 * @param lastHighlighterThickness size of highlighter
+	 * @param lastHighlighterThickness size of highlighter, in half-pixels
 	 */
 	public void setLastHighlighterThickness(int lastHighlighterThickness) {
 		this.lastHighlighterThickness = lastHighlighterThickness;
@@ -122,7 +123,7 @@ public class PenToolsSettings extends AbstractSettings {
 	 */
 	public void getXML(XMLStringBuilder sbxml) {
 		// size of pen
-		sbxml.startTag("penSize").attr("val", getLastPenThickness()).endTag();
+		sbxml.startTag("penSize").attr("val", getLastPenThickness() / 2.0).endTag();
 
 		// color of pen
 		sbxml.startTag("penColor");
@@ -130,8 +131,10 @@ public class PenToolsSettings extends AbstractSettings {
 		sbxml.endTag();
 
 		// size of highlighter
-		sbxml.startTag("highlighterSize")
-				.attr("val", getLastHighlighterThickness()).endTag();
+		sbxml
+				.startTag("highlighterSize")
+				.attr("val", getLastHighlighterThickness() / 2.0)
+				.endTag();
 
 		// highlighter of pen
 		sbxml.startTag("highlighterColor");

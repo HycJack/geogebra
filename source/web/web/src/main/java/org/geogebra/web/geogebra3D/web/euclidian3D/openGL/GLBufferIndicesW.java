@@ -22,11 +22,11 @@ import elemental2.core.Int16Array;
 
 /**
  * buffers for openGL
- * 
+ *
  * @author mathieu
  *
  */
-public class GLBufferIndicesW implements GLBufferIndices {
+public final class GLBufferIndicesW implements GLBufferIndices {
 
 	private Int16Array impl;
 	private boolean isEmpty;
@@ -59,7 +59,6 @@ public class GLBufferIndicesW implements GLBufferIndices {
 		}
 
 		mIndex = 0;
-
 	}
 
 	@Override
@@ -87,7 +86,7 @@ public class GLBufferIndicesW implements GLBufferIndices {
 
 	@Override
 	public short get() {
-		short ret = impl.getAt(mIndex).shortValue();
+		short ret = (short) impl.at(mIndex);
 		mIndex++;
 		return ret;
 	}
@@ -108,12 +107,13 @@ public class GLBufferIndicesW implements GLBufferIndices {
 			return;
 		}
 		for (int i = 0; i < ret.length; i++) {
-			ret[i] = impl.getAt(i).shortValue();
+			double value = impl.at(i);
+			ret[i] = (short) value;
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @return buffer
 	 */
 	public Int16Array getBuffer() {
@@ -131,5 +131,4 @@ public class GLBufferIndicesW implements GLBufferIndices {
 	public void position(int newPosition) {
 		mIndex = newPosition;
 	}
-
 }

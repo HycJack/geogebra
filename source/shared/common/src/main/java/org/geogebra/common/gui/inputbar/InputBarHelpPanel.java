@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.gui.util.TableSymbols;
 import org.geogebra.common.kernel.commands.CommandsConstants;
@@ -33,6 +31,7 @@ import org.geogebra.common.util.LowerCaseDictionary;
 import org.geogebra.common.util.ManualPage;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.common.util.debug.Analytics;
+import org.jspecify.annotations.NonNull;
 
 import com.google.j2objc.annotations.Weak;
 
@@ -40,6 +39,7 @@ public class InputBarHelpPanel {
 
 	@Weak
 	protected App mApp;
+
 	private LowerCaseDictionary mMathFuncDict;
 	private LowerCaseDictionary mDict;
 	private Collection<String> mAllCommands;
@@ -69,7 +69,7 @@ public class InputBarHelpPanel {
 	 *            category index
 	 * @return commands tree map
 	 */
-	static public TreeSet<String> getCommandTreeMap(
+	public static TreeSet<String> getCommandTreeMap(
 			App app, Comparator<String> comparator, int index) {
 
 		LowerCaseDictionary[] subDict = app.getSubCommandDictionary();
@@ -97,8 +97,7 @@ public class InputBarHelpPanel {
 	 *            String comparator
 	 * @return all commands tree set
 	 */
-	static public TreeSet<String> getAllCommandsTreeSet(App app,
-			Comparator<String> comparator) {
+	public static TreeSet<String> getAllCommandsTreeSet(App app, Comparator<String> comparator) {
 
 		TreeSet<String> treeSet = new TreeSet<>(comparator);
 
@@ -121,8 +120,7 @@ public class InputBarHelpPanel {
 			mApp.getCommandDictionaryCAS();
 		}
 		// math functions
-		String[] translatedFunctions = TableSymbols
-				.getTranslatedFunctions(mApp);
+		String[] translatedFunctions = TableSymbols.getTranslatedFunctions(mApp);
 		mMathFuncDict = new LowerCaseDictionary();
 		for (String function : translatedFunctions) {
 			// remove start space char
@@ -159,7 +157,6 @@ public class InputBarHelpPanel {
 				mCommands.put(i, list);
 			}
 		}
-
 	}
 
 	protected Collection<String> getCommands(int i) {
@@ -253,10 +250,16 @@ public class InputBarHelpPanel {
 		return getCommands(category);
 	}
 
+	/**
+	 * @return title of the mathematical functions category
+	 */
 	public String getMathFunctionsTitle() {
 		return mApp.getLocalization().getMenu("MathematicalFunctions");
 	}
 
+	/**
+	 * @return title of the all commands category
+	 */
 	public String getAllCommandsTitle() {
 		return mApp.getLocalization().getMenu("AllCommands");
 	}
@@ -283,8 +286,7 @@ public class InputBarHelpPanel {
 
 		// check if math func
 		if (command.contains("(")) {
-			String mathFuncHelpURL = mApp.getGuiManager()
-					.getHelpURL(ManualPage.OPERATORS, null);
+			String mathFuncHelpURL = mApp.getGuiManager().getHelpURL(ManualPage.OPERATORS, null);
 
 			mStringBuilder.append(mathFuncHelpURL);
 			mStringBuilder.append(urlCaller);
@@ -302,7 +304,6 @@ public class InputBarHelpPanel {
 
 		String ret = mStringBuilder.toString();
 		return ret.replaceAll(" ", "%20");
-
 	}
 
 	/**
@@ -313,8 +314,9 @@ public class InputBarHelpPanel {
 	 * @return whether it's a function or geo
 	 */
 	public boolean checkWordAroundCursorIsUsable(String word) {
-		return word.isEmpty() || !(mApp.getParserFunctions().isReserved(word)
-				|| mApp.getKernel().lookupLabel(word) != null);
+		return word.isEmpty()
+				|| !(mApp.getParserFunctions().isReserved(word)
+						|| mApp.getKernel().lookupLabel(word) != null);
 	}
 
 	/**
@@ -323,9 +325,10 @@ public class InputBarHelpPanel {
 	 * @param commandName name of the command
 	 * @param useReverse whether the command name should be translated to internal name or not
 	 */
-	public void logHelpIconEvent(@Nonnull String commandName, boolean useReverse) {
+	public void logHelpIconEvent(@NonNull String commandName, boolean useReverse) {
 		Map<String, Object> params = new HashMap<>();
-		String command = commandName.contains("(") || !useReverse ? commandName
+		String command = commandName.contains("(") || !useReverse
+				? commandName
 				: mApp.getReverseCommand(commandName);
 		params.put(Analytics.Param.COMMAND, command);
 		Analytics.logEvent(Analytics.Event.COMMAND_HELP_ICON, params);

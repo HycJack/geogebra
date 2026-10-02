@@ -41,10 +41,11 @@ public class VerticalStepProperty extends AbstractNumericProperty
 	 * @param element the GeoElement
 	 * @throws NotApplicablePropertyException if {@code element} is not a {@link GeoPointND}
 	 */
-	public VerticalStepProperty(AlgebraProcessor algebraProcessor,
-			Localization localization, GeoElement element) throws NotApplicablePropertyException {
+	public VerticalStepProperty(
+			AlgebraProcessor algebraProcessor, Localization localization, GeoElement element)
+			throws NotApplicablePropertyException {
 		super(algebraProcessor, localization, "IncrementVertical");
-		if (!(element instanceof GeoPointND && element.isPointerChangeable())) {
+		if (!isValid(element)) {
 			throw new NotApplicablePropertyException(element);
 		}
 		this.element = (GeoPointND) element;
@@ -76,5 +77,12 @@ public class VerticalStepProperty extends AbstractNumericProperty
 	public GeoElement getGeoElement() {
 		return (GeoElement) element;
 	}
-}
 
+	/**
+	 * @param element GeoElement
+	 * @return Whether this property is applicable to {@code element}.
+	 */
+	public static boolean isValid(GeoElement element) {
+		return element instanceof GeoPointND && element.needsAnimationAttributes();
+	}
+}

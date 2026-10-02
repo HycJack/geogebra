@@ -96,10 +96,17 @@ import elemental2.dom.PointerEvent;
 import jsinterop.base.Js;
 
 public class AutoCompleteTextFieldW extends FlowPanel
-		implements AutoComplete, AutoCompleteW, AutoCompleteTextField,
-		KeyDownHandler, KeyUpHandler, KeyPressHandler,
-		ValueChangeHandler<String>, SelectionHandler<Suggestion>,
-		VirtualKeyboardListener, HasKeyboardTF, HasInputElement {
+		implements AutoComplete,
+				AutoCompleteW,
+				AutoCompleteTextField,
+				KeyDownHandler,
+				KeyUpHandler,
+				KeyPressHandler,
+				ValueChangeHandler<String>,
+				SelectionHandler<Suggestion>,
+				VirtualKeyboardListener,
+				HasKeyboardTF,
+				HasInputElement {
 
 	private static final int BOX_ROUND = 8;
 
@@ -129,6 +136,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	 * Flag to determine if Tab key should behave like usual or disabled.
 	 */
 	private boolean tabEnabled = true;
+
 	private InsertHandler insertHandler = null;
 	private OnBackSpaceHandler onBackSpaceHandler = null;
 	private boolean suggestionJustHappened = false;
@@ -143,8 +151,8 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	// *(?=[,\\]])");
 	// Simplified to this as there are too many non-alphabetic character in
 	// parameter descriptions:
-	private static final RegExp syntaxArgPattern = RegExp
-			.compile("[,\\[\\(] *(<.*?>|\"<.*?>\"|\\.\\.\\.) *(?=[,\\]\\)])");
+	private static final RegExp syntaxArgPattern =
+			RegExp.compile("[,\\[\\(] *(<.*?>|\"<.*?>\"|\\.\\.\\.) *(?=[,\\]\\)])");
 
 	private final TextFieldController textFieldController;
 
@@ -223,8 +231,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	 * @param drawTextField
 	 *             associated input box
 	 */
-	public AutoCompleteTextFieldW(int columns, App app,
-			Drawable drawTextField) {
+	public AutoCompleteTextFieldW(int columns, App app, Drawable drawTextField) {
 		this(columns, (AppW) app, true, null);
 		this.drawTextField = (DrawInputBox) drawTextField;
 		addStyleName("FromDrawTextFieldNew");
@@ -244,8 +251,8 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	 * @param keyHandler
 	 *            key handler
 	 */
-	public AutoCompleteTextFieldW(int columns, final AppW app,
-			boolean handleEscapeKey, KeyEventsHandler keyHandler) {
+	public AutoCompleteTextFieldW(
+			int columns, final AppW app, boolean handleEscapeKey, KeyEventsHandler keyHandler) {
 		this.app = app;
 		this.loc = app.getLocalization();
 		setAutoComplete(true);
@@ -262,8 +269,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 			public void setText(String s) {
 				String oldText = super.getText();
 				int pos = getValueBox().getCursorPos();
-				int wp = InputHelper.updateCurrentWord(false,
-						new StringBuilder(), oldText, pos, true);
+				int wp = InputHelper.updateCurrentWord(false, new StringBuilder(), oldText, pos, true);
 
 				super.setText(oldText.substring(0, wp) + s + oldText.substring(pos));
 			}
@@ -286,14 +292,12 @@ public class AutoCompleteTextFieldW extends FlowPanel
 						&& !app.isWhiteboardActive()
 						&& keyboardManager != null) {
 					app.showKeyboard(AutoCompleteTextFieldW.this, true);
-					keyboardManager.setOnScreenKeyboardTextField(
-							AutoCompleteTextFieldW.this);
+					keyboardManager.setOnScreenKeyboardTextField(AutoCompleteTextFieldW.this);
 				}
 
 				// react on enter from system on screen keyboard or hardware
 				// keyboard
-				if ((etype == Event.ONKEYUP
-						|| etype == Event.ONKEYPRESS)
+				if ((etype == Event.ONKEYUP || etype == Event.ONKEYPRESS)
 						&& event.getKeyCode() == KeyCodes.KEY_ENTER) {
 					// app.hideKeyboard();
 					// prevent handling in AutoCompleteTextField
@@ -316,8 +320,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 			}
 		};
 
-		textField.sinkEvents(
-				Event.ONMOUSEMOVE | Event.ONMOUSEUP | Event.TOUCHEVENTS);
+		textField.sinkEvents(Event.ONMOUSEMOVE | Event.ONMOUSEUP | Event.TOUCHEVENTS);
 		if (columns > 0) {
 			setWidthInEm(columns);
 		}
@@ -357,7 +360,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 
 		Dom.addEventListener(textField.getValueBox().getElement(), "contextmenu", (event) -> {
 			event.stopPropagation();
-			if  (GlobalScope.isExamActive(app)) {
+			if (GlobalScope.isExamActive(app)) {
 				event.preventDefault();
 			}
 		});
@@ -368,8 +371,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	}
 
 	private TextFieldController createTextFieldController() {
-		DefaultTextFieldController defaultTextFieldController =
-				new DefaultTextFieldController(this);
+		DefaultTextFieldController defaultTextFieldController = new DefaultTextFieldController(this);
 
 		return isCursorOverlayNeeded() && canHaveGGBKeyboard()
 				? new CursorOverlayController(this, main, defaultTextFieldController)
@@ -411,6 +413,9 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		this.textField.setEnabled(enable);
 	}
 
+	/**
+	 * @return whether the text field is not in disabled state
+	 */
 	public boolean isEnabled() {
 		return this.textField.isEnabled();
 	}
@@ -432,6 +437,9 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		// only for desktop
 	}
 
+	/**
+	 * @param autoClose whether to automatically add matching parenthesis
+	 */
 	public void setAutoCloseParentheses(boolean autoClose) {
 		autoCompleteParentheses = autoClose;
 	}
@@ -474,10 +482,13 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	@Override
 	public void setBackground(GColor color) {
 		if (!hasError()) {
-			main.getElement().getStyle()
-					.setBackgroundColor(GColor.getColorString(color));
-			main.getElement().getStyle().setBorderColor(drawTextField.getBorderColor() != null
-					? drawTextField.getBorderColor().toString() : GColor.DEFAULT_PURPLE.toString());
+			main.getElement().getStyle().setBackgroundColor(GColor.getColorString(color));
+			main.getElement()
+					.getStyle()
+					.setBorderColor(
+							drawTextField.getBorderColor() != null
+									? drawTextField.getBorderColor().toString()
+									: GColor.DEFAULT_PURPLE.toString());
 		} else {
 			main.getElement().getStyle().clearBackgroundColor();
 			main.getElement().getStyle().clearBorderColor();
@@ -490,6 +501,11 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	}
 
 	@Override
+	public void updateLabel(String labelTextKey) {
+		// not needed
+	}
+
+	@Override
 	public void setPrefSize(int width, int height) {
 		main.setWidth(width + "px");
 		main.setHeight(height + "px");
@@ -499,7 +515,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	 * Roughly the same as setColumns in Desktop. It's OK to use for inputs in
 	 * the UI (spreadsheet), but input boxes in Graphics View should use
 	 * {@link #setPrefSize(int, int)} instead.
-	 * 
+	 *
 	 * @param emWidth
 	 *            width (in number of characters)
 	 */
@@ -507,10 +523,16 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		main.setWidth(emWidth + "em");
 	}
 
+	/**
+	 * @return current word
+	 */
 	private String getCurrentWord() {
 		return curWord.toString();
 	}
 
+	/**
+	 * @return available completions
+	 */
 	public List<MatchedString> getCompletions() {
 		return inputSuggestions.getCompletions();
 	}
@@ -569,8 +591,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 
 		// show help if available
 		if (help != null) {
-			app.showError(MyError.forCommand(loc,
-					loc.getMenu("Syntax") + ":\n" + help, cmd, null));
+			app.showError(MyError.forCommand(loc, loc.getMenu("Syntax") + ":\n" + help, cmd, null));
 		} else if (app.getGuiManager() != null) {
 			app.getGuiManager().openHelp(ManualPage.COMMAND, null);
 		}
@@ -581,8 +602,8 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	 * curWordEnd are set to this word's start and end position
 	 */
 	private void updateCurrentWord(boolean searchRight) {
-		int next = InputHelper.updateCurrentWord(searchRight, this.curWord,
-				getText(), getCaretPosition(), true);
+		int next = InputHelper.updateCurrentWord(
+				searchRight, this.curWord, getText(), getCaretPosition(), true);
 		if (next > -1) {
 			this.curWordStart = next;
 		}
@@ -598,8 +619,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		int caretPos = getCaretPosition();
 
 		// make sure it works if caret is just after [
-		if (caretPos > 0 && caretPos < text.length()
-				&& text.charAt(caretPos) != '(') {
+		if (caretPos > 0 && caretPos < text.length() && text.charAt(caretPos) != '(') {
 			caretPos--;
 		}
 		String suffix = text.substring(caretPos);
@@ -621,14 +641,12 @@ public class AutoCompleteTextFieldW extends FlowPanel
 			}
 		}
 		// if (hasNextArgument && (find || argMatcher.start() == caretPos)) {
-		if (hasNextArgument && argMatcher.getGroup(1) != null
-				&& (find || index == caretPos)) {
+		if (hasNextArgument && argMatcher.getGroup(1) != null && (find || index == caretPos)) {
 			// setCaretPosition(argMatcher.end();
 			// moveCaretPosition(argMatcher.start() + 1);
 			if (updateUI) {
 				String groupStr = argMatcher.getGroup(1);
-				textField.getValueBox().setSelectionRange(index + 2,
-					groupStr.length());
+				textField.getValueBox().setSelectionRange(index + 2, groupStr.length());
 			}
 
 			return true;
@@ -682,8 +700,8 @@ public class AutoCompleteTextFieldW extends FlowPanel
 			insertString(Character.toString(ch));
 			text = getText();
 		}
-		if (!(ch == '(' || ch == '{' || ch == '[' || ch == '}' || ch == ')'
-				|| ch == ']') || !autoCompleteParentheses) {
+		if (!(ch == '(' || ch == '{' || ch == '[' || ch == '}' || ch == ')' || ch == ']')
+				|| !autoCompleteParentheses) {
 			return;
 		}
 		textFieldController.clearSelection();
@@ -722,23 +740,23 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		// auto-close parentheses
 		if (caretPos == text.length()) {
 			switch (ch) {
-			default:
-				// do nothing
-				break;
-			case '(':
-				// opening parentheses: insert closing parenthesis automatically
-				insertString(")");
-				break;
+				default:
+					// do nothing
+					break;
+				case '(':
+					// opening parentheses: insert closing parenthesis automatically
+					insertString(")");
+					break;
 
-			case '{':
-				// opening braces: insert closing parenthesis automatically
-				insertString("}");
-				break;
+				case '{':
+					// opening braces: insert closing parenthesis automatically
+					insertString("}");
+					break;
 
-			case '[':
-				// opening bracket: insert closing parenthesis automatically
-				insertString("]");
-				break;
+				case '[':
+					// opening bracket: insert closing parenthesis automatically
+					insertString("]");
+					break;
 			}
 		}
 
@@ -759,25 +777,26 @@ public class AutoCompleteTextFieldW extends FlowPanel
 
 		int keyCode = e.getNativeKeyCode();
 		app.getGlobalKeyDispatcher();
-		if (keyCode == GWTKeycodes.KEY_F1
-				|| GlobalKeyDispatcherW.isBadKeyEvent(e)) {
+		if (keyCode == GWTKeycodes.KEY_F1 || GlobalKeyDispatcherW.isBadKeyEvent(e)) {
 			e.preventDefault();
-
 		}
 		if (keyCode == GWTKeycodes.KEY_TAB && moveToNextArgument(true, false)) {
 			e.preventDefault();
 		}
-		if (keyCode == GWTKeycodes.KEY_TAB && usedForInputBox()) {
+		if (keyCode == GWTKeycodes.KEY_TAB) {
 			e.preventDefault();
-			AutoCompleteTextField tf = app.getActiveEuclidianView()
-					.getTextField();
-			if (tf != null) {
-				geoUsedForInputBox.updateLinkedGeo(tf.getText());
-				tf.setVisible(false);
+			if (usedForInputBox()) {
+				AutoCompleteTextField tf = app.getActiveEuclidianView().getTextField();
+				if (tf != null) {
+					geoUsedForInputBox.updateLinkedGeo(tf.getText());
+					tf.setVisible(false);
+				}
 			}
-
-			app.getGlobalKeyDispatcher().handleTab(e.isShiftKeyDown());
-			e.stopPropagation(); // avoid conflict with GeoTabber
+			elemental2.dom.Element element = Js.uncheckedCast(getElement());
+			if (element.closest(".popupContent") == null) {
+				app.getGlobalKeyDispatcher().handleTab(e.isShiftKeyDown());
+				e.stopPropagation(); // avoid conflict with GeoTabber
+			}
 		}
 		if (handleEscapeKey && keyCode == KeyCodes.KEY_ESCAPE) {
 			e.stopPropagation();
@@ -807,126 +826,122 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		}
 
 		switch (keyCode) {
-
-		case GWTKeycodes.KEY_Z:
-		case GWTKeycodes.KEY_Y:
-			if (e.isControlKeyDown()) {
-				app.getGlobalKeyDispatcher().handleGeneralKeys(e);
-				e.stopPropagation();
-			}
-			break;
-		case GWTKeycodes.KEY_C:
-			break;
-
-		// process input
-
-		case GWTKeycodes.KEY_ESCAPE:
-			if (!handleEscapeKey) {
+			case GWTKeycodes.KEY_Z:
+			case GWTKeycodes.KEY_Y:
+				if (e.isControlKeyDown()) {
+					app.getGlobalKeyDispatcher().handleGeneralKeys(e);
+					e.stopPropagation();
+				}
 				break;
-			}
+			case GWTKeycodes.KEY_C:
+				break;
 
-			/* TODO maybe close parent dialog? */
-			if (textField.isSuggestionListVisible()) {
-				textField.hideSuggestions();
-			} else {
-				textField.setFocus(false);
-				app.getActiveEuclidianView().requestFocus();
-			}
-			break;
+			// process input
 
-		case GWTKeycodes.KEY_UP:
-		case GWTKeycodes.KEY_DOWN:
-			e.stopPropagation(); // prevent GlobalKeyDispatcherW to move the
-									// euclidian view
-			break;
-
-		case GWTKeycodes.KEY_F9:
-			// needed for applets
-			if (app.isApplet()) {
-				app.getGlobalKeyDispatcher().handleGeneralKeys(e);
-			}
-			break;
-		case GWTKeycodes.KEY_LEFT:
-			textField.hideSuggestions();
-			e.stopPropagation();
-			break;
-		case GWTKeycodes.KEY_RIGHT:
-			if (moveToNextArgument(false, true)) {
-				e.stopPropagation();
-				textField.hideSuggestions();
-			}
-			e.stopPropagation();
-			break;
-
-		case GWTKeycodes.KEY_TAB:
-			e.preventDefault();
-			if (moveToNextArgument(true, true)) {
-				e.stopPropagation();
-			}
-			break;
-
-		case GWTKeycodes.KEY_F1:
-
-			handleF1();
-
-			e.stopPropagation();
-			break;
-		case GWTKeycodes.KEY_ZERO:
-		case GWTKeycodes.KEY_ONE:
-		case GWTKeycodes.KEY_TWO:
-		case GWTKeycodes.KEY_THREE:
-		case GWTKeycodes.KEY_FOUR:
-		case GWTKeycodes.KEY_FIVE:
-		case GWTKeycodes.KEY_SIX:
-		case GWTKeycodes.KEY_SEVEN:
-		case GWTKeycodes.KEY_EIGHT:
-		case GWTKeycodes.KEY_NINE:
-			if (e.isControlKeyDown() && e.isShiftKeyDown()) {
-				app.getGlobalKeyDispatcher().handleGeneralKeys(e);
-			}
-
-			//$FALL-THROUGH$
-		default:
-
-			// check for eg alt-a for alpha
-			// check for eg alt-shift-a for upper case alpha
-			if (GlobalKeyDispatcherW.isLeftAltDown()) {
-
-				String s = AltKeys.getAltSymbols(keyCode, e.isShiftKeyDown(),
-						true);
-
-				if (s != null) {
-					insertString(s);
+			case GWTKeycodes.KEY_ESCAPE:
+				if (!handleEscapeKey) {
 					break;
 				}
-			}
 
-			/*
-			 * Try handling here that is originally in keyup
-			 */
-			boolean modifierKeyPressed = e.isControlKeyDown()
-					|| e.isAltKeyDown();
+				/* TODO maybe close parent dialog? */
+				if (textField.isSuggestionListVisible()) {
+					textField.hideSuggestions();
+				} else {
+					textField.setFocus(false);
+					app.getActiveEuclidianView().requestFocus();
+				}
+				break;
 
-			// we don't want to act when AltGr is down
-			// as it is used eg for entering {[}] is some locales
-			// NB e.isAltGraphDown() doesn't work
-			if (e.isAltKeyDown() && e.isControlKeyDown()) {
-				modifierKeyPressed = false;
-			}
+			case GWTKeycodes.KEY_UP:
+			case GWTKeycodes.KEY_DOWN:
+				e.stopPropagation(); // prevent GlobalKeyDispatcherW to move the
+				// euclidian view
+				break;
 
-			char charPressed = (char) e.getNativeKeyCode();
+			case GWTKeycodes.KEY_F9:
+				// needed for applets
+				if (app.isApplet()) {
+					app.getGlobalKeyDispatcher().handleGeneralKeys(e);
+				}
+				break;
+			case GWTKeycodes.KEY_LEFT:
+				textField.hideSuggestions();
+				e.stopPropagation();
+				break;
+			case GWTKeycodes.KEY_RIGHT:
+				if (moveToNextArgument(false, true)) {
+					e.stopPropagation();
+					textField.hideSuggestions();
+				}
+				e.stopPropagation();
+				break;
 
-			if ((StringUtil.isLetterOrDigitOrUnderscore(charPressed) || modifierKeyPressed)
-					&& (e.getNativeKeyCode() != GWTKeycodes.KEY_A)) {
-				textFieldController.clearSelection();
-			}
+			case GWTKeycodes.KEY_TAB:
+				e.preventDefault();
+				if (moveToNextArgument(true, true)) {
+					e.stopPropagation();
+				}
+				break;
 
-			// handle alt-p etc
-			// super.keyReleased(e);
+			case GWTKeycodes.KEY_F1:
+				handleF1();
 
-			if (getAutoComplete()) {
-				updateCurrentWord(false);
-			}
+				e.stopPropagation();
+				break;
+			case GWTKeycodes.KEY_ZERO:
+			case GWTKeycodes.KEY_ONE:
+			case GWTKeycodes.KEY_TWO:
+			case GWTKeycodes.KEY_THREE:
+			case GWTKeycodes.KEY_FOUR:
+			case GWTKeycodes.KEY_FIVE:
+			case GWTKeycodes.KEY_SIX:
+			case GWTKeycodes.KEY_SEVEN:
+			case GWTKeycodes.KEY_EIGHT:
+			case GWTKeycodes.KEY_NINE:
+				if (e.isControlKeyDown() && e.isShiftKeyDown()) {
+					app.getGlobalKeyDispatcher().handleGeneralKeys(e);
+				}
+
+			// $FALL-THROUGH$
+			default:
+
+				// check for eg alt-a for alpha
+				// check for eg alt-shift-a for upper case alpha
+				if (GlobalKeyDispatcherW.isLeftAltDown()) {
+
+					String s = AltKeys.getAltSymbols(keyCode, e.isShiftKeyDown(), true);
+
+					if (s != null) {
+						insertString(s);
+						break;
+					}
+				}
+
+				/*
+				 * Try handling here that is originally in keyup
+				 */
+				boolean modifierKeyPressed = e.isControlKeyDown() || e.isAltKeyDown();
+
+				// we don't want to act when AltGr is down
+				// as it is used eg for entering {[}] is some locales
+				// NB e.isAltGraphDown() doesn't work
+				if (e.isAltKeyDown() && e.isControlKeyDown()) {
+					modifierKeyPressed = false;
+				}
+
+				char charPressed = (char) e.getNativeKeyCode();
+
+				if ((StringUtil.isLetterOrDigitOrUnderscore(charPressed) || modifierKeyPressed)
+						&& (e.getNativeKeyCode() != GWTKeycodes.KEY_A)) {
+					textFieldController.clearSelection();
+				}
+
+				// handle alt-p etc
+				// super.keyReleased(e);
+
+				if (getAutoComplete()) {
+					updateCurrentWord(false);
+				}
 		}
 	}
 
@@ -972,7 +987,6 @@ public class AutoCompleteTextFieldW extends FlowPanel
 				} else if (app.getGuiManager() != null) {
 					app.getGuiManager().openHelp(ManualPage.MAIN_PAGE, null);
 				}
-
 			}
 		} else if (app.getGuiManager() != null) {
 			app.getGuiManager().openHelp(ManualPage.MAIN_PAGE, null);
@@ -1019,10 +1033,9 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		List<MatchedString> completions = getCompletions();
 		if (completions != null) {
 			String selString = event.getSelectedItem().getReplacementString();
-			Optional<MatchedString> selected = completions.stream()
-					.filter(c -> c.content.equals(selString)).findFirst();
-			selected.ifPresent(
-					highlightedString -> validateAutoCompletion(highlightedString.content));
+			Optional<MatchedString> selected =
+					completions.stream().filter(c -> c.content.equals(selString)).findFirst();
+			selected.ifPresent(highlightedString -> validateAutoCompletion(highlightedString.content));
 		}
 	}
 
@@ -1044,7 +1057,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 
 	/**
 	 * add handler for back space event
-	 * 
+	 *
 	 * @param handler
 	 *            handler
 	 */
@@ -1130,7 +1143,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 	 * @param command selected command syntax
 	 * @author Arnaud
 	 */
-    private void validateAutoCompletion(String command) {
+	private void validateAutoCompletion(String command) {
 		int bracketIndex = command.indexOf('[');
 
 		// Special case if the completion is a built-in function
@@ -1140,7 +1153,7 @@ public class AutoCompleteTextFieldW extends FlowPanel
 
 		setCaretPosition(curWordStart + bracketIndex);
 		moveToNextArgument(false, true);
-    }
+	}
 
 	@Override
 	public void setUsedForInputBox(GeoInputBox geo) {
@@ -1341,13 +1354,12 @@ public class AutoCompleteTextFieldW extends FlowPanel
 
 	@Override
 	public void drawBounds(GGraphics2D g2, GColor bgColor, GRectangle bounds) {
-		drawBounds(g2, bgColor, (int) bounds.getX(), (int) bounds.getY(),
-				(int) bounds.getWidth(), (int) bounds.getHeight());
+		drawBounds(g2, bgColor, (int) bounds.getX(), (int) bounds.getY(), (int) bounds.getWidth(), (int)
+				bounds.getHeight());
 	}
 
 	@Override
-	public void drawBounds(GGraphics2D g2, GColor bgColor, int left, int top,
-			int width, int height) {
+	public void drawBounds(GGraphics2D g2, GColor bgColor, int left, int top, int width, int height) {
 		GColor backgroundColor = hasError() ? GColor.ERROR_RED_BACKGROUND : bgColor;
 		g2.setPaint(backgroundColor);
 		g2.fillRoundRect(left, top, width, height, BOX_ROUND, BOX_ROUND);
@@ -1356,8 +1368,8 @@ public class AutoCompleteTextFieldW extends FlowPanel
 		g2.setColor(borderColor);
 		setTextFieldBorderColor(backgroundColor, borderColor);
 		if (drawTextField.hasError()) {
-			g2.setStroke(EuclidianStatic.getStroke(2,
-					EuclidianStyleConstants.LINE_TYPE_DASHED_SHORT, GBasicStroke.JOIN_ROUND));
+			g2.setStroke(EuclidianStatic.getStroke(
+					2, EuclidianStyleConstants.LINE_TYPE_DASHED_SHORT, GBasicStroke.JOIN_ROUND));
 		}
 
 		g2.drawRoundRect(left, top, width, height, BOX_ROUND, BOX_ROUND);

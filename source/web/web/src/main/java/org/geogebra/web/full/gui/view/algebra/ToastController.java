@@ -18,15 +18,14 @@ package org.geogebra.web.full.gui.view.algebra;
 
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.util.shape.Rectangle;
 import org.geogebra.editor.share.syntax.SyntaxHint;
 import org.geogebra.editor.share.syntax.SyntaxTooltipUpdater;
 import org.geogebra.web.full.gui.components.ComponentToast;
 import org.geogebra.web.html5.main.AppW;
+import org.jspecify.annotations.NonNull;
 
-public class ToastController implements SyntaxTooltipUpdater {
+public final class ToastController implements SyntaxTooltipUpdater {
 
 	private final Supplier<Rectangle> boundsSupplier;
 	private final AppW app;
@@ -42,12 +41,12 @@ public class ToastController implements SyntaxTooltipUpdater {
 	}
 
 	@Override
-	public void updateSyntaxTooltip(@Nonnull SyntaxHint sh) {
+	public void updateSyntaxTooltip(@NonNull SyntaxHint sh) {
 		if (!sh.isEmpty()) {
 			Rectangle bounds = boundsSupplier.get();
 
-			String hintHtml = sh.getPrefix() + "<strong>"
-					+ sh.getActivePlaceholder() + "</strong>" + sh.getSuffix();
+			String hintHtml =
+					sh.getPrefix() + "<strong>" + sh.getActivePlaceholder() + "</strong>" + sh.getSuffix();
 
 			if (toast == null) {
 				toast = new ComponentToast(app, hintHtml);
@@ -55,8 +54,8 @@ public class ToastController implements SyntaxTooltipUpdater {
 				toast.updateContent(hintHtml);
 			}
 			if (!toast.isShowing()) {
-				toast.show((int) bounds.getMinX(), (int) bounds.getMinY(), (int) bounds.getMaxY(),
-						(int) bounds.getWidth());
+				toast.show((int) bounds.getMinX(), (int) bounds.getMinY(), (int) bounds.getMaxY(), (int)
+						bounds.getWidth());
 			}
 		} else {
 			hide();

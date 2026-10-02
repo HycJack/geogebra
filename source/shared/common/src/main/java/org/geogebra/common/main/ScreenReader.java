@@ -17,6 +17,7 @@
 package org.geogebra.common.main;
 
 import org.geogebra.common.euclidian.EuclidianConstants;
+import org.geogebra.common.euclidian.ScreenReaderAdapter;
 import org.geogebra.common.io.ScreenReaderTableAdapter;
 import org.geogebra.common.kernel.arithmetic.ExpressionNodeConstants;
 import org.geogebra.common.kernel.arithmetic.MyDouble;
@@ -26,6 +27,7 @@ import org.geogebra.common.kernel.geos.ScreenReaderBuilder;
 import org.geogebra.common.kernel.geos.ScreenReaderSerializationAdapter;
 import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.common.util.debug.Log;
+import org.geogebra.editor.share.controller.ExpRelation;
 import org.geogebra.editor.share.controller.ExpressionReader;
 import org.geogebra.editor.share.serializer.ScreenReaderSerializer;
 import org.geogebra.editor.share.tree.Formula;
@@ -36,21 +38,23 @@ import com.himamis.retex.renderer.share.serialize.TableAdapter;
 
 /**
  * Utility class for reading GeoElement descriptions
- * 
+ *
  * @author Judit
  */
-public class ScreenReader {
+public final class ScreenReader {
 
-	// just in English right now (translations can be added to ggbtrans later if
-	// we need)
-	final private static String TRANSLATION_PREFIX = "ScreenReader.";
+	private static final String TRANSLATION_PREFIX = "ScreenReader.";
+
+	private ScreenReader() {
+		// utility class
+	}
 
 	/**
 	 * @param app - application
 	 * @return first selected geo
 	 */
 	public static GeoElement getSelectedGeo(App app) {
-		if (app.getSelectionManager().getSelectedGeos().size() > 0) {
+		if (!app.getSelectionManager().getSelectedGeos().isEmpty()) {
 			return app.getSelectionManager().getSelectedGeos().get(0);
 		}
 
@@ -65,7 +69,8 @@ public class ScreenReader {
 		GeoElement selectedGeo = getSelectedGeo(app);
 
 		// do not steal focus from input box, do not read while drawing
-		if (selectedGeo != null && !selectedGeo.isGeoInputBox()
+		if (selectedGeo != null
+				&& !selectedGeo.isGeoInputBox()
 				&& app.getMode() != EuclidianConstants.MODE_PEN) {
 			readText(selectedGeo);
 		}
@@ -76,7 +81,8 @@ public class ScreenReader {
 	 *            selected element
 	 */
 	public static void readText(GeoElement geo) {
-		readText(getAuralText(geo, new ScreenReaderBuilder(geo.getKernel().getLocalization())),
+		readText(
+				getAuralText(geo, new ScreenReaderBuilder(geo.getKernel().getLocalization())),
 				geo.getKernel().getApplication());
 	}
 
@@ -84,58 +90,65 @@ public class ScreenReader {
 		if (text == null) {
 			return;
 		}
-
-		// MOW-137: if selection originated in AV we don't want to move focus to EV
-		GuiManagerInterface guiManager = app.getGuiManager();
-		int viewID = app.getActiveEuclidianView().getViewID();
-		if (guiManager != null && guiManager.getLayout() != null
-			&& guiManager.getLayout().getDockManager().getFocusedViewId() != viewID) {
-				return;
-		}
-
 		// WLY-298: do not steal focus from input box
 		GeoElement selectedGeo = getSelectedGeo(app);
 		if (selectedGeo != null && selectedGeo.isGeoInputBox()) {
 			return;
 		}
 
-		app.getActiveEuclidianView().getScreenReader().readText(text.trim());
+		// MOW-137: if selection originated in AV we don't want to move focus to EV
+		GuiManagerInterface guiManager = app.getGuiManager();
+		int activeEuclidianViewID = app.getActiveEuclidianView().getViewID();
+		int focusedViewID = getFocusedViewID(guiManager);
+		if (focusedViewID == activeEuclidianViewID) {
+			app.getActiveEuclidianView().getScreenReader().readText(text.trim());
+		} else if (focusedViewID == App.VIEW_ALGEBRA) {
+			ScreenReaderAdapter screenReader = app.getAlgebraView().getScreenReaderAdapter();
+			if (screenReader != null) {
+				screenReader.readText(text.trim());
+			}
+		}
+	}
+
+	private static int getFocusedViewID(GuiManagerInterface guiManager) {
+		return guiManager != null && guiManager.getLayout() != null
+				? guiManager.getLayout().getDockManager().getFocusedViewId()
+				: App.VIEW_EUCLIDIAN;
 	}
 
 	// Handling DropDowns
 
 	/**
 	 * Reads the selected item of the current drop down.
-	 * 
-	 * @param geo
+	 *
+	 * @param geoList
 	 *            the current geo
 	 */
-	public static void readDropDownItemSelected(GeoElement geo) {
-		if (!geo.isGeoList()) {
-			return;
-		}
-		App app = geo.getKernel().getApplication();
-		ScreenReaderBuilder sb = new ScreenReaderBuilder(geo.getKernel().getLocalization());
-		((GeoList) geo).appendAuralItemSelected(sb);
+	public static void readDropDownItemSelected(GeoList geoList) {
+		App app = geoList.getKernel().getApplication();
+		ScreenReaderBuilder sb = new ScreenReaderBuilder(geoList.getKernel().getLocalization());
+		geoList.appendAuralItemSelected(sb);
 		readText(sb.toString(), app);
 	}
 
 	/**
 	 * Reads the item when the selector moved on it.
-	 * 
+	 *
 	 * @param app
 	 *            application
 	 * @param text
 	 *            selected item text to read
 	 */
 	public static void readDropDownSelectorMoved(App app, GeoList text, int index) {
-		readText(text.getItemDisplayString(index, app.getScreenReaderTemplate()) + " "
-				+ text.getIndexDescription(index), app);
+		readText(
+				text.getItemDisplayString(index, app.getScreenReaderTemplate()) + " "
+						+ text.getIndexDescription(index),
+				app);
 	}
 
 	/**
 	 * Reads some instructions at opening the drop down.
-	 * 
+	 *
 	 * @param geoList
 	 *            drop down
 	 */
@@ -147,7 +160,7 @@ public class ScreenReader {
 
 	/**
 	 * Reads text when space is pressed on geo.
-	 * 
+	 *
 	 * @param geo
 	 *            GeoElement to handle.
 	 */
@@ -158,7 +171,7 @@ public class ScreenReader {
 
 	/**
 	 * Reads text when geo is moved.
-	 * 
+	 *
 	 * @param geo
 	 *            GeoElement that has moved.
 	 */
@@ -168,7 +181,9 @@ public class ScreenReader {
 	}
 
 	private static String getStartFraction(Localization loc) {
-		return localize(loc, "startFraction", "start fraction");
+		return " "
+				+ localizeRelation(loc, ExpRelation.START_OF, loc.getMenuDefault("of.Fraction", "fraction"))
+				+ " ";
 	}
 
 	private static String localize(Localization loc, String key, String fallback) {
@@ -180,7 +195,9 @@ public class ScreenReader {
 	}
 
 	private static String getEndFraction(Localization loc) {
-		return " " + localize(loc, "endFraction", "end fraction");
+		return " "
+				+ localizeRelation(loc, ExpRelation.END_OF, loc.getMenuDefault("of.Fraction", "fraction"))
+				+ " ";
 	}
 
 	/**
@@ -209,26 +226,13 @@ public class ScreenReader {
 
 	/**
 	 * @param loc localization
-	 * @return localized start of cbrt
-	 */
-	public static String getStartCbrt(Localization loc) {
-		return localize(loc, "startCbrt", "start cube root");
-	}
-
-	/**
-	 * @param loc localization
-	 * @return localized end of cbrt
-	 */
-	public static String getEndCbrt(Localization loc) {
-		return " " + localize(loc, "endCbrt", "end cube root");
-	}
-
-	/**
-	 * @param loc localization
 	 * @return localized start of abs
 	 */
 	public static String getStartAbs(Localization loc) {
-		return localize(loc, "startAbs", "start absolute value");
+		return " "
+				+ localizeRelation(
+						loc, ExpRelation.START_OF, loc.getMenuDefault("of.Abs", "absolute value"))
+				+ " ";
 	}
 
 	/**
@@ -236,7 +240,9 @@ public class ScreenReader {
 	 * @return localized end of abs
 	 */
 	public static String getEndAbs(Localization loc) {
-		return " " + localize(loc, "endAbs", " end absolute value");
+		return " "
+				+ localizeRelation(loc, ExpRelation.END_OF, loc.getMenuDefault("of.Abs", "absolute value"))
+				+ " ";
 	}
 
 	/**
@@ -244,7 +250,10 @@ public class ScreenReader {
 	 * @return localized start of sqrt
 	 */
 	public static String getStartSqrt(Localization loc) {
-		return localize(loc, "startSqrtCbrt", "start square root");
+		return " "
+				+ localizeRelation(
+						loc, ExpRelation.START_OF, loc.getMenuDefault("of.SquareRoot", "square root"))
+				+ " ";
 	}
 
 	/**
@@ -252,7 +261,10 @@ public class ScreenReader {
 	 * @return localized end of sqrt
 	 */
 	public static String getEndSqrt(Localization loc) {
-		return " " + localize(loc, "endSqrt", "end square root");
+		return " "
+				+ localizeRelation(
+						loc, ExpRelation.END_OF, loc.getMenuDefault("of.SquareRoot", "square root"))
+				+ " ";
 	}
 
 	private static String getSquared(Localization loc) {
@@ -287,6 +299,10 @@ public class ScreenReader {
 		return " " + localize(loc, "endPower", "end power");
 	}
 
+	private static String localizeRelation(Localization loc, ExpRelation key, String... parameters) {
+		return loc.getPlainDefault("ScreenReader." + key.getKey(), key.toString(), parameters);
+	}
+
 	/**
 	 * @param app
 	 *            application
@@ -297,12 +313,13 @@ public class ScreenReader {
 		return new ExpressionReader() {
 
 			@Override
-			public String localize(String key, String... parameters) {
-				String out = key;
-				for (int i = 0; i < parameters.length; i++) {
-					out = out.replace("%" + i, parameters[i]);
-				}
-				return out;
+			public String localize(ExpRelation key, String... parameters) {
+				return localizeRelation(loc, key, parameters);
+			}
+
+			@Override
+			public String localize(String key, String fallbackValue) {
+				return loc.getMenuDefault(key, fallbackValue);
 			}
 
 			@Override
@@ -328,15 +345,21 @@ public class ScreenReader {
 	 */
 	public static SerializationAdapter getSerializationAdapter(App app) {
 		return app.getScreenReaderTemplate().getStringType()
-				== ExpressionNodeConstants.StringType.SCREEN_READER_ASCII
+						== ExpressionNodeConstants.StringType.SCREEN_READER_ASCII
 				? new ScreenReaderSerializationAdapter(app.getLocalization())
-				: new UtfScreenReaderSerializationAdapter();
+				: new UtfScreenReaderSerializationAdapter(app.getLocalization());
 	}
 
 	private static final class UtfScreenReaderSerializationAdapter
 			extends DefaultSerializationAdapter {
 
-		private final TableAdapter tableAdapter = new ScreenReaderTableAdapter();
+		private final TableAdapter tableAdapter;
+		private final Localization loc;
+
+		private UtfScreenReaderSerializationAdapter(Localization loc) {
+			tableAdapter = new ScreenReaderTableAdapter(loc);
+			this.loc = loc;
+		}
 
 		@Override
 		public String transformBrackets(String left, String base, String right) {
@@ -349,13 +372,22 @@ public class ScreenReader {
 		}
 
 		@Override
+		public String getCharacterName(char unicode) {
+			return switch (unicode) {
+				case ',' -> ScreenReader.getComma(loc);
+				case '(' -> ScreenReader.localize(loc, "Parenthesis", "parenthesis");
+				default -> String.valueOf(unicode);
+			};
+		}
+
+		@Override
 		public TableAdapter getTableAdapter() {
 			return tableAdapter;
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @param app
 	 *            {@link App}
 	 * @param exp
@@ -367,8 +399,8 @@ public class ScreenReader {
 	 */
 	public static String getAriaExpression(App app, Formula exp, String ariaPreview) {
 		try {
-			String expr = ScreenReaderSerializer.fullDescription(exp.getRootNode(),
-					getSerializationAdapter(app));
+			String expr =
+					ScreenReaderSerializer.fullDescription(exp.getRootNode(), getSerializationAdapter(app));
 			if (ariaPreview != null) {
 				return expr + " = " + ariaPreview;
 			}
@@ -378,24 +410,60 @@ public class ScreenReader {
 		}
 	}
 
-	public static String getOpenParenthesis() {
-		return " open parenthesis ";
+	/**
+	 * @param loc localization
+	 * @return localized "open parenthesis"
+	 */
+	public static String getOpenParenthesis(Localization loc) {
+		return " " + loc.getMenuDefault("altText.OpenParenthesis", "open parenthesis") + " ";
 	}
 
-	public static String getCloseParenthesis() {
-		return " close parenthesis ";
+	/**
+	 * @param loc localization
+	 * @return localized "close parenthesis"
+	 */
+	public static String getCloseParenthesis(Localization loc) {
+		return " " + loc.getMenuDefault("altText.CloseParenthesis", "close parenthesis") + " ";
 	}
 
-	public static String getOpenBrace() {
-		return " open brace ";
+	/**
+	 * @param loc localization
+	 * @return localized "open brace"
+	 */
+	public static String getOpenBrace(Localization loc) {
+		return " " + localize(loc, "OpenBrace", "open brace");
 	}
 
-	public static String getCloseBrace() {
-		return " close brace ";
+	/**
+	 * @param loc localization
+	 * @return localized "close brace"
+	 */
+	public static String getCloseBrace(Localization loc) {
+		return " " + localize(loc, "CloseBrace", "close brace");
 	}
 
-	public static String getPolarSeparator() {
-		return " semicolon ";
+	/**
+	 * @param loc localization
+	 * @return localized "open bracket"
+	 */
+	public static String getOpenBracket(Localization loc) {
+		return " " + localize(loc, "OpenBracket", "open bracket");
+	}
+
+	/**
+	 * @param loc localization
+	 * @return localized "close bracket"
+	 */
+	public static String getCloseBracket(Localization loc) {
+		return " " + localize(loc, "CloseBracket", "close bracket");
+	}
+
+	/**
+	 * @param loc localization
+	 * @return localized "semicolon"
+	 */
+	public static String getSemicolon(Localization loc) {
+		return " " + localize(loc, "Semicolon", "semicolon");
 	}
 
 	/**
@@ -439,37 +507,20 @@ public class ScreenReader {
 	}
 
 	/**
-	 * Appends degree(s) to the StringBuilder
-	 * @param sb builder
-	 * @param value degree value
-	 * @param loc localization
-	 */
-	public static void appendDegrees(StringBuilder sb, String value, Localization loc) {
-		if ("1".equals(value) || "-1".equals(value)) {
-			sb.append(getDegree(loc));
-		} else {
-			sb.append(getDegrees(loc));
-		}
-	}
-
-	/**
-	 * @param leftStr
+	 * @param radicand
 	 *            radicand
-	 * @param rightStr
+	 * @param index
 	 *            index
 	 * @param loc
 	 *            localization
 	 * @return root
 	 */
-	public static String nroot(String leftStr, String rightStr, Localization loc) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(loc.getPlainDefault("ScreenReader.startRoot",
-				"start %0 root", asRootIndex(rightStr, loc)));
-		sb.append(' ');
-		sb.append(leftStr);
-		sb.append(' ');
-		sb.append(loc.getPlainDefault("ScreenReader.endRoot", "end root"));
-		return sb.toString();
+	public static String nroot(String radicand, String index, Localization loc) {
+		return loc.getPlainDefault("ScreenReader.startRoot", "start %0 root", asRootIndex(index, loc))
+				+ ' '
+				+ radicand
+				+ ' '
+				+ loc.getPlainDefault("ScreenReader.endRoot", "end root");
 	}
 
 	private static String asRootIndex(String rightStr, Localization loc) {
@@ -501,8 +552,7 @@ public class ScreenReader {
 	 * @param loc
 	 *            localization
 	 */
-	public static void fraction(StringBuilder sb, String leftStr, String rightStr,
-			Localization loc) {
+	public static void fraction(StringBuilder sb, String leftStr, String rightStr, Localization loc) {
 		sb.append(ScreenReader.getStartFraction(loc));
 		sb.append(leftStr);
 		sb.append(ScreenReader.getMiddleFraction(loc));
@@ -512,7 +562,7 @@ public class ScreenReader {
 
 	/**
 	 * Reads information about the play button on EV.
-	 * 
+	 *
 	 * @param app
 	 *            the application.
 	 */
@@ -522,11 +572,9 @@ public class ScreenReader {
 		sb.append(loc.getMenu("PlayButton"));
 		sb.endSentence();
 		if (app.getKernel().getAnimationManager().isRunning()) {
-			sb.append(
-					loc.getMenuDefault("PressSpaceStopAnimation", "Press space to stop animation"));
+			sb.append(loc.getMenuDefault("PressSpaceStopAnimation", "Press space to stop animation"));
 		} else {
-			sb.append(loc.getMenuDefault("PressSpaceStartAnimation",
-					"Press space to start animation"));
+			sb.append(loc.getMenuDefault("PressSpaceStartAnimation", "Press space to start animation"));
 		}
 		sb.endSentence();
 		readText(sb.toString(), app);
@@ -534,7 +582,7 @@ public class ScreenReader {
 
 	/**
 	 * Reads information about the animation state.
-	 * 
+	 *
 	 * @param app
 	 *            the application.
 	 */
@@ -562,8 +610,7 @@ public class ScreenReader {
 		if (!builder.isMobile()) {
 			builder.appendSpace();
 			Localization loc = sel.getKernel().getLocalization();
-			builder.append(loc.getMenuDefault("PressTabToSelectNext",
-						"Press tab to select next object"));
+			builder.append(loc.getMenuDefault("PressTabToSelectNext", "Press tab to select next object"));
 		}
 		return builder.toString();
 	}
@@ -588,7 +635,10 @@ public class ScreenReader {
 		Log.debug("read text: " + text);
 	}
 
-	public static String getComma() {
-		return " comma ";
+	/**
+	 * @return localized word for comma
+	 */
+	public static String getComma(Localization loc) {
+		return " " + localize(loc, "Comma", "comma");
 	}
 }

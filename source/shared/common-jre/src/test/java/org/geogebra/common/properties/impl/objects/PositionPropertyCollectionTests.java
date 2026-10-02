@@ -24,12 +24,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.geos.GeoBoolean;
+import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoImage;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.geos.GeoText;
@@ -38,22 +40,23 @@ import org.geogebra.common.properties.Property;
 import org.geogebra.common.properties.PropertyCollection;
 import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
+import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class PositionPropertyCollectionTests extends BaseAppTestSetup {
+class PositionPropertyCollectionTests extends BaseAppTestSetup {
 	private final GeoElementPropertiesFactory propertiesFactory = new GeoElementPropertiesFactory();
 
 	@Test
-	public void testPropertyAvailabilityForImage() {
+	void testPropertyAvailabilityForImage() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoImage geoImage = new GeoImage(getKernel().getConstruction());
 		PositionPropertyCollection positionPropertyCollection = assertDoesNotThrow(() ->
-				new PositionPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(geoImage)));
+				new PositionPropertyCollection(propertiesFactory, getLocalization(), List.of(geoImage)));
 		assertNotNull(positionPropertyCollection.getPlacementProperty());
 		assertNotNull(positionPropertyCollection.getAbsoluteScreenPositionPropertyCollection());
 		assertNull(positionPropertyCollection.getStartingPointPositionProperty());
@@ -62,17 +65,16 @@ public class PositionPropertyCollectionTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testPropertyVisibilityForImage() {
+	void testPropertyVisibilityForImage() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoImage geoImage = new GeoImage(getKernel().getConstruction());
 		PositionPropertyCollection positionPropertyCollection = assertDoesNotThrow(() ->
-				new PositionPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(geoImage)));
+				new PositionPropertyCollection(propertiesFactory, getLocalization(), List.of(geoImage)));
 
 		PropertyCollection<StringProperty> absoluteScreenPositionPropertyCollection =
 				positionPropertyCollection.getAbsoluteScreenPositionPropertyCollection();
-		List<StringPropertyWithSuggestions> cornerPositionProperties = positionPropertyCollection
-				.getCornerPositionProperties();
+		List<StringPropertyWithSuggestions> cornerPositionProperties =
+				positionPropertyCollection.getCornerPositionProperties();
 
 		assertNotNull(positionPropertyCollection.getPlacementProperty());
 
@@ -96,12 +98,11 @@ public class PositionPropertyCollectionTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testPropertyVisibilityForSlider() {
+	void testPropertyVisibilityForSlider() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoNumeric slider = evaluateGeoElement("a = Slider(-5, 5, 1)");
 		PositionPropertyCollection positionPropertyCollection = assertDoesNotThrow(() ->
-				new PositionPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(slider)));
+				new PositionPropertyCollection(propertiesFactory, getLocalization(), List.of(slider)));
 
 		PropertyCollection<StringProperty> absoluteScreenPositionPropertyCollection =
 				positionPropertyCollection.getAbsoluteScreenPositionPropertyCollection();
@@ -120,12 +121,11 @@ public class PositionPropertyCollectionTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testPropertyAvailabilityForBoolean() {
+	void testPropertyAvailabilityForBoolean() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoBoolean geoBoolean = evaluateGeoElement("true");
 		PositionPropertyCollection positionPropertyCollection = assertDoesNotThrow(() ->
-				new PositionPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(geoBoolean)));
+				new PositionPropertyCollection(propertiesFactory, getLocalization(), List.of(geoBoolean)));
 		assertNotNull(positionPropertyCollection.getPlacementProperty());
 		assertNotNull(positionPropertyCollection.getAbsoluteScreenPositionPropertyCollection());
 		assertNull(positionPropertyCollection.getStartingPointPositionProperty());
@@ -133,13 +133,13 @@ public class PositionPropertyCollectionTests extends BaseAppTestSetup {
 		assertNull(positionPropertyCollection.getCenterImagePositionProperty());
 	}
 
-	@Test
-	public void testPropertyAvailabilityForText() {
+	@ParameterizedTest
+	@CsvSource({"\"abc\"", "Text(\"abc\")"})
+	void testPropertyAvailabilityForText(String command) {
 		setupApp(SuiteSubApp.GRAPHING);
-		GeoText geoText = evaluateGeoElement("\"abc\"");
+		GeoText geoText = evaluateGeoElement(command);
 		PositionPropertyCollection positionPropertyCollection = assertDoesNotThrow(() ->
-				new PositionPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(geoText)));
+				new PositionPropertyCollection(propertiesFactory, getLocalization(), List.of(geoText)));
 		assertNotNull(positionPropertyCollection.getPlacementProperty());
 		assertNotNull(positionPropertyCollection.getAbsoluteScreenPositionPropertyCollection());
 		assertNotNull(positionPropertyCollection.getStartingPointPositionProperty());
@@ -147,13 +147,30 @@ public class PositionPropertyCollectionTests extends BaseAppTestSetup {
 		assertNull(positionPropertyCollection.getCenterImagePositionProperty());
 	}
 
+	@ParameterizedTest
+	@CsvSource(
+			value = {
+				"IF(3>2,\"abc\",\"def\")",
+				"IF(3>2,Text(\"abc\"), Text(\"def\", (1, 2)))",
+				"IF(3>2,Text(\"abc\", (8, 9)), Text(\"def\", (1, 2)))",
+				"Element({\"a\", \"b\"}, 1)"
+			},
+			delimiter = '#')
+	void testPropertyNotAvailableForDependentText(String command) {
+		setupApp(SuiteSubApp.GRAPHING);
+		GeoElement geoText = evaluateGeoElement(command);
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() ->
+						new PositionPropertyCollection(propertiesFactory, getLocalization(), List.of(geoText)));
+	}
+
 	@Test
-	public void testPropertyAvailabilityForPieChart() {
+	void testPropertyAvailabilityForPieChart() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPieChart geoPieChart = evaluateGeoElement("PieChart({1, 2, 3})");
 		PositionPropertyCollection positionPropertyCollection = assertDoesNotThrow(() ->
-				new PositionPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(geoPieChart)));
+				new PositionPropertyCollection(propertiesFactory, getLocalization(), List.of(geoPieChart)));
 		assertNull(positionPropertyCollection.getPlacementProperty());
 		assertNull(positionPropertyCollection.getAbsoluteScreenPositionPropertyCollection());
 		assertNull(positionPropertyCollection.getStartingPointPositionProperty());
@@ -163,19 +180,18 @@ public class PositionPropertyCollectionTests extends BaseAppTestSetup {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2",
-			"1, 2",
-			"x^2",
-	})
-	public void testPointExpressionValidationFailures(String pointExpression) {
+	@ValueSource(
+			strings = {
+				"(1, 2", "1, 2", "x^2",
+			})
+	void testPointExpressionValidationFailures(String pointExpression) {
 		setupApp(SuiteSubApp.GRAPHING);
 		assertNotNull(PositionPropertyCollection.validatePointExpression(
 				getKernel().getParser(), getLocalization(), pointExpression));
 	}
 
 	@Test
-	public void testSuccessfulPointExpressionValidation() {
+	void testSuccessfulPointExpressionValidation() {
 		setupApp(SuiteSubApp.GRAPHING);
 		assertNull(PositionPropertyCollection.validatePointExpression(
 				getKernel().getParser(), getLocalization(), "(1, 2)"));

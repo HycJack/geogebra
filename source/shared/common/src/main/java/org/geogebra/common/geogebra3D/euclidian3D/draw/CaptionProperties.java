@@ -16,14 +16,13 @@
 
 package org.geogebra.common.geogebra3D.euclidian3D.draw;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.geogebra3D.euclidian3D.EuclidianView3D;
 import org.geogebra.common.kernel.matrix.Coords;
+import org.jspecify.annotations.Nullable;
 
 public class CaptionProperties {
-	private @CheckForNull CaptionText caption;
+	private @Nullable CaptionText caption;
 	private final Coords color = new Coords(0, 0, 0, 1);
 	private final EuclidianView3D view;
 	private Coords backgroundColor;
@@ -71,13 +70,12 @@ public class CaptionProperties {
 	 */
 	public static void updateColor(GColor baseColor, EuclidianView3D view, Coords color) {
 		GColor convertColor = baseColor;
-		if (view.isAdditiveDisplay()
-				&& baseColor.isDarkerThan(Drawable3D.DARKEST_ADDITIVE_COLOR)) {
-			convertColor = Drawable3D.DARKEST_ADDITIVE_COLOR
-					.deriveWithAlpha(baseColor.getAlpha());
+		if (view.isAdditiveDisplay() && baseColor.isDarkerThan(Drawable3D.DARKEST_ADDITIVE_COLOR)) {
+			convertColor = Drawable3D.DARKEST_ADDITIVE_COLOR.deriveWithAlpha(baseColor.getAlpha());
 		}
 
-		color.set((double) convertColor.getRed() / 255,
+		color.set(
+				(double) convertColor.getRed() / 255,
 				(double) convertColor.getGreen() / 255,
 				(double) convertColor.getBlue() / 255,
 				1);
@@ -105,9 +103,10 @@ public class CaptionProperties {
 		this.backgroundColor = bgColor == null
 				? null
 				: new Coords(
-				(double) bgColor.getRed() / 255,
-				(double) bgColor.getGreen() / 255,
-				(double) bgColor.getBlue() / 255, 1);
+						(double) bgColor.getRed() / 255,
+						(double) bgColor.getGreen() / 255,
+						(double) bgColor.getBlue() / 255,
+						1);
 	}
 
 	/**

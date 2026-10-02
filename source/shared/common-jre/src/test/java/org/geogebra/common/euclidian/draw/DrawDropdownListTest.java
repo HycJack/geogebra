@@ -16,24 +16,27 @@
 
 package org.geogebra.common.euclidian.draw;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.awt.GGraphics2D;
 import org.geogebra.common.awt.GGraphicsCommon;
 import org.geogebra.common.euclidian.DrawableND;
 import org.geogebra.common.euclidian.draw.dropdown.DrawDropDownList;
+import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoList;
-import org.junit.Test;
+import org.geogebra.test.annotation.Issue;
+import org.junit.jupiter.api.Test;
 
-public class DrawDropdownListTest extends BaseUnitTest {
+class DrawDropdownListTest extends BaseUnitTest {
 
 	private GGraphics2D graphics2D = new GGraphicsCommon();
 
 	@Test
-	public void dropdownShouldSelectFirstItem() {
+	void dropdownShouldSelectFirstItem() {
 		DrawDropDownList dropDownList = setupList("{1,2,3}");
 		assertEquals(0, dropDownList.getOptionCount());
 		dropDownList.toggleOptions();
@@ -42,7 +45,7 @@ public class DrawDropdownListTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void emptyStringShouldBeValidElement() {
+	void emptyStringShouldBeValidElement() {
 		DrawDropDownList dropDownList = setupList("{\"a\", \"\", \"c\"}");
 		assertEquals(0, dropDownList.getOptionCount());
 		dropDownList.toggleOptions();
@@ -51,23 +54,47 @@ public class DrawDropdownListTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void spaceShouldCloseDropdown() {
+	void spaceShouldCloseDropdown() {
 		DrawDropDownList dl = setupList("{1,2,3}");
 		dl.toggleOptions();
 		dl.setHoverIndex(1);
 		getApp().handleSpaceKey();
-		assertFalse("Options should be hidden", dl.isOptionsVisible());
+		assertFalse(dl.isOptionsVisible(), "Options should be hidden");
 		assertEquals(0, ((GeoList) dl.getGeoElement()).getSelectedIndex());
 	}
 
 	@Test
-	public void spaceShouldSelectItem() {
+	void spaceShouldSelectItem() {
 		DrawDropDownList dl = setupList("{1,2,3}");
 		dl.toggleOptions();
 		dl.setKeyboardSelectionIndex(1);
 		getApp().handleSpaceKey();
-		assertFalse("Options should be hidden", dl.isOptionsVisible());
+		assertFalse(dl.isOptionsVisible(), "Options should be hidden");
 		assertEquals(1, ((GeoList) dl.getGeoElement()).getSelectedIndex());
+	}
+
+	@Test
+	@Issue("APPS-7851")
+	void shouldStayAsDropdownList() {
+		add("a=7");
+		setupList("l1={1,a}");
+		add("a=Slope(xAxis)");
+		assertInstanceOf(DrawDropDownList.class, getDrawable(lookup("l1")));
+	}
+
+	@Test
+	@Issue("APPS-7851")
+	void shouldBeReplacedOnToggle() {
+		GeoList l1 = add("l1={x,-x}");
+		l1.setEuclidianVisible(true);
+		l1.updateRepaint();
+		assertInstanceOf(DrawList.class, getDrawable(l1));
+		l1.setDrawAsComboBox(true);
+		l1.updateVisualStyleRepaint(GProperty.COMBINED);
+		assertInstanceOf(DrawDropDownList.class, getDrawable(l1));
+		l1.setDrawAsComboBox(false);
+		l1.updateVisualStyleRepaint(GProperty.COMBINED);
+		assertInstanceOf(DrawList.class, getDrawable(l1));
 	}
 
 	private DrawDropDownList setupList(String definition) {

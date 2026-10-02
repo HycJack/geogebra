@@ -18,7 +18,7 @@ package org.geogebra.web.full.gui.components.sideSheet;
 
 import org.geogebra.web.shared.components.dialog.DialogData;
 
-public class SideSheetData extends DialogData {
+public final class SideSheetData extends DialogData {
 
 	/**
 	 * Object holding data for side sheet
@@ -26,8 +26,8 @@ public class SideSheetData extends DialogData {
 	 * @param negativeBtnTransKey negative button text
 	 * @param positiveBtnTransKey positive button text
 	 */
-	public SideSheetData(String titleTransKey, String negativeBtnTransKey,
-			String positiveBtnTransKey) {
+	public SideSheetData(
+			String titleTransKey, String negativeBtnTransKey, String positiveBtnTransKey) {
 		super(titleTransKey, negativeBtnTransKey, positiveBtnTransKey);
 	}
 

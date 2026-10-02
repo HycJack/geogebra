@@ -20,7 +20,7 @@ import org.geogebra.web.full.css.MaterialDesignResources;
 import org.geogebra.web.resources.SVGResource;
 import org.gwtproject.resources.client.ResourcePrototype;
 
-public class InfoErrorData {
+public final class InfoErrorData {
 	private String title;
 	private String subtext;
 	private String actionButtonText;
@@ -28,9 +28,9 @@ public class InfoErrorData {
 
 	/**
 	 * info/error date constructor
-	 * @param title - title
-	 * @param subtext - error/warning message
-	 * @param actionButtonText - action button text
+	 * @param title - title as localization key
+	 * @param subtext - error/warning message as localization key
+	 * @param actionButtonText - action button text as localization key
 	 */
 	public InfoErrorData(String title, String subtext, String actionButtonText, SVGResource img) {
 		setTitle(title);

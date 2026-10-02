@@ -25,7 +25,7 @@ import org.geogebra.web.html5.main.AppW;
 /**
  * audio dialog
  */
-public class AudioInputDialog extends MediaDialog {
+public final class AudioInputDialog extends MediaDialog {
 
 	/**
 	 * @param app
@@ -63,7 +63,6 @@ public class AudioInputDialog extends MediaDialog {
 	@Override
 	public void hide() {
 		super.hide();
-		app.getGuiManager().setMode(EuclidianConstants.MODE_SELECT_MOW,
-				ModeSetter.TOOLBAR);
+		app.getGuiManager().setMode(EuclidianConstants.MODE_SELECT_MOW, ModeSetter.TOOLBAR);
 	}
 }

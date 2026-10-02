@@ -23,7 +23,7 @@ import org.geogebra.web.full.main.AppWFull;
 /**
  * Opens file in Mebis Board.
  */
-public class OpenFileActionMebis extends DefaultMenuAction<AppWFull> {
+public final class OpenFileActionMebis extends DefaultMenuAction<AppWFull> {
 
 	@Override
 	public void execute(final AppWFull app) {
@@ -40,7 +40,6 @@ public class OpenFileActionMebis extends DefaultMenuAction<AppWFull> {
 	 * @return true if the whiteboard is active and the user logged in
 	 */
 	static boolean isLoggedOut(App app) {
-		return app.getLoginOperation() != null
-				&& !app.getLoginOperation().isLoggedIn();
+		return app.getLoginOperation() != null && !app.getLoginOperation().isLoggedIn();
 	}
 }

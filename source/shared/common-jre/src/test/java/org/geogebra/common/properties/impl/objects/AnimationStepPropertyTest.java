@@ -25,38 +25,48 @@ import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.test.BaseAppTestSetup;
+import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class AnimationStepPropertyTest extends BaseAppTestSetup {
+class AnimationStepPropertyTest extends BaseAppTestSetup {
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@Test
-	public void testApplicable() {
+	void testApplicable() {
 		GeoElement point = evaluateGeoElement("(1, 1)");
-		assertDoesNotThrow(() ->
-				new AnimationStepProperty(getAlgebraProcessor(), getLocalization(), point, false));
+		assertDoesNotThrow(
+				() -> new AnimationStepProperty(getAlgebraProcessor(), getLocalization(), point, false));
 	}
 
 	@Test
-	public void testNotApplicable() {
+	void testNotApplicable() {
 		GeoElement circle = evaluateGeoElement("Circle((0, 0), 1)");
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new AnimationStepProperty(getAlgebraProcessor(), getLocalization(), circle, false));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new AnimationStepProperty(getAlgebraProcessor(), getLocalization(), circle, false));
 	}
 
 	@Test
-	public void testDisabledForLockedObject() {
+	void testDisabledForLockedObject() {
 		GeoElement point = evaluateGeoElement("(1, 1)");
-		AnimationStepProperty animationStepProperty = assertDoesNotThrow(() ->
-				new AnimationStepProperty(getAlgebraProcessor(), getLocalization(), point, false));
+		AnimationStepProperty animationStepProperty = assertDoesNotThrow(
+				() -> new AnimationStepProperty(getAlgebraProcessor(), getLocalization(), point, false));
 		point.setFixed(true);
 		assertFalse(animationStepProperty.isEnabled());
 		point.setFixed(false);
 		assertTrue(animationStepProperty.isEnabled());
+	}
+
+	@Test
+	@Issue("APPS-7729")
+	void testShowingForLockedObject() {
+		GeoElement point = evaluateGeoElement("(6, 7)");
+		point.setFixed(true);
+		assertTrue(AnimationStepProperty.isValid(point, false));
 	}
 }

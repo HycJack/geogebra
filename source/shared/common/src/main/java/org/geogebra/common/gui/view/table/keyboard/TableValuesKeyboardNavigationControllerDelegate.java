@@ -16,7 +16,7 @@
 
 package org.geogebra.common.gui.view.table.keyboard;
 
-import javax.annotation.CheckForNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The companion delegate to the {@link TableValuesKeyboardNavigationController}.
@@ -65,7 +65,7 @@ public interface TableValuesKeyboardNavigationControllerDelegate {
 	 * @return The current content of the editor for the given cell. May return null or an
 	 * empty string if the cell is empty.
 	 */
-	@CheckForNull String getCellEditorContent(int row, int column);
+	@Nullable String getCellEditorContent(int row, int column);
 
 	/**
 	 * Show a warning about invalid cell content.
@@ -73,4 +73,21 @@ public interface TableValuesKeyboardNavigationControllerDelegate {
 	 * @param column The column index of the invalid cell.
 	 */
 	void invalidCellContentDetected(int row, int column);
+
+	/**
+	 * Show context menu for column.
+	 * @param column the column index of the selected cell.
+	 */
+	default void showContextMenu(int column) {
+		// nothing to do here
+	}
+
+	/**
+	 * Copy content of cell to the clipboard.
+	 * @param row The row index of selected cell.
+	 * @param column The column index of selected cell.
+	 */
+	default void copyContent(int row, int column) {
+		// nothing to do here
+	}
 }

@@ -17,7 +17,9 @@
 package org.geogebra.common.euclidian.event;
 
 import org.geogebra.common.awt.GPoint;
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 
+@HasNativeSubclass
 public abstract class AbstractEvent {
 
 	/**
@@ -85,5 +87,4 @@ public abstract class AbstractEvent {
 	 * @return event type
 	 */
 	public abstract PointerEventType getType();
-
 }

@@ -28,7 +28,8 @@ import org.gwtproject.event.logical.shared.CloseEvent;
 import org.gwtproject.event.logical.shared.CloseHandler;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-public class HorizontalAlignmentPopup extends GPopupPanel implements CloseHandler<GPopupPanel> {
+public final class HorizontalAlignmentPopup extends GPopupPanel
+		implements CloseHandler<GPopupPanel> {
 	private final IconButton horizontalAlignmentButton;
 	private final SpreadsheetStyleBarModel styleBarModel;
 	private IconButton lastSelectedButton;
@@ -42,8 +43,8 @@ public class HorizontalAlignmentPopup extends GPopupPanel implements CloseHandle
 	 * @param horizontalAlignmentButton anchor button of popup
 	 * @param styleBarModel {@link SpreadsheetStyleBarModel}
 	 */
-	public HorizontalAlignmentPopup(AppW appW, IconButton horizontalAlignmentButton,
-			SpreadsheetStyleBarModel styleBarModel) {
+	public HorizontalAlignmentPopup(
+			AppW appW, IconButton horizontalAlignmentButton, SpreadsheetStyleBarModel styleBarModel) {
 		super(true, appW.getAppletFrame(), appW);
 		this.horizontalAlignmentButton = horizontalAlignmentButton;
 		this.styleBarModel = styleBarModel;
@@ -55,12 +56,12 @@ public class HorizontalAlignmentPopup extends GPopupPanel implements CloseHandle
 	private void buildGui() {
 		MaterialDesignResources res = MaterialDesignResources.INSTANCE;
 
-		leftAlignButton = buildIconButton(res.horizontal_align_left(),
-				SpreadsheetStyling.TextAlignment.LEFT);
-		centerAlignButton = buildIconButton(res.horizontal_align_center(),
-				SpreadsheetStyling.TextAlignment.CENTERED);
-		rightAlignButton = buildIconButton(res.horizontal_align_right(),
-				SpreadsheetStyling.TextAlignment.RIGHT);
+		leftAlignButton =
+				buildIconButton(res.horizontal_align_left(), SpreadsheetStyling.TextAlignment.LEFT);
+		centerAlignButton =
+				buildIconButton(res.horizontal_align_center(), SpreadsheetStyling.TextAlignment.CENTERED);
+		rightAlignButton =
+				buildIconButton(res.horizontal_align_right(), SpreadsheetStyling.TextAlignment.RIGHT);
 
 		FlowPanel buttonList = new FlowPanel();
 		buttonList.add(leftAlignButton);
@@ -72,10 +73,9 @@ public class HorizontalAlignmentPopup extends GPopupPanel implements CloseHandle
 		updateState();
 	}
 
-	private IconButton buildIconButton(SVGResource svg,
-			SpreadsheetStyling.TextAlignment alignment) {
-		IconButton button = new IconButton((AppW) getApplication(), new ImageIconSpec(svg),
-				"", () -> {});
+	private IconButton buildIconButton(SVGResource svg, SpreadsheetStyling.TextAlignment alignment) {
+		IconButton button =
+				new IconButton((AppW) getApplication(), new ImageIconSpec(svg), "", () -> {});
 		button.addStyleName("small");
 		button.addFastClickHandler(source -> {
 			updateSelection(button);
@@ -91,16 +91,16 @@ public class HorizontalAlignmentPopup extends GPopupPanel implements CloseHandle
 	public void updateState() {
 		lastSelectedButton.setActive(false);
 		switch (styleBarModel.getState().textAlignment) {
-		case RIGHT:
-			updateSelection(rightAlignButton);
-			break;
-		case CENTERED:
-			updateSelection(centerAlignButton);
-			break;
-		case LEFT:
-			updateSelection(leftAlignButton);
-			break;
-		default:
+			case RIGHT:
+				updateSelection(rightAlignButton);
+				break;
+			case CENTERED:
+				updateSelection(centerAlignButton);
+				break;
+			case LEFT:
+				updateSelection(leftAlignButton);
+				break;
+			default:
 		}
 	}
 

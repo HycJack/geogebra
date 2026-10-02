@@ -24,7 +24,7 @@ import org.geogebra.web.resources.SVGResource;
 /**
  * Menu for account related items (logout)
  */
-public class UserSubmenu extends Submenu {
+public final class UserSubmenu extends Submenu {
 
 	/**
 	 * @param app
@@ -32,11 +32,13 @@ public class UserSubmenu extends Submenu {
 	 */
 	public UserSubmenu(AppW app) {
 		super("user", app);
-		addItem(MainMenu.getMenuBarItem(MaterialDesignResources.INSTANCE.signout_black(),
-				app.getLocalization().getMenu("SignOut"), new MenuCommand(app) {
+		addItem(MainMenu.getMenuBarItem(
+				MaterialDesignResources.INSTANCE.signout_black(),
+				app.getLocalization().getMenu("SignOut"),
+				new MenuCommand(app) {
 
 					@Override
-					public void doExecute() {
+					void doExecute() {
 						app.getLoginOperation().showLogoutUI();
 						app.getLoginOperation().performLogOut();
 					}
@@ -65,5 +67,4 @@ public class UserSubmenu extends Submenu {
 	protected String getTitleTranslationKey() {
 		return ""; // not needed, override getTitle instead
 	}
-
 }

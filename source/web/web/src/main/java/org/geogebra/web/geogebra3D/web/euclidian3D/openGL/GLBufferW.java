@@ -25,11 +25,11 @@ import jsinterop.base.Js;
 
 /**
  * buffers for openGL
- * 
+ *
  * @author mathieu
  *
  */
-public class GLBufferW implements GLBuffer {
+public final class GLBufferW implements GLBuffer {
 
 	private Float32Array impl;
 	private boolean isEmpty;
@@ -82,7 +82,7 @@ public class GLBufferW implements GLBuffer {
 
 	@Override
 	public double get() {
-		double ret = impl.getAt(index);
+		double ret = impl.at(index);
 		index++;
 		return ret;
 	}
@@ -114,19 +114,16 @@ public class GLBufferW implements GLBuffer {
 	}
 
 	@Override
-	public void set(ArrayList<Double> array, int arrayOffset, int offset,
-			int length) {
+	public void set(ArrayList<Double> array, int arrayOffset, int offset, int length) {
 		for (int i = 0; i < length; i++) {
 			impl.setAt(i + offset, array.get(arrayOffset + i));
 		}
 	}
 
 	@Override
-	public void set(ArrayList<Double> array, float[] translate, float scale,
-			int offset, int length) {
+	public void set(ArrayList<Double> array, float[] translate, float scale, int offset, int length) {
 		for (int i = 0; i < length; i++) {
-			impl.setAt(i + offset,
-					(double) (array.get(i).floatValue() * scale + translate[i % 3]));
+			impl.setAt(i + offset, (double) (array.get(i).floatValue() * scale + translate[i % 3]));
 		}
 	}
 
@@ -148,12 +145,12 @@ public class GLBufferW implements GLBuffer {
 			return;
 		}
 		for (int i = 0; i < ret.length; i++) {
-			ret[i] = impl.getAt(i).floatValue();
+			ret[i] = (float) impl.at(i);
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @return buffer
 	 */
 	public Float32Array getBuffer() {
@@ -171,5 +168,4 @@ public class GLBufferW implements GLBuffer {
 	public void position(int newPosition) {
 		index = newPosition;
 	}
-
 }

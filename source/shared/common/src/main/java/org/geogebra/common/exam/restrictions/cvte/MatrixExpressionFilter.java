@@ -16,17 +16,16 @@
 
 package org.geogebra.common.exam.restrictions.cvte;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
 import org.geogebra.common.kernel.arithmetic.ListValue;
 import org.geogebra.common.kernel.arithmetic.filter.ExpressionFilter;
+import org.jspecify.annotations.NonNull;
 
 public class MatrixExpressionFilter implements ExpressionFilter {
 
 	@Override
-	public boolean isAllowed(@Nonnull ExpressionValue expression) {
+	public boolean isAllowed(@NonNull ExpressionValue expression) {
 		return !containsMatrixExpression(expression);
 	}
 
@@ -34,7 +33,8 @@ public class MatrixExpressionFilter implements ExpressionFilter {
 		return expression.any(subExpression -> {
 			if (subExpression.evaluatesToList()) {
 				ExpressionValue value = subExpression.evaluate(StringTemplate.defaultTemplate);
-				return value != null && (value.unwrap() instanceof ListValue)
+				return value != null
+						&& (value.unwrap() instanceof ListValue)
 						&& ((ListValue) value.unwrap()).isMatrix();
 			}
 			return false;

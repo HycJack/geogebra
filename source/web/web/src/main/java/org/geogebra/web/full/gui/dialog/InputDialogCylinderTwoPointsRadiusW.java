@@ -27,7 +27,7 @@ import org.geogebra.web.shared.components.dialog.DialogData;
 /**
  * Dialog for cylinder given by top and bottom centers.
  */
-public class InputDialogCylinderTwoPointsRadiusW extends InputDialogRadiusW {
+public final class InputDialogCylinderTwoPointsRadiusW extends InputDialogRadiusW {
 
 	private GeoPointND a;
 	private GeoPointND b;
@@ -46,8 +46,8 @@ public class InputDialogCylinderTwoPointsRadiusW extends InputDialogRadiusW {
 	 * @param kernel
 	 *            kernel
 	 */
-	public InputDialogCylinderTwoPointsRadiusW(AppW app, DialogData data,
-			InputHandler handler, GeoPointND a, GeoPointND b, Kernel kernel) {
+	public InputDialogCylinderTwoPointsRadiusW(
+			AppW app, DialogData data, InputHandler handler, GeoPointND a, GeoPointND b, Kernel kernel) {
 		super(app, data, handler, kernel);
 		this.a = a;
 		this.b = b;
@@ -57,5 +57,4 @@ public class InputDialogCylinderTwoPointsRadiusW extends InputDialogRadiusW {
 	protected GeoElement createOutput(GeoNumberValue num) {
 		return kernel.getManager3D().cylinderLimited(null, a, b, num)[0];
 	}
-
 }

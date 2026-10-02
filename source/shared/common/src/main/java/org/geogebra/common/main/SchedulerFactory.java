@@ -16,11 +16,14 @@
 
 package org.geogebra.common.main;
 
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
+
 /**
  * factory for creating schedulers
  *
  */
-abstract public class SchedulerFactory {
+@HasNativeSubclass
+public abstract class SchedulerFactory {
 
 	private static volatile SchedulerFactory prototype;
 
@@ -31,40 +34,39 @@ abstract public class SchedulerFactory {
 	public interface Scheduler {
 		/**
 		 * schedule a runnable to run after a delay
-		 * 
+		 *
 		 * @param runnable
 		 *            runnable
 		 * @param delay
 		 *            delay
 		 */
-        void schedule(Runnable runnable, int delay);
+		void schedule(Runnable runnable, int delay);
 
 		/**
 		 * cancel the scheduled action
 		 */
-        void cancel();
-    }
-
-    /**
-     * @param factory prototype
-     */
-    public static void setPrototypeIfNull(SchedulerFactory factory) {
-        if (prototype == null) {
-            prototype = factory;
-        }
-    }
-
-    /**
-     * @return might return null
-     */
-    public static SchedulerFactory getPrototype() {
-        return prototype;
-    }
+		void cancel();
+	}
 
 	/**
-	 * 
+	 * @param factory prototype
+	 */
+	public static void setPrototypeIfNull(SchedulerFactory factory) {
+		if (prototype == null) {
+			prototype = factory;
+		}
+	}
+
+	/**
+	 * @return might return null
+	 */
+	public static SchedulerFactory getPrototype() {
+		return prototype;
+	}
+
+	/**
+	 *
 	 * @return a new scheduler
 	 */
-    abstract public Scheduler createScheduler();
-
+	public abstract Scheduler createScheduler();
 }

@@ -30,7 +30,7 @@ import org.gwtproject.user.client.Event;
  * Override splitter behavior on touch devices: add glass dragging zone
  *
  */
-public class SplitterImplTouch extends SplitterImpl {
+public final class SplitterImplTouch extends SplitterImpl {
 
 	private Element mainDivElement;
 	private Element glassDivElement;
@@ -58,14 +58,14 @@ public class SplitterImplTouch extends SplitterImpl {
 			return true;
 		}
 		switch (DOM.eventGetType(event)) {
-		case Event.ONMOUSEDOWN:
-		case Event.ONMOUSEMOVE:
-		case Event.ONMOUSEUP:
-			EventTarget tg = event.getEventTarget();
-			if (Element.is(tg) && (Element.as(tg) == glassDivElement)) {
-				return false;
-			}
-			break;
+			case Event.ONMOUSEDOWN:
+			case Event.ONMOUSEMOVE:
+			case Event.ONMOUSEUP:
+				EventTarget tg = event.getEventTarget();
+				if (Element.is(tg) && (Element.as(tg) == glassDivElement)) {
+					return false;
+				}
+				break;
 		}
 		return true;
 	}
@@ -110,7 +110,7 @@ public class SplitterImplTouch extends SplitterImpl {
 	public void splitterInsertedIntoLayer(Layer layer) {
 		layer.getContainerElement().getStyle().setOverflow(Overflow.VISIBLE);
 	}
-	
+
 	@Override
 	public Element getSplitterElement() {
 		return mainDivElement;

@@ -30,11 +30,10 @@ import org.gwtproject.user.client.ui.Widget;
  * This class may be redundant since EuclidianDockPanelW, but GeoGebra Desktop
  * also uses two different classes for similar purposes, so its behaviour was
  * imitated here.
- * 
+ *
  * @author arpad
  */
-
-public class Euclidian2DockPanelW extends EuclidianDockPanelWAbstract
+public final class Euclidian2DockPanelW extends EuclidianDockPanelWAbstract
 		implements EuclidianPanelWAbstract {
 
 	EuclidianStyleBar espanel;
@@ -132,8 +131,7 @@ public class Euclidian2DockPanelW extends EuclidianDockPanelWAbstract
 	@Override
 	public void calculateEnvironment() {
 		if (app.hasEuclidianView2EitherShowingOrNot(1)) {
-			app.getEuclidianView2(1).getEuclidianController()
-					.calculateEnvironment();
+			app.getEuclidianView2(1).getEuclidianController().calculateEnvironment();
 		}
 	}
 
@@ -141,5 +139,4 @@ public class Euclidian2DockPanelW extends EuclidianDockPanelWAbstract
 	public void resizeView(int width, int height) {
 		app.ggwGraphicsView2DimChanged(width, height);
 	}
-
 }

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,9 +16,9 @@
 
 package org.geogebra.common.util.lang;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -30,20 +30,20 @@ import java.util.Optional;
 import org.geogebra.common.util.lang.subtags.Field;
 import org.geogebra.common.util.lang.subtags.LanguageSubtagRegistryParser;
 import org.geogebra.common.util.lang.subtags.Record;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class LanguageTests {
+class LanguageTests {
 
 	private static List<Record> acceptedSubtags;
 
-	@BeforeClass
-	public static void setup() throws Exception {
+	@BeforeAll
+	static void setup() throws Exception {
 		acceptedSubtags = parseRecords();
 	}
 
 	@Test
-	public void testLanguageTags() {
+	void testLanguageTags() {
 		for (Language language : Language.values()) {
 			String tag = language.toLanguageTag();
 			assertNotNull(tag);
@@ -56,17 +56,15 @@ public class LanguageTests {
 					continue;
 				}
 				Optional<Record> acceptedSubtag = findRecord(acceptedSubtags, subtag);
-				assertTrue(subtag + " must be present in accepted subtags",
-						acceptedSubtag.isPresent());
+				assertTrue(acceptedSubtag.isPresent(), subtag + " must be present in accepted subtags");
 			}
 		}
 	}
 
 	private static List<Record> parseRecords() throws Exception {
-		try (InputStream in = LanguageTests.class.getResourceAsStream(
-				"language-subtag-registry.txt")) {
-			BufferedReader reader = new BufferedReader(
-					new InputStreamReader(in, StandardCharsets.US_ASCII));
+		try (InputStream in = LanguageTests.class.getResourceAsStream("language-subtag-registry.txt")) {
+			BufferedReader reader =
+					new BufferedReader(new InputStreamReader(in, StandardCharsets.US_ASCII));
 			return LanguageSubtagRegistryParser.parse(reader);
 		}
 	}

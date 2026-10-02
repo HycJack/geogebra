@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -29,6 +29,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Dictionary;
@@ -150,12 +151,11 @@ import org.geogebra.desktop.util.ImageResourceD;
 /**
  * PropertiesPanel for displaying all gui elements for changing properties of
  * currently selected GeoElements.
- * 
+ *
  * @author Markus Hohenwarter
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
-public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
- UpdateTabs {
+@SuppressWarnings({"unchecked", "rawtypes"})
+public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts, UpdateTabs {
 	/** application */
 	AppD app;
 	/** localization */
@@ -165,72 +165,80 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	/** color chooser */
 	GeoGebraColorChooser colChooser;
 
+	@Serial
 	private static final long serialVersionUID = 1L;
+
 	private NamePanelD namePanel;
-	private ShowObjectPanel showObjectPanel;
-	private CheckboxPanel selectionAllowed;
-	private CheckboxPanel showTrimmedIntersectionLines;
-	private CheckboxPanel simplifyCoefficientsPanel;
-	private ColorPanel colorPanel;
+	private final ShowObjectPanel showObjectPanel;
+	private final CheckboxPanel selectionAllowed;
+	private final CheckboxPanel showTrimmedIntersectionLines;
+	private final CheckboxPanel simplifyCoefficientsPanel;
+	private final ColorPanel colorPanel;
 	private LabelPanel labelPanel;
 	private ComboPanel tooltipPanel;
 	private ComboPanel layerPanel;
-	private ComboPanel coordPanel;
-	private ComboPanel lineEqnPanel;
-	private ComboPanel planeEqnPanel;
-	private CheckboxPanel symbolicPanel;
-	private ConicEqnPanel conicEqnPanel;
-	private PointSizePanel pointSizePanel;
-	private PointStylePanel pointStylePanel;
-	private TextOptionsPanelD textOptionsPanel;
-	private ArcSizePanel arcSizePanel;
-	private LineStylePanel lineStylePanel;
-	private LineStyleHiddenPanel lineStylePanelHidden;
-	private CheckboxPanel drawArrowsPanel;
-	private IconDropdownPanelD segmentStartStylePanel;
-	private IconDropdownPanelD segmentEndStylePanel;
-	private IconDropdownPanelD vectorStylePanel;
+	private final ComboPanel coordPanel;
+	private final ComboPanel lineEqnPanel;
+	private final ComboPanel planeEqnPanel;
+	private final CheckboxPanel symbolicPanel;
+	private final ConicEqnPanel conicEqnPanel;
+	private final PointSizePanel pointSizePanel;
+	private final PointStylePanel pointStylePanel;
+	private final TextOptionsPanelD textOptionsPanel;
+	private final ArcSizePanel arcSizePanel;
+	private final LineStylePanel lineStylePanel;
+	private final LineStyleHiddenPanel lineStylePanelHidden;
+	private final CheckboxPanel drawArrowsPanel;
+	private final IconDropdownPanelD segmentStartStylePanel;
+	private final IconDropdownPanelD segmentEndStylePanel;
+	private final IconDropdownPanelD vectorStylePanel;
 	// added by Loic BEGIN
-	private DecoSegmentPanel decoSegmentPanel;
-	private DecoAnglePanel decoAnglePanel;
-	private RightAnglePanel rightAnglePanel;
+	private final DecoSegmentPanel decoSegmentPanel;
+	private final DecoAnglePanel decoAnglePanel;
+	private final RightAnglePanel rightAnglePanel;
 	// END
 
 	/** filling */
 	FillingPanelD fillingPanel;
-	private FadingPanel fadingPanel;
-	private LodPanel lodPanel;
-	private CheckboxPanel checkBoxInterpolateImage;
-	private CheckboxPanel tracePanel;
-	private CheckboxPanel animatingPanel;
-	private CheckboxPanel fixPanel;
-	private CheckboxPanel ineqStylePanel;
-	private CheckboxPanel checkBoxFixPanel;
-	private AllowReflexAnglePanel allowReflexAnglePanel;
-	private CheckboxPanel allowOutlyingIntersectionsPanel;
-	private CheckboxPanel auxPanel;
-	private TextPropertyPanel animStepPanel;
-	private TextPropertyPanel verticalIncrementPanel;
-	private TextPropertyPanel textFieldSizePanel;
-	private TextFieldAlignmentPanel textFieldAlignmentPanel;
-	private AnimationSpeedPanel animSpeedPanel;
-	private SliderPropertiesPanelD sliderPanel;
-	private SlopeTriangleSizePanel slopeTriangleSizePanel;
+
+	private final FadingPanel fadingPanel;
+	private final LodPanel lodPanel;
+	private final CheckboxPanel checkBoxInterpolateImage;
+	private final CheckboxPanel tracePanel;
+	private final CheckboxPanel animatingPanel;
+	private final CheckboxPanel fixPanel;
+	private final CheckboxPanel ineqStylePanel;
+	private final CheckboxPanel checkBoxFixPanel;
+	private final AllowReflexAnglePanel allowReflexAnglePanel;
+	private final CheckboxPanel allowOutlyingIntersectionsPanel;
+	private final CheckboxPanel auxPanel;
+	private final TextPropertyPanel animStepPanel;
+	private final TextPropertyPanel verticalIncrementPanel;
+	private final TextPropertyPanel textFieldSizePanel;
+	private final TextFieldAlignmentPanel textFieldAlignmentPanel;
+	private final AnimationSpeedPanel animSpeedPanel;
+	private final SliderPropertiesPanelD sliderPanel;
+	private final SlopeTriangleSizePanel slopeTriangleSizePanel;
 	private StartPointPanel startPointPanel;
 	private CornerPointsPanel cornerPointsPanel;
 	private TextEditPanel textEditPanel;
 	private ScriptEditPanel scriptEditPanel;
 	private CheckboxPanel bgImagePanel;
-	private CheckboxPanel absScreenLocPanel;
-	private CheckboxPanel centerImagePanel;
-	private CheckboxPanel comboBoxPanel;
+	private final CheckboxPanel absScreenLocPanel;
+	private final CheckboxPanel centerImagePanel;
+	private final CheckboxPanel comboBoxPanel;
 	private ShowConditionPanel showConditionPanel;
 	private ColorFunctionPanel colorFunctionPanel;
-	private TextPropertyPanel absPositionXPanel;
-	private TextPropertyPanel absPositionYPanel;
+	private final TextPropertyPanel absPositionXPanel;
+	private final TextPropertyPanel absPositionYPanel;
 
 	private GraphicsViewLocationPanel graphicsViewLocationPanel;
-	private ButtonSizePanel buttonSizePanel;
+	private final ButtonSizePanel buttonSizePanel;
+	/**
+	 * A list of the tab panels
+	 */
+	private ArrayList<TabPanel> tabPanelList;
+
 	private TabPanel basicTab;
 	private TabPanel colorTab;
 	private TabPanel styleTab;
@@ -247,15 +255,14 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 */
 	boolean isDefaults;
 
-	private JTabbedPane tabs;
+	private final JTabbedPane tabs;
 
 	/**
 	 * @param app application
 	 * @param colChooser color chooser
 	 * @param isDefaults whether this is for defaults
 	 */
-	public PropertiesPanelD(AppD app, GeoGebraColorChooser colChooser,
-			boolean isDefaults) {
+	public PropertiesPanelD(AppD app, GeoGebraColorChooser colChooser, boolean isDefaults) {
 		this.isDefaults = isDefaults;
 
 		this.app = app;
@@ -277,8 +284,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			showConditionPanel = new ShowConditionPanel(app, this);
 			colorFunctionPanel = new ColorFunctionPanel(app, this);
 
-			graphicsViewLocationPanel = new GraphicsViewLocationPanel(app,
-					this);
+			graphicsViewLocationPanel = new GraphicsViewLocationPanel(app);
 		}
 
 		allowReflexAnglePanel = new AllowReflexAnglePanel();
@@ -286,8 +292,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		sliderPanel = new SliderPropertiesPanelD(app, this, false, true);
 		showObjectPanel = new ShowObjectPanel();
 		selectionAllowed = getCheckboxPanel(new SelectionAllowedModel(null, app));
-		showTrimmedIntersectionLines = getCheckboxPanel(
-				new TrimmedIntersectionLinesModel(null, app));
+		showTrimmedIntersectionLines = getCheckboxPanel(new TrimmedIntersectionLinesModel(null, app));
 		simplifyCoefficientsPanel = getCheckboxPanel(new SimplifyCoefficientsModel(app));
 		colorPanel = new ColorPanel(this, colChooser);
 		coordPanel = new ComboPanel(new CoordsModel(app), app);
@@ -303,12 +308,11 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		lineStylePanel = new LineStylePanel();
 		lineStylePanelHidden = new LineStyleHiddenPanel();
 		drawArrowsPanel = getCheckboxPanel(new DrawArrowsModel(null, app));
-		segmentStartStylePanel = new IconDropdownPanelD(getStartImages(),
-				new SegmentStyleModel(app, true), 2);
-		segmentEndStylePanel = new IconDropdownPanelD(getEndImages(),
-				new SegmentStyleModel(app, false), 2);
-		vectorStylePanel = new IconDropdownPanelD(getVectorImages(),
-				new VectorHeadStyleModel(app), 1);
+		segmentStartStylePanel =
+				new IconDropdownPanelD(getStartImages(), new SegmentStyleModel(app, true), 2);
+		segmentEndStylePanel =
+				new IconDropdownPanelD(getEndImages(), new SegmentStyleModel(app, false), 2);
+		vectorStylePanel = new IconDropdownPanelD(getVectorImages(), new VectorHeadStyleModel(app), 1);
 		// added by Loic BEGIN
 		decoSegmentPanel = new DecoSegmentPanel();
 		decoAnglePanel = new DecoAnglePanel();
@@ -335,8 +339,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		textFieldSizePanel = new TextPropertyPanel(app, new TextFieldSizeModel(app));
 		textFieldAlignmentPanel = new TextFieldAlignmentPanel(app);
 		animSpeedPanel = new AnimationSpeedPanel(app);
-		allowOutlyingIntersectionsPanel = getCheckboxPanel(
-				new OutlyingIntersectionsModel(null, app));
+		allowOutlyingIntersectionsPanel = getCheckboxPanel(new OutlyingIntersectionsModel(null, app));
 		buttonSizePanel = new ButtonSizePanel(app, loc);
 		// tabbed pane for properties
 		tabs = new JTabbedPane();
@@ -349,7 +352,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	}
 
 	private List<ImageResourceD> getEndImages() {
-		return Arrays.asList(GuiResourcesD.STYLEBAR_END_DEFAULT,
+		return Arrays.asList(
+				GuiResourcesD.STYLEBAR_END_DEFAULT,
 				GuiResourcesD.STYLEBAR_END_LINE,
 				GuiResourcesD.STYLEBAR_END_ARROW,
 				GuiResourcesD.STYLEBAR_END_CROWS_FOOT,
@@ -364,7 +368,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	}
 
 	private List<ImageResourceD> getStartImages() {
-		return Arrays.asList(GuiResourcesD.STYLEBAR_START_DEFAULT,
+		return Arrays.asList(
+				GuiResourcesD.STYLEBAR_START_DEFAULT,
 				GuiResourcesD.STYLEBAR_START_LINE,
 				GuiResourcesD.STYLEBAR_START_ARROW,
 				GuiResourcesD.STYLEBAR_START_CROWS_FOOT,
@@ -379,8 +384,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	}
 
 	private List<ImageResourceD> getVectorImages() {
-		return Arrays.asList(GuiResourcesD.STYLEBAR_END_ARROW_FILLED,
-				GuiResourcesD.STYLEBAR_END_ARROW);
+		return Arrays.asList(GuiResourcesD.STYLEBAR_END_ARROW_FILLED, GuiResourcesD.STYLEBAR_END_ARROW);
 	}
 
 	/**
@@ -397,6 +401,10 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		if (textEditPanel != null) {
 			textEditPanel.applyModifications();
 		}
+		applyScriptModifications();
+	}
+
+	private void applyScriptModifications() {
 		if (scriptEditPanel != null) {
 			scriptEditPanel.applyModifications();
 		}
@@ -424,11 +432,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	public void setSliderMinValue() {
 		arcSizePanel.setMinValue();
 	}
-
-	/**
-	 * A list of the tab panels
-	 */
-	private ArrayList<TabPanel> tabPanelList;
 
 	/**
 	 * Initialize the tabs
@@ -548,7 +551,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 			positionTab = new TabPanel(positionTabList);
 			tabPanelList.add(positionTab);
-
 		}
 
 		// algebra tab
@@ -698,9 +700,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		if (tabs.getTabCount() > 0) {
 			int index = tabs.indexOfComponent(selectedTab);
 			tabs.setSelectedIndex(Math.max(0, index));
-			// tabs.setVisible(true);
-		} else {
-			// tabs.setVisible(false);
 		}
 	}
 
@@ -771,7 +770,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		}
 
 		allowReflexAnglePanel.updateFonts();
-
 	}
 
 	@Override
@@ -807,14 +805,12 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * @param geos selected geo
 	 * @return whether at least one panel on tab is visible
 	 */
-	static boolean updateTabPanel(ArrayList<JPanel> tabList,
-			Object[] geos) {
+	static boolean updateTabPanel(ArrayList<JPanel> tabList, Object[] geos) {
 		// update all panels and their visibility
 		boolean oneVisible = false;
 		int size = tabList.size();
 		for (int i = 0; i < size; i++) {
-			UpdateablePropertiesPanel up = (UpdateablePropertiesPanel) tabList
-					.get(i);
+			UpdateablePropertiesPanel up = (UpdateablePropertiesPanel) tabList.get(i);
 			boolean show = up.updatePanel(geos) != null;
 			up.setVisible(show);
 			if (show) {
@@ -830,9 +826,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * @param geos selected geos
 	 */
 	public void updateSelection(Object[] geos) {
-		// if (geos == oldSelGeos) return;
-		// oldSelGeos = geos;
-
+		// only do this for scripts, text editor needs clicking [ok] explicitly
+		applyScriptModifications();
 		updateTabs(geos);
 	}
 
@@ -852,18 +847,19 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		namePanel.updateName(geo);
 	}
 
-	private static class TabPanel extends JPanel {
+	private static final class TabPanel extends JPanel {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
 
 		private String title;
-		private ArrayList<JPanel> panelList;
+		private final ArrayList<JPanel> panelList;
 
-		public TabPanel(ArrayList<JPanel> pVec) {
+		private TabPanel(ArrayList<JPanel> pVec) {
 			this(pVec, false);
 		}
 
-		public TabPanel(ArrayList<JPanel> pVec, boolean fullHeight) {
+		private TabPanel(ArrayList<JPanel> pVec, boolean fullHeight) {
 			panelList = pVec;
 
 			setLayout(new BorderLayout());
@@ -908,7 +904,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			};
 		}
 
-		public TabPanel(JPanel panel) {
+		private TabPanel(JPanel panel) {
 			panelList = new ArrayList<>();
 			panelList.add(panel);
 
@@ -916,11 +912,11 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			add(panel, BorderLayout.CENTER);
 		}
 
-		public void setTitle(String title) {
+		private void setTitle(String title) {
 			this.title = title;
 		}
 
-		public boolean update(Object[] geos, JTabbedPane tabs, int index) {
+		private boolean update(Object[] geos, JTabbedPane tabs, int index) {
 			if (updateTabPanel(panelList, geos)) {
 				if (!tabs.isAncestorOf(this)) {
 					tabs.insertTab(title, null, this, null, Math.min(index, tabs.getTabCount()));
@@ -936,12 +932,12 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	/**
 	 * panel with show/hide object checkbox
 	 */
-	private class ShowObjectPanel extends CheckboxPanel
-			implements IShowObjectListener {
+	private final class ShowObjectPanel extends CheckboxPanel implements IShowObjectListener {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
 
-		public ShowObjectPanel() {
+		private ShowObjectPanel() {
 			super(app, PropertiesPanelD.this, new ShowObjectModel(null, app));
 		}
 
@@ -950,28 +946,30 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			getCheckbox().setSelected(value);
 			getCheckbox().setEnabled(isEnabled);
 		}
-
 	}
 
 	/**
 	 * panel with label properties
 	 */
-	public class LabelPanel extends JPanel
-			implements ItemListener, ActionListener, UpdateablePropertiesPanel,
-			SetLabels, UpdateFonts, IShowLabelListener {
-		/**
-		 *
-		 */
+	final class LabelPanel extends JPanel
+			implements ItemListener,
+					ActionListener,
+					UpdateablePropertiesPanel,
+					SetLabels,
+					UpdateFonts,
+					IShowLabelListener {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private JCheckBox showLabelCB;
-		private JComboBox labelModeCB;
-		private ShowLabelModel model;
+
+		private final JCheckBox showLabelCB;
+		private final JComboBox labelModeCB;
+		private final ShowLabelModel model;
 		private boolean ignoreEvents;
 
 		/**
 		 * new label panel
 		 */
-		protected LabelPanel() {
+		private LabelPanel() {
 			super();
 			model = new ShowLabelModel(app, this);
 			// check boxes for show object, show label
@@ -979,7 +977,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			showLabelCB.addItemListener(this);
 
 			// combo box for label mode: name or algebra
-			labelModeCB = new JComboBox();
+			labelModeCB = new JComboBox<>();
 			labelModeCB.addActionListener(this);
 
 			// labelPanel with show checkbox
@@ -1021,7 +1019,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		 * Updates properties without firing listeners
 		 * @return this
 		 */
-		public JPanel update() {
+		private JPanel update() {
 			if (!model.checkGeos()) {
 				return null;
 			}
@@ -1061,9 +1059,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			Object source = e.getSource();
 			if (source == labelModeCB) {
 				showLabelCB.setSelected(true);
-				model.applyModeChanges(
-						model.fromDropdown(labelModeCB.getSelectedIndex()),
-						true);
+				model.applyModeChanges(model.fromDropdown(labelModeCB.getSelectedIndex()), true);
 			}
 		}
 
@@ -1080,7 +1076,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			} else {
 				showLabelCB.setText(loc.getMenu("ShowLabel") + ":");
 			}
-
 		}
 
 		@Override
@@ -1098,50 +1093,47 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			ignoreEvents = true;
 			// set label visible checkbox
 			if (isEqualMode) {
-				labelModeCB
-						.setSelectedIndex(
-								ShowLabelModel.getDropdownIndex(geo0));
+				labelModeCB.setSelectedIndex(ShowLabelModel.getDropdownIndex(geo0));
 			} else {
 				labelModeCB.setSelectedItem(null);
 			}
 			ignoreEvents = false;
 			// locus in selection
 			labelModeCB.setVisible(model.isNameValueShown());
-
 		}
-
 	} // LabelPanel
 
 	private CheckboxPanel getCheckboxPanel(BooleanOptionModel model) {
-		return new CheckboxPanel(app, PropertiesPanelD.this, model);
+		return new CheckboxPanel(app, this, model);
 	}
 
 	/**
 	 * panel for angles to set whether reflex angles are allowed
 	 * @author Markus Hohenwarter
 	 */
-	private class AllowReflexAnglePanel extends JPanel
-			implements ActionListener, SetLabels, UpdateFonts,
-			UpdateablePropertiesPanel, IReflexAngleListener {
-		/**
-		 *
-		 */
+	private final class AllowReflexAnglePanel extends JPanel
+			implements ActionListener,
+					SetLabels,
+					UpdateFonts,
+					UpdateablePropertiesPanel,
+					IReflexAngleListener {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private JLabel intervalLabel;
-		private JComboBox intervalCombo;
-		private ReflexAngleModel model;
 
-		public AllowReflexAnglePanel() {
+		private final JLabel intervalLabel;
+		private final JComboBox intervalCombo;
+		private final ReflexAngleModel model;
+
+		private AllowReflexAnglePanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 			model = new ReflexAngleModel(app, isDefaults);
 			model.setListener(this);
 
 			intervalLabel = new JLabel();
-			intervalCombo = new JComboBox();
+			intervalCombo = new JComboBox<>();
 
 			add(intervalLabel);
 			add(intervalCombo);
-
 		}
 
 		@Override
@@ -1167,7 +1159,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			return update(geos);
 		}
 
-		public JPanel update(Object[] geos) {
+		private JPanel update(Object[] geos) {
 			model.setGeos(geos);
 			if (!model.checkGeos()) {
 				return null;
@@ -1228,33 +1220,35 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void clearItems() {
 			// TODO Auto-generated method stub
 		}
-
 	}
 
 	/**
 	 * panel for location of vectors and text
 	 */
-	private class StartPointPanel extends JPanel
-			implements ActionListener, FocusListener, SetLabels, UpdateFonts,
-			UpdateablePropertiesPanel, IComboListener {
-		/**
-		 *
-		 */
+	private final class StartPointPanel extends JPanel
+			implements ActionListener,
+					FocusListener,
+					SetLabels,
+					UpdateFonts,
+					UpdateablePropertiesPanel,
+					IComboListener {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private StartPointModel model;
-		private JLabel label;
-		private JComboBox cbLocation;
-		private DefaultComboBoxModel cbModel;
+
+		private final StartPointModel model;
+		private final JLabel label;
+		private final JComboBox cbLocation;
+		private final DefaultComboBoxModel cbModel;
 		List<String> currentContent;
 
-		public StartPointPanel() {
+		private StartPointPanel() {
 			// textfield for animation step
 			model = new StartPointModel(app);
 			model.setListener(this);
 			label = new JLabel();
-			cbLocation = new JComboBox();
+			cbLocation = new JComboBox<>();
 			cbLocation.setEditable(true);
-			cbModel = new DefaultComboBoxModel();
+			cbModel = new DefaultComboBoxModel<>();
 			cbLocation.setModel(cbModel);
 			label.setLabelFor(cbLocation);
 			cbLocation.addActionListener(this);
@@ -1276,7 +1270,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			return update(geos);
 		}
 
-		public JPanel update(Object[] geos) {
+		private JPanel update(Object[] geos) {
 			model.setGeos(geos);
 			if (!model.checkGeos()) {
 				return null;
@@ -1332,10 +1326,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void setSelectedIndex(int index) {
 			if (index == 0) {
-				GeoElement p = (GeoElement) model.getLocateableAt(0)
-						.getStartPoint();
-				cbLocation.setSelectedItem(
-						p.getLabel(StringTemplate.editTemplate));
+				GeoElement p = (GeoElement) model.getLocateableAt(0).getStartPoint();
+				cbLocation.setSelectedItem(p.getLabel(StringTemplate.editTemplate));
 			} else {
 				cbLocation.setSelectedItem(null);
 			}
@@ -1344,7 +1336,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void addItem(String item) {
 			cbModel.addElement(item);
-
 		}
 
 		// @Override
@@ -1359,11 +1350,13 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		}
 	}
 
-	private class ImageCornerPanel extends ComboPanel {
+	private final class ImageCornerPanel extends ComboPanel {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private ImageCornerModel model;
 
-		public ImageCornerPanel(int cornerIdx) {
+		private final ImageCornerModel model;
+
+		private ImageCornerPanel(int cornerIdx) {
 			super(app, "CornerModel");
 			model = new ImageCornerModel(app);
 			model.setListener(this);
@@ -1377,23 +1370,19 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		}
 
 		ImageResourceD cornerIcon(int idx) {
-			switch (idx) {
-			case 0:
-				return GuiResourcesD.CORNER1;
-			case 1:
-				return GuiResourcesD.CORNER2;
-			case 2:
-				return GuiResourcesD.CORNER4;
-			}
-			return null;
+			return switch (idx) {
+				case 0 -> GuiResourcesD.CORNER1;
+				case 1 -> GuiResourcesD.CORNER2;
+				case 2 -> GuiResourcesD.CORNER4;
+				default -> null;
+			};
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == comboBox) {
-				model.applyChanges((String) comboBox.getSelectedItem(),
-						app.getDefaultErrorHandler());
+				model.applyChanges((String) comboBox.getSelectedItem(), app.getDefaultErrorHandler());
 			}
 		}
 
@@ -1405,24 +1394,23 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 				getLabel().setText(loc.getCommand("Center") + ":");
 			} else {
 				String strLabelStart = loc.getMenu("CornerPoint");
-				getLabel().setText(
-						strLabelStart + " " + model.getCornerNumber() + ":");
+				getLabel().setText(strLabelStart + " " + model.getCornerNumber() + ":");
 			}
 		}
-
 	}
 
-	private class CornerPointsPanel extends JPanel
+	private final class CornerPointsPanel extends JPanel
 			implements UpdateablePropertiesPanel, SetLabels, UpdateFonts {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
 
-		private ImageCornerPanel corner0;
-		private ImageCornerPanel corner1;
-		private ImageCornerPanel corner2;
-		private ImageCornerPanel center;
+		private final ImageCornerPanel corner0;
+		private final ImageCornerPanel corner1;
+		private final ImageCornerPanel corner2;
+		private final ImageCornerPanel center;
 
-		public CornerPointsPanel() {
+		private CornerPointsPanel() {
 			corner0 = new ImageCornerPanel(0);
 			corner1 = new ImageCornerPanel(1);
 			corner2 = new ImageCornerPanel(2);
@@ -1432,9 +1420,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			add(corner0);
 			add(corner1);
 			add(corner2);
-			if (center != null) {
-				add(center);
-			}
+			add(center);
 		}
 
 		@Override
@@ -1488,17 +1474,16 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	/**
 	 * panel for script editing
 	 */
-	private class ScriptEditPanel extends JPanel implements
-			UpdateablePropertiesPanel, SetLabels, UpdateFonts {
-		/**
-		 *
-		 */
+	private final class ScriptEditPanel extends JPanel
+			implements UpdateablePropertiesPanel, SetLabels, UpdateFonts {
+		@Serial
 		private static final long serialVersionUID = 1L;
+
 		private final JTabbedPane tabbedPane;
 		ScriptInputModel[] models;
-		private List<ScriptInputDialog> panels = new ArrayList<>();
+		private final List<ScriptInputDialog> panels = new ArrayList<>();
 
-		public ScriptEditPanel() {
+		private ScriptEditPanel() {
 			super(new BorderLayout());
 
 			int row = 35;
@@ -1515,13 +1500,12 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			add(tabbedPane, BorderLayout.CENTER);
 
 			tabbedPane.addChangeListener(e -> applyModifications());
-
 		}
 
 		/**
 		 * apply edit modifications
 		 */
-		public void applyModifications() {
+		private void applyModifications() {
 			panels.forEach(ScriptInputDialog::applyModifications);
 		}
 
@@ -1549,8 +1533,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 				}
 			}
 			// select tab as before
-			tabbedPane.setSelectedIndex(
-					Math.max(0, tabbedPane.indexOfComponent(selectedTab)));
+			tabbedPane.setSelectedIndex(Math.max(0, tabbedPane.indexOfComponent(selectedTab)));
 
 			return this;
 		}
@@ -1575,10 +1558,11 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	/**
 	 * Panel for conic equation type
 	 */
-	private class ConicEqnPanel extends ComboPanel {
+	private final class ConicEqnPanel extends ComboPanel {
+		@Serial
 		private static final long serialVersionUID = 1L;
 
-		public ConicEqnPanel() {
+		private ConicEqnPanel() {
 			super(new ConicEqnModel(app), app);
 		}
 
@@ -1595,24 +1579,26 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 				comboBox.addActionListener(this);
 			}
 		}
-
 	} // ConicEqnPanel
 
 	/**
 	 * panel to select the size of a GeoPoint
 	 * @author Markus Hohenwarter
 	 */
-	private class PointSizePanel extends JPanel implements ChangeListener,
-			SetLabels, UpdateFonts, UpdateablePropertiesPanel, ISliderListener {
+	private final class PointSizePanel extends JPanel
+			implements ChangeListener,
+					SetLabels,
+					UpdateFonts,
+					UpdateablePropertiesPanel,
+					ISliderListener {
 
-		/**
-		 *
-		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private PointSizeModel model;
-		private JSlider slider;
 
-		public PointSizePanel() {
+		private final PointSizeModel model;
+		private final JSlider slider;
+
+		private PointSizePanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 
 			// setBorder(BorderFactory.createTitledBorder(loc.getMenu("Size")));
@@ -1644,8 +1630,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 		@Override
 		public void setLabels() {
-			setBorder(BorderFactory.createTitledBorder(
-					app.getLocalization().getMenu("PointSize")));
+			setBorder(BorderFactory.createTitledBorder(app.getLocalization().getMenu("PointSize")));
 		}
 
 		@Override
@@ -1654,7 +1639,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			return update();
 		}
 
-		public JPanel update() {
+		private JPanel update() {
 			// check geos
 			if (!model.checkGeos()) {
 				return null;
@@ -1701,7 +1686,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void setValue(int value) {
 			slider.setValue(value);
 		}
-
 	}
 
 	/**
@@ -1709,14 +1693,15 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * @author Florian Sonner
 	 * @version 2008-07-17
 	 */
-	private class PointStylePanel extends JPanel
-			implements UpdateablePropertiesPanel, SetLabels, UpdateFonts,
-			ActionListener, IComboListener {
+	private final class PointStylePanel extends JPanel
+			implements UpdateablePropertiesPanel, SetLabels, UpdateFonts, ActionListener, IComboListener {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private PointStyleModel model;
-		private JComboBox cbStyle;
 
-		public PointStylePanel() {
+		private final PointStyleModel model;
+		private final JComboBox cbStyle;
+
+		private PointStylePanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 
 			model = new PointStyleModel(app);
@@ -1729,10 +1714,9 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 			PointStyleListRenderer renderer = new PointStyleListRenderer();
 			renderer.setPreferredSize(new Dimension(18, 18));
-			cbStyle = new JComboBox(EuclidianView.getPointStyles());
+			cbStyle = new JComboBox<>(EuclidianView.getPointStyles());
 			cbStyle.setRenderer(renderer);
-			cbStyle.setMaximumRowCount(
-					EuclidianStyleConstants.MAX_POINT_STYLE + 1);
+			cbStyle.setMaximumRowCount(EuclidianStyleConstants.MAX_POINT_STYLE + 1);
 			cbStyle.setBackground(getBackground());
 			cbStyle.addActionListener(this);
 			add(cbStyle);
@@ -1762,8 +1746,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 		@Override
 		public void setLabels() {
-			setBorder(BorderFactory
-					.createTitledBorder(loc.getMenu("PointStyle")));
+			setBorder(BorderFactory.createTitledBorder(loc.getMenu("PointStyle")));
 		}
 
 		@Override
@@ -1772,7 +1755,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			return update();
 		}
 
-		public JPanel update() {
+		private JPanel update() {
 			// check geos
 			if (!model.checkGeos()) {
 				return null;
@@ -1831,25 +1814,26 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void clearItems() {
 			// TODO Auto-generated method stub
 		}
-
 	}
 
 	/**
 	 * panel to select the size of a GeoPoint
 	 * @author Markus Hohenwarter
 	 */
-	private class SlopeTriangleSizePanel extends JPanel
-			implements ChangeListener, UpdateablePropertiesPanel, SetLabels,
-			UpdateFonts, ISliderListener {
+	private final class SlopeTriangleSizePanel extends JPanel
+			implements ChangeListener,
+					UpdateablePropertiesPanel,
+					SetLabels,
+					UpdateFonts,
+					ISliderListener {
 
-		/**
-		 *
-		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private SlopeTriangleSizeModel model;
-		private JSlider slider;
 
-		public SlopeTriangleSizePanel() {
+		private final SlopeTriangleSizeModel model;
+		private final JSlider slider;
+
+		private SlopeTriangleSizePanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 
 			model = new SlopeTriangleSizeModel(app);
@@ -1922,7 +1906,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			setFont(font);
 
 			updateSliderFonts();
-
 		}
 
 		private void updateSliderFonts() {
@@ -1940,7 +1923,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void setValue(int value) {
 			slider.setValue(value);
-
 		}
 	}
 
@@ -1948,17 +1930,20 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * panel to select the size of a GeoAngle's arc
 	 * @author Markus Hohenwarter
 	 */
-	private class ArcSizePanel extends JPanel implements ChangeListener,
-			SetLabels, UpdateFonts, UpdateablePropertiesPanel, ISliderListener {
+	private final class ArcSizePanel extends JPanel
+			implements ChangeListener,
+					SetLabels,
+					UpdateFonts,
+					UpdateablePropertiesPanel,
+					ISliderListener {
 
-		/**
-		 *
-		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private AngleArcSizeModel model;
-		private JSlider slider;
 
-		public ArcSizePanel() {
+		private final AngleArcSizeModel model;
+		private final JSlider slider;
+
+		private ArcSizePanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 			model = new AngleArcSizeModel(app);
 			model.setListener(this);
@@ -1999,7 +1984,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		}
 
 		/** Set minimum arc size from settings */
-		public void setMinValue() {
+		private void setMinValue() {
 			slider.setValue(AngleArcSizeModel.MIN_VALUE);
 		}
 
@@ -2050,7 +2035,6 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void setValue(int value) {
 			slider.setValue(value);
-
 		}
 	}
 
@@ -2058,24 +2042,27 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * panel to select thickness and style (dashing) of a GeoLine
 	 * @author Markus Hohenwarter
 	 */
-	private class LineStylePanel extends JPanel implements ChangeListener,
-			ActionListener, UpdateablePropertiesPanel, SetLabels, UpdateFonts,
-			ILineStyleListener {
+	private final class LineStylePanel extends JPanel
+			implements ChangeListener,
+					ActionListener,
+					UpdateablePropertiesPanel,
+					SetLabels,
+					UpdateFonts,
+					ILineStyleListener {
 
-		/**
-		 *
-		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private JSlider thicknessSlider;
-		private JPanel thicknessPanel;
-		private JPanel opacityPanel;
-		private JSlider opacitySlider;
-		private JLabel dashLabel;
-		private JComboBox dashCB;
-		private LineStyleModel model;
-		private JPanel dashPanel;
 
-		public LineStylePanel() {
+		private final JSlider thicknessSlider;
+		private final JPanel thicknessPanel;
+		private final JPanel opacityPanel;
+		private final JSlider opacitySlider;
+		private final JLabel dashLabel;
+		private final JComboBox dashCB;
+		private final LineStyleModel model;
+		private final JPanel dashPanel;
+
+		private LineStylePanel() {
 			model = new LineStyleModel(app);
 			model.setListener(this);
 			// thickness slider
@@ -2107,9 +2094,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			updateSliderFonts();
 			// line style combobox (dashing)
 			DashListRenderer renderer = new DashListRenderer();
-			renderer.setPreferredSize(
-					new Dimension(130, app.getGUIFontSize() + 6));
-			dashCB = new JComboBox(EuclidianView.getLineTypes());
+			renderer.setPreferredSize(new Dimension(130, app.getGUIFontSize() + 6));
+			dashCB = new JComboBox<>(EuclidianView.getLineTypes());
 			dashCB.setRenderer(renderer);
 			dashCB.addActionListener(this);
 
@@ -2151,10 +2137,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void setLabels() {
 			Localization loc1 = app.getLocalization();
-			thicknessPanel.setBorder(BorderFactory
-					.createTitledBorder(loc1.getMenu("Thickness")));
-			opacityPanel.setBorder(BorderFactory
-					.createTitledBorder(loc1.getMenu("LineOpacity")));
+			thicknessPanel.setBorder(BorderFactory.createTitledBorder(loc1.getMenu("Thickness")));
+			opacityPanel.setBorder(BorderFactory.createTitledBorder(loc1.getMenu("LineOpacity")));
 
 			dashLabel.setText(loc1.getMenu("LineStyle") + ":");
 		}
@@ -2166,7 +2150,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			return update();
 		}
 
-		public JPanel update() {
+		private JPanel update() {
 			// check geos
 			if (!model.checkGeos()) {
 				return null;
@@ -2202,9 +2186,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (source == dashCB) {
-				model.applyLineType(
-						((Integer) dashCB.getSelectedItem()).intValue());
+			if (source == dashCB && dashCB.getSelectedItem() != null) {
+				model.applyLineType((Integer) dashCB.getSelectedItem());
 			}
 		}
 
@@ -2219,7 +2202,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			updateSliderFonts();
 		}
 
-		public void updateSliderFonts() {
+		private void updateSliderFonts() {
 			// set label font
 			Dictionary<?, ?> labelTable = thicknessSlider.getLabelTable();
 			Enumeration<?> en = labelTable.elements();
@@ -2258,7 +2241,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void selectCommonLineStyle(boolean equalStyle, int type) {
 			if (equalStyle) {
 				for (int i = 0; i < dashCB.getItemCount(); i++) {
-					if (type == ((Integer) dashCB.getItemAt(i)).intValue()) {
+					if (type == (Integer) dashCB.getItemAt(i)) {
 						dashCB.setSelectedIndex(i);
 						break;
 					}
@@ -2274,21 +2257,9 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		}
 
 		@Override
-		public void setLineStyleHiddenVisible(boolean value) {
-			// TODO Auto-generated method stub
-		}
-
-		@Override
-		public void selectCommonLineStyleHidden(boolean equalStyle, int type) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
 		public void setLineOpacityVisible(boolean value) {
 			opacityPanel.setVisible(value);
 		}
-
 	}
 
 	/**
@@ -2296,13 +2267,15 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * @author Mathieu
 	 *
 	 */
-	private class LineStyleHiddenPanel extends JPanel implements
-			UpdateablePropertiesPanel, SetLabels, UpdateFonts, ActionListener {
+	private final class LineStyleHiddenPanel extends JPanel
+			implements UpdateablePropertiesPanel, SetLabels, UpdateFonts, ActionListener {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private Object[] geos;
-		private JRadioButton[] buttons;
 
-		public LineStyleHiddenPanel() {
+		private Object[] geos;
+		private final JRadioButton[] buttons;
+
+		private LineStyleHiddenPanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 
 			PointStyleListRenderer renderer = new PointStyleListRenderer();
@@ -2310,20 +2283,18 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 			buttons = new JRadioButton[3];
 
-			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_NONE] = new JRadioButton(
-					loc.getMenu("Hidden.Invisible"));
-			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_NONE]
-					.setActionCommand("none");
+			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_NONE] =
+					new JRadioButton(loc.getMenu("Hidden.Invisible"));
+			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_NONE].setActionCommand("none");
 
-			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_DASHED] = new JRadioButton(
-					loc.getMenu("Hidden.Dashed"));
-			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_DASHED]
-					.setActionCommand("dashed");
+			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_DASHED] =
+					new JRadioButton(loc.getMenu("Hidden.Dashed"));
+			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_DASHED].setActionCommand("dashed");
 
-			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_AS_NOT_HIDDEN] = new JRadioButton(
-					loc.getMenu("Hidden.Unchanged"));
-			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_AS_NOT_HIDDEN]
-					.setActionCommand("asNotHidden");
+			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_AS_NOT_HIDDEN] =
+					new JRadioButton(loc.getMenu("Hidden.Unchanged"));
+			buttons[EuclidianStyleConstants.LINE_TYPE_HIDDEN_AS_NOT_HIDDEN].setActionCommand(
+					"asNotHidden");
 
 			ButtonGroup buttonGroup = new ButtonGroup();
 			for (int i = 0; i < 3; i++) {
@@ -2331,13 +2302,11 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 				add(buttons[i]);
 				buttonGroup.add(buttons[i]);
 			}
-
 		}
 
 		@Override
 		public void setLabels() {
-			setBorder(BorderFactory
-					.createTitledBorder(loc.getMenu("HiddenLineStyle")));
+			setBorder(BorderFactory.createTitledBorder(loc.getMenu("HiddenLineStyle")));
 		}
 
 		@Override
@@ -2347,7 +2316,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			return update();
 		}
 
-		public JPanel update() {
+		private JPanel update() {
 
 			// check if we use 3D view
 			if (!app.isEuclidianView3Dinited()) {
@@ -2372,7 +2341,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			boolean geosOK = true;
 			for (int i = 0; i < geos1.length; i++) {
 				GeoElement geo = (GeoElement) geos1[i];
-				if (!(geo.showLineProperties())) {
+				if (!geo.showLineProperties()) {
 					geosOK = false;
 					break;
 				}
@@ -2405,24 +2374,22 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 			setFont(font);
 		}
-
 	}
 
 	/**
 	 * panel to select the fading for endings of a surface
 	 * @author mathieu
 	 */
-	private class FadingPanel extends JPanel implements ChangeListener,
-			SetLabels, UpdateFonts, UpdateablePropertiesPanel {
+	private final class FadingPanel extends JPanel
+			implements ChangeListener, SetLabels, UpdateFonts, UpdateablePropertiesPanel {
 
-		/**
-		 *
-		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private Object[] geos;
-		private JSlider slider;
 
-		public FadingPanel() {
+		private Object[] geos;
+		private final JSlider slider;
+
+		private FadingPanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 
 			slider = new JSlider(0, 50);
@@ -2466,7 +2433,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			boolean geosOK = true;
 			for (int i = 0; i < selGeos.length; i++) {
 				GeoElement geo = (GeoElement) selGeos[i];
-				if (!(geo.isGeoPlane())) {
+				if (!geo.isGeoPlane()) {
 					geosOK = false;
 					break;
 				}
@@ -2485,7 +2452,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 				for (int i = 0; i < geos.length; i++) {
 					plane = (GeoPlaneND) geos[i];
 					plane.setFading((float) size / 100);
-					((GeoElement) plane).updateRepaint();
+					plane.updateRepaint();
 				}
 			}
 		}
@@ -2499,7 +2466,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			updateSliderFonts();
 		}
 
-		public void updateSliderFonts() {
+		private void updateSliderFonts() {
 
 			// set label font
 			Dictionary<?, ?> labelTable = slider.getLabelTable();
@@ -2518,26 +2485,24 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * panel to select the level of detail of surfaces
 	 * @author mathieu
 	 */
-	private class LodPanel extends JPanel implements ActionListener, SetLabels,
-			UpdateFonts, UpdateablePropertiesPanel, IComboListener {
+	private final class LodPanel extends JPanel
+			implements ActionListener, SetLabels, UpdateFonts, UpdateablePropertiesPanel, IComboListener {
 
-		/**
-		 *
-		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
 
-		private JLabel label;
-		private LodModel model;
-		private JComboBox combo;
+		private final JLabel label;
+		private final LodModel model;
+		private final JComboBox combo;
 
-		public LodPanel() {
+		private LodPanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
 
 			model = new LodModel(app, isDefaults);
 			model.setListener(this);
 
 			label = new JLabel();
-			combo = new JComboBox();
+			combo = new JComboBox<>();
 
 			add(label);
 			add(combo);
@@ -2561,7 +2526,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			combo.addActionListener(this);
 		}
 
-		public JPanel update(Object[] geos) {
+		private JPanel update(Object[] geos) {
 			model.setGeos(geos);
 			if (!model.checkGeos()) {
 				return null;
@@ -2603,19 +2568,20 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void clearItems() {
 			// TODO Auto-generated method stub
 		}
-
 	}
 
 	/**
 	 * Panel for segment decoration
 	 * @author Loic
 	 */
-	private class DecoSegmentPanel extends JPanel implements ActionListener,
-			SetLabels, UpdateFonts, UpdateablePropertiesPanel, IComboListener {
+	private class DecoSegmentPanel extends JPanel
+			implements ActionListener, SetLabels, UpdateFonts, UpdateablePropertiesPanel, IComboListener {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private DecoSegmentModel model;
-		private JComboBox decoCombo;
-		private JLabel decoLabel;
+
+		private final DecoSegmentModel model;
+		private final JComboBox decoCombo;
+		private final JLabel decoLabel;
 
 		DecoSegmentPanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
@@ -2623,9 +2589,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			model.setListener(this);
 			// deco combobox
 			DecorationListRenderer renderer = new DecorationListRenderer();
-			renderer.setPreferredSize(
-					new Dimension(130, app.getGUIFontSize() + 6));
-			decoCombo = new JComboBox(GeoSegment.getDecoTypes());
+			renderer.setPreferredSize(new Dimension(130, app.getGUIFontSize() + 6));
+			decoCombo = new JComboBox<>(GeoSegment.getDecoTypes());
 			decoCombo.setRenderer(renderer);
 			decoCombo.addActionListener(this);
 
@@ -2644,7 +2609,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			decoLabel.setText(loc.getMenu("Decoration") + ":");
 		}
 
-		public JPanel update(Object[] geos) {
+		private JPanel update(Object[] geos) {
 			model.setGeos(geos);
 			if (!model.checkGeos()) {
 				return null;
@@ -2661,8 +2626,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (source == decoCombo) {
-				int type = ((Integer) decoCombo.getSelectedItem()).intValue();
+			if (source == decoCombo && decoCombo.getSelectedItem() != null) {
+				int type = (Integer) decoCombo.getSelectedItem();
 				model.applyChanges(type);
 			}
 		}
@@ -2687,17 +2652,16 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void clearItems() {
 			// TODO Auto-generated method stub
 		}
-
 	}
 
-	private class IconDropdownPanelD extends JPanel implements ActionListener, SetLabels,
-			UpdateFonts, UpdateablePropertiesPanel, IComboListener {
-		private IconOptionsModel model;
-		private PopupMenuButtonD dropdown;
-		private JLabel label;
+	private class IconDropdownPanelD extends JPanel
+			implements ActionListener, SetLabels, UpdateFonts, UpdateablePropertiesPanel, IComboListener {
+		private final IconOptionsModel model;
+		private final PopupMenuButtonD dropdown;
+		private final JLabel label;
 
-		IconDropdownPanelD(List<ImageResourceD> imgFileNameList, IconOptionsModel model,
-				int nrOfColumns) {
+		IconDropdownPanelD(
+				List<ImageResourceD> imgFileNameList, IconOptionsModel model, int nrOfColumns) {
 			super(new FlowLayout(FlowLayout.LEFT));
 			this.model = model;
 			model.setListener(this);
@@ -2707,8 +2671,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 				iconArray[i] = GeoGebraIconD.createFileImageIcon(
 						imgFileNameList.get(i), app.getImageManager().getPixelRatio());
 			}
-			dropdown = new PopupMenuButtonD(app, iconArray, -1, nrOfColumns,
-					new Dimension(36, 36), SelectionTable.MODE_ICON);
+			dropdown = new PopupMenuButtonD(
+					app, iconArray, -1, nrOfColumns, new Dimension(36, 36), SelectionTable.MODE_ICON);
 			dropdown.setSelectedIndex(0);
 			dropdown.setStandardButton(true);
 			dropdown.setKeepVisible(false);
@@ -2724,15 +2688,13 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == dropdown) {
-				model.applyChanges(dropdown
-						.getSelectedIndex());
+				model.applyChanges(dropdown.getSelectedIndex());
 			}
 		}
 
 		@Override
 		public void setLabels() {
-			label.setText(app.getLocalization()
-					.getMenu(model.getTitle()) + ":");
+			label.setText(app.getLocalization().getMenu(model.getTitle()) + ":");
 		}
 
 		@Override
@@ -2771,12 +2733,13 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	}
 
 	private class DecoAnglePanel extends JPanel
-			implements ActionListener, SetLabels, UpdateFonts,
-			UpdateablePropertiesPanel, IComboListener {
+			implements ActionListener, SetLabels, UpdateFonts, UpdateablePropertiesPanel, IComboListener {
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private JComboBox decoCombo;
-		private JLabel decoLabel;
-		private DecoAngleModel model;
+
+		private final JComboBox decoCombo;
+		private final JLabel decoLabel;
+		private final DecoAngleModel model;
 
 		DecoAnglePanel() {
 			super(new FlowLayout(FlowLayout.LEFT));
@@ -2785,7 +2748,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			// deco combobox
 			DecorationAngleListRenderer renderer = new DecorationAngleListRenderer();
 			renderer.setPreferredSize(new Dimension(80, 30));
-			decoCombo = new JComboBox(GeoAngle.getDecoTypes());
+			decoCombo = new JComboBox<>(GeoAngle.getDecoTypes());
 			decoCombo.setRenderer(renderer);
 			decoCombo.addActionListener(this);
 
@@ -2804,7 +2767,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			decoLabel.setText(loc.getMenu("Decoration") + ":");
 		}
 
-		public JPanel update(Object[] geos) {
+		private JPanel update(Object[] geos) {
 			model.setGeos(geos);
 			if (!model.checkGeos()) {
 				return null;
@@ -2820,8 +2783,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (source == decoCombo) {
-				int type = ((Integer) decoCombo.getSelectedItem()).intValue();
+			if (source == decoCombo && decoCombo.getSelectedItem() != null) {
+				int type = (Integer) decoCombo.getSelectedItem();
 				model.applyChanges(type);
 			}
 		}
@@ -2846,15 +2809,12 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void clearItems() {
 			// TODO Auto-generated method stub
 		}
-
 	}
 
 	// added 3/11/06
 	private class RightAnglePanel extends CheckboxPanel {
 
-		/**
-		 *
-		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
 
 		RightAnglePanel() {
@@ -2871,20 +2831,14 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	public static String replaceEqualsSigns(String strCond0) {
 		String strCond = strCond0;
 		// needed to make next replace easier
-		strCond = strCond.replaceAll(">=",
-				ExpressionNodeConstants.strGREATER_EQUAL);
-		strCond = strCond.replaceAll("<=",
-				ExpressionNodeConstants.strLESS_EQUAL);
-		strCond = strCond.replaceAll("==",
-				ExpressionNodeConstants.strEQUAL_BOOLEAN);
-		strCond = strCond.replaceAll("!=",
-				ExpressionNodeConstants.strNOT_EQUAL);
+		strCond = strCond.replaceAll(">=", ExpressionNodeConstants.strGREATER_EQUAL);
+		strCond = strCond.replaceAll("<=", ExpressionNodeConstants.strLESS_EQUAL);
+		strCond = strCond.replaceAll("==", ExpressionNodeConstants.strEQUAL_BOOLEAN);
+		strCond = strCond.replaceAll("!=", ExpressionNodeConstants.strNOT_EQUAL);
 
 		// allow A=B as well as A==B
 		// also stops A=B doing an assignment of B to A :)
-		return strCond.replaceAll("=",
-				ExpressionNodeConstants.strEQUAL_BOOLEAN);
-
+		return strCond.replaceAll("=", ExpressionNodeConstants.strEQUAL_BOOLEAN);
 	}
 
 	/**
@@ -2900,16 +2854,15 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * Panel for setting text alignment.
 	 */
 	static class TextFieldAlignmentPanel extends JPanel
-			implements ActionListener, UpdateablePropertiesPanel,
-			SetLabels, UpdateFonts, IComboListener {
+			implements ActionListener, UpdateablePropertiesPanel, SetLabels, UpdateFonts, IComboListener {
 
 		private TextFieldAlignmentModel model;
 
 		private JLabel label;
 		private JComboBox<String> comboBox;
 
-		private AppD app;
-		private LocalizationD loc;
+		private final AppD app;
+		private final LocalizationD loc;
 
 		/**
 		 * Creates a new TextFieldAlignmentPanel instance.
@@ -2998,23 +2951,30 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	 * panel for condition to show object
 	 * @author Markus Hohenwarter
 	 */
-	static class ShowConditionPanel extends JPanel
-			implements ActionListener, FocusListener, UpdateablePropertiesPanel,
-			SetLabels, UpdateFonts, IShowConditionListener {
+	static final class ShowConditionPanel extends JPanel
+			implements ActionListener,
+					FocusListener,
+					UpdateablePropertiesPanel,
+					SetLabels,
+					UpdateFonts,
+					IShowConditionListener {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
 
-		private ShowConditionModel model;
-		private JTextField tfCondition;
+		private final ShowConditionModel model;
+		private final JTextField tfCondition;
 
-		private Kernel kernel;
-		private PropertiesPanelD propPanel;
+		private final Kernel kernel;
+		private final PropertiesPanelD propPanel;
+		/** flag to prevent double processing enter x focus lost */
+		boolean processed = false;
 
 		/**
 		 * @param app application
 		 * @param propPanel properties panel
 		 */
-		public ShowConditionPanel(AppD app, PropertiesPanelD propPanel) {
+		private ShowConditionPanel(AppD app, PropertiesPanelD propPanel) {
 			kernel = app.getKernel();
 			this.propPanel = propPanel;
 			model = new ShowConditionModel(app, this);
@@ -3065,17 +3025,13 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 		private void doActionPerformed() {
 			processed = true;
-			model.applyChanges(tfCondition.getText(),
-					kernel.getApplication().getDefaultErrorHandler());
+			model.applyChanges(tfCondition.getText(), kernel.getApplication().getDefaultErrorHandler());
 		}
 
 		@Override
 		public void focusGained(FocusEvent arg0) {
 			processed = false;
 		}
-
-		/** flag to prevent double processing enter x focus lost */
-		boolean processed = false;
 
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -3101,35 +3057,37 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void updateSelection(Object[] geos) {
 			propPanel.updateSelection(geos);
 		}
-
 	}
 
 	/**
 	 * panel to set graphics view location
 	 * @author G.Sturr
 	 */
-	static class GraphicsViewLocationPanel extends JPanel
-			implements ActionListener, UpdateablePropertiesPanel, SetLabels,
-			UpdateFonts, IGraphicsViewLocationListener {
+	static final class GraphicsViewLocationPanel extends JPanel
+			implements ActionListener,
+					UpdateablePropertiesPanel,
+					SetLabels,
+					UpdateFonts,
+					IGraphicsViewLocationListener {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
 
-		private ViewLocationModel model;
+		private final ViewLocationModel model;
 
-		private JCheckBox cbGraphicsView;
-		private JCheckBox cbGraphicsView2;
-		private JCheckBox cbGraphicsView3D;
-		private JCheckBox cbGraphicsViewForPlane;
+		private final JCheckBox cbGraphicsView;
+		private final JCheckBox cbGraphicsView2;
+		private final JCheckBox cbGraphicsView3D;
+		private final JCheckBox cbGraphicsViewForPlane;
 
-		private AppD app;
+		private final AppD app;
 
-		private LocalizationD loc;
+		private final LocalizationD loc;
 
 		/**
 		 * @param app app
-		 * @param propPanel props panel
 		 */
-		public GraphicsViewLocationPanel(AppD app, PropertiesPanelD propPanel) {
+		private GraphicsViewLocationPanel(AppD app) {
 			this.app = app;
 			this.loc = app.getLocalization();
 			model = new ViewLocationModel(app, this);
@@ -3155,8 +3113,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 		@Override
 		public void setLabels() {
-			setBorder(BorderFactory.createTitledBorder(
-					loc.getMenu("Location")));
+			setBorder(BorderFactory.createTitledBorder(loc.getMenu("Location")));
 			cbGraphicsView.setText(loc.getMenu("DrawingPad"));
 			cbGraphicsView2.setText(loc.getMenu("DrawingPad2"));
 			cbGraphicsView3D.setText(loc.getMenu("GraphicsView3D"));
@@ -3195,8 +3152,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			} else if (e.getSource() == cbGraphicsView3D) {
 				model.applyToEuclidianView3D(cbGraphicsView3D.isSelected());
 			} else if (e.getSource() == cbGraphicsViewForPlane) {
-				model.applyToEuclidianViewForPlane(
-						cbGraphicsViewForPlane.isSelected());
+				model.applyToEuclidianViewForPlane(cbGraphicsViewForPlane.isSelected());
 			}
 		}
 
@@ -3214,25 +3170,25 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		@Override
 		public void selectView(int index, boolean isSelected) {
 			switch (index) {
-			default:
-				Log.error("missing case");
-				break;
-			case 0:
-				cbGraphicsView.setSelected(isSelected);
-				break;
-			case 1:
-				cbGraphicsView2.setSelected(isSelected);
-				break;
-			case 2:
-				cbGraphicsView3D.setSelected(isSelected);
-				break;
-			case 3:
-				cbGraphicsViewForPlane.setSelected(isSelected);
-				break;
-			case 4:
-				// cbAlgebraView.setValue(isSelected);
-				Log.error("cbAlgebraView not implemented in desktop");
-				break;
+				default:
+					Log.error("missing case");
+					break;
+				case 0:
+					cbGraphicsView.setSelected(isSelected);
+					break;
+				case 1:
+					cbGraphicsView2.setSelected(isSelected);
+					break;
+				case 2:
+					cbGraphicsView3D.setSelected(isSelected);
+					break;
+				case 3:
+					cbGraphicsViewForPlane.setSelected(isSelected);
+					break;
+				case 4:
+					// cbAlgebraView.setValue(isSelected);
+					Log.error("cbAlgebraView not implemented in desktop");
+					break;
 			}
 		}
 
@@ -3245,33 +3201,38 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		public void setCheckBoxForPlaneVisible(boolean flag) {
 			cbGraphicsViewForPlane.setVisible(flag);
 		}
-
 	}
 
 	/**
-	 * Panel for changing button size
-	 *
+	 * Panel for changing button size.
 	 */
-	static class ButtonSizePanel extends JPanel implements ChangeListener, FocusListener,
-			UpdateablePropertiesPanel, SetLabels, UpdateFonts, IButtonSizeListener {
+	static final class ButtonSizePanel extends JPanel
+			implements ChangeListener,
+					FocusListener,
+					UpdateablePropertiesPanel,
+					SetLabels,
+					UpdateFonts,
+					IButtonSizeListener {
 
+		@Serial
 		private static final long serialVersionUID = 1L;
-		private ButtonSizeModel model;
 
-		private MyTextFieldD tfButtonWidth;
-		private MyTextFieldD tfButtonHeight;
-		private JLabel labelWidth;
-		private JLabel labelHeight;
-		private JLabel labelPixelW;
-		private JLabel labelPixelH;
-		private Localization loc;
-		private JCheckBox cbUseFixedSize;
+		private final ButtonSizeModel model;
+
+		private final MyTextFieldD tfButtonWidth;
+		private final MyTextFieldD tfButtonHeight;
+		private final JLabel labelWidth;
+		private final JLabel labelHeight;
+		private final JLabel labelPixelW;
+		private final JLabel labelPixelH;
+		private final Localization loc;
+		private final JCheckBox cbUseFixedSize;
 
 		/**
 		 * @param app app
 		 * @param loc localization
 		 */
-		public ButtonSizePanel(AppD app, Localization loc) {
+		private ButtonSizePanel(AppD app, Localization loc) {
 			this.loc = loc;
 			model = new ButtonSizeModel(app);
 			model.setListener(this);
@@ -3344,8 +3305,8 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 		@Override
 		public void focusLost(FocusEvent arg0) {
-			model.setSizesFromString(tfButtonWidth.getText(),
-					tfButtonHeight.getText(), cbUseFixedSize.isSelected());
+			model.setSizesFromString(
+					tfButtonWidth.getText(), tfButtonHeight.getText(), cbUseFixedSize.isSelected());
 		}
 
 		@Override
@@ -3368,10 +3329,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 				if (!s.matches("\\d{2,3}")) {
 					return false;
 				}
-				if (Integer.parseInt(s) < 24 || Integer.parseInt(s) > 500) {
-					return false;
-				}
-				return true;
+				return Integer.parseInt(s) >= 24 && Integer.parseInt(s) <= 500;
 			}
 		}
 	}

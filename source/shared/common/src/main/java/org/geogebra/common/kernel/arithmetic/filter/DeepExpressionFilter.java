@@ -21,17 +21,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
 import org.geogebra.common.kernel.geos.GeoSymbolic;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Filter that traverses the expression tree, and applies the filter on every expression node found.
  * Filters return early, meaning that if an expression is found that needs to be filtered,
  * further evaluation halts.
  */
-final public class DeepExpressionFilter implements ExpressionFilter {
+public final class DeepExpressionFilter implements ExpressionFilter {
 
 	private final ExpressionFilter wrappedFilter;
 	private final List<AllowedExpressionsProvider> providers = new ArrayList<>();
@@ -40,12 +39,12 @@ final public class DeepExpressionFilter implements ExpressionFilter {
 	 * Creates a new ExpressionNodeOperationFilter.
 	 * @param wrappedFilter to apply on every expression node.
 	 */
-	public DeepExpressionFilter(@Nonnull ExpressionFilter wrappedFilter) {
+	public DeepExpressionFilter(@NonNull ExpressionFilter wrappedFilter) {
 		this.wrappedFilter = wrappedFilter;
 	}
 
 	@Override
-	public boolean isAllowed(@Nonnull ExpressionValue expression) {
+	public boolean isAllowed(@NonNull ExpressionValue expression) {
 		HashSet<ExpressionValue> allowedExpressionValues = new HashSet<>();
 
 		for (ExpressionValue child : expression) {
@@ -82,7 +81,7 @@ final public class DeepExpressionFilter implements ExpressionFilter {
 	 * @param provider provider
 	 * @return this filter
 	 */
-	public @Nonnull DeepExpressionFilter allowWhen(@Nonnull AllowedExpressionsProvider provider) {
+	public @NonNull DeepExpressionFilter allowWhen(@NonNull AllowedExpressionsProvider provider) {
 		providers.add(provider);
 		return this;
 	}

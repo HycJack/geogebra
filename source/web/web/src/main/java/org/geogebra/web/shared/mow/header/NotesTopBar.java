@@ -16,7 +16,7 @@
 
 package org.geogebra.web.shared.mow.header;
 
-import static org.geogebra.common.euclidian.EuclidianConstants.MODE_TRANSLATEVIEW;
+import static org.geogebra.common.euclidian.EuclidianConstants.MODE_TRANSLATE_VIEW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +43,9 @@ import org.gwtproject.user.client.ui.FlowPanel;
 
 import elemental2.dom.DomGlobal;
 
-public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemListener,
-		ModeChangeListener {
+public final class NotesTopBar extends FlowPanel
+		implements SetLabels, CoordSystemListener, ModeChangeListener {
+	private static final int TOP_BAR_HEIGHT = 48;
 	private final AppletParameters appletParams;
 	private final TopBarController controller;
 	private final List<IconButton> buttons = new ArrayList<>();
@@ -79,6 +80,21 @@ public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemList
 		return getElement().hasChildNodes();
 	}
 
+	/**
+	 * Heuristic for checking if the panel will be needed.
+	 * Used during file load to estimate EV size and prevent extra undo points.
+	 * @param app application
+	 * @return whether a top bar is needed
+	 */
+	public static int estimateHeight(AppW app) {
+		AppletParameters params = app.getAppletParameters();
+		return params.getDataParamEnableUndoRedo()
+						|| needsMenuButton(params)
+						|| ZoomPanel.needsZoomButtons(app)
+				? TOP_BAR_HEIGHT
+				: 0;
+	}
+
 	private void buildGui() {
 		addMenuButton();
 		addUndoRedo();
@@ -90,11 +106,15 @@ public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemList
 	}
 
 	private void addMenuButton() {
-		if (!GlobalHeader.isInDOM() && appletParams.getDataParamShowMenuBar(false)) {
-			addSmallPressButton(TopBarIcon.MENU, "Menu", controller::onMenuToggle,
-					AccessibilityGroup.MENU);
+		if (needsMenuButton(appletParams)) {
+			addSmallPressButton(
+					TopBarIcon.MENU, "Menu", controller::onMenuToggle, AccessibilityGroup.MENU);
 			addDivider();
 		}
+	}
+
+	private static boolean needsMenuButton(AppletParameters appletParams) {
+		return !GlobalHeader.isInDOM() && appletParams.getDataParamShowMenuBar(false);
 	}
 
 	private void addUndoRedo() {
@@ -111,14 +131,23 @@ public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemList
 		}
 
 		if (!NavigatorUtil.isMobile()) {
-			addSmallPressButton(TopBarIcon.ZOOM_IN, "ZoomIn.Tool",
-					controller::onZoomIn, AccessibilityGroup.ZOOM_NOTES_PLUS);
-			addSmallPressButton(TopBarIcon.ZOOM_OUT, "ZoomOut.Tool",
-					controller::onZoomOut, AccessibilityGroup.ZOOM_NOTES_MINUS);
+			addSmallPressButton(
+					TopBarIcon.ZOOM_IN,
+					"ZoomIn.Tool",
+					controller::onZoomIn,
+					AccessibilityGroup.ZOOM_NOTES_PLUS);
+			addSmallPressButton(
+					TopBarIcon.ZOOM_OUT,
+					"ZoomOut.Tool",
+					controller::onZoomOut,
+					AccessibilityGroup.ZOOM_NOTES_MINUS);
 		}
 
-		homeBtn = addSmallPressButton(TopBarIcon.STANDARD_VIEW,
-				"StandardView", controller::onHome, AccessibilityGroup.ZOOM_NOTES_HOME);
+		homeBtn = addSmallPressButton(
+				TopBarIcon.STANDARD_VIEW,
+				"StandardView",
+				controller::onHome,
+				AccessibilityGroup.ZOOM_NOTES_HOME);
 		homeBtn.setDisabled(true);
 
 		addZoomToFitButton();
@@ -127,13 +156,21 @@ public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemList
 	}
 
 	private void addZoomToFitButton() {
-		addSmallPressButton(TopBarIcon.ZOOM_TO_FIT, "ShowAllObjects", controller::onZoomToFit,
+		addSmallPressButton(
+				TopBarIcon.ZOOM_TO_FIT,
+				"ShowAllObjects",
+				controller::onZoomToFit,
 				AccessibilityGroup.ZOOM_NOTES_TO_FIT);
 	}
 
 	private void addDragButton() {
-		dragBtn = new IconButton(controller.getApp(), topBarIconResource.getImageResource(
-				TopBarIcon.PAN_VIEW), "PanView", "PanView", "", null);
+		dragBtn = new IconButton(
+				controller.getApp(),
+				topBarIconResource.getImageResource(TopBarIcon.PAN_VIEW),
+				"PanView",
+				"PanView",
+				"",
+				null);
 		dragBtn.addFastClickHandler((event) -> controller.onDrag(dragBtn.isActive()));
 
 		registerFocusable(dragBtn, AccessibilityGroup.ZOOM_NOTES_DRAG_VIEW);
@@ -151,24 +188,27 @@ public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemList
 	 * @param kernel - kernel
 	 */
 	public void updateUndoRedoActions(Kernel kernel) {
-		kernel.getConstruction().getUndoManager().setAllowCheckpoints(
-				appletParams.getParamAllowUndoCheckpoints());
+		kernel
+				.getConstruction()
+				.getUndoManager()
+				.setAllowCheckpoints(appletParams.getParamAllowUndoCheckpoints());
 		undoRedoProvider.updateUndoRedoActions();
 	}
 
 	private void addFullscreenButton() {
 		if (controller.needsFullscreenButton()) {
-			fullscreenButton = addSmallPressButton(TopBarIcon.FULLSCREEN_ON, "Fullscreen", null,
-					AccessibilityGroup.FULL_SCREEN_NOTES);
-			fullscreenButton.addFastClickHandler(source ->
-					controller.onFullscreenOn(fullscreenButton));
+			fullscreenButton = addSmallPressButton(
+					TopBarIcon.FULLSCREEN_ON, "Fullscreen", null, AccessibilityGroup.FULL_SCREEN_NOTES);
+			fullscreenButton.addFastClickHandler(source -> controller.onFullscreenOn(fullscreenButton));
 
-			controller.getApp().getGlobalHandlers().addEventListener(DomGlobal.document,
-					Browser.getFullscreenEventName(), event -> {
-				if (!Browser.isFullscreen()) {
-					controller.onFullscreenExit(fullscreenButton);
-				}
-			});
+			controller
+					.getApp()
+					.getGlobalHandlers()
+					.addEventListener(DomGlobal.document, Browser.getFullscreenEventName(), event -> {
+						if (!Browser.isFullscreen()) {
+							controller.onFullscreenExit(fullscreenButton);
+						}
+					});
 
 			addDivider();
 		}
@@ -176,35 +216,34 @@ public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemList
 
 	private void addSettingsButton() {
 		if (controller.getApp().letShowPropertiesDialog()) {
-			IconButton settingsBtn = addSmallPressButton(TopBarIcon.SETTINGS, "Settings",
-					null, null);
-			FocusableWidget focusableSettingsBtn = controller.getRegisteredFocusable(
-					AccessibilityGroup.SETTINGS_NOTES, settingsBtn);
+			IconButton settingsBtn = addSmallPressButton(TopBarIcon.SETTINGS, "Settings", null, null);
+			FocusableWidget focusableSettingsBtn =
+					controller.getRegisteredFocusable(AccessibilityGroup.SETTINGS_NOTES, settingsBtn);
 
-			settingsBtn.addFastClickHandler(source -> controller.onSettingsOpen(settingsBtn,
-					focusableSettingsBtn));
+			settingsBtn.addFastClickHandler(
+					source -> controller.onSettingsOpen(settingsBtn, focusableSettingsBtn));
 		}
 	}
 
 	private void addPageOverviewButton() {
 		if (controller.getApp().isMultipleSlidesOpen() || appletParams.getParamShowSlides()) {
-			IconButton pageOverviewBtn = addSmallPressButton(TopBarIcon.PAGE_OVERVIEW,
-					"PageControl", null, null);
+			IconButton pageOverviewBtn =
+					addSmallPressButton(TopBarIcon.PAGE_OVERVIEW, "PageControl", null, null);
 			pageOverviewBtn.addStyleName("pageOverview");
 			pageOverviewBtn.setTooltipPositionRight();
 			pageOverviewBtn.addFastClickHandler(source -> {
 				controller.togglePagePanel();
 				pageOverviewBtn.setActive(!pageOverviewBtn.isActive());
 			});
-			pageOverviewBtn.addBitlessDomHandler(event -> controller
-					.setTouchStyleForPagePreviewCards(), TouchStartEvent.getType());
+			pageOverviewBtn.addBitlessDomHandler(
+					event -> controller.setTouchStyleForPagePreviewCards(), TouchStartEvent.getType());
 		}
 	}
 
-	private IconButton addSmallPressButton(TopBarIcon icon, String ariaLabel,
-			Runnable clickHandler, AccessibilityGroup group) {
-		IconButton button = new IconButton(controller.getApp(), clickHandler,
-				topBarIconResource.getImageResource(icon), ariaLabel);
+	private IconButton addSmallPressButton(
+			TopBarIcon icon, String ariaLabel, Runnable clickHandler, AccessibilityGroup group) {
+		IconButton button = new IconButton(
+				controller.getApp(), clickHandler, topBarIconResource.getImageResource(icon), ariaLabel);
 		add(button);
 		buttons.add(button);
 
@@ -239,6 +278,13 @@ public class NotesTopBar extends FlowPanel implements SetLabels, CoordSystemList
 			return;
 		}
 
-		dragBtn.setActive(mode == MODE_TRANSLATEVIEW);
+		dragBtn.setActive(mode == MODE_TRANSLATE_VIEW);
+	}
+
+	/**
+	 * @return height based on DOM state
+	 */
+	public int getHeight() {
+		return wasAttached() ? TOP_BAR_HEIGHT : 0;
 	}
 }

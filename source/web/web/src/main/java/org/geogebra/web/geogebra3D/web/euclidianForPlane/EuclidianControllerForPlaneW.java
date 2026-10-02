@@ -24,11 +24,11 @@ import org.geogebra.web.html5.euclidian.EuclidianControllerW;
 /**
  * controller for view for plane
  */
-public class EuclidianControllerForPlaneW extends EuclidianControllerW {
+public final class EuclidianControllerForPlaneW extends EuclidianControllerW {
 
 	/**
 	 * constructor
-	 * 
+	 *
 	 * @param kernel
 	 *            kernel
 	 */

@@ -23,21 +23,21 @@ import org.geogebra.web.full.main.AppWFull;
 import org.gwtproject.resources.client.ResourcePrototype;
 import org.gwtproject.user.client.ui.Widget;
 
-public class PropertiesDockPanelW extends DockPanelW {
+public final class PropertiesDockPanelW extends DockPanelW {
 
 	private PropertiesViewW view;
-	
+
 	/**
 	 * @param app
 	 *            application
 	 */
 	public PropertiesDockPanelW(AppWFull app) {
 		super(
-			App.VIEW_PROPERTIES, // view id
-			null, // toolbar string
-			false // style bar?
-		);
-		
+				App.VIEW_PROPERTIES, // view id
+				null, // toolbar string
+				false // style bar?
+				);
+
 		this.app = app;
 		super.setDialog(true);
 		this.setShowStyleBar(true);
@@ -61,7 +61,7 @@ public class PropertiesDockPanelW extends DockPanelW {
 			view.repaintView();
 		}
 	}
-	
+
 	@Override
 	public boolean isStyleBarEmpty() {
 		return false;
@@ -71,5 +71,4 @@ public class PropertiesDockPanelW extends DockPanelW {
 	protected ResourcePrototype getViewIcon() {
 		return null;
 	}
-
 }

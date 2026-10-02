@@ -18,9 +18,6 @@ package org.geogebra.common.exam;
 
 import java.util.Objects;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.main.AppConfig;
@@ -32,6 +29,8 @@ import org.geogebra.common.restrictions.Restrictions.ContextDependencies;
 import org.geogebra.common.restrictions.RestrictionsController;
 import org.geogebra.common.restrictions.RestrictionsControllerDelegate;
 import org.geogebra.test.BaseAppTestSetup;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 
 public abstract class BaseExamTestSetup extends BaseAppTestSetup
@@ -64,21 +63,20 @@ public abstract class BaseExamTestSetup extends BaseAppTestSetup
 
 		propertiesRegistry = getApp().appScope.propertiesRegistry;
 		autocompleteProvider = new AutocompleteProvider(getApp(), false);
-		examController.setActiveContext(
-				new ContextDependencies(
-						getKernel().getAlgoDispatcher(),
-						getCommandDispatcher(),
-						getAlgebraProcessor(),
-						propertiesRegistry,
-						getApp().getLocalization(),
-						getApp().getSettings(),
-						getKernel().getStatisticGroupsBuilder(),
-						autocompleteProvider,
-						getApp(),
-						getKernel().getInputPreviewHelper(),
-						getKernel().getConstruction(),
-						geoElementPropertiesFactory,
-						getApp()));
+		examController.setActiveContext(new ContextDependencies(
+				getKernel().getAlgoDispatcher(),
+				getCommandDispatcher(),
+				getAlgebraProcessor(),
+				propertiesRegistry,
+				getApp().getLocalization(),
+				getApp().getSettings(),
+				getKernel().getStatisticGroupsBuilder(),
+				autocompleteProvider,
+				getApp(),
+				getKernel().getInputPreviewHelper(),
+				getKernel().getConstruction(),
+				geoElementPropertiesFactory,
+				getApp()));
 		restrictionsController.registerRestrictable(getApp());
 	}
 
@@ -89,10 +87,11 @@ public abstract class BaseExamTestSetup extends BaseAppTestSetup
 	// -- RestrictionsControllerDelegate -
 
 	@Override
-	public @CheckForNull SuiteSubApp getCurrentSubApp() {
+	public @Nullable SuiteSubApp getCurrentSubApp() {
 		AppConfig config = getApp().getConfig();
 		String appCode = Objects.equals(config.getAppCode(), GeoGebraConstants.SUITE_APPCODE)
-				? config.getSubAppCode() : config.getAppCode();
+				? config.getSubAppCode()
+				: config.getAppCode();
 		if (appCode != null) {
 			return SuiteSubApp.forCode(appCode);
 		}
@@ -100,7 +99,7 @@ public abstract class BaseExamTestSetup extends BaseAppTestSetup
 	}
 
 	@Override
-	public void switchSubApp(@Nonnull SuiteSubApp subApp) {
+	public void switchSubApp(@NonNull SuiteSubApp subApp) {
 		if (!subApp.equals(getCurrentSubApp())) {
 			setupApp(subApp);
 		}

@@ -18,51 +18,67 @@ package org.geogebra.common.contextmenu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.SuiteSubApp;
-import org.geogebra.common.contextmenu.TableValuesContextMenuActionHandler.PlotActionHandler;
+import org.geogebra.common.contextmenu.TableValuesContextMenuItem.Item;
 import org.geogebra.common.gui.view.table.TableValues;
-import org.geogebra.common.gui.view.table.dialog.StatisticGroup;
-import org.geogebra.common.gui.view.table.regression.RegressionSpecification;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoFunction;
-import org.geogebra.common.restrictions.FeatureRestriction;
-import org.geogebra.common.util.AttributedString;
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.Test;
 
 class TableValuesContextMenuActionHandlerTests extends BaseAppTestSetup
 		implements TableValuesContextMenuActionHandler.Delegate {
-	private boolean showTableValueCreatingDialogCalled = false;
-	private GeoElement editedGeoElement = null;
-	private String capturedRegressionTitle;
-	private AttributedString capturedRegressionHeader;
-	private Map<RegressionSpecification, List<StatisticGroup>> capturedRegressionGroups;
-	private PlotActionHandler capturedPlotActionHandler;
-	private String capturedErrorTitle;
-	private AttributedString capturedErrorHeader;
-	private String capturedErrorMessage;
-	private String capturedStatisticsTitle;
-	private AttributedString capturedStatisticsHeader;
-	private List<StatisticGroup> capturedStatisticsGroups;
+	private boolean showTableValueCreatingDialogCalled;
+	private GeoElement editedGeoElement;
+
+	@Test
+	void testOneVariableStatisticsShowsSheet() {
+		setupApp(SuiteSubApp.GRAPHING);
+		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}");
+
+		TableValuesContextMenuActionHandler handler =
+				new TableValuesContextMenuActionHandler(0, tableValues, getApp(), this);
+		handler.handleSelectedItem(Item.Statistics1.toContextMenuItem());
+
+		assertNotNull(tableValues.getStatisticsViewModel().getContent().get());
+	}
+
+	@Test
+	void testTwoVariableStatisticsShowsSheet() {
+		setupApp(SuiteSubApp.GRAPHING);
+		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y = {5, 6, 7, 8}");
+
+		TableValuesContextMenuActionHandler handler =
+				new TableValuesContextMenuActionHandler(1, tableValues, getApp(), this);
+		handler.handleSelectedItem(Item.Statistics2.toContextMenuItem());
+
+		assertNotNull(tableValues.getStatisticsViewModel().getContent().get());
+	}
+
+	@Test
+	void testRegressionShowsSheet() {
+		setupApp(SuiteSubApp.GRAPHING);
+		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y = {5, 6, 7, 8}");
+
+		TableValuesContextMenuActionHandler handler =
+				new TableValuesContextMenuActionHandler(1, tableValues, getApp(), this);
+		handler.handleSelectedItem(Item.Regression.toContextMenuItem());
+
+		assertNotNull(tableValues.getStatisticsViewModel().getContent().get());
+	}
 
 	@Test
 	void testEditOnFirstColumn() {
 		setupApp(SuiteSubApp.GRAPHING);
 		TableValues tableValues = setupTableValues("x = {0, 1, 2, 3, 4, 5}");
 
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				0, tableValues, getApp(), getApp().getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Edit.toContextMenuItem());
+		TableValuesContextMenuActionHandler handler =
+				new TableValuesContextMenuActionHandler(0, tableValues, getApp(), this);
+		handler.handleSelectedItem(Item.Edit.toContextMenuItem());
 
 		assertTrue(showTableValueCreatingDialogCalled);
 		assertNull(editedGeoElement);
@@ -75,9 +91,9 @@ class TableValuesContextMenuActionHandlerTests extends BaseAppTestSetup
 		TableValues tableValues =
 				setupTableValues(evaluateGeoElement("x = {0, 1, 2, 3, 4, 5}"), geoFunction);
 
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Edit.toContextMenuItem());
+		TableValuesContextMenuActionHandler handler =
+				new TableValuesContextMenuActionHandler(1, tableValues, getApp(), this);
+		handler.handleSelectedItem(Item.Edit.toContextMenuItem());
 
 		assertFalse(showTableValueCreatingDialogCalled);
 		assertEquals(geoFunction, editedGeoElement);
@@ -87,11 +103,10 @@ class TableValuesContextMenuActionHandlerTests extends BaseAppTestSetup
 	void testClearColumn() {
 		setupApp(SuiteSubApp.GRAPHING);
 		TableValues tableValues = setupTableValues("x = {0, 1, 2, 3, 4, 5}");
-		assertEquals(0.0, tableValues.getTableValuesModel().getValueAt(0, 0));
 
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				0, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.ClearColumn.toContextMenuItem());
+		TableValuesContextMenuActionHandler handler =
+				new TableValuesContextMenuActionHandler(0, tableValues, getApp(), this);
+		handler.handleSelectedItem(Item.ClearColumn.toContextMenuItem());
 
 		assertTrue(Double.isNaN(tableValues.getTableValuesModel().getValueAt(0, 0)));
 	}
@@ -103,125 +118,11 @@ class TableValuesContextMenuActionHandlerTests extends BaseAppTestSetup
 		TableValues tableValues =
 				setupTableValues(evaluateGeoElement("x = {0, 1, 2, 3, 4, 5}"), geoFunction);
 
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item
-				.RemoveColumn.toContextMenuItem());
+		TableValuesContextMenuActionHandler handler =
+				new TableValuesContextMenuActionHandler(1, tableValues, getApp(), this);
+		handler.handleSelectedItem(Item.RemoveColumn.toContextMenuItem());
 
 		assertEquals(-1, tableValues.getColumn(geoFunction));
-	}
-
-	@Test
-	void testOneVariableStatisticsShowsStatisticsDialog() {
-		setupApp(SuiteSubApp.GRAPHING);
-		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y_1 = {5, 6, 7, 8}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Statistics1.toContextMenuItem());
-
-		assertEquals(getLocalization().getMenu("1VariableStatistics"), capturedStatisticsTitle);
-		assertEquals("Column y1", capturedStatisticsHeader.getRawValue());
-		assertFalse(capturedStatisticsGroups.isEmpty());
-	}
-
-	@Test
-	void testOneVariableStatisticsShowsErrorDialogWhenInsufficientData() {
-		setupApp(SuiteSubApp.GRAPHING);
-		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y_1 = {5}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Statistics1.toContextMenuItem());
-
-		assertEquals(getLocalization().getMenu("1VariableStatistics"), capturedErrorTitle);
-		assertEquals("Column y1", capturedErrorHeader.getRawValue());
-		assertEquals(getLocalization().getMenu("StatsDialog.NoDataMsg1VarStats"),
-				capturedErrorMessage);
-	}
-
-	@Test
-	void testTwoVariableStatisticsShowsStatisticsDialog() {
-		setupApp(SuiteSubApp.GRAPHING);
-		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y_1 = {5, 6, 7, 8}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Statistics2.toContextMenuItem());
-
-		assertEquals(getLocalization().getMenu("2VariableStatistics"), capturedStatisticsTitle);
-		assertEquals("Column x y1", capturedStatisticsHeader.getRawValue());
-		assertFalse(capturedStatisticsGroups.isEmpty());
-	}
-
-	@Test
-	void testTwoVariableStatisticsShowsErrorDialogWhenInsufficientData() {
-		setupApp(SuiteSubApp.GRAPHING);
-		TableValues tableValues = setupTableValues("x = {1}", "y_1 = {5}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Statistics2.toContextMenuItem());
-
-		assertEquals(getLocalization().getMenu("2VariableStatistics"), capturedErrorTitle);
-		assertEquals("Column x y1", capturedErrorHeader.getRawValue());
-		assertEquals(getLocalization().getMenu("StatsDialog.NoDataMsg2VarStats"),
-				capturedErrorMessage);
-	}
-
-	@Test
-	void testRegressionShowsRegressionDialog() {
-		setupApp(SuiteSubApp.GRAPHING);
-		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y_1 = {5, 6, 7, 8}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Regression.toContextMenuItem());
-
-		assertEquals(getLocalization().getMenu("Regression"), capturedRegressionTitle);
-		assertEquals("Column y1", capturedRegressionHeader.getRawValue());
-		assertFalse(capturedRegressionGroups.isEmpty());
-		capturedRegressionGroups.values().forEach(groups -> assertFalse(groups.isEmpty()));
-	}
-
-	@Test
-	void testRegressionShowsErrorDialogWhenInsufficientData() {
-		setupApp(SuiteSubApp.GRAPHING);
-		TableValues tableValues = setupTableValues("x = {1}", "y_1 = {5}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Regression.toContextMenuItem());
-
-		assertEquals(getLocalization().getMenu("Regression"), capturedErrorTitle);
-		assertEquals("Column y1", capturedErrorHeader.getRawValue());
-		assertEquals(getLocalization().getMenu("StatsDialog.NoDataMsgRegression"),
-				capturedErrorMessage);
-	}
-
-	@Test
-	void testRegressionPlotAction() {
-		setupApp(SuiteSubApp.GRAPHING);
-		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y_1 = {5, 6, 7, 8}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Regression.toContextMenuItem());
-
-		int constructionSizeBefore =
-				getKernel().getConstruction().getGeoSetConstructionOrder().size();
-		RegressionSpecification spec = capturedRegressionGroups.keySet().iterator().next();
-		capturedPlotActionHandler.onPlotButtonPressed(spec);
-		int constructionSizeAfter =
-				getKernel().getConstruction().getGeoSetConstructionOrder().size();
-
-		assertTrue(constructionSizeAfter > constructionSizeBefore);
-	}
-
-	@Test
-	void testRegressionPlotActionIsNullInMmsMode() {
-		setupApp(SuiteSubApp.GRAPHING);
-		getApp().getRegressionSpecBuilder().applyRestrictions(
-				Set.of(FeatureRestriction.CUSTOM_MMS_REGRESSION_MODELS));
-		TableValues tableValues = setupTableValues("x = {1, 2, 3, 4}", "y_1 = {5, 6, 7, 8}");
-		TableValuesContextMenuActionHandler handler = new TableValuesContextMenuActionHandler(
-				1, tableValues, getApp(), getLocalization(), this);
-		handler.handleSelectedItem(TableValuesContextMenuItem.Item.Regression.toContextMenuItem());
-
-		assertNull(capturedPlotActionHandler);
 	}
 
 	@Override
@@ -237,31 +138,5 @@ class TableValuesContextMenuActionHandlerTests extends BaseAppTestSetup
 	@Override
 	public void startDataImport() {
 		// not needed for tests
-	}
-
-	@Override
-	public void showStatisticsDialog(@Nonnull String title, @Nonnull AttributedString header,
-			@Nonnull List<StatisticGroup> statisticGroups) {
-		capturedStatisticsTitle = title;
-		capturedStatisticsHeader = header;
-		capturedStatisticsGroups = statisticGroups;
-	}
-
-	@Override
-	public void showRegressionDialog(@Nonnull String title, @Nonnull AttributedString header,
-			@Nonnull Map<RegressionSpecification, List<StatisticGroup>> regressionGroups,
-			@CheckForNull PlotActionHandler plotActionHandler) {
-		capturedRegressionTitle = title;
-		capturedRegressionHeader = header;
-		capturedRegressionGroups = regressionGroups;
-		capturedPlotActionHandler = plotActionHandler;
-	}
-
-	@Override
-	public void showErrorDialog(@Nonnull String title, @Nonnull AttributedString header,
-			@Nonnull String errorMessage) {
-		capturedErrorTitle = title;
-		capturedErrorHeader = header;
-		capturedErrorMessage = errorMessage;
 	}
 }

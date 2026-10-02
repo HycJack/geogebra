@@ -28,10 +28,11 @@ import org.gwtproject.core.client.Scheduler;
 import org.gwtproject.event.logical.shared.CloseEvent;
 import org.gwtproject.event.logical.shared.CloseHandler;
 
-public class PageControlPanelContextMenu extends GPopupMenuW implements CloseHandler<GPopupPanel> {
-	protected AppWFull appW;
+public final class PageControlPanelContextMenu extends GPopupMenuW
+		implements CloseHandler<GPopupPanel> {
+	private final AppWFull appW;
 	private final PageListController pageController;
-	protected GeoGebraFrameFull frame;
+	private final GeoGebraFrameFull frame;
 	private AriaMenuItem paste;
 	private final MenuItemController menuItemController;
 
@@ -56,13 +57,15 @@ public class PageControlPanelContextMenu extends GPopupMenuW implements CloseHan
 	}
 
 	private void addPasteItem() {
-		paste = addItem(MaterialDesignResources.INSTANCE.paste_black(),
+		paste = addItem(
+				MaterialDesignResources.INSTANCE.paste_black(),
 				appW.getLocalization().getMenu("Paste"),
 				menuItemController.onPaste(pageController.getLastCard(), paste));
 	}
 
 	private void addNewPage() {
-		addItem(MaterialDesignResources.INSTANCE.add_black(),
+		addItem(
+				MaterialDesignResources.INSTANCE.add_black(),
 				appW.getLocalization().getMenu("ContextMenu.NewPage"),
 				menuItemController.addNewPage(pageController.getSlideCount()));
 	}
@@ -73,8 +76,7 @@ public class PageControlPanelContextMenu extends GPopupMenuW implements CloseHan
 	 * @param text menu item text
 	 * @param cmd command to execute
 	 */
-	protected AriaMenuItem addItem(SVGResource img, String text,
-			Scheduler.ScheduledCommand cmd) {
+	private AriaMenuItem addItem(SVGResource img, String text, Scheduler.ScheduledCommand cmd) {
 		AriaMenuItem mi = MainMenu.getMenuBarItem(img, text, cmd);
 		addItem(mi);
 		return mi;

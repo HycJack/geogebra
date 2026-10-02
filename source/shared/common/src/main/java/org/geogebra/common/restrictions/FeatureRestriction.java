@@ -16,6 +16,9 @@
 
 package org.geogebra.common.restrictions;
 
+/**
+ * Restriction on a feature that's not covered by command/tool/expression filtering.
+ */
 public enum FeatureRestriction {
 
 	/** APPS_5751 */
@@ -24,8 +27,8 @@ public enum FeatureRestriction {
 	/** APPS-5926, APPS-6088, APPS-6315 */
 	HIDE_CALCULATED_EQUATION,
 
-	/** APPS-6308 */
-	HIDE_SPECIAL_POINTS,
+	/** APPS-7931 */
+	SPECIAL_POINTS_ONLY_ON_GRAPHICS_VIEW_SELECTION,
 
 	/** APPS-6088 */
 	RESTRICT_CHANGING_EQUATION_FORM,

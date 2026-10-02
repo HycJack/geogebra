@@ -26,15 +26,14 @@ import org.geogebra.common.kernel.statistics.GeoPieChart;
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.Test;
 
-public class ChartSegmentFillCategoryPropertyTests extends BaseAppTestSetup {
+class ChartSegmentFillCategoryPropertyTests extends BaseAppTestSetup {
 	@Test
-	public void testSettingDifferentFillCategories() {
+	void testSettingDifferentFillCategories() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPieChart pieChart = evaluateGeoElement("PieChart({1, 2, 3})");
 		ChartSegmentSelection chartSegmentSelection = new ChartSegmentSelection();
-		ChartSegmentFillCategoryProperty chartSegmentFillCategoryProperty =
-				assertDoesNotThrow(() -> new ChartSegmentFillCategoryProperty(
-						getLocalization(), pieChart, chartSegmentSelection));
+		ChartSegmentFillCategoryProperty chartSegmentFillCategoryProperty = assertDoesNotThrow(() ->
+				new ChartSegmentFillCategoryProperty(getLocalization(), pieChart, chartSegmentSelection));
 
 		chartSegmentSelection.setIndex(1);
 		chartSegmentFillCategoryProperty.setValue(FillCategory.IMAGE);
@@ -57,13 +56,12 @@ public class ChartSegmentFillCategoryPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testSettingAllFillCategories() {
+	void testSettingAllFillCategories() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPieChart pieChart = evaluateGeoElement("PieChart({1, 2, 3})");
 		ChartSegmentSelection chartSegmentSelection = new ChartSegmentSelection();
-		ChartSegmentFillCategoryProperty chartSegmentFillCategoryProperty =
-				assertDoesNotThrow(() -> new ChartSegmentFillCategoryProperty(
-						getLocalization(), pieChart, chartSegmentSelection));
+		ChartSegmentFillCategoryProperty chartSegmentFillCategoryProperty = assertDoesNotThrow(() ->
+				new ChartSegmentFillCategoryProperty(getLocalization(), pieChart, chartSegmentSelection));
 
 		chartSegmentSelection.setIndex(0);
 		chartSegmentFillCategoryProperty.setValue(FillCategory.IMAGE);
@@ -87,13 +85,12 @@ public class ChartSegmentFillCategoryPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testPreservingPreviousPatternFillTypes() {
+	void testPreservingPreviousPatternFillTypes() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPieChart pieChart = evaluateGeoElement("PieChart({1, 2, 3})");
 		ChartSegmentSelection chartSegmentSelection = new ChartSegmentSelection();
-		ChartSegmentFillCategoryProperty chartSegmentFillCategoryProperty =
-				assertDoesNotThrow(() -> new ChartSegmentFillCategoryProperty(
-						getLocalization(), pieChart, chartSegmentSelection));
+		ChartSegmentFillCategoryProperty chartSegmentFillCategoryProperty = assertDoesNotThrow(() ->
+				new ChartSegmentFillCategoryProperty(getLocalization(), pieChart, chartSegmentSelection));
 
 		pieChart.getStyle().setBarFillType(FillType.DOTTED, 1);
 		pieChart.getStyle().setBarFillType(FillType.BRICK, 2);

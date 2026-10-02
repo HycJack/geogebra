@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -24,18 +24,16 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.editor.share.tree.Korean;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A default implementation of the autocomplete dictionary. This implementation
  * is based upon the TreeSet collection class to provide quick lookups and
  * default sorting. All lookups are case-insensitive!
  */
-public class LowerCaseDictionary extends HashMap<String, String>
-		implements AutoCompleteDictionary {
+public class LowerCaseDictionary extends HashMap<String, String> implements AutoCompleteDictionary {
 
 	private static final long serialVersionUID = 1L;
 
@@ -58,8 +56,7 @@ public class LowerCaseDictionary extends HashMap<String, String>
 		putAll(dict);
 	}
 
-	private static @CheckForNull String greatestCommonPrefix(String possiblyNull,
-			String notNull) {
+	private static @Nullable String greatestCommonPrefix(String possiblyNull, String notNull) {
 		if (possiblyNull == null) {
 			return null;
 		}
@@ -102,7 +99,7 @@ public class LowerCaseDictionary extends HashMap<String, String>
 	}
 
 	@Override
-	public @Nonnull Iterator<String> iterator() {
+	public @NonNull Iterator<String> iterator() {
 		return treeSet.iterator();
 	}
 
@@ -156,7 +153,7 @@ public class LowerCaseDictionary extends HashMap<String, String>
 		try {
 			ArrayList<MatchedString> completions = new ArrayList<>();
 			int initialMatches = 0;
-			for (String cmd: treeSet) {
+			for (String cmd : treeSet) {
 				int index = cmd.indexOf(currLowerCase);
 				if (index > -1) {
 					String entry = get(cmd);
@@ -184,8 +181,8 @@ public class LowerCaseDictionary extends HashMap<String, String>
 		int originalLength = 0;
 		int normalizedPrefix = 0;
 		while (normalizedPrefix < normalizedLength) {
-			normalizedPrefix +=  StringUtil.removeAccents(
-					String.valueOf(original.charAt(originalLength))).length();
+			normalizedPrefix += StringUtil.removeAccents(String.valueOf(original.charAt(originalLength)))
+					.length();
 			originalLength++;
 		}
 		return originalLength;
@@ -201,14 +198,12 @@ public class LowerCaseDictionary extends HashMap<String, String>
 	 *            output array
 	 * @return the greatest common prefix
 	 */
-	public String setMatchingGreatestPrefix(final String curr,
-			ArrayList<String> completions) {
+	public String setMatchingGreatestPrefix(final String curr, ArrayList<String> completions) {
 		if (StringUtil.empty(curr)) {
 			return "";
 		}
 
-		String prefixLowerCase = getGreatestCommonPrefix(
-				StringUtil.removeAccents(curr));
+		String prefixLowerCase = getGreatestCommonPrefix(StringUtil.removeAccents(curr));
 		if (StringUtil.empty(prefixLowerCase)) {
 			return ""; // no common prefix
 		}
@@ -227,7 +222,7 @@ public class LowerCaseDictionary extends HashMap<String, String>
 		}
 	}
 
-	private @CheckForNull String getGreatestCommonPrefix(final String curr) {
+	private @Nullable String getGreatestCommonPrefix(final String curr) {
 
 		String prefixBefore = greatestCommonPrefix(treeSet.floor(curr), curr);
 		String prefixAfter = greatestCommonPrefix(treeSet.ceiling(curr), curr);
@@ -257,8 +252,7 @@ public class LowerCaseDictionary extends HashMap<String, String>
 		String koreanCurr = Korean.flattenKorean(curr);
 		for (String str : treeSet) {
 			if (Korean.flattenKorean(str).startsWith(koreanCurr)) {
-				completions.add(new MatchedString(Korean.unflattenKorean(str),
-						0, curr.length()));
+				completions.add(new MatchedString(Korean.unflattenKorean(str), 0, curr.length()));
 			}
 		}
 

@@ -16,12 +16,13 @@
 
 package org.geogebra.common.kernel.implicit;
 
+import static org.geogebra.common.util.DoubleUtil.isZero;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.annotation.CheckForNull;
+import java.util.TreeMap;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -37,6 +38,7 @@ import org.geogebra.common.kernel.SegmentType;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.algos.AlgoElement;
 import org.geogebra.common.kernel.algos.AlgoPointOnPath;
+import org.geogebra.common.kernel.arithmetic.ArbitraryConstantRegistry;
 import org.geogebra.common.kernel.arithmetic.Equation;
 import org.geogebra.common.kernel.arithmetic.ExpressionNode;
 import org.geogebra.common.kernel.arithmetic.ExpressionNodeConstants.StringType;
@@ -46,10 +48,11 @@ import org.geogebra.common.kernel.arithmetic.FunctionVariable;
 import org.geogebra.common.kernel.arithmetic.MyDouble;
 import org.geogebra.common.kernel.arithmetic.NumberValue;
 import org.geogebra.common.kernel.arithmetic.Polynomial;
-import org.geogebra.common.kernel.arithmetic.ReplaceChildrenByValues;
 import org.geogebra.common.kernel.arithmetic.Traversing.VariableReplacer;
+import org.geogebra.common.kernel.arithmetic.ValidExpression;
 import org.geogebra.common.kernel.arithmetic.ValueType;
 import org.geogebra.common.kernel.arithmetic.traversing.ConstantSimplifier;
+import org.geogebra.common.kernel.geos.AlgebraicExpression;
 import org.geogebra.common.kernel.geos.ConicMirrorable;
 import org.geogebra.common.kernel.geos.DescriptionMode;
 import org.geogebra.common.kernel.geos.Dilateable;
@@ -76,21 +79,30 @@ import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.common.util.ExtendedBoolean;
 import org.geogebra.common.util.debug.Log;
 import org.geogebra.editor.share.util.Unicode;
+import org.jspecify.annotations.Nullable;
 
 /**
  * GeoElement representing an implicit curve.
- * 
+ *
  */
-public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
-		Traceable, Translateable, Dilateable, Mirrorable, ConicMirrorable,
-		Transformable, Rotatable, GeoImplicit, ReplaceChildrenByValues {
+public class GeoImplicitCurve extends GeoElement
+		implements EuclidianViewCE,
+				Traceable,
+				Translateable,
+				Dilateable,
+				Mirrorable,
+				ConicMirrorable,
+				Transformable,
+				Rotatable,
+				GeoImplicit,
+				AlgebraicExpression {
 
 	/**
 	 * Border mask
 	 */
-	static final int[] MASK = { 0x9, 0xC, 0x6, 0x3 };
+	static final int[] MASK = {0x9, 0xC, 0x6, 0x3};
 
-	/* The input expression. */
+	/* The input expression. Generally null safe, may be null while loading from XML. */
 	private FunctionNVar expression;
 	/*
 	 * If the input is in factorized form, then the factors are stored
@@ -101,7 +113,8 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 */
 	/** factorised expression */
 	private FunctionNVar[] factorExpression;
-	private FunctionNVar[] diffExp = new FunctionNVar[3];
+
+	private final FunctionNVar[] diffExp = new FunctionNVar[3];
 	/** path */
 	protected GeoLocus locus;
 
@@ -124,7 +137,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	/* The coefficients of each factorExpression. These are used on plotting. */
 	private double[][][] coeffSquarefree;
 
-	private double[] eval = new double[2];
+	private final double[] eval = new double[2];
 	private boolean calcPath = true;
 	private boolean updatePathNeeded = false;
 	private Equation expanded;
@@ -133,7 +146,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/**
 	 * Construct an empty Implicit Curve Object
-	 * 
+	 *
 	 * @param c
 	 *            construction
 	 */
@@ -149,7 +162,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	/**
 	 * Create an {@link GeoImplicitCurve} object for given equation containing
 	 * variables as x and y
-	 * 
+	 *
 	 * @param c
 	 *            construction
 	 * @param equation
@@ -160,16 +173,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		fromEquation(equation, null);
 	}
 
-	/**
-	 * Create a new {@link GeoImplicitCurve} for a given function
-	 * 
-	 * @param c
-	 *            {@link Construction}
-	 * @param func
-	 *            {@link FunctionNVar}
-	 */
-	public GeoImplicitCurve(Construction c, FunctionNVar func) {
-		this(c);
+	private void fromFunction(ValidExpression func) {
 		MyDouble rhs = new MyDouble(kernel, 0.0);
 		Equation eqn = new Equation(kernel, func, rhs);
 		fromEquation(eqn, null);
@@ -177,7 +181,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/**
 	 * create a copy of given ImplicitCurve
-	 * 
+	 *
 	 * @param curve
 	 *            curve to copy
 	 */
@@ -190,12 +194,12 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 * Create expression and coeff from the input eqn. If the input eqn is in
 	 * form (p1)^n1*(p2)^n2*...=0, then the factors p1, p2, ... will also be
 	 * stored separately in factorExpression[] and coeffSquarefree.
-	 * 
+	 *
 	 * @param eqn
 	 *            equation
 	 * @param coeffEqn
 	 *            coefficients of the equation (unused? FIXME)
-	 * 
+	 *
 	 */
 	@Override
 	public void fromEquation(Equation eqn, double[][] coeffEqn) {
@@ -210,7 +214,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		/*
 		 * in the polynomial case we want to simplify the factors if right side
 		 * is 0
-		 * 
+		 *
 		 */
 		if (!rightHandSide.containsFreeFunctionVariable(null)
 				&& DoubleUtil.isEqual(rightHandSide.evaluateDouble(), 0)
@@ -227,19 +231,16 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 		ExpressionNode functionExpression;
 
-		functionExpression = new ExpressionNode(kernel, leftHandSide,
-				Operation.MINUS, rightHandSide);
+		functionExpression = new ExpressionNode(kernel, leftHandSide, Operation.MINUS, rightHandSide);
 
-		FunctionVariable x = new FunctionVariable(kernel, "x");
-		FunctionVariable y = new FunctionVariable(kernel, "y");
+		FunctionVariable x = makeVariable("x");
+		FunctionVariable y = makeVariable("y");
 		VariableReplacer repl = kernel.getVariableReplacer();
 		repl.addVars("x", x);
 		repl.addVars("y", y);
 		functionExpression.traverse(repl);
 
-		FunctionNVar fun = new FunctionNVar(functionExpression,
-				new FunctionVariable[] { x, y });
-		expression = fun;
+		expression = new FunctionNVar(functionExpression, new FunctionVariable[] {x, y});
 		setDerivatives(x, y);
 		defined = expression.isDefined();
 
@@ -260,19 +261,17 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		euclidianViewUpdate();
 	}
 
-	private boolean checkAbsValue(ExpressionNode leftHandSide,
-			ExpressionNode rightHandSide) {
-		if (rightHandSide.isConstant() && rightHandSide.evaluateDouble() >= 0
+	private boolean checkAbsValue(ExpressionNode leftHandSide, ExpressionNode rightHandSide) {
+		if (rightHandSide.isConstant()
+				&& rightHandSide.evaluateDouble() >= 0
 				&& leftHandSide.isExpressionNode()
 				&& leftHandSide.wrap().getOperation() == Operation.ABS) {
 
 			ArrayList<ExpressionNode> factors = new ArrayList<>(2);
-			factors.add(
-					new ExpressionNode(kernel, leftHandSide.wrap().getLeft(),
-							Operation.MINUS, rightHandSide.deepCopy(kernel)));
-			factors.add(
-					new ExpressionNode(kernel, leftHandSide.wrap().getLeft(),
-							Operation.PLUS, rightHandSide.deepCopy(kernel)));
+			factors.add(new ExpressionNode(
+					kernel, leftHandSide.wrap().getLeft(), Operation.MINUS, rightHandSide.deepCopy(kernel)));
+			factors.add(new ExpressionNode(
+					kernel, leftHandSide.wrap().getLeft(), Operation.PLUS, rightHandSide.deepCopy(kernel)));
 			Equation eq = new Equation(kernel, factors.get(0), factors.get(1));
 			eq.initEquation();
 			if (eq.mayBePolynomial()) {
@@ -292,28 +291,24 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		factorExpression = new FunctionNVar[noFactors];
 
 		for (int i = 0; i < noFactors; i++) {
-			Equation fEqn = new Equation(kernel, factors.get(i),
-					new MyDouble(kernel, 0.0));
+			Equation fEqn = new Equation(kernel, factors.get(i), new MyDouble(kernel, 0.0));
 			fEqn.initEquation();
 			Polynomial lhs = fEqn.getNormalForm();
 			setCoeffSquarefree(lhs.getCoeff(), i);
 
-			ExpressionNode functionExpression = new ExpressionNode(
-					factors.get(i));
-			FunctionVariable x = new FunctionVariable(kernel, "x");
-			FunctionVariable y = new FunctionVariable(kernel, "y");
+			ExpressionNode functionExpression = new ExpressionNode(factors.get(i));
+			FunctionVariable x = makeVariable("x");
+			FunctionVariable y = makeVariable("y");
 			VariableReplacer repl = kernel.getVariableReplacer();
 			repl.addVars("x", x);
 			repl.addVars("y", y);
 			functionExpression.traverse(repl);
-			FunctionNVar fun = new FunctionNVar(functionExpression,
-					new FunctionVariable[] { x, y });
+			FunctionNVar fun = new FunctionNVar(functionExpression, new FunctionVariable[] {x, y});
 			factorExpression[i] = fun;
 
 			if (i >= 1) {
 				ExpressionNode copy = expr.deepCopy(kernel);
-				expr = new ExpressionNode(kernel, copy, Operation.MULTIPLY,
-						factors.get(i));
+				expr = new ExpressionNode(kernel, copy, Operation.MULTIPLY, factors.get(i));
 			}
 		}
 		/*
@@ -321,10 +316,8 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		 * computations (like intersection or mirror about circle). This should
 		 * improve numerical stability.
 		 */
-		Equation squareFree = new Equation(kernel, expr,
-				new MyDouble(kernel, 0.0));
+		Equation squareFree = new Equation(kernel, expr, new MyDouble(kernel, 0.0));
 		updateCoeff(squareFree);
-
 	}
 
 	/*
@@ -345,7 +338,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		factorExpression[0] = expression.deepCopy(kernel);
 		try {
 			factorExpression[0].traverse(ConstantSimplifier.INSTANCE);
-		} catch (MyError err) {
+		} catch (MyError expected) {
 			// if simplification failed, leave as is
 		}
 	}
@@ -380,7 +373,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/*
 	 * Initialize the coeff array and other variables like degree. (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.geogebra.common.kernel.implicit.GeoImplicit#setCoeff(org.geogebra.
 	 * common.kernel.arithmetic.ExpressionValue[][])
@@ -404,8 +397,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				if (Double.isInfinite(coeff[i][j])) {
 					defined = false;
 				}
-				isConstant = isConstant
-						&& (DoubleUtil.isZero(coeff[i][j]) || (i == 0 && j == 0));
+				isConstant = isConstant && (isZero(coeff[i][j]) || (i == 0 && j == 0));
 			}
 		}
 	}
@@ -427,7 +419,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 * coefficients of the squarefree factors of the implicit curve. If there
 	 * are no factors provided by the user (or the caller algorithm), then the
 	 * coefficients are stored "as is".
-	 * 
+	 *
 	 * @param ev
 	 *            coefficients
 	 * @param factor
@@ -462,24 +454,26 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			diffExp[1] = func.getDerivativeNoCAS(y, 1).deepCopy(kernel);
 			diffExp[0].traverse(ConstantSimplifier.INSTANCE);
 			diffExp[1].traverse(ConstantSimplifier.INSTANCE);
-			ExpressionNode der = new ExpressionNode(kernel,
-					diffExp[0].getExpression().multiply(-1.0), Operation.DIVIDE,
+			ExpressionNode der = new ExpressionNode(
+					kernel,
+					diffExp[0].getExpression().multiply(-1.0),
+					Operation.DIVIDE,
 					diffExp[1].getExpression());
-			diffExp[2] = new FunctionNVar(der, new FunctionVariable[] { x, y });
+			diffExp[2] = new FunctionNVar(der, new FunctionVariable[] {x, y});
 		} catch (Exception ex) {
 			hasDerivatives = false;
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @param x
 	 *            x coordinate
 	 * @param y
 	 *            y coordinate
 	 * @return value of partial derivative, if exist, at (x, y) w.r.t x, NaN
 	 *         otherwise
-	 * 
+	 *
 	 */
 	@Override
 	public double derivativeX(double x, double y) {
@@ -490,7 +484,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	/**
-	 * 
+	 *
 	 * @param x
 	 *            x coordinate
 	 * @param y
@@ -513,12 +507,12 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 *            y
 	 * @param coeff1
 	 *            coefficients
-	 * 
+	 *
 	 * @return value of dthis/dx at (x,y)
 	 */
 	public static double evalDiffXPolyAt(double x, double y, double[][] coeff1) {
 		double sum = 0;
-		double zs = 0;
+		double zs;
 		// Evaluating Poly via the Horner-scheme
 		if (coeff1 != null) {
 			for (int i = coeff1.length - 1; i >= 1; i--) {
@@ -545,7 +539,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 */
 	public static double evalDiffYPolyAt(double x, double y, double[][] coeff1) {
 		double sum = 0;
-		double zs = 0;
+		double zs;
 		// Evaluating Poly via the Horner-scheme
 		if (coeff1 != null) {
 			for (int i = coeff1.length - 1; i >= 0; i--) {
@@ -562,7 +556,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	/**
-	 * 
+	 *
 	 * @param x
 	 *            x coordinate
 	 * @param y
@@ -604,7 +598,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if derivative of the function exists
 	 */
 	public boolean hasDerivative() {
@@ -630,19 +624,19 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	@Override
 	public void set(GeoElementND geo) {
-		ExpressionValue unwrapped = geo.getDefinition() == null ? null
-				: geo.getDefinition().unwrap();
+		ExpressionValue unwrapped =
+				geo.getDefinition() == null ? null : geo.getDefinition().unwrap();
 		if (unwrapped instanceof Equation) {
 			Equation copied = ((Equation) unwrapped).deepCopy(kernel);
 			copied.initEquation();
 			fromEquation(copied, null);
 		} else if (geo instanceof GeoImplicitCurve) {
-			ExpressionValue lhs = ((GeoImplicitCurve) geo).expression
-					.getFunctionExpression().deepCopy(kernel);
+			ExpressionValue lhs =
+					((GeoImplicitCurve) geo).expression.getFunctionExpression().deepCopy(kernel);
 			// Object equationCopy = ((GeoImplicitCurve) geo).equation
 			// .deepCopy(kernel);
-			fromEquation(new Equation(kernel, lhs, new MyDouble(kernel, 0)),
-					((GeoImplicitCurve) geo).coeff);
+			fromEquation(
+					new Equation(kernel, lhs, new MyDouble(kernel, 0)), ((GeoImplicitCurve) geo).coeff);
 		} else {
 			setUndefined();
 		}
@@ -657,6 +651,10 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	public void setUndefined() {
 		defined = false;
 		resetCoeff();
+		if (expression == null) {
+			FunctionVariable[] functionVars = {makeVariable("x"), makeVariable("y")};
+			expression = new FunctionNVar(new ExpressionNode(kernel, Double.NaN), functionVars);
+		}
 	}
 
 	@Override
@@ -675,8 +673,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		if (expanded != null) {
 			return expanded.toValueString(tpl);
 		}
-		return getDefinition() == null ? ""
-				: getDefinition().toString(tpl);
+		return getDefinition() == null ? "" : getDefinition().toString(tpl);
 	}
 
 	@Override
@@ -727,8 +724,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 */
 	public double evaluateImplicitCurve(double x, double y, int factor) {
 		if (coeffSquarefree != null) {
-			return GeoImplicitCurve.evalPolyCoeffAt(x, y,
-					coeffSquarefree[factor]);
+			return GeoImplicitCurve.evalPolyCoeffAt(x, y, coeffSquarefree[factor]);
 		}
 		evalArray[0] = x;
 		evalArray[1] = y;
@@ -747,7 +743,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return view bounds for this
 	 */
 	protected double[] getViewBounds() {
@@ -767,12 +763,16 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	private synchronized void doUpdatePath() {
 		double[] viewBounds = getViewBounds();
 		if (viewBounds[0] == Double.POSITIVE_INFINITY) {
-			viewBounds = new double[] { -10, 10, -10, 10, 10, 10 };
+			viewBounds = new double[] {-10, 10, -10, 10, 10, 10};
 		}
 
-		updatePathQuadTree(viewBounds[0], viewBounds[3],
-				viewBounds[1] - viewBounds[0], viewBounds[3] - viewBounds[2],
-				viewBounds[4], viewBounds[5]);
+		updatePathQuadTree(
+				viewBounds[0],
+				viewBounds[3],
+				viewBounds[1] - viewBounds[0],
+				viewBounds[3] - viewBounds[2],
+				viewBounds[4],
+				viewBounds[5]);
 		/*
 		 * TODO (some speedup): Consider not running the QuadTree algorithm if
 		 * the path is just a single point (see below).
@@ -785,8 +785,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		 */
 		int factors = coeffSquarefree == null ? 0 : coeffSquarefree.length;
 		for (int i = 0; i < factors; i++) {
-			if (coeffSquarefree[i].length == 3
-					&& coeffSquarefree[i][0].length == 3) {
+			if (coeffSquarefree[i].length == 3 && coeffSquarefree[i][0].length == 3) {
 				double xx = get(coeffSquarefree[i][0], 2);
 				double xy = get(coeffSquarefree[i][1], 1);
 				double yy = get(coeffSquarefree[i][2], 0);
@@ -803,14 +802,13 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				double px = -x / 2;
 				double py = -y / 2;
 
-				if (DoubleUtil.isEpsilon(xy, 1) && DoubleUtil.isEpsilon(xxy, 1)
-						&& DoubleUtil.isEpsilon(xyy, 1) && DoubleUtil.isEpsilon(xxyy, 1)
+				if (DoubleUtil.isEpsilon(xy, 1)
+						&& DoubleUtil.isEpsilon(xxy, 1)
+						&& DoubleUtil.isEpsilon(xyy, 1)
+						&& DoubleUtil.isEpsilon(xxyy, 1)
 						&& !DoubleUtil.isEpsilon(yy, 1)
-						&& DoubleUtil
-								.isEpsilon(xx / yy - 1,
-										1)
-						&& DoubleUtil.isEpsilon((px /= xx) * px + (py /= xx) * py
-								- constant / xx, 1)) {
+						&& DoubleUtil.isEpsilon(xx / yy - 1, 1)
+						&& DoubleUtil.isEpsilon((px /= xx) * px + (py /= xx) * py - constant / xx, 1)) {
 
 					// add single point to locus
 					locus.insertPoint(px, py, SegmentType.MOVE_TO);
@@ -827,8 +825,8 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		return ds.length > i ? ds[i] : 0;
 	}
 
-	private void updatePathQuadTree(double x, double y, double w, double h,
-			double scaleX, double scaleY) {
+	private void updatePathQuadTree(
+			double x, double y, double w, double h, double scaleX, double scaleY) {
 		locus.getPoints().clear();
 		quadTree.updatePath(x, y - h, w, h, scaleX, scaleY, locus);
 	}
@@ -878,7 +876,8 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	private String getXmlString() {
-		return getDefinition() == null ? toValueString(StringTemplate.xmlTemplate)
+		return getDefinition() == null
+				? toValueString(StringTemplate.xmlTemplate)
 				: getDefinition().toValueString(StringTemplate.xmlTemplate);
 	}
 
@@ -902,12 +901,8 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				sb.append("]");
 			}
 			sb.append("]");
-			builder.startTag("coefficients")
-					.attr("rep", "array")
-					.attr("data", sb)
-					.endTag();
+			builder.startTag("coefficients").attr("rep", "array").attr("data", sb).endTag();
 		}
-
 	}
 
 	@Override
@@ -927,14 +922,14 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	@Override
 	public void pointChanged(GeoPointND PI) {
-		if (getLocus().getPoints().size() > 0) {
+		if (!getLocus().getPoints().isEmpty()) {
 			locusPointChanged(PI);
 		}
 	}
 
 	/**
 	 * Update point when changed using locus as path
-	 * 
+	 *
 	 * @param PI
 	 *            point on path
 	 */
@@ -953,14 +948,14 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			return;
 		}
 
-		if (getLocus().getPoints().size() > 0) {
+		if (!getLocus().getPoints().isEmpty()) {
 			locusPathChanged(PI);
 		}
 	}
 
 	/**
 	 * Update point for locus change
-	 * 
+	 *
 	 * @param PI
 	 *            point on path
 	 */
@@ -989,7 +984,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 		if (PI.isGeoElement3D()) {
 			Coords coords = PI.getInhomCoordsInD3();
-			if (!DoubleUtil.isZero(coords.getZ())) {
+			if (!isZero(coords.getZ())) {
 				return false;
 			}
 			px = coords.getX();
@@ -1052,19 +1047,20 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	private void updateCoeffFromExpr() {
 		if (coeff != null) {
-			updateCoeff(new Equation(kernel, expression.getFunctionExpression(),
-					new MyDouble(kernel, 0)));
+			updateCoeff(
+					new Equation(kernel, expression.getFunctionExpression(), new MyDouble(kernel, 0)));
 			for (int factor = 0; factor < factorLength(); ++factor) {
-				updateCoeffSquarefree(new Equation(kernel,
-						getFactor(factor).getFunctionExpression(),
-						new MyDouble(kernel, 0)), factor);
+				updateCoeffSquarefree(
+						new Equation(
+								kernel, getFactor(factor).getFunctionExpression(), new MyDouble(kernel, 0)),
+						factor);
 			}
 		}
 	}
 
 	/**
 	 * translate the curve
-	 * 
+	 *
 	 * @param dx
 	 *            distance in x direction
 	 * @param dy
@@ -1088,10 +1084,11 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	private FunctionNVar getFactor(int factor) {
 		if (factorExpression[factor] == null) {
-			Log.error("Undefined factor " + factor + " in "
-					+ toString(StringTemplate.editTemplate));
-			factorExpression[factor] = kernel.getAlgebraProcessor()
-					.evaluateToFunctionNVar("0x+0y", true, false).getFunction();
+			Log.error("Undefined factor " + factor + " in " + toString(StringTemplate.editTemplate));
+			factorExpression[factor] = kernel
+					.getAlgebraProcessor()
+					.evaluateToFunctionNVar("0x+0y", true, false)
+					.getFunction();
 			setUndefined();
 		}
 		return this.factorExpression[factor];
@@ -1147,62 +1144,57 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 			plugInRatPoly(
 					new double[][] {
-							{ cx * cx * cx + cx * cy * cy - cx * cr * cr,
-									-2 * cx * cy, cx },
-							{ -2 * cx * cx + cr * cr, 0, 0 }, { cx, 0, 0 } },
+						{cx * cx * cx + cx * cy * cy - cx * cr * cr, -2 * cx * cy, cx},
+						{-2 * cx * cx + cr * cr, 0, 0},
+						{cx, 0, 0}
+					},
 					new double[][] {
-							{ cx * cx * cy + cy * cy * cy - cy * cr * cr,
-									-2 * cy * cy + cr * cr, cy },
-							{ -2 * cx * cy, 0, 0 }, { cy, 0, 0 } },
-					new double[][] { { cx * cx + cy * cy, -2 * cy, 1 },
-							{ -2 * cx, 0, 0 }, { 1, 0, 0 } },
-					new double[][] { { cx * cx + cy * cy, -2 * cy, 1 },
-							{ -2 * cx, 0, 0 }, { 1, 0, 0 } });
+						{cx * cx * cy + cy * cy * cy - cy * cr * cr, -2 * cy * cy + cr * cr, cy},
+						{-2 * cx * cy, 0, 0},
+						{cy, 0, 0}
+					},
+					new double[][] {{cx * cx + cy * cy, -2 * cy, 1}, {-2 * cx, 0, 0}, {1, 0, 0}},
+					new double[][] {{cx * cx + cy * cy, -2 * cy, 1}, {-2 * cx, 0, 0}, {1, 0, 0}});
 		} else {
-			MyDouble r2 = new MyDouble(kernel,
-					conic.getHalfAxis(0) * conic.getHalfAxis(0));
-			expression.getFunction().translate(-conic.getMidpoint2D().getX(),
-					-conic.getMidpoint2D().getY());
+			MyDouble r2 = new MyDouble(kernel, conic.getHalfAxis(0) * conic.getHalfAxis(0));
+			expression
+					.getFunction()
+					.translate(-conic.getMidpoint2D().getX(), -conic.getMidpoint2D().getY());
 			FunctionVariable x = expression.getFunctionVariables()[0];
 			FunctionVariable y = expression.getFunctionVariables()[1];
-			ExpressionNode expr = expression.getFunctionExpression()
-					.deepCopy(kernel);
-			FunctionVariable x2 = new FunctionVariable(kernel, "x");
-			FunctionVariable y2 = new FunctionVariable(kernel, "y");
-			ExpressionValue newX = x2.wrap().multiply(r2)
-					.divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
-			ExpressionValue newY = y2.wrap().multiply(r2)
-					.divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
+			ExpressionNode expr = expression.getFunctionExpression().deepCopy(kernel);
+			FunctionVariable x2 = makeVariable("x");
+			FunctionVariable y2 = makeVariable("y");
+			ExpressionValue newX =
+					x2.wrap().multiply(r2).divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
+			ExpressionValue newY =
+					y2.wrap().multiply(r2).divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
 			expr.replace(x, newX);
 			expr.replace(y, newY);
-			FunctionNVar f2 = new FunctionNVar(expr,
-					new FunctionVariable[] { x2, y2 });
+			FunctionNVar f2 = new FunctionNVar(expr, new FunctionVariable[] {x2, y2});
 			expression.set(f2);
 			expression.translate(conic.getMidpoint2D());
 
 			// do the same computations for the factors also
 			for (int factor = 0; factor < factorLength(); ++factor) {
-				getFactor(factor).getFunction().translate(
-						-conic.getMidpoint2D().getX(), -conic.getMidpoint2D().getY());
+				getFactor(factor)
+						.getFunction()
+						.translate(-conic.getMidpoint2D().getX(), -conic.getMidpoint2D().getY());
 				x = getFactor(factor).getFunctionVariables()[0];
 				y = getFactor(factor).getFunctionVariables()[1];
-				expr = getFactor(factor).getFunctionExpression()
-						.deepCopy(kernel);
-				x2 = new FunctionVariable(kernel, "x");
-				y2 = new FunctionVariable(kernel, "y");
-				newX = x2.wrap().multiply(r2)
-						.divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
-				newY = y2.wrap().multiply(r2)
-						.divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
+				expr = getFactor(factor).getFunctionExpression().deepCopy(kernel);
+				x2 = makeVariable("x");
+				y2 = makeVariable("y");
+				newX = x2.wrap().multiply(r2).divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
+				newY = y2.wrap().multiply(r2).divide(x2.wrap().power(2).plus(y2.wrap().power(2)));
 				expr.replace(x, newX);
 				expr.replace(y, newY);
-				f2 = new FunctionNVar(expr, new FunctionVariable[] { x2, y2 });
+				f2 = new FunctionNVar(expr, new FunctionVariable[] {x2, y2});
 				getFactor(factor).set(f2);
 				getFactor(factor).translate(conic.getMidpoint2D());
 			}
 
-			setDefinition(
-					new Equation(kernel, expr, new MyDouble(kernel, 0)).wrap());
+			setDefinition(new Equation(kernel, expr, new MyDouble(kernel, 0)).wrap());
 			// for polynomials pluhIn does that
 			euclidianViewUpdate();
 		}
@@ -1210,7 +1202,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/**
 	 * replace x by px/qx and y by py/qy
-	 * 
+	 *
 	 * @param pX
 	 *            x numerator
 	 * @param pY
@@ -1220,9 +1212,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 * @param qY
 	 *            y denominator
 	 */
-	public void plugInRatPoly(double[][] pX, double[][] pY, double[][] qX,
-			double[][] qY) {
-		int degXpX = pX.length - 1;
+	public void plugInRatPoly(double[][] pX, double[][] pY, double[][] qX, double[][] qY) {
 		int degYpX = 0;
 		for (int i = 0; i < pX.length; i++) {
 			if (pX[i].length - 1 > degYpX) {
@@ -1239,7 +1229,6 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				}
 			}
 		}
-		int degXpY = pY.length - 1;
 		int degYpY = 0;
 		for (int i = 0; i < pY.length; i++) {
 			if (pY[i].length - 1 > degYpY) {
@@ -1273,23 +1262,15 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			// find the "common" degree, e.g. x^4+y^4->4, but x^4 y^4->8
 			commDeg = getDeg();
 		}
-		int newDegX = Math.max(degXpX, degXqX) * degX
-				+ Math.max(degXpY, degXqY) * degY;
-		int newDegY = Math.max(degYpX, degYqX) * degX
-				+ Math.max(degYpY, degYqY) * degY;
+		int degXpX = pX.length - 1;
+		int degXpY = pY.length - 1;
+		int newDegX = Math.max(degXpX, degXqX) * degX + Math.max(degXpY, degXqY) * degY;
+		int newDegY = Math.max(degYpX, degYqX) * degX + Math.max(degYpY, degYqY) * degY;
 
 		double[][] newCoeff = new double[newDegX + 1][newDegY + 1];
 		double[][] tmpCoeff = new double[newDegX + 1][newDegY + 1];
 		double[][] ratXCoeff = new double[newDegX + 1][newDegY + 1];
 		double[][] ratYCoeff = new double[newDegX + 1][newDegY + 1];
-		int tmpCoeffDegX = 0;
-		int tmpCoeffDegY = 0;
-		int newCoeffDegX = 0;
-		int newCoeffDegY = 0;
-		int ratXCoeffDegX = 0;
-		int ratXCoeffDegY = 0;
-		int ratYCoeffDegX = 0;
-		int ratYCoeffDegY = 0;
 
 		for (int i = 0; i < newDegX; i++) {
 			for (int j = 0; j < newDegY; j++) {
@@ -1300,7 +1281,15 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			}
 		}
 		ratXCoeff[0][0] = 1;
+		int newCoeffDegX = 0;
+		int newCoeffDegY = 0;
+		int ratXCoeffDegX = 0;
+		int ratXCoeffDegY = 0;
+		int ratYCoeffDegX = 0;
+		int ratYCoeffDegY = 0;
 		for (int x = coeff.length - 1; x >= 0; x--) {
+			int tmpCoeffDegX = 0;
+			int tmpCoeffDegY = 0;
 			if (qY != null) {
 				ratYCoeff[0][0] = 1;
 				ratYCoeffDegX = 0;
@@ -1316,8 +1305,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 						tmpCoeff[0][0] += coeff[x][y];
 					}
 				} else {
-					polyMult(ratYCoeff, qY, ratYCoeffDegX, ratYCoeffDegY,
-							degXqY, degYqY); // y^N-i
+					polyMult(ratYCoeff, qY, ratYCoeffDegX, ratYCoeffDegY, degXqY, degYqY); // y^N-i
 					ratYCoeffDegX += degXqY;
 					ratYCoeffDegY += degYqY;
 					if (coeff[x].length > y) {
@@ -1334,19 +1322,16 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 					tmpCoeffDegY = Math.max(tmpCoeffDegY, ratYCoeffDegY);
 				}
 				if (y > 0) {
-					polyMult(tmpCoeff, pY, tmpCoeffDegX, tmpCoeffDegY, degXpY,
-							degYpY);
+					polyMult(tmpCoeff, pY, tmpCoeffDegX, tmpCoeffDegY, degXpY, degYpY);
 					tmpCoeffDegX += degXpY;
 					tmpCoeffDegY += degYpY;
 				}
 			}
 			if (qX != null && x != coeff.length - 1 && !sameDenom) {
-				polyMult(ratXCoeff, qX, ratXCoeffDegX, ratXCoeffDegY, degXqX,
-						degYqX);
+				polyMult(ratXCoeff, qX, ratXCoeffDegX, ratXCoeffDegY, degXqX, degYqX);
 				ratXCoeffDegX += degXqX;
 				ratXCoeffDegY += degYqX;
-				polyMult(tmpCoeff, ratXCoeff, tmpCoeffDegX, tmpCoeffDegY,
-						ratXCoeffDegX, ratXCoeffDegY);
+				polyMult(tmpCoeff, ratXCoeff, tmpCoeffDegX, tmpCoeffDegY, ratXCoeffDegX, ratXCoeffDegY);
 				tmpCoeffDegX += ratXCoeffDegX;
 				tmpCoeffDegY += ratXCoeffDegY;
 			}
@@ -1358,11 +1343,8 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			}
 			newCoeffDegX = Math.max(newCoeffDegX, tmpCoeffDegX);
 			newCoeffDegY = Math.max(newCoeffDegY, tmpCoeffDegY);
-			tmpCoeffDegX = 0;
-			tmpCoeffDegY = 0;
 			if (x > 0) {
-				polyMult(newCoeff, pX, newCoeffDegX, newCoeffDegY, degXpX,
-						degYpX);
+				polyMult(newCoeff, pX, newCoeffDegX, newCoeffDegY, degXpX, degYpX);
 				newCoeffDegX += degXpX;
 				newCoeffDegY += degYpX;
 			}
@@ -1380,61 +1362,58 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		setCoeff(coeff, true);
 		if (algoUpdateSet != null) {
 			double a = 0, ax = 0, ay = 0, b = 0, bx = 0, by = 0;
-			if (qX == null && qY == null && degXpX <= 1 && degYpX <= 1
-					&& degXpY <= 1 && degYpY <= 1) {
-				if ((degXpX != 1 || degYpX != 1 || pX[1].length == 1
-						|| DoubleUtil.isZero(pX[1][1]))
-						&& (degXpY != 1 || degYpY != 1 || pY[1].length == 1
-								|| DoubleUtil.isZero(pY[1][1]))) {
-					if (pX.length > 0) {
-						if (pX[0].length > 0) {
-							a = pX[0][0];
-						}
-						if (pX[0].length > 1) {
-							ay = pX[0][1];
-						}
-					}
-					if (pX.length > 1) {
-						ax = pX[1][0];
-					}
-					if (pY.length > 0) {
-						if (pY[0].length > 0) {
-							b = pY[0][0];
-						}
-						if (pY[0].length > 1) {
-							by = pY[0][1];
-						}
-					}
-					if (pY.length > 1) {
-						bx = pY[1][0];
-					}
-					double det = ax * by - bx * ay;
-					if (!DoubleUtil.isZero(det)) {
-						double[][] iX = new double[][] {
-								{ (b * ay - a * by) / det, -ay / det },
-								{ by / det } };
-						double[][] iY = new double[][] {
-								{ -(b * ax - a * bx) / det, ax / det },
-								{ -bx / det } };
+			if (qX == null
+					&& qY == null
+					&& degXpX <= 1
+					&& degYpX <= 1
+					&& degXpY <= 1
+					&& degYpY <= 1
+					&& (degXpX != 1 || degYpX != 1 || pX[1].length == 1 || isZero(pX[1][1]))
+					&& (degXpY != 1 || degYpY != 1 || pY[1].length == 1 || isZero(pY[1][1]))) {
+				if (pX.length > 0) {
+					a = pX[0].length > 0 ? pX[0][0] : 0;
+					ay = pX[0].length > 1 ? pX[0][1] : 0;
+				}
+				if (pX.length > 1) {
+					ax = pX[1][0];
+				}
+				if (pY.length > 0) {
+					b = pY[0].length > 0 ? pY[0][0] : 0;
+					by = pY[0].length > 1 ? pY[0][1] : 0;
+				}
+				if (pY.length > 1) {
+					bx = pY[1][0];
+				}
+				double det = ax * by - bx * ay;
+				if (!isZero(det)) {
+					double[][] iX = new double[][] {
+						{(b * ay - a * by) / det, -ay / det},
+						{by / det}
+					};
+					double[][] iY = new double[][] {
+						{-(b * ax - a * bx) / det, ax / det},
+						{-bx / det}
+					};
 
-						Iterator<AlgoElement> it = algoUpdateSet.getIterator();
-						while (it != null && it.hasNext()) {
-							AlgoElement elem = it.next();
-							if (elem instanceof AlgoPointOnPath
-									&& isIndependent()) {
-								GeoPoint point = (GeoPoint) ((AlgoPointOnPath) elem)
-										.getP();
-								if (!DoubleUtil.isZero(point.getZ())) {
-									double x = point.getX() / point.getZ();
-									double y = point.getY() / point.getZ();
-									double px = evalPolyCoeffAt(x, y, iX);
-									double py = evalPolyCoeffAt(x, y, iY);
-									point.setCoords(px, py, 1);
-									point.updateCoords();
-								}
-							}
-						}
-					}
+					updatePointsOnPath(iX, iY);
+				}
+			}
+		}
+	}
+
+	private void updatePointsOnPath(double[][] iX, double[][] iY) {
+		Iterator<AlgoElement> it = algoUpdateSet.getIterator();
+		while (it != null && it.hasNext()) {
+			AlgoElement elem = it.next();
+			if (elem instanceof AlgoPointOnPath && isIndependent()) {
+				GeoPoint point = (GeoPoint) ((AlgoPointOnPath) elem).getP();
+				if (!isZero(point.getZ())) {
+					double x = point.getX() / point.getZ();
+					double y = point.getY() / point.getZ();
+					double px = evalPolyCoeffAt(x, y, iX);
+					double py = evalPolyCoeffAt(x, y, iY);
+					point.setCoords(px, py, 1);
+					point.updateCoords();
 				}
 			}
 		}
@@ -1451,7 +1430,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 */
 	public static double evalPolyCoeffAt(double x, double y, double[][] coeff) {
 		double sum = 0;
-		double zs = 0;
+		double zs;
 		// Evaluating Poly via the Horner-scheme
 		if (coeff != null) {
 			for (int i = coeff.length - 1; i >= 0; i--) {
@@ -1470,7 +1449,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/**
 	 * polyDest=polyDest*polySrc;
-	 * 
+	 *
 	 * @param polyDest
 	 *            destination polynomial (coefficients)
 	 * @param polySrc
@@ -1484,17 +1463,19 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 * @param degSrcY
 	 *            y degree of src
 	 */
-	static void polyMult(double[][] polyDest, double[][] polySrc, int degDestX,
-			int degDestY, int degSrcX, int degSrcY) {
-		double[][] result = new double[degDestX + degSrcX + 1][degDestY
-				+ degSrcY + 1];
+	static void polyMult(
+			double[][] polyDest,
+			double[][] polySrc,
+			int degDestX,
+			int degDestY,
+			int degSrcX,
+			int degSrcY) {
+		double[][] result = new double[degDestX + degSrcX + 1][degDestY + degSrcY + 1];
 		for (int n = 0; n <= degDestX + degSrcX; n++) {
 			for (int m = 0; m <= degDestY + degSrcY; m++) {
 				double sum = 0;
-				for (int k = Math.max(0, n - degSrcX); k <= Math.min(n,
-						degDestX); k++) {
-					for (int j = Math.max(0, m - degSrcY); j <= Math.min(m,
-							degDestY); j++) {
+				for (int k = Math.max(0, n - degSrcX); k <= Math.min(n, degDestX); k++) {
+					for (int j = Math.max(0, m - degSrcY); j <= Math.min(m, degDestY); j++) {
 						sum += polyDest[k][j] * polySrc[n - k][m - j];
 					}
 				}
@@ -1509,12 +1490,12 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	/**
-	 * 
+	 *
 	 * @return FunctionNVar
 	 */
 	@Override
 	public FunctionNVar getExpression() {
-		return expression.getFunction();
+		return expression;
 	}
 
 	/**
@@ -1528,8 +1509,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 *            second point
 	 * @return linear interpolation of p1 and p2 based on f(p1) and f(p2)
 	 */
-	public static double interpolate(double fa, double fb, double p1,
-			double p2) {
+	public static double interpolate(double fa, double fb, double p1, double p2) {
 		double r = -fb / (fa - fb);
 		if (r >= 0 && r <= 1) {
 			return r * (p1 - p2) + p2;
@@ -1538,7 +1518,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	/**
-	 * 
+	 *
 	 * @param in
 	 *            parameters {f(x1, y1), f(x2, y2), x1, y1, x2, y2}
 	 * @param out
@@ -1554,7 +1534,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	/**
-	 * 
+	 *
 	 * @param f1
 	 *            First function
 	 * @param f2
@@ -1567,14 +1547,13 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 *         intersect in the rectangle defined by (xMin, yMin), (xMax, yMax).
 	 *         The rectangle is sampled at regular interval of ceil(sqrt(n))
 	 */
-	public static List<Coords> probableInitialPoints(FunctionNVar f1,
-			FunctionNVar f2, double[] params, int n) {
-		return probableInitialPoints(f1, f2, params[0], params[1], params[2],
-				params[3], n);
+	public static List<Coords> probableInitialPoints(
+			FunctionNVar f1, FunctionNVar f2, double[] params, int n) {
+		return probableInitialPoints(f1, f2, params[0], params[1], params[2], params[3], n);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param f1
 	 *            First function
 	 * @param f2
@@ -1593,24 +1572,21 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 *         intersect in the rectangle defined by (xMin, yMin), (xMax, yMax).
 	 *         The rectangle is sampled at regular interval of ceil(sqrt(n))
 	 */
-	public static List<Coords> probableInitialPoints(FunctionNVar f1,
-			FunctionNVar f2, double xMin, double yMin, double xMax, double yMax,
-			int n) {
-
-		int root = (int) (Math.sqrt(n) + 1);
+	public static List<Coords> probableInitialPoints(
+			FunctionNVar f1, FunctionNVar f2, double xMin, double yMin, double xMax, double yMax, int n) {
 		List<Coords> out = new ArrayList<>();
 		if (xMin >= xMax || yMin >= yMax) {
 			// empty intersecting rectangle
 			return out;
 		}
-
-		double inx = (xMax - xMin) / (root + 1), inx2 = 0.5 * inx;
-		double iny = (yMax - yMin) / (root + 1), iny2 = 0.5 * iny;
+		int root = (int) (Math.sqrt(n) + 1);
+		final double inx = (xMax - xMin) / (root + 1), inx2 = 0.5 * inx;
+		final double iny = (yMax - yMin) / (root + 1), iny2 = 0.5 * iny;
 		double[] y1 = new double[root + 1];
 		double[] y2 = new double[root + 1];
 		boolean[] present = new boolean[n + 1];
 		double cur1, cur2, prev1, prev2;
-		double[] eval = new double[] { xMin, yMin };
+		double[] eval = new double[] {xMin, yMin};
 		y1[0] = f1.evaluate(eval);
 		y2[0] = f2.evaluate(eval);
 		for (int i = 1; i <= root; i++) {
@@ -1632,8 +1608,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				eval[0] = xMin + j * inx;
 				cur1 = f1.evaluate(eval);
 				cur2 = f2.evaluate(eval);
-				if (!present[j] && (y1[i - 1] * y1[i] <= 0.0)
-						&& (y2[i - 1] * y2[i] <= 0.0)) {
+				if (!present[j] && (y1[i - 1] * y1[i] <= 0.0) && (y2[i - 1] * y2[i] <= 0.0)) {
 					present[j] = true;
 					out.add(new Coords(eval[0] - inx2, eval[1] - iny2));
 
@@ -1706,7 +1681,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	@Override
 	public boolean isOnScreen() {
 		GeoLocus locusCurve = getLocus();
-		return defined && locusCurve.isDefined() && locusCurve.getPoints().size() > 0;
+		return defined && locusCurve.isDefined() && !locusCurve.getPoints().isEmpty();
 	}
 
 	@Override
@@ -1722,7 +1697,6 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	@Override
 	public synchronized void preventPathCreation() {
 		calcPath = false;
-
 	}
 
 	@Override
@@ -1756,25 +1730,20 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/**
 	 * make curve through given points
-	 * 
+	 *
 	 * @param points
 	 *            ArrayList of points
 	 */
 	public void throughPoints(ArrayList<GeoPointND> points) {
-		if ((int) Math.sqrt(9 + 8 * points.size()) != Math
-				.sqrt(9 + 8 * points.size())) {
+		if ((int) Math.sqrt(9 + 8 * points.size()) != Math.sqrt(9 + 8 * points.size())) {
 			setUndefined();
 			return;
 		}
 
 		int degree = (int) (0.5 * Math.sqrt(8 * (1 + points.size()))) - 1;
-		int realDegree = degree;
-
-		RealMatrix extendMatrix = new Array2DRowRealMatrix(points.size(),
-				points.size() + 1);
-		RealMatrix matrix = new Array2DRowRealMatrix(points.size(),
-				points.size());
-		double[][] coeffMatrix = new double[degree + 1][degree + 1];
+		RealMatrix extendMatrix = new Array2DRowRealMatrix(points.size(), points.size() + 1);
+		RealMatrix matrix = new Array2DRowRealMatrix(points.size(), points.size());
+		final double[][] coeffMatrix = new double[degree + 1][degree + 1];
 
 		DecompositionSolver solver;
 
@@ -1794,7 +1763,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		}
 
 		int solutionColumn = 0, noPoints = points.size();
-
+		int realDegree = degree;
 		do {
 			if (solutionColumn > noPoints) {
 				noPoints = noPoints - realDegree - 1;
@@ -1841,8 +1810,8 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			results[i] *= -1;
 		}
 
-		double[] partialSolution = ((ArrayRealVector) solver
-				.solve(new ArrayRealVector(results))).getDataRef();
+		double[] partialSolution =
+				((ArrayRealVector) solver.solve(new ArrayRealVector(results))).getDataRef();
 
 		double[] solution = new double[partialSolution.length + 1];
 
@@ -1850,8 +1819,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			if (i == solutionColumn - 1) {
 				solution[i] = 1;
 			} else {
-				solution[i] = DoubleUtil.isZero(partialSolution[j]) ? 0
-						: partialSolution[j];
+				solution[i] = isZero(partialSolution[j]) ? 0 : partialSolution[j];
 				j++;
 			}
 		}
@@ -1871,7 +1839,6 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				return;
 			}
 		}
-
 	}
 
 	/*
@@ -1879,24 +1846,17 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 */
 	private void setExpression() {
 		setDefined();
-		FunctionVariable x = new FunctionVariable(kernel, "x");
-		FunctionVariable y = new FunctionVariable(kernel, "y");
-		ExpressionNode expr = null;
+		FunctionVariable x = makeVariable("x");
+		FunctionVariable y = makeVariable("y");
+		ExpressionNode expr = new ExpressionNode(kernel, coeff[0][0]);
 		for (int i = 0; i <= degX; i++) {
 			// different rows have different lengths
-			for (int j = 0; j < coeff[i].length; j++) {
-				if (i == 0 && j == 0) {
-					expr = new ExpressionNode(kernel, coeff[0][0]);
-				} else {
-					expr = expr
-							.plus(x.wrap().power(i).multiply(y.wrap().power(j))
-									.multiplyR(coeff[i][j]));
-				}
+			for (int j = i == 0 ? 1 : 0; j < coeff[i].length; j++) {
+				expr = expr.plus(x.wrap().power(i).multiply(y.wrap().power(j)).multiplyR(coeff[i][j]));
 			}
 		}
-		setDefinition(
-				new Equation(kernel, expr, new MyDouble(kernel, 0)).wrap());
-		expression = new FunctionNVar(expr, new FunctionVariable[] { x, y });
+		setDefinition(new Equation(kernel, expr, new MyDouble(kernel, 0)).wrap());
+		expression = new FunctionNVar(expr, new FunctionVariable[] {x, y});
 	}
 
 	/*
@@ -1908,16 +1868,16 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			ExpressionNode expr = null;
 			int factorDegX = coeffSquarefree[factor].length - 1;
 
-			FunctionVariable x = new FunctionVariable(kernel, "x");
-			FunctionVariable y = new FunctionVariable(kernel, "y");
+			FunctionVariable x = makeVariable("x");
+			FunctionVariable y = makeVariable("y");
 			for (int i = 0; i <= factorDegX; i++) {
 				// different rows have different lengths
 				for (int j = 0; j < coeffSquarefree[factor][i].length; j++) {
 					if (i == 0 && j == 0) {
-						expr = new ExpressionNode(kernel,
-								coeffSquarefree[factor][0][0]);
+						expr = new ExpressionNode(kernel, coeffSquarefree[factor][0][0]);
 					} else {
-						expr = expr.plus(x.wrap().power(i)
+						expr = expr.plus(x.wrap()
+								.power(i)
 								.multiply(y.wrap().power(j))
 								.multiplyR(coeffSquarefree[factor][i][j]));
 					}
@@ -1926,9 +1886,12 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 			if (expr == null) {
 				expr = new ExpressionNode(kernel, Double.NaN);
 			}
-			factorExpression[factor] = new FunctionNVar(expr,
-					new FunctionVariable[] { x, y });
+			factorExpression[factor] = new FunctionNVar(expr, new FunctionVariable[] {x, y});
 		}
+	}
+
+	private FunctionVariable makeVariable(String name) {
+		return new FunctionVariable(kernel, name);
 	}
 
 	private void setCoeff(double[][][] coeffMatrix, boolean updatePath) {
@@ -1962,7 +1925,6 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		if (updatePath) {
 			updatePath();
 		}
-
 	}
 
 	private void doSetCoeff(double[][] coeffMatrix) {
@@ -1985,6 +1947,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	 *            string template
 	 * @return string representation of polynomial with given coefficients
 	 */
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
 	protected String toRawValueString(StringTemplate tpl0) {
 		if (coeff == null) {
 			return "";
@@ -2063,8 +2026,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				sb.append('{');
 				sb.append(exp);
 				sb.append('}');
-			} else if (tpl.getStringType().equals(StringType.GEOGEBRA_XML)
-					|| tpl.hasCASType()) {
+			} else if (tpl.getStringType().equals(StringType.GEOGEBRA_XML) || tpl.hasCASType()) {
 				sb.append('^');
 				sb.append(exp);
 			} else {
@@ -2073,17 +2035,17 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 				while (i > 0) {
 					int c = i % 10;
 					switch (c) {
-					case 1:
-						p = Unicode.SUPERSCRIPT_1 + p;
-						break;
-					case 2:
-						p = Unicode.SUPERSCRIPT_2 + p;
-						break;
-					case 3:
-						p = Unicode.SUPERSCRIPT_3 + p;
-						break;
-					default:
-						p = (char) (Unicode.SUPERSCRIPT_0 + c) + p;
+						case 1:
+							p = Unicode.SUPERSCRIPT_1 + p;
+							break;
+						case 2:
+							p = Unicode.SUPERSCRIPT_2 + p;
+							break;
+						case 3:
+							p = Unicode.SUPERSCRIPT_3 + p;
+							break;
+						default:
+							p = (char) (Unicode.SUPERSCRIPT_0 + c) + p;
 					}
 					i = i / 10;
 				}
@@ -2094,7 +2056,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	private static void appendMultiply(StringBuilder sb) {
 
-		if (sb.length() == 0) {
+		if (sb.isEmpty()) {
 			return;
 		}
 
@@ -2103,12 +2065,11 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		if (ch != '*' && ch != ' ') {
 			sb.append('*');
 		}
-
 	}
 
 	/**
 	 * Evaluate a factor of the curve of the given function.
-	 * 
+	 *
 	 * @param x
 	 *            x-coordinate
 	 * @param y
@@ -2123,7 +2084,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/**
 	 * Evaluate a factor of the curve of the given function.
-	 * 
+	 *
 	 * @param val
 	 *            the (x,y)-coordinates
 	 * @param factor
@@ -2147,7 +2108,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	/**
 	 * Evaluate the implicit curve at a certain position.
-	 * 
+	 *
 	 * @param val
 	 *            position
 	 * @return evaluated value
@@ -2167,7 +2128,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	}
 
 	@Override
-	final public char getLabelDelimiter() {
+	public final char getLabelDelimiter() {
 		return ':';
 	}
 
@@ -2195,11 +2156,11 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	@Override
 	public String[] getEquationVariables() {
-		
+
 		if (expression == null || expression.getFunctionVariables() == null) {
 			return null;
 		}
-		
+
 		ArrayList<String> vars = new ArrayList<>();
 		for (FunctionVariable var : expression.getFunctionVariables()) {
 			if (expression.getFunctionExpression().contains(var)) {
@@ -2211,7 +2172,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 
 	@Override
 	public DescriptionMode getDescriptionMode() {
-		if (equationForm == Form.USER) {
+		if (equationForm == Form.USER && isFreeOrExpression()) {
 			return DescriptionMode.VALUE;
 		}
 		return super.getDescriptionMode();
@@ -2244,6 +2205,9 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		updatePath();
 	}
 
+	/**
+	 * @return whether the defining expression evaluates to a number
+	 */
 	public boolean isValidType() {
 		return expression.getExpression().evaluatesToNumber(true);
 	}
@@ -2256,7 +2220,7 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 	/**
 	 * @param equationForm equation form, ignore if null
 	 */
-	public void setEquationForm(@CheckForNull Form equationForm) {
+	public void setEquationForm(@Nullable Form equationForm) {
 		if (equationForm != null) {
 			this.equationForm = equationForm;
 		}
@@ -2267,5 +2231,54 @@ public class GeoImplicitCurve extends GeoElement implements EuclidianViewCE,
 		if (other instanceof GeoImplicit) {
 			equationForm = ((GeoImplicit) other).getEquationForm();
 		}
+	}
+
+	@Override
+	public void updateCASEvalMap(TreeMap<String, String> casMap) {
+		expression.updateCASEvalMap(casMap);
+	}
+
+	@Override
+	public void clearCasEvalMap() {
+		expression.clearCasEvalMap();
+	}
+
+	@Override
+	public void setUsingCasCommand(
+			String ggbCasCmd,
+			AlgebraicExpression f,
+			boolean symbolic,
+			ArbitraryConstantRegistry arbconst) {
+		GeoImplicitCurve ff = (GeoImplicitCurve) f;
+		if (ff.isDefined() && ff.expression != null) {
+			FunctionNVar func = ff.expression.evalCasCommand(ggbCasCmd, symbolic, arbconst);
+			if (func == null) {
+				setUndefined();
+			} else {
+				fromFunction(func.getExpression());
+			}
+		} else {
+			setUndefined();
+		}
+	}
+
+	@Override
+	public String toSymbolicString(StringTemplate tpl) {
+		return toValueString(tpl);
+	}
+
+	@Override
+	public void printCASEvalMapXML(XMLStringBuilder sb) {
+		expression.printCASevalMapXML(sb);
+	}
+
+	@Override
+	public String getVarString(StringTemplate tpl) {
+		return expression.getVarString(tpl);
+	}
+
+	@Override
+	public FunctionVariable[] getFunctionVariables() {
+		return expression.getFunctionVariables();
 	}
 }

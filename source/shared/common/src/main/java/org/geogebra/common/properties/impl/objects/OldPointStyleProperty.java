@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.PointProperties;
@@ -31,6 +29,7 @@ import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.AbstractGeoElementDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.impl.objects.delegate.PointStylePropertyDelegate;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Point style
@@ -39,9 +38,9 @@ public class OldPointStyleProperty extends AbstractEnumeratedProperty<Integer>
 		implements IconsEnumeratedProperty<Integer> {
 
 	private static final PropertyResource[] icons = {
-			PropertyResource.ICON_POINT_STYLE_DOT, PropertyResource.ICON_POINT_STYLE_CROSS,
-			PropertyResource.ICON_POINT_STYLE_CIRCLE, PropertyResource.ICON_POINT_STYLE_PLUS,
-			PropertyResource.ICON_POINT_STYLE_FILLED_DIAMOND
+		PropertyResource.ICON_POINT_STYLE_DOT, PropertyResource.ICON_POINT_STYLE_CROSS,
+		PropertyResource.ICON_POINT_STYLE_CIRCLE, PropertyResource.ICON_POINT_STYLE_PLUS,
+		PropertyResource.ICON_POINT_STYLE_FILLED_DIAMOND
 	};
 
 	private final AbstractGeoElementDelegate delegate;
@@ -56,8 +55,7 @@ public class OldPointStyleProperty extends AbstractEnumeratedProperty<Integer>
 				EuclidianStyleConstants.POINT_STYLE_CROSS,
 				EuclidianStyleConstants.POINT_STYLE_CIRCLE,
 				EuclidianStyleConstants.POINT_STYLE_PLUS,
-				EuclidianStyleConstants.POINT_STYLE_FILLED_DIAMOND
-		));
+				EuclidianStyleConstants.POINT_STYLE_FILLED_DIAMOND));
 	}
 
 	@Override
@@ -66,7 +64,7 @@ public class OldPointStyleProperty extends AbstractEnumeratedProperty<Integer>
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 

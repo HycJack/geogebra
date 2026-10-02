@@ -58,46 +58,46 @@ class User {
 		this.color = color;
 	}
 
-	public void addSelection(EuclidianView view, String label) {
+	void addSelection(EuclidianView view, String label) {
 		selectedGeos.add(label);
 		view.repaintView();
 	}
 
-	public void addInteraction(EuclidianView view, String label) {
+	void addInteraction(EuclidianView view, String label) {
 		GeoElement geo = view.getApplication().getKernel().lookupLabel(label);
 		if (geo instanceof GeoLocusStroke && !selectedGeos.contains(label)) {
-			updatedGeos.computeIfAbsent(label, k -> new Timer() {
-				@Override
-				public void run() {
-					updatedGeos.remove(label);
-					view.repaintView();
-				}
-			}).schedule(2000);
+			updatedGeos
+					.computeIfAbsent(label, k -> new Timer() {
+						@Override
+						public void run() {
+							updatedGeos.remove(label);
+							view.repaintView();
+						}
+					})
+					.schedule(2000);
 			view.repaintView();
 		}
 	}
 
-	public void deselectAll(EuclidianView view) {
+	void deselectAll(EuclidianView view) {
 		selectedGeos.clear();
 		updatedGeos.clear();
 		view.repaintView();
 	}
 
-	public void removeSelection(String label) {
+	void removeSelection(String label) {
 		selectedGeos.remove(label);
 	}
 
-	public void paintInteractionBackgrounds(EuclidianView view, GGraphics2D graphics) {
+	void paintInteractionBackgrounds(EuclidianView view, GGraphics2D graphics) {
 		List<GeoElement> geos = getHighlightedGeos(view);
 		if (geos.size() == 1) {
 			GeoElement geo = geos.get(0);
 			Drawable d = (Drawable) view.getDrawableFor(geo);
 			if (drawAsBackground(d)) {
 				d.updateIfNeeded();
-				GBasicStroke selStroke = EuclidianStatic.getStroke(geo
-								.getLineThickness() / 2.0
-								+ 4,
-						EuclidianStyleConstants.LINE_TYPE_FULL);
+				GBasicStroke selStroke = EuclidianStatic.getStroke(
+						geo.getLineThickness() / 2.0 + 4, EuclidianStyleConstants.LINE_TYPE_FULL);
 				graphics.setStroke(selStroke);
 				graphics.setColor(color.deriveWithAlpha(geo.getLineOpacity()));
 				d.drawStroke(graphics);
@@ -105,7 +105,7 @@ class User {
 		}
 	}
 
-	public void paintInteractionBoxes(EuclidianView view, GGraphics2D graphics) {
+	void paintInteractionBoxes(EuclidianView view, GGraphics2D graphics) {
 		List<GeoElement> geos = getHighlightedGeos(view);
 
 		graphics.setColor(color);
@@ -117,10 +117,8 @@ class User {
 				RectangleTransformable transformableGeo = (RectangleTransformable) geo;
 				graphics.saveTransform();
 				graphics.transform(hasTransformation.getTransform());
-				graphics.draw(AwtFactory.getPrototype().newRectangle(
-						(int) transformableGeo.getWidth(),
-						(int) transformableGeo.getHeight()
-				));
+				graphics.draw(AwtFactory.getPrototype()
+						.newRectangle((int) transformableGeo.getWidth(), (int) transformableGeo.getHeight()));
 				graphics.restoreTransform();
 				pt = new GPoint2D(transformableGeo.getWidth(), 0);
 				hasTransformation.getTransform().transform(pt, pt);
@@ -151,9 +149,8 @@ class User {
 	private List<GeoElement> getHighlightedGeos(EuclidianView view) {
 		SelectionManager selection = view.getApplication().getSelectionManager();
 
-		Stream<String> startingStream = selectedGeos.isEmpty()
-				? updatedGeos.keySet().stream()
-				: selectedGeos.stream();
+		Stream<String> startingStream =
+				selectedGeos.isEmpty() ? updatedGeos.keySet().stream() : selectedGeos.stream();
 		return startingStream
 				.map((label) -> view.getApplication().getKernel().lookupLabel(label))
 				.filter((geo) -> !selection.containsSelectedGeo(geo))
@@ -173,7 +170,7 @@ class User {
 		return app.getActiveEuclidianView().getAbsoluteLeft() - app.getAbsLeft();
 	}
 
-	public void rename(GeoElement target) {
+	void rename(GeoElement target) {
 		String oldLabel = target.getOldLabel();
 		if (selectedGeos.contains(oldLabel)) {
 			selectedGeos.remove(oldLabel);

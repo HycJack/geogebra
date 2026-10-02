@@ -21,11 +21,12 @@ import java.util.LinkedList;
 /**
  * Abstract base class for all setting objects. Provides functionality for
  * setting listeners and batching.
- * 
+ *
  * @author Florian Sonner
  * @see "http://dev.geogebra.org/trac/wiki/GuiRefactoring"
  */
-public abstract class AbstractSettings implements Resettable {
+public abstract class AbstractSettings<T extends AbstractSettings<T>> implements Resettable {
+
 	/**
 	 * Running in batch mode: Only at the end of the batch mode listeners are
 	 * notified if settings changed.
@@ -40,7 +41,14 @@ public abstract class AbstractSettings implements Resettable {
 	/**
 	 * List with listeners.
 	 */
-	private LinkedList<SettingListener> listeners;
+	private final LinkedList<SettingListener<T>> listeners;
+
+	/**
+	 * No-op implementation to substitute platform-dependent settings.
+	 */
+	public static class Empty extends AbstractSettings<Empty> {
+		// non-settings
+	}
 
 	/**
 	 * New abstract settings.
@@ -53,17 +61,9 @@ public abstract class AbstractSettings implements Resettable {
 	 * @param listeners
 	 *            setting listeners
 	 */
-	public AbstractSettings(LinkedList<SettingListener> listeners) {
+	public AbstractSettings(LinkedList<SettingListener<T>> listeners) {
 		this.listeners = listeners;
 		notifyListeners();
-	}
-
-	/**
-	 * @param listeners
-	 *            setting listeners
-	 */
-	public void setListeners(LinkedList<SettingListener> listeners) {
-		this.listeners = listeners;
 	}
 
 	/**
@@ -83,9 +83,9 @@ public abstract class AbstractSettings implements Resettable {
 	}
 
 	void notifyListeners() {
-		LinkedList<SettingListener> clone = new LinkedList<>(listeners);
-		for (SettingListener listener : clone) {
-			listener.settingsChanged(this);
+		LinkedList<SettingListener<T>> clone = new LinkedList<>(listeners);
+		for (SettingListener<T> listener : clone) {
+			listener.settingsChanged((T) this);
 		}
 	}
 
@@ -115,28 +115,28 @@ public abstract class AbstractSettings implements Resettable {
 
 	/**
 	 * Add a new setting listener to be informed about setting changes.
-	 * 
+	 *
 	 * @param listener
 	 *            settings listener
 	 */
-	public final void addListener(SettingListener listener) {
+	public final void addListener(SettingListener<T> listener) {
 		listeners.add(listener);
 	}
 
 	/**
 	 * Remove a setting listener.
-	 * 
+	 *
 	 * @param listener
 	 *            settings listener
 	 */
-	public final void removeListener(SettingListener listener) {
+	public final void removeListener(SettingListener<T> listener) {
 		listeners.remove(listener);
 	}
 
 	/**
 	 * @return all listeners
 	 */
-	public LinkedList<SettingListener> getListeners() {
+	public LinkedList<SettingListener<T>> getListeners() {
 		return listeners;
 	}
 

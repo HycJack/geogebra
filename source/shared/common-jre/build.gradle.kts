@@ -3,7 +3,6 @@ plugins {
     jacoco
     alias(libs.plugins.geogebra.java.library)
     alias(libs.plugins.geogebra.pmd)
-    alias(libs.plugins.geogebra.checkstyle)
     alias(libs.plugins.geogebra.spotbugs)
 }
 
@@ -19,17 +18,16 @@ dependencies {
     implementation(project(":editor-base"))
 
     testImplementation(project(":ggbjdk"))
-    testImplementation(libs.junit)
     testImplementation(libs.hamcrest)
     testImplementation(libs.mockito.core)
 
-    // Junit 5 support with backward compatibility
-    testImplementation(platform(libs.junit5.bom))
-    testImplementation(libs.junit5.jupiter)
-    testImplementation(libs.junit5.vintage)
+    // JUnit Jupiter support
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.jupiter)
     // Add launcher explicitly to avoid legacy loading
     // https://docs.gradle.org/8.12/userguide/upgrading_version_8.html#manually_declaring_dependencies
-    testRuntimeOnly(libs.junit5.launcher)
+    testRuntimeOnly(libs.junit.launcher)
 
     testFixturesImplementation(project(":ggbjdk"))
     testFixturesImplementation(libs.junit)
@@ -39,6 +37,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    jvmArgs = listOf("-Xmx1g")
 }
 
 tasks.compileJava {
@@ -47,6 +46,7 @@ tasks.compileJava {
 
 tasks.test {
     ignoreFailures = System.getenv("CI") != null
+    jvmArgs = listOf("-Xmx1g")
 }
 
 val jacocoSources by configurations.creating {
@@ -63,7 +63,7 @@ val jacocoClasses by configurations.creating {
 }
 
 val sourceDirs = jacocoSources.files.filter {
-    it.isDirectory && it.absolutePath.endsWith("src/main/java")
+    it.isDirectory && it.absolutePath.replace("\\", "/").endsWith("src/main/java")
 }
 
 val classes = jacocoClasses.files.filter {
@@ -78,7 +78,7 @@ val classes = jacocoClasses.files.filter {
 tasks.jacocoTestReport {
     reports {
         xml.required = true
-        html.required = false
+        html.required = System.getenv("CI") == null
     }
     additionalSourceDirs(*sourceDirs.toTypedArray())
     additionalClassDirs(classes)

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -19,12 +19,14 @@ package org.geogebra.common.spreadsheet.kernel;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.BaseUnitTest;
+import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.algos.Algos;
 import org.geogebra.common.kernel.algos.GetCommand;
 import org.geogebra.common.kernel.commands.Commands;
@@ -34,27 +36,27 @@ import org.geogebra.common.main.settings.config.AppConfigGraphing;
 import org.geogebra.common.plugin.GeoClass;
 import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
+class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	private DefaultSpreadsheetCellProcessor processor;
 	private DefaultSpreadsheetCellDataSerializer serializer;
 
-	@Before
-	public void setAppConfig() {
+	@BeforeEach
+	void setAppConfig() {
 		getApp().setConfig(new AppConfigGraphing());
 		serializer = new DefaultSpreadsheetCellDataSerializer();
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		processor = new DefaultSpreadsheetCellProcessor(getKernel().getAlgebraProcessor());
 		getKernel().attach(new KernelTabularDataAdapter(getApp()));
 	}
 
 	@Test
-	public void testTextInput() {
+	void testTextInput() {
 		processor.process("(1, 1)", "A1");
 		assertEquals(GeoClass.TEXT, lookup("A1").getGeoClassType());
 		assertIsAuxiliary();
@@ -62,7 +64,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testTextInputWithQuotes() {
+	void testTextInputWithQuotes() {
 		processor.process("\"1+2\"", "A1");
 		assertThat(lookup("A1"), hasValue("1+2"));
 		assertIsAuxiliary();
@@ -70,16 +72,15 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testPointInput() {
+	void testPointInput() {
 		processor.process("=(1, 1)", "A1");
 		assertTrue(lookup("A1").isGeoPoint());
 		assertIsAuxiliary();
-		assertTrue("Points from spreadsheet should be visible.",
-				lookup("A1").isEuclidianVisible());
+		assertTrue(lookup("A1").isEuclidianVisible(), "Points from spreadsheet should be visible.");
 	}
 
 	@Test
-	public void testComputation() {
+	void testComputation() {
 		processor.process("=1 + 2", "A1");
 		assertNumberCellValue("A1", 3.0);
 		assertIsAuxiliary();
@@ -88,12 +89,11 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 
 	private void assertNumberCellValue(String cellName, double value) {
 		GeoElement a1 = lookup(cellName);
-		assertTrue(a1.isGeoNumeric()
-				&& DoubleUtil.isEqual(((GeoNumeric) a1).getDouble(), value));
+		assertTrue(a1.isGeoNumeric() && DoubleUtil.isEqual(((GeoNumeric) a1).getDouble(), value));
 	}
 
 	@Test
-	public void testNumberInput() {
+	void testNumberInput() {
 		shouldBeNumber("2");
 		shouldBeNumber("2.3456");
 		shouldBeNumber("-2.3456");
@@ -102,13 +102,13 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	private void shouldBeNumber(String number) {
 		processor.process(number, "A1");
 		GeoElement a1 = lookup("A1");
-		assertTrue("A1 is not a number", a1.isGeoNumeric());
+		assertTrue(a1.isGeoNumeric(), "A1 is not a number");
 		assertIsAuxiliary();
 		assertIsEuclidianInvisible();
 	}
 
 	@Test
-	public void testAddingNumbers() {
+	void testAddingNumbers() {
 		processor.process("2", "A1");
 		processor.process("3", "A2");
 		processor.process("=A1 + A2", "A3");
@@ -116,19 +116,19 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testSerializeText() {
+	void testSerializeText() {
 		processor.process("(1, 1)", "A1");
 		assertSerializedAs("(1, 1)", "A1");
 	}
 
 	@Test
-	public void testSerializePoint() {
+	void testSerializePoint() {
 		processor.process("=(1,1)", "A1");
 		assertSerializedAs("=(1,1)", "A1");
 	}
 
 	@Test
-	public void testSerializeComputation() {
+	void testSerializeComputation() {
 		processor.process("=1+ 2", "A1");
 		assertSerializedAs("=1+2", "A1");
 		assertIsAuxiliary();
@@ -136,22 +136,20 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	private void assertSerializedAs(String value, String cellName) {
-		assertEquals("The values do not match!", value,
-				serializer.getStringForEditor(lookup(cellName)));
+		assertEquals(
+				value, serializer.getStringForEditor(lookup(cellName)), "The values do not match!");
 	}
 
 	private void assertIsAuxiliary() {
-		assertTrue("The created element is not auxiliary!",
-				lookup("A1").isAuxiliaryObject());
+		assertTrue(lookup("A1").isAuxiliaryObject(), "The created element is not auxiliary!");
 	}
 
 	private void assertIsEuclidianInvisible() {
-		assertFalse("The created element is visible within the EV!",
-				lookup("A1").isEuclidianVisible());
+		assertFalse(lookup("A1").isEuclidianVisible(), "The created element is visible within the EV!");
 	}
 
 	@Test
-	public void testErrorShouldBeTextWithOriginalInput() {
+	void testErrorShouldBeTextWithOriginalInput() {
 		processor.process("=1+@", "A1");
 		GeoElement a1 = lookup("A1");
 		assertEquals(GeoClass.NUMERIC, a1.getGeoClassType());
@@ -159,7 +157,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testNoOperationForTextMinus() {
+	void testNoOperationForTextMinus() {
 		processor.process("7-2", "A1");
 		assertEquals(GeoClass.TEXT, lookup("A1").getGeoClassType());
 		processor.process("-7-2", "A1");
@@ -167,7 +165,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testNumericOrTextInputShouldHaveNoError() {
+	void testNumericOrTextInputShouldHaveNoError() {
 		processor.process("1", "A1");
 		GeoElement a1 = lookup("A1");
 		assertThat(getCommand(a1), nullValue());
@@ -179,7 +177,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void dependentObjectsShouldPropagateError() {
+	void dependentObjectsShouldPropagateError() {
 		processor.process("=1+", "A1");
 		GeoElement a1 = lookup("A1");
 		assertEquals(Commands.ParseToNumber, getCommand(a1));
@@ -198,7 +196,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInvalidInputShouldHaveError() {
+	void testInvalidInputShouldHaveError() {
 		processor.process("=1+%", "A1");
 		GeoElement a1 = lookup("A1");
 		assertEquals(GeoClass.NUMERIC, a1.getGeoClassType());
@@ -206,7 +204,24 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void handleCircularDefinitions() {
+	@Issue("APPS-7720")
+	void testInvalidInputWithBrackets() {
+		processor.process("=(", "A1");
+		GeoElement a1 = lookup("A1");
+		assertEquals(Commands.ParseToNumber, getCommand(a1));
+	}
+
+	@Test
+	@Issue("APPS-7720")
+	void testInvalidInputTextMode() {
+		processor.process("(", "A1");
+		GeoElement a1 = lookup("A1");
+		assertEquals(GeoClass.TEXT, a1.getGeoClassType());
+		assertEquals("(", a1.toValueString(StringTemplate.testTemplate));
+	}
+
+	@Test
+	void handleCircularDefinitions() {
 		add("A2=1");
 		add("B2=2");
 		add("B3=A2+B2");
@@ -217,7 +232,15 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void handleSelfReferencingDefinitions() {
+	@Issue("APPS-7880")
+	void emptyFunctionCallShouldHaveError() {
+		add("f(x)=x");
+		assertDoesNotThrow(() -> processor.process("=f()", "A1"));
+		assertEquals(Commands.ParseToNumber, getCommand(lookup("A1")));
+	}
+
+	@Test
+	void handleSelfReferencingDefinitions() {
 		processor.process("=A1", "A1");
 		assertEquals(Commands.ParseToNumber, getCommand(lookup("A1")));
 		assertThat(lookup("A1"), hasValue("?"));
@@ -230,23 +253,22 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 		assertEquals(Commands.ParseToNumber, getCommand(lookup("A3")));
 		assertThat(lookup("A3"), hasValue("?"));
 
-		assertEquals("A1,B3,A3",
-				String.join(",", getApp().getGgbApi().getAllObjectNames()));
+		assertEquals("A1,B3,A3", String.join(",", getApp().getGgbApi().getAllObjectNames()));
 	}
 
 	@Test
-	public void shouldAutoCreateZeroCells1() {
+	void shouldAutoCreateZeroCells1() {
 		processor.process("=A2+B2+1", "B3");
 		assertThat(lookup("A2"), hasValue("0"));
 		assertThat(lookup("B2"), hasValue("0"));
 		assertThat(lookup("B3"), hasValue("1"));
-		assertTrue("A2 should be empty", lookup("A2").isEmptySpreadsheetCell());
-		assertFalse("B3 should not be empty", lookup("B3").isEmptySpreadsheetCell());
+		assertTrue(lookup("A2").isEmptySpreadsheetCell(), "A2 should be empty");
+		assertFalse(lookup("B3").isEmptySpreadsheetCell(), "B3 should not be empty");
 	}
 
 	@Test
 	@Issue("APPS-5983")
-	public void shouldAutoCreateZeroCells2() {
+	void shouldAutoCreateZeroCells2() {
 		processor.process("=1", "A1");
 		processor.process("=A2", "B1");
 		assertThat(lookup("A2"), hasValue("0"));
@@ -254,19 +276,18 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-5983")
-	public void shouldAutoCreateZeroCells3() {
+	void shouldAutoCreateZeroCells3() {
 		processor.process("=3", "C3");
 		processor.process("=C4", "D4");
 		assertThat(lookup("D4"), hasValue("0"));
 	}
 
 	private GetCommand getCommand(GeoElement a1) {
-		return a1.getParentAlgorithm() == null ? null
-				: a1.getParentAlgorithm().getClassName();
+		return a1.getParentAlgorithm() == null ? null : a1.getParentAlgorithm().getClassName();
 	}
 
 	@Test
-	public void handleTextReferences() {
+	void handleTextReferences() {
 		add("A1=\"foobar\"");
 		processor.process("=A1", "B2");
 		assertSerializedAs("=A1", "B2");
@@ -280,7 +301,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-6628")
-	public void emptyStringInEmptyCellShouldHaveNoEffect() {
+	void emptyStringInEmptyCellShouldHaveNoEffect() {
 		activateUndo();
 		processor.process("", "A2");
 		assertNull(lookup("A2"));
@@ -289,7 +310,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-6628")
-	public void emptyStringInExistingCellShouldDelete() {
+	void emptyStringInExistingCellShouldDelete() {
 		activateUndo();
 		add("A2=42");
 		getApp().storeUndoInfo();
@@ -302,7 +323,7 @@ public class DefaultSpreadsheetCellProcessorTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-6761")
-	public void invalidCellReferenceShouldNotLeadToMultiplication() {
+	void invalidCellReferenceShouldNotLeadToMultiplication() {
 		processor.process("=2", "A1");
 		// Valid cell reference
 		processor.process("=A1111111111", "B1");

@@ -18,12 +18,12 @@ package org.geogebra.web.html5.util.debug;
 
 import java.util.Map;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.util.debug.Analytics;
+import org.geogebra.gwtutil.JsObject;
 import org.geogebra.web.html5.util.debug.firebase.Firebase;
 import org.geogebra.web.html5.util.debug.firebase.FirebaseAnalytics;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
@@ -37,21 +37,20 @@ public class AnalyticsW extends Analytics {
 	 */
 	public AnalyticsW() {
 		analytics = Firebase.get();
-		if (!"function".equals(Js.typeof(Js.asPropertyMap(analytics).get("logEvent")))) {
+		if (!"function".equals(Js.typeof(JsObject.of(analytics).get("logEvent")))) {
 			throw new IllegalStateException();
 		}
 	}
 
 	@Override
-	protected void recordEvent(String name, @CheckForNull Map<String, Object> params) {
+	protected void recordEvent(String name, @Nullable Map<String, Object> params) {
 		JsPropertyMap<Object> map = params != null ? convertToJsPropertyMap(params) : null;
 		analytics.logEvent(name, map);
 	}
 
 	@Override
-	protected void setDefaultEventParametersInternal(@Nonnull Map<String, Object> params) {
-		if ("function".equals(Js.typeof(Js.asPropertyMap(analytics)
-				.get("setDefaultEventParameters")))) {
+	protected void setDefaultEventParametersInternal(@NonNull Map<String, Object> params) {
+		if ("function".equals(Js.typeof(JsObject.of(analytics).get("setDefaultEventParameters")))) {
 			analytics.setDefaultEventParameters(convertToJsPropertyMap(params));
 		}
 	}

@@ -20,10 +20,10 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoText;
 
 /**
- * ReTeX based implementation of AV Text
+ * Algebra view item for simple texts.
  *
  */
-public class TextTreeItem extends LaTeXTreeItem {
+public final class TextTreeItem extends LaTeXTreeItem {
 
 	/**
 	 * @param geo0
@@ -31,6 +31,7 @@ public class TextTreeItem extends LaTeXTreeItem {
 	 */
 	public TextTreeItem(GeoElement geo0) {
 		super(geo0);
+		buildGui();
 	}
 
 	@Override
@@ -46,10 +47,12 @@ public class TextTreeItem extends LaTeXTreeItem {
 
 		content.clear();
 
-		((GeoText) geo).getDescriptionForAV(
-				new DOMIndexHTMLBuilder(getDefinitionValuePanel(), app));
+		((GeoText) geo).getDescriptionForAV(new DOMIndexHTMLBuilder(getDefinitionValuePanel(), app));
 		content.add(getDefinitionValuePanel());
-		getDefinitionValuePanel().getElement().addClassName("textWrap");
+		getDefinitionValuePanel().addStyleName("textWrap");
+		// make sure these style names are present after each update
+		content.addStyleName("customScrollbar");
+		content.addStyleName("singleRow");
 	}
 
 	@Override

@@ -31,17 +31,19 @@ import org.geogebra.common.util.debug.Log;
 import org.junit.Test;
 
 public class ArticleTest {
+	/**
+	 * TODO turn this into an actual test, check that all parameters are documented
+	 */
 	@Test
+	@SuppressWarnings("PMD.SystemPrintln")
 	public void documentedParameters() {
 		Method[] mtds = AppletParameters.class.getMethods();
 		TreeSet<String> documented = new TreeSet<>();
 		for (Method mtd : mtds) {
 			if (mtd.getName().contains("Data")) {
-				documented.add(uncapitalize(
-						mtd.getName().replace("getDataParam", "")));
-				System.out.println("\"" + uncapitalize(
-								mtd.getName().replace("getDataParam", ""))
-						+ "\":\"boolean\",");
+				documented.add(uncapitalize(mtd.getName().replace("getDataParam", "")));
+				System.out.println(
+						"\"" + uncapitalize(mtd.getName().replace("getDataParam", "")) + "\":\"boolean\",");
 			}
 		}
 		try {
@@ -51,13 +53,13 @@ public class ArticleTest {
 			huc.setConnectTimeout(10000);
 			huc.setRequestMethod("GET");
 			huc.connect();
-			String answer = "", s;
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					huc.getInputStream(), StandardCharsets.UTF_8));
-			answer = in.readLine(); // the last line will never get a "\n" on
+			String s;
+			BufferedReader in =
+					new BufferedReader(new InputStreamReader(huc.getInputStream(), StandardCharsets.UTF_8));
+			String answer = in.readLine(); // the last line will never get a "\n" on
 			// its end
 			while ((s = in.readLine()) != null) {
-				if (!("".equals(answer))) {
+				if (!"".equals(answer)) {
 					// ignore them
 					answer += "\n";
 				}
@@ -65,11 +67,13 @@ public class ArticleTest {
 			}
 			JSONTokener tokener = new JSONTokener(answer);
 			JSONObject response = new JSONObject(tokener);
-			String wiki =
-					response.getJSONObject("query").getJSONObject("pages")
-							.getJSONObject("51").getJSONArray("revisions")
-							.getJSONObject(0)
-							.getString("*");
+			String wiki = response
+					.getJSONObject("query")
+					.getJSONObject("pages")
+					.getJSONObject("51")
+					.getJSONArray("revisions")
+					.getJSONObject(0)
+					.getString("*");
 			String[] rows = wiki.split("\\|-");
 			for (String row : rows) {
 				String[] cells = row.split("\\n");

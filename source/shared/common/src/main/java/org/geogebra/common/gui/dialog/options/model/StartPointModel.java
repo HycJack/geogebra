@@ -26,6 +26,7 @@ import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.error.ErrorHandler;
 import org.geogebra.common.main.error.ErrorHelper;
+import org.geogebra.common.properties.impl.objects.PlacementProperty;
 import org.geogebra.common.util.StringUtil;
 
 public class StartPointModel extends MultipleGeosModel {
@@ -59,7 +60,6 @@ public class StartPointModel extends MultipleGeosModel {
 				equalLocation = false;
 				break;
 			}
-
 		}
 
 		GeoPointND p = geo0.getStartPoint();
@@ -68,7 +68,6 @@ public class StartPointModel extends MultipleGeosModel {
 		} else {
 			getListener().setSelectedIndex(-1);
 		}
-
 	}
 
 	@Override
@@ -80,8 +79,7 @@ public class StartPointModel extends MultipleGeosModel {
 		GeoPointND newLoc = null;
 		handler.resetError();
 		if (!StringUtil.emptyTrim(strLoc)) {
-			newLoc = kernel.getAlgebraProcessor().evaluateToPoint(strLoc,
-					handler, true);
+			newLoc = kernel.getAlgebraProcessor().evaluateToPoint(strLoc, handler, true);
 		}
 		if (newLoc == null) {
 			return;
@@ -116,7 +114,8 @@ public class StartPointModel extends MultipleGeosModel {
 		if (!(geo instanceof Locateable && !((Locateable) geo).isAlwaysFixed())
 				|| geo.isGeoImage()
 				|| geo.getParentAlgorithm() instanceof AlgoVector
-				|| isAbsoluteLocation(geo)) {
+				|| isAbsoluteLocation(geo)
+				|| PlacementProperty.isDependentTextCommand(geo)) {
 			valid = false;
 		}
 		return valid;

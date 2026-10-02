@@ -32,7 +32,7 @@ import jsinterop.base.JsPropertyMap;
  * API exporter for evaluator app
  */
 @JsType
-public class EvaluatorExportedApi implements ExportedApi {
+public final class EvaluatorExportedApi implements ExportedApi {
 
 	private final EvaluatorActivity evaluatorActivity;
 
@@ -60,49 +60,79 @@ public class EvaluatorExportedApi implements ExportedApi {
 		this.scriptManager = scriptManager;
 	}
 
+	/**
+	 * Remove from DOM and remove global JS variables.
+	 */
 	public void remove() {
 		ggbAPI.removeApplet();
 		scriptManager.export(null);
 	}
 
+	/**
+	 * @return state of the editor
+	 */
 	public Object getEditorState() {
 		JsPropertyMap<Object> jsObject = JsPropertyMap.of();
-		ScriptManagerW
-				.addToJsObject(jsObject, evaluatorActivity.getEditorAPI().getEvaluatorValue());
+		ScriptManagerW.addToJsObject(jsObject, evaluatorActivity.getEditorAPI().getEvaluatorValue());
 
 		return jsObject;
 	}
 
+	/**
+	 * Evaluate input in LaTeX format.
+	 * @param formula input
+	 */
 	public void evalLaTeX(String formula) {
 		evaluatorActivity.getEditorAPI().evalLaTeX(formula);
 	}
 
+	/**
+	 * Evaluate input in ascii-math (GeoGebra) format
+	 * @param formula input
+	 */
 	public void evalInput(String formula) {
 		evaluatorActivity.getEditorAPI().evalInput(formula);
 	}
 
-	public void exportImage(JsPropertyMap<String> settings,
-			MathFieldExporter.ImageConsumer callback) {
+	/**
+	 * Export content as image
+	 * @param settings e.g. {transparent: false, type: 'png'}
+	 * @param callback callback that receives the image
+	 */
+	public void exportImage(
+			JsPropertyMap<String> settings, MathFieldExporter.ImageConsumer callback) {
 		String type = Js.isTruthy(settings) ? settings.get("type") : null;
 		evaluatorActivity.exportImage(type, Js.isTruthy(settings.get("transparent")), callback);
 	}
 
+	/**
+	 * @param state new editor state
+	 */
 	public void setEditorState(Object state) {
-		String stateString = JsEval.isJSString(state) ? Js.asString(state)
-				: Global.JSON.stringify(state);
+		String stateString =
+				JsEval.isJSString(state) ? Js.asString(state) : Global.JSON.stringify(state);
 		evaluatorActivity.getEditorAPI().setEditorState(stateString);
 	}
 
+	/**
+	 * Register a listener.
+	 * @param JSFunctionName function name of function instance
+	 */
 	public void registerClientListener(Object JSFunctionName) {
 		ggbAPI.registerClientListener(JSFunctionName);
 	}
 
+	/**
+	 * Open the onscreen keyboard.
+	 */
 	public void openKeyboard() {
 		evaluatorActivity.getEditor().forceKeyboardVisibility(true);
 	}
 
+	/**
+	 * Close the onscreen keyboard.
+	 */
 	public void closeKeyboard() {
 		evaluatorActivity.getEditor().forceKeyboardVisibility(false);
 	}
-
 }

@@ -16,30 +16,28 @@
 
 package org.geogebra.editor.share.catalog;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.editor.share.input.Character;
 import org.geogebra.editor.share.util.Unicode;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Factory for creating custom function templates.
  */
 public class FunctionTemplateFactory {
 
-	private static final Parameter[] DEFAULT_PARAMETERS = new Parameter[]{
-			Parameter.BASIC, Parameter.BASIC};
-	private static final FunctionTemplate APPLY = new FunctionTemplate(Tag.APPLY, null,
-			DEFAULT_PARAMETERS);
+	private static final Parameter[] DEFAULT_PARAMETERS =
+			new Parameter[] {Parameter.BASIC, Parameter.BASIC};
+	private static final FunctionTemplate APPLY =
+			new FunctionTemplate(Tag.APPLY, null, DEFAULT_PARAMETERS);
 	private static final FunctionTemplate APPLY_SQUARE =
-			new FunctionTemplate(Tag.APPLY_SQUARE, null,
-					DEFAULT_PARAMETERS);
+			new FunctionTemplate(Tag.APPLY_SQUARE, null, DEFAULT_PARAMETERS);
 
 	/**
 	 * @param name function name
 	 * @param square use [ rather than (
 	 * @return function
 	 */
-	@CheckForNull FunctionTemplate createFunction(String name, boolean square) {
+	@Nullable FunctionTemplate createFunction(String name, boolean square) {
 		if (!isAcceptable(name)) {
 			return null;
 		}
@@ -54,18 +52,14 @@ public class FunctionTemplateFactory {
 	public static boolean isAcceptable(String functionName) {
 		// Accept only functions that consist of no special characters
 		String stem = functionName;
-		while (!stem.isEmpty()
-				&& primeOrPower(stem.charAt(stem.length() - 1))) {
+		while (!stem.isEmpty() && primeOrPower(stem.charAt(stem.length() - 1))) {
 			stem = stem.substring(0, stem.length() - 1);
 		}
-		return !stem.isEmpty()
-				&& Character.areLettersOrDigits(stem)
-				&& containsLetter(stem);
+		return !stem.isEmpty() && Character.areLettersOrDigits(stem) && containsLetter(stem);
 	}
 
 	private static boolean primeOrPower(char c) {
-		return c == '\'' || c == Unicode.SUPERSCRIPT_MINUS
-				|| Unicode.isSuperscriptDigit(c);
+		return c == '\'' || c == Unicode.SUPERSCRIPT_MINUS || Unicode.isSuperscriptDigit(c);
 	}
 
 	private static boolean containsLetter(String functionName) {

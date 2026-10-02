@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -56,7 +56,7 @@ import org.geogebra.desktop.util.GuiResourcesD;
 
 /**
  * View for properties
- * 
+ *
  * @author mathieu
  */
 public class PropertiesViewD extends PropertiesView implements SetLabels {
@@ -75,6 +75,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	private OptionsAdvancedD advancedPanel;
 	private OptionsLayoutD layoutPanel;
 	private OptionsAlgebraD algebraPanel;
+	private OptionsObjectD objectPanel;
 
 	private Object selectedOptionPanel = null;
 
@@ -87,7 +88,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 
 	/**************************************************
 	 * Constructor
-	 * 
+	 *
 	 * @param app application
 	 */
 	public PropertiesViewD(AppD app) {
@@ -113,7 +114,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		setLabels();
 
 		app.setDefaultCursor(); // remove this if init object properties is
-								// faster
+		// faster
 	}
 
 	// ============================================
@@ -162,6 +163,10 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		getObjectPanel().forgetGeoAdded();
 	}
 
+	private OptionsObjectD getObjectPanel() {
+		return objectPanel;
+	}
+
 	/**
 	 * apply current panel modifications
 	 */
@@ -170,12 +175,11 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		if (selectedOptionPanel != null) {
 			((OptionPanelD) selectedOptionPanel).applyModifications();
 		}
-
 	}
 
 	/**
 	 * set the current panel selected/unselected
-	 * 
+	 *
 	 * @param isVisible
 	 *            visible
 	 */
@@ -184,7 +188,6 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		if (selectedOptionPanel != null) {
 			((OptionPanelD) selectedOptionPanel).setSelected(isVisible);
 		}
-
 	}
 
 	@Override
@@ -199,8 +202,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 			((OptionPanelD) selectedOptionPanel).setSelected(false);
 		}
 
-		if (!isIniting && selectedOptionType == type
-				&& type != OptionType.EUCLIDIAN_FOR_PLANE) {
+		if (!isIniting && selectedOptionType == type && type != OptionType.EUCLIDIAN_FOR_PLANE) {
 			updateTitleBar();
 			return;
 		}
@@ -212,8 +214,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		mainPanel.removeAll();
 		selectedOptionPanel = getOptionPanel(type);
 
-		mainPanel.add(getOptionPanel(type).getWrappedPanel(),
-				BorderLayout.CENTER);
+		mainPanel.add(getOptionPanel(type).getWrappedPanel(), BorderLayout.CENTER);
 
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -251,12 +252,10 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 			layoutPanel.updateGUI();
 		}
 		if (getObjectPanel() != null) {
-			((OptionsObjectD) getObjectPanel())
-					.setVisible(selectedOptionType == OptionType.OBJECTS);
+			getObjectPanel().setVisible(selectedOptionType == OptionType.OBJECTS);
 		}
 
 		setLabels();
-
 	}
 
 	/**
@@ -273,110 +272,106 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 
 	/**
 	 * update panel GUI
-	 * 
+	 *
 	 * @param id
 	 *            view id
 	 */
 	public void updatePanelGUI(int id) {
 		switch (id) {
-		default:
-			// do nothing
-			break;
-		case App.VIEW_EUCLIDIAN:
-			if (euclidianPanel != null) {
-				euclidianPanel.updateGUI();
-			}
-			break;
-		case App.VIEW_EUCLIDIAN2:
-			if (euclidianPanel2 != null) {
-				euclidianPanel2.updateGUI();
-			}
-			break;
-		case App.VIEW_SPREADSHEET:
-			if (spreadsheetPanel != null) {
-				spreadsheetPanel.updateGUI();
-			}
-			break;
-		case App.VIEW_CAS:
-			if (casPanel != null) {
-				casPanel.updateGUI();
-			}
-			break;
+			default:
+				// do nothing
+				break;
+			case App.VIEW_EUCLIDIAN:
+				if (euclidianPanel != null) {
+					euclidianPanel.updateGUI();
+				}
+				break;
+			case App.VIEW_EUCLIDIAN2:
+				if (euclidianPanel2 != null) {
+					euclidianPanel2.updateGUI();
+				}
+				break;
+			case App.VIEW_SPREADSHEET:
+				if (spreadsheetPanel != null) {
+					spreadsheetPanel.updateGUI();
+				}
+				break;
+			case App.VIEW_CAS:
+				if (casPanel != null) {
+					casPanel.updateGUI();
+				}
+				break;
 		}
 	}
 
 	/**
 	 * Returns the option panel for the given type. If the panel does not exist,
 	 * a new one is constructed
-	 * 
+	 *
 	 * @param type option type
 	 * @return option panel
 	 */
 	public OptionPanelD getOptionPanel(OptionType type) {
 		switch (type) {
-		case DEFAULTS:
-			if (defaultsPanel == null) {
-				defaultsPanel = new OptionsDefaultsD((AppD) app);
-			}
-			return defaultsPanel;
+			case DEFAULTS:
+				if (defaultsPanel == null) {
+					defaultsPanel = new OptionsDefaultsD((AppD) app);
+				}
+				return defaultsPanel;
 
-		case CAS:
-			if (casPanel == null) {
-				casPanel = new OptionsCASD((AppD) app);
-			}
-			return casPanel;
+			case CAS:
+				if (casPanel == null) {
+					casPanel = new OptionsCASD((AppD) app);
+				}
+				return casPanel;
 
-		case EUCLIDIAN:
-			if (euclidianPanel == null) {
-				euclidianPanel = new OptionsEuclidianD<>(
-						(AppD) app,
-						((AppD) app).getEuclidianView1());
-				euclidianPanel.setLabels();
-				// euclidianPanel.setView(((AppD) app).getEuclidianView1());
-			}
+			case EUCLIDIAN:
+				if (euclidianPanel == null) {
+					euclidianPanel = new OptionsEuclidianD<>((AppD) app, ((AppD) app).getEuclidianView1());
+					euclidianPanel.setLabels();
+					// euclidianPanel.setView(((AppD) app).getEuclidianView1());
+				}
 
-			return euclidianPanel;
+				return euclidianPanel;
 
-		case EUCLIDIAN2:
-			if (euclidianPanel2 == null) {
-				euclidianPanel2 = new OptionsEuclidianD<>((AppD) app,
-						((AppD) app).getEuclidianView2(1));
-				euclidianPanel2.setLabels();
-				// euclidianPanel2.setView(((AppD) app).getEuclidianView2());
-			}
+			case EUCLIDIAN2:
+				if (euclidianPanel2 == null) {
+					euclidianPanel2 = new OptionsEuclidianD<>((AppD) app, ((AppD) app).getEuclidianView2(1));
+					euclidianPanel2.setLabels();
+					// euclidianPanel2.setView(((AppD) app).getEuclidianView2());
+				}
 
-			return euclidianPanel2;
+				return euclidianPanel2;
 
-		case SPREADSHEET:
-			if (spreadsheetPanel == null) {
-				spreadsheetPanel = new OptionsSpreadsheetD((AppD) app);
-			}
-			return spreadsheetPanel;
+			case SPREADSHEET:
+				if (spreadsheetPanel == null) {
+					spreadsheetPanel = new OptionsSpreadsheetD((AppD) app);
+				}
+				return spreadsheetPanel;
 
-		case GLOBAL:
-			if (advancedPanel == null) {
-				advancedPanel = new OptionsAdvancedD((AppD) app);
-			}
-			return advancedPanel;
+			case GLOBAL:
+				if (advancedPanel == null) {
+					advancedPanel = new OptionsAdvancedD((AppD) app);
+				}
+				return advancedPanel;
 
-		case LAYOUT:
-			if (layoutPanel == null) {
-				layoutPanel = new OptionsLayoutD((AppD) app);
-			}
-			return layoutPanel;
+			case LAYOUT:
+				if (layoutPanel == null) {
+					layoutPanel = new OptionsLayoutD((AppD) app);
+				}
+				return layoutPanel;
 
-		case OBJECTS:
-			if (getObjectPanel() == null) {
-				setObjectPanel(new OptionsObjectD((AppD) app));
-				((OptionsObjectD) getObjectPanel()).setMinimumSize(
-						((OptionsObjectD) getObjectPanel()).getPreferredSize());
-			}
-			return (OptionPanelD) getObjectPanel();
-		case ALGEBRA:
-			if (algebraPanel == null) {
-				algebraPanel = new OptionsAlgebraD((AppD) app);
-			}
-			return algebraPanel;
+			case OBJECTS:
+				if (getObjectPanel() == null) {
+					objectPanel = new OptionsObjectD((AppD) app);
+					objectPanel.setMinimumSize(objectPanel.getPreferredSize());
+				}
+				return objectPanel;
+			case ALGEBRA:
+				if (algebraPanel == null) {
+					algebraPanel = new OptionsAlgebraD((AppD) app);
+				}
+				return algebraPanel;
 		}
 		return null;
 	}
@@ -393,7 +388,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return new properties style bar
 	 */
 	protected PropertiesStyleBarD newPropertiesStyleBar() {
@@ -425,7 +420,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 			advancedPanel.setLabels();
 		}
 		if (getObjectPanel() != null) {
-			((SetLabels) getObjectPanel()).setLabels();
+			getObjectPanel().setLabels();
 		}
 		if (layoutPanel != null) {
 			layoutPanel.setLabels();
@@ -434,7 +429,6 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		updateStyleBar();
 		styleBar.setLabels();
 		updateTitleBar();
-
 	}
 
 	@Override
@@ -445,10 +439,11 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		}
 	}
 
-	@Override
 	protected void updateTitleBar() {
-		((LayoutD) app.getGuiManager().getLayout()).getDockManager()
-				.getPanel(App.VIEW_PROPERTIES).updateTitleBar();
+		((LayoutD) app.getGuiManager().getLayout())
+				.getDockManager()
+				.getPanel(App.VIEW_PROPERTIES)
+				.updateTitleBar();
 	}
 
 	// //////////////////////////////////////////////////////
@@ -478,19 +473,17 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	@Override
 	public void add(GeoElement geo) {
 		getObjectPanel().add(geo);
-		((OptionsObjectD) getObjectPanel()).getTree().add(geo);
+		getObjectPanel().getTree().add(geo);
 		styleBar.setObjectButtonEnable(true);
-
 	}
 
 	@Override
 	public void remove(GeoElement geo) {
 		// ((OptionsObjectD) objectPanel).updateIfInSelection(geo);
-		((OptionsObjectD) getObjectPanel()).getTree().remove(geo);
+		getObjectPanel().getTree().remove(geo);
 		if (app.getKernel().isEmpty()) {
 			styleBar.setObjectButtonEnable(false);
 		}
-
 	}
 
 	@Override
@@ -499,10 +492,9 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 			return;
 		}
 
-		((OptionsObjectD) getObjectPanel()).rename(geo);
-		((OptionsObjectD) getObjectPanel()).getTree().rename(geo);
+		getObjectPanel().rename(geo);
+		getObjectPanel().getTree().rename(geo);
 		updateTitleBar();
-
 	}
 
 	@Override
@@ -514,9 +506,8 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 
 		// updateSelection();
 		// propPanel.updateSelection(new GeoElement[] {geo});
-		((OptionsObjectD) getObjectPanel()).updateIfInSelection(geo);
-		((OptionsObjectD) getObjectPanel()).getTree().update(geo);
-
+		getObjectPanel().updateIfInSelection(geo);
+		getObjectPanel().getTree().update(geo);
 	}
 
 	@Override
@@ -526,47 +517,38 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 			return;
 		}
 
-		((OptionsObjectD) getObjectPanel()).updateSelection(
-				app.getSelectionManager().getSelectedGeos());
-		((OptionsObjectD) getObjectPanel()).getTree().updateVisualStyle(geo, prop);
-
+		getObjectPanel().updateSelection(app.getSelectionManager().getSelectedGeos());
+		getObjectPanel().getTree().updateVisualStyle(geo, prop);
 	}
 
 	@Override
 	public void updateAuxiliaryObject(GeoElement geo) {
-
 		if (!isShowing()) {
 			return;
 		}
 
-		((OptionsObjectD) getObjectPanel()).updateIfInSelection(geo);
-		((OptionsObjectD) getObjectPanel()).getTree().updateAuxiliaryObject(geo);
-
+		getObjectPanel().updateIfInSelection(geo);
+		getObjectPanel().getTree().updateAuxiliaryObject(geo);
 	}
 
 	@Override
 	public void repaintView() {
-
 		if (!isShowing()) {
 			return;
 		}
-
 		if (getObjectPanel() != null) {
-			((OptionsObjectD) getObjectPanel()).getTree().repaint();
+			getObjectPanel().getTree().repaint();
 		}
-
 	}
 
 	@Override
 	public void reset() {
-		((OptionsObjectD) getObjectPanel()).getTree().repaint();
-
+		getObjectPanel().getTree().repaint();
 	}
 
 	@Override
 	public void clearView() {
-		((OptionsObjectD) getObjectPanel()).getTree().clearView();
-
+		getObjectPanel().getTree().clearView();
 	}
 
 	@Override
@@ -583,22 +565,16 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 
 		// close undocked properties view when setting mode
 		// if properties view covers a part of the main window
-		DockManagerD manager = ((LayoutD) app.getGuiManager().getLayout())
-				.getDockManager();
+		DockManagerD manager = ((LayoutD) app.getGuiManager().getLayout()).getDockManager();
 		DockPanelD panel = manager.getPanel(getViewID());
 		if (panel.isInFrame()) {
 			Rectangle panelRectangle = panel.getFrameBounds();
-			Rectangle mainWindowRectangle = ((AppD) app).getMainComponent()
-					.getBounds();
+			Rectangle mainWindowRectangle = ((AppD) app).getMainComponent().getBounds();
 
-			boolean outside = (panelRectangle.x > mainWindowRectangle.x
-					+ mainWindowRectangle.width)
-					|| (panelRectangle.x
-							+ panelRectangle.width < mainWindowRectangle.x)
-					|| (panelRectangle.y > mainWindowRectangle.y
-							+ mainWindowRectangle.height)
-					|| (panelRectangle.y
-							+ panelRectangle.height < mainWindowRectangle.y);
+			boolean outside = (panelRectangle.x > mainWindowRectangle.x + mainWindowRectangle.width)
+					|| (panelRectangle.x + panelRectangle.width < mainWindowRectangle.x)
+					|| (panelRectangle.y > mainWindowRectangle.y + mainWindowRectangle.height)
+					|| (panelRectangle.y + panelRectangle.height < mainWindowRectangle.y);
 
 			if (!outside) {
 				manager.closePanel(panel, false);
@@ -606,7 +582,6 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		}
 
 		this.mode = mode;
-
 	}
 
 	@Override
@@ -625,10 +600,9 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 			return;
 		}
 
-		ArrayList<GeoElement> geos = app.getSelectionManager()
-				.getSelectedGeos();
+		ArrayList<GeoElement> geos = app.getSelectionManager().getSelectedGeos();
 
-		if (geos.size() > 0) {
+		if (!geos.isEmpty()) {
 			updateSelection(removeAllConstants(geos));
 		}
 	}
@@ -636,28 +610,27 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	@Override
 	public void updateSelection(ArrayList<GeoElement> geos) {
 
-		if (geos.size() > 0) {
+		if (!geos.isEmpty()) {
 			if (!stayInCurrentPanel()) {
 				setObjectPanel(geos);
 			}
 		} else {
 			setOptionPanelRegardingFocus(true);
 		}
-
 	}
 
 	private void setObjectPanel(ArrayList<GeoElement> geos) {
 
-		if (geos.size() == 0) {
+		if (geos.isEmpty()) {
 			app.getSelectionManager().setFirstGeoSelectedForPropertiesView();
 
-			GeoElement geo = app.getSelectionManager()
-					.setFirstGeoSelectedForPropertiesView();
+			GeoElement geo = app.getSelectionManager().setFirstGeoSelectedForPropertiesView();
 			if (geo == null) {
 				// if no first geo, close properties view if object panel
 				// visible
 				if (selectedOptionType == OptionType.OBJECTS) {
-					((LayoutD) app.getGuiManager().getLayout()).getDockManager()
+					((LayoutD) app.getGuiManager().getLayout())
+							.getDockManager()
 							.closePanel(getViewID(), false);
 				}
 
@@ -674,7 +647,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 
 	@Override
 	protected void updateObjectPanelSelection(ArrayList<GeoElement> geos) {
-		((OptionsObjectD) getObjectPanel()).updateSelection(geos);
+		getObjectPanel().updateSelection(geos);
 		updateTitleBar();
 		styleBar.setObjectsToolTip();
 	}
@@ -682,15 +655,15 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	@Override
 	protected void setSelectedTab(OptionType type) {
 		switch (type) {
-		default:
-			// do nothing
-			break;
-		case EUCLIDIAN:
-			euclidianPanel.setSelectedTab(getSelectedTab());
-			break;
-		case EUCLIDIAN2:
-			euclidianPanel2.setSelectedTab(getSelectedTab());
-			break;
+			default:
+				// do nothing
+				break;
+			case EUCLIDIAN:
+				euclidianPanel.setSelectedTab(getSelectedTab());
+				break;
+			case EUCLIDIAN2:
+				euclidianPanel2.setSelectedTab(getSelectedTab());
+				break;
 		}
 	}
 
@@ -699,7 +672,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	 */
 	public void windowPanel() {
 		applyModifications();
-		((OptionsObjectD) getObjectPanel()).setGeoTreeVisible();
+		getObjectPanel().setGeoTreeVisible();
 	}
 
 	/**
@@ -707,7 +680,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	 */
 	public void unwindowPanel() {
 		applyModifications();
-		((OptionsObjectD) getObjectPanel()).setGeoTreeNotVisible();
+		getObjectPanel().setGeoTreeNotVisible();
 	}
 
 	/**
@@ -726,7 +699,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	public void showSliderTab() {
 		selectedOptionType = OptionType.EUCLIDIAN;
 		setOptionPanel(OptionType.OBJECTS);
-		((OptionsObjectD) getObjectPanel()).showSliderTab();
+		getObjectPanel().showSliderTab();
 		styleBar.updateGUI();
 		updateGUI();
 	}
@@ -747,28 +720,28 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	 */
 	public static Icon getTypeIcon(AppD app, OptionType type) {
 		switch (type) {
-		case DEFAULTS:
-			return app.getScaledIcon(GuiResourcesD.PROPERTIES_DEFAULTS_3);
-		case SPREADSHEET:
-			return app.getScaledIcon(GuiResourcesD.MENU_VIEW_SPREADSHEET);
-		case ALGEBRA:
-			return app.getScaledIcon(GuiResourcesD.MENU_VIEW_ALGEBRA);
-		case EUCLIDIAN:
-			return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS);
-		case EUCLIDIAN2:
-			return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS2);
-		case CAS:
-			return app.getScaledIcon(GuiResourcesD.MENU_VIEW_CAS);
-		case GLOBAL:
-			return app.getScaledIcon(GuiResourcesD.OPTIONS_ADVANCED_24);
-		case OBJECTS:
-			return app.getScaledIcon(GuiResourcesD.OPTIONS_OBJECTS_24);
-		case LAYOUT:
-			return app.getScaledIcon(GuiResourcesD.OPTIONS_LAYOUT_24);
-		case EUCLIDIAN3D:
-			return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS3D);
-		case EUCLIDIAN_FOR_PLANE:
-			return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS_EXTRA);
+			case DEFAULTS:
+				return app.getScaledIcon(GuiResourcesD.PROPERTIES_DEFAULTS_3);
+			case SPREADSHEET:
+				return app.getScaledIcon(GuiResourcesD.MENU_VIEW_SPREADSHEET);
+			case ALGEBRA:
+				return app.getScaledIcon(GuiResourcesD.MENU_VIEW_ALGEBRA);
+			case EUCLIDIAN:
+				return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS);
+			case EUCLIDIAN2:
+				return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS2);
+			case CAS:
+				return app.getScaledIcon(GuiResourcesD.MENU_VIEW_CAS);
+			case GLOBAL:
+				return app.getScaledIcon(GuiResourcesD.OPTIONS_ADVANCED_24);
+			case OBJECTS:
+				return app.getScaledIcon(GuiResourcesD.OPTIONS_OBJECTS_24);
+			case LAYOUT:
+				return app.getScaledIcon(GuiResourcesD.OPTIONS_LAYOUT_24);
+			case EUCLIDIAN3D:
+				return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS3D);
+			case EUCLIDIAN_FOR_PLANE:
+				return app.getScaledIcon(GuiResourcesD.MENU_VIEW_GRAPHICS_EXTRA);
 		}
 		return null;
 	}
@@ -804,7 +777,7 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 			advancedPanel.updateFont();
 		}
 		if (getObjectPanel() != null) {
-			((OptionsObjectD) getObjectPanel()).updateFont(); // tree
+			getObjectPanel().updateFont(); // tree
 		}
 		if (layoutPanel != null) {
 			layoutPanel.updateFont();
@@ -813,15 +786,13 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		if (styleBar != null) {
 			styleBar.reinit();
 		}
-
 	}
 
 	/**
 	 * @return whether the parent dock panel is visible
 	 */
 	public boolean isShowing() {
-		PropertiesDockPanel dockPanel = ((GuiManagerD) app.getGuiManager())
-				.getPropertiesDockPanel();
+		PropertiesDockPanel dockPanel = ((GuiManagerD) app.getGuiManager()).getPropertiesDockPanel();
 		if (dockPanel == null) {
 			return false;
 		}
@@ -834,8 +805,8 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 	 *            GeoText to be updated
 	 */
 	public void updateTextEditor(GeoElement geo) {
-		if (getObjectPanel() != null) {
-			((OptionsObjectD) getObjectPanel()).updateTextEditor(geo);
+		if (objectPanel != null) {
+			objectPanel.updateTextEditor(geo);
 		}
 	}
 
@@ -850,4 +821,55 @@ public class PropertiesViewD extends PropertiesView implements SetLabels {
 		// only for web
 	}
 
+	@Override
+	protected GeoElement getConsumedGeo() {
+		if (objectPanel == null) {
+			return null;
+		} else {
+			return objectPanel.consumeGeoAdded();
+		}
+	}
+
+	/**
+	 * @param type
+	 *            tab type
+	 * @return tab name
+	 */
+	public String getTypeString(OptionType type) {
+		switch (type) {
+			case DEFAULTS:
+				return app.isUnbundledOrWhiteboard()
+						? loc.getMenu("Defaults")
+						: loc.getPlain("PreferencesOfA", loc.getMenu("Defaults"));
+			case SPREADSHEET:
+				return loc.getPlain("PreferencesOfA", loc.getMenu("Spreadsheet"));
+			case EUCLIDIAN:
+				return app.isUnbundledOrWhiteboard()
+						? loc.getMenu("DrawingPad")
+						: loc.getPlain("PreferencesOfA", loc.getMenu("DrawingPad"));
+			case EUCLIDIAN2:
+				return loc.getPlain("PreferencesOfA", loc.getMenu("DrawingPad2"));
+			case EUCLIDIAN_FOR_PLANE:
+				return loc.getPlain("PreferencesOfA", loc.getMenu("ExtraViews"));
+			case EUCLIDIAN3D:
+				return loc.getPlain("PreferencesOfA", loc.getMenu("GraphicsView3D"));
+			case CAS:
+				return loc.getPlain("PreferencesOfA", loc.getMenu("CAS"));
+			case GLOBAL:
+				return app.isUnbundledOrWhiteboard()
+						? loc.getMenu("Advanced")
+						: loc.getPlain("PreferencesOfA", loc.getMenu("Advanced"));
+			case ALGEBRA:
+				return app.isUnbundledOrWhiteboard()
+						? loc.getMenu("Algebra")
+						: loc.getPlain("PreferencesOfA", loc.getMenu("Algebra"));
+			case OBJECTS:
+				return objectPanel == null
+						? loc.getMenu("Objects")
+						: objectPanel.getSelectionDescription(loc);
+			case LAYOUT:
+				return loc.getPlain("PreferencesOfA", loc.getMenu("Layout"));
+		}
+		return null;
+	}
 }

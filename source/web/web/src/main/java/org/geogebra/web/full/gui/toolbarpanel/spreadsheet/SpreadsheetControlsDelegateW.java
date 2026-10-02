@@ -18,8 +18,6 @@ package org.geogebra.web.full.gui.toolbarpanel.spreadsheet;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.gui.FocusableComponent;
 import org.geogebra.common.main.GeoGebraColorConstants;
@@ -50,19 +48,21 @@ import org.geogebra.web.html5.main.AppW;
 import org.gwtproject.core.client.Scheduler;
 import org.gwtproject.dom.style.shared.TextAlign;
 import org.gwtproject.dom.style.shared.Unit;
+import org.jspecify.annotations.NonNull;
 
-public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate, AutoCompleteW {
+public final class SpreadsheetControlsDelegateW
+		implements SpreadsheetControlsDelegate, AutoCompleteW {
 
 	private final SpreadsheetCellEditorW editor;
 	private final GPopupMenuW contextMenu;
 	private final Localization loc;
-	private final static int CONTEXT_MENU_PADDING = 8;
-	private final static int MARGIN_FROM_SCREEN_EDGE = 16;
+	private static final int CONTEXT_MENU_PADDING = 8;
+	private static final int MARGIN_FROM_SCREEN_EDGE = 16;
 	private final ClipboardInterface clipboard;
 	private final SpreadsheetPanel parent;
 	private AutoCompletePopup autocomplete;
 
-	private static class SpreadsheetCellEditorW implements SpreadsheetCellEditor {
+	private static final class SpreadsheetCellEditorW implements SpreadsheetCellEditor {
 		private final MathFieldEditor mathField;
 		private final SpreadsheetPanel parent;
 		private final AppW app;
@@ -70,10 +70,11 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 		private DefaultSpreadsheetCellProcessor cellProcessor;
 		private Rectangle editorBounds;
 
-		public SpreadsheetCellEditorW(AppW app, SpreadsheetPanel parent, MathTextFieldW mathField) {
+		private SpreadsheetCellEditorW(AppW app, SpreadsheetPanel parent, MathTextFieldW mathField) {
 			this.mathField = mathField;
-			this.mathField.getMathField().setForegroundColor(
-					GColor.getColorString(GeoGebraColorConstants.NEUTRAL_900));
+			this.mathField
+					.getMathField()
+					.setForegroundColor(GColor.getColorString(GeoGebraColorConstants.NEUTRAL_900));
 			mathField.addStyleName("spreadsheetEditor");
 			SyntaxController syntaxController = new SyntaxController();
 			this.toastController = new ToastController(app, () -> editorBounds);
@@ -83,17 +84,26 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 			this.app = app;
 		}
 
-		public SpreadsheetPanel getSpreadsheetPanel() {
+		private SpreadsheetPanel getSpreadsheetPanel() {
 			return parent;
 		}
 
 		@Override
-		public void show(@Nonnull Rectangle editorBounds, @Nonnull Rectangle viewport, int textAlignment) {
+		public double getFittingContentWidth() {
+			return mathField.getMathField().computeWidth();
+		}
+
+		@Override
+		public void show(
+				@NonNull Rectangle editorBounds, @NonNull Rectangle viewport, int textAlignment) {
 			mathField.attach(parent);
 			updatePosition(editorBounds, viewport);
 			mathField.setRightMargin(8);
-			mathField.asWidget().getElement().getStyle().setTextAlign(
-					textAlignment == CellFormat.ALIGN_LEFT ? TextAlign.LEFT : TextAlign.RIGHT);
+			mathField
+					.asWidget()
+					.getElement()
+					.getStyle()
+					.setTextAlign(textAlignment == CellFormat.ALIGN_LEFT ? TextAlign.LEFT : TextAlign.RIGHT);
 			mathField.setVisible(true);
 			mathField.editorClicked();
 			mathField.scrollCursorVisibleHorizontally();
@@ -101,13 +111,15 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 		}
 
 		@Override
-		public void updatePosition(@Nonnull Rectangle editorBounds, @Nonnull Rectangle viewport) {
+		public void updatePosition(@NonNull Rectangle editorBounds, @NonNull Rectangle viewport) {
 			Rectangle bounds = editorBounds.insetBy(-2, -2);
 			double dx = parent.getAbsoluteLeft() - app.getAbsLeft();
 			double dy = parent.getAbsoluteTop() - app.getAbsTop();
-			this.editorBounds = new Rectangle(editorBounds.getMinX() + dx,
+			this.editorBounds = new Rectangle(
+					editorBounds.getMinX() + dx,
 					parent.getOffsetWidth() + dx,
-					editorBounds.getMinY() + dy, editorBounds.getMaxY() + dy);
+					editorBounds.getMinY() + dy,
+					editorBounds.getMaxY() + dy);
 			mathField.getStyle().setLeft(bounds.getMinX(), Unit.PX);
 			mathField.getStyle().setTop(bounds.getMinY(), Unit.PX);
 			mathField.getStyle().setWidth(bounds.getWidth(), Unit.PX);
@@ -123,21 +135,20 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 		}
 
 		@Override
-		public @Nonnull MathFieldInternal getMathField() {
+		public @NonNull MathFieldInternal getMathField() {
 			return mathField.getMathField().getInternal();
 		}
 
 		@Override
-		public @Nonnull DefaultSpreadsheetCellProcessor getCellProcessor() {
+		public @NonNull DefaultSpreadsheetCellProcessor getCellProcessor() {
 			if (cellProcessor == null) {
-				cellProcessor = new DefaultSpreadsheetCellProcessor(
-						app.getKernel().getAlgebraProcessor());
+				cellProcessor = new DefaultSpreadsheetCellProcessor(app.getKernel().getAlgebraProcessor());
 			}
 			return cellProcessor;
 		}
 
 		@Override
-		public @Nonnull SpreadsheetCellDataSerializer getCellDataSerializer() {
+		public @NonNull SpreadsheetCellDataSerializer getCellDataSerializer() {
 			return new DefaultSpreadsheetCellDataSerializer();
 		}
 	}
@@ -148,8 +159,8 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 	 * @param parent - parent panel
 	 * @param mathTextField - math text field
 	 */
-	public SpreadsheetControlsDelegateW(AppW app, SpreadsheetPanel parent,
-			MathTextFieldW mathTextField) {
+	public SpreadsheetControlsDelegateW(
+			AppW app, SpreadsheetPanel parent, MathTextFieldW mathTextField) {
 		editor = new SpreadsheetCellEditorW(app, parent, mathTextField);
 		mathTextField.addBlurHandler(blur -> {
 			if (!isSuggesting()) {
@@ -159,7 +170,7 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 		this.parent = parent;
 		contextMenu = new GPopupMenuW(app) {
 			@Override
-			public void returnFocus(FocusableComponent anchor) {
+			protected void returnFocus(FocusableComponent anchor) {
 				parent.requestFocus();
 			}
 		};
@@ -168,19 +179,22 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 	}
 
 	@Override
-	public @Nonnull SpreadsheetCellEditor getCellEditor() {
+	public @NonNull SpreadsheetCellEditor getCellEditor() {
 		return editor;
 	}
 
 	// CONTEXT MENU
 
 	@Override
-	public void showContextMenu(@Nonnull List<ContextMenuItem> items, @Nonnull Point location) {
+	public void showContextMenu(@NonNull List<ContextMenuItem> items, @NonNull Point location) {
+		getApplication().registerPopup(contextMenu.getPopupPanel());
+		contextMenu
+				.getPopupPanel()
+				.addCloseHandler(ignore -> getApplication().unregisterPopup(contextMenu.getPopupPanel()));
 		contextMenu.clearItems();
 		parent.cancelFocus();
 		contextMenu.getApp().getAsyncManager().prefetch(null, "scripting", "stats");
-		new SpreadsheetMenuBuilder(loc, this::hideContextMenu)
-				.addItems(contextMenu, items);
+		new SpreadsheetMenuBuilder(loc, this::hideContextMenu).addItems(contextMenu, items);
 		positionContextMenu((int) Math.round(location.x), (int) Math.round(location.y));
 		contextMenu.getPopupMenu().focus();
 	}
@@ -192,13 +206,16 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 		contextMenu.showAtPoint(0, 0);
 
 		if (!popupFitsHorizontally(left)) {
-			left = (int) (contextMenu.getApp().getWidth() - contextMenu.getPopupMenu()
-					.getElement().getClientWidth() - MARGIN_FROM_SCREEN_EDGE);
+			left = (int) (contextMenu.getApp().getWidth()
+					- contextMenu.getPopupMenu().getElement().getClientWidth()
+					- MARGIN_FROM_SCREEN_EDGE);
 		}
 
 		if (!popupFitsVertically(top)) {
-			top = (int) (contextMenu.getApp().getHeight() - contextMenu.getPopupMenu().getElement()
-					.getClientHeight() - 2 * CONTEXT_MENU_PADDING - MARGIN_FROM_SCREEN_EDGE);
+			top = (int) (contextMenu.getApp().getHeight()
+					- contextMenu.getPopupMenu().getElement().getClientHeight()
+					- 2 * CONTEXT_MENU_PADDING
+					- MARGIN_FROM_SCREEN_EDGE);
 		}
 
 		contextMenu.showAtPoint(left, top);
@@ -247,9 +264,8 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 	// AUTOCOMPLETE
 
 	@Override
-	public void showAutoCompleteSuggestions(@Nonnull String input, @Nonnull Rectangle editorBounds) {
-		int left = (int) editorBounds.getMinX() + getAbsoluteSpreadsheetLeft()
-				- getAbsoluteAppLeft();
+	public void showAutoCompleteSuggestions(@NonNull String input, @NonNull Rectangle editorBounds) {
+		int left = (int) editorBounds.getMinX() + getAbsoluteSpreadsheetLeft() - getAbsoluteAppLeft();
 		int top = (int) editorBounds.getMinY() + getAbsoluteSpreadsheetTop() - getAbsoluteAppTop();
 		int height = (int) editorBounds.getHeight();
 
@@ -273,18 +289,18 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 		}
 
 		switch (keyCode) {
-		case JavaKeyCodes.VK_DOWN:
-		case JavaKeyCodes.VK_UP:
-		case JavaKeyCodes.VK_LEFT:
-		case JavaKeyCodes.VK_RIGHT:
-			autocomplete.onArrowKeyPressed(keyCode);
-			return true;
-		case JavaKeyCodes.VK_ENTER:
-			autocomplete.handleEnter();
-			return true;
-		case JavaKeyCodes.VK_ESCAPE:
-			hideAutoCompleteSuggestions();
-			return true;
+			case JavaKeyCodes.VK_DOWN:
+			case JavaKeyCodes.VK_UP:
+			case JavaKeyCodes.VK_LEFT:
+			case JavaKeyCodes.VK_RIGHT:
+				autocomplete.onArrowKeyPressed(keyCode);
+				return true;
+			case JavaKeyCodes.VK_ENTER:
+				autocomplete.handleEnter();
+				return true;
+			case JavaKeyCodes.VK_ESCAPE:
+				hideAutoCompleteSuggestions();
+				return true;
 		}
 
 		return false;
@@ -295,8 +311,8 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 	 */
 	private AutoCompletePopup getAutocompletePopup() {
 		if (autocomplete == null) {
-			autocomplete = new AutoCompletePopup(getApplication(),
-					new AutocompleteProvider(getApplication(), false), this);
+			autocomplete = new AutoCompletePopup(
+					getApplication(), new AutocompleteProvider(getApplication(), false), this);
 		}
 		return autocomplete;
 	}
@@ -355,9 +371,8 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 	}
 
 	@Override
-	public void showSnackbar(@Nonnull String messageKey) {
+	public void showSnackbar(@NonNull String messageKey) {
 		String translatedMessage = loc.getMenu(messageKey);
-		getApplication().getToolTipManager().showBottomMessage(translatedMessage,
-				getApplication());
+		getApplication().getToolTipManager().showBottomMessage(translatedMessage, getApplication());
 	}
 }

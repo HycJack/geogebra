@@ -30,7 +30,7 @@ import org.gwtproject.event.dom.client.TouchStartEvent;
  * @author Laszlo
  *
  */
-public class CheckBoxTreeItemController extends LatexTreeItemController {
+public final class CheckBoxTreeItemController extends LatexTreeItemController {
 
 	/**
 	 * @param item
@@ -44,13 +44,12 @@ public class CheckBoxTreeItemController extends LatexTreeItemController {
 	public void onMouseDown(MouseDownEvent event) {
 		event.stopPropagation();
 
-		if (CancelEventTimer.cancelMouseEvent()
-				|| checkMarbleHit(event)) {
+		if (CancelEventTimer.cancelMouseEvent() || checkMarbleHit(event)) {
 			return;
 		}
 
 		app.closePopups();
-	
+
 		PointerEvent wrappedEvent = PointerEvent.wrapEventAbsolute(event, ZeroOffset.INSTANCE);
 		onPointerDown(wrappedEvent, event);
 		handleAVItem(event);

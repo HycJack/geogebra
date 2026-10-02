@@ -32,6 +32,7 @@ import org.geogebra.web.html5.Browser;
 import org.geogebra.web.html5.event.PointerEvent;
 import org.geogebra.web.html5.event.ZeroOffset;
 import org.geogebra.web.html5.gui.util.CancelEventTimer;
+import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.gui.util.LongTouchManager;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.util.EventUtil;
@@ -59,16 +60,23 @@ import org.gwtproject.event.dom.client.TouchStartHandler;
 import org.gwtproject.timer.client.Timer;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Controller class of a AV item.
- * 
+ *
  * @author laszlo
  *
  */
-public class RadioTreeItemController implements ClickHandler,
-		DoubleClickHandler, MouseDownHandler, MouseUpHandler, MouseMoveHandler,
-		TouchStartHandler, TouchMoveHandler, TouchEndHandler {
+public class RadioTreeItemController
+		implements ClickHandler,
+				DoubleClickHandler,
+				MouseDownHandler,
+				MouseUpHandler,
+				MouseMoveHandler,
+				TouchStartHandler,
+				TouchMoveHandler,
+				TouchEndHandler {
 
 	private static final int VERTICAL_PADDING = 20;
 	protected AppWFull app;
@@ -88,7 +96,7 @@ public class RadioTreeItemController implements ClickHandler,
 
 	/**
 	 * Creates controller for given item.
-	 * 
+	 *
 	 * @param item
 	 *            AV item
 	 */
@@ -159,7 +167,7 @@ public class RadioTreeItemController implements ClickHandler,
 		return editing;
 	}
 
-	protected void setEditing(boolean value) {
+	public void setEditing(boolean value) {
 		editing = value;
 	}
 
@@ -167,12 +175,12 @@ public class RadioTreeItemController implements ClickHandler,
 	public void onMouseDown(MouseDownEvent event) {
 		event.stopPropagation();
 
-		PointerEvent wrappedEvent = PointerEvent.wrapEventAbsolute(event,
-				ZeroOffset.INSTANCE);
+		PointerEvent wrappedEvent = PointerEvent.wrapEventAbsolute(event, ZeroOffset.INSTANCE);
 		onPointerDown(wrappedEvent, event);
 
 		CancelEventTimer.avRestoreWidth();
-		if (CancelEventTimer.cancelMouseEvent() || checkMarbleHit(event)
+		if (CancelEventTimer.cancelMouseEvent()
+				|| checkMarbleHit(event)
 				|| app.isRightClick(wrappedEvent)) {
 			return;
 		}
@@ -226,7 +234,7 @@ public class RadioTreeItemController implements ClickHandler,
 	/**
 	 * Determines if the item can be edited at that point that event has
 	 * happened. For example editing is not allowed clicking on marbles.
-	 * 
+	 *
 	 * @param event
 	 *            The mouse event
 	 * @return if editing can start or not.
@@ -260,7 +268,8 @@ public class RadioTreeItemController implements ClickHandler,
 		}
 
 		JsArray<Touch> touches = event.getTargetTouches().length() == 0
-				? event.getChangedTouches() : event.getTargetTouches();
+				? event.getChangedTouches()
+				: event.getTargetTouches();
 		PointerEvent wrappedEvent = PointerEvent.wrapEvent(touches.get(0), ZeroOffset.INSTANCE);
 
 		if (isMarbleHit(wrappedEvent.getX(), wrappedEvent.getY())
@@ -279,9 +288,10 @@ public class RadioTreeItemController implements ClickHandler,
 			// ctrl key, shift key for TouchEndEvent? interesting...
 			latestTouchEndTime = time;
 			if (!checkEditing()) {
-				startEdit(false // event.isControlKeyDown(),
-				// event.isShiftKeyDown()
-				);
+				startEdit(
+						false // event.isControlKeyDown(),
+						// event.isShiftKeyDown()
+						);
 			}
 		} else {
 			latestTouchEndTime = time;
@@ -335,8 +345,7 @@ public class RadioTreeItemController implements ClickHandler,
 			}
 		}
 
-		AbstractEvent wrappedEvent = PointerEvent.wrapEvent(event,
-				ZeroOffset.INSTANCE);
+		AbstractEvent wrappedEvent = PointerEvent.wrapEvent(event, ZeroOffset.INSTANCE);
 
 		int x = EventUtil.getTouchOrClickClientX(event);
 		int y = EventUtil.getTouchOrClickClientY(event);
@@ -385,14 +394,13 @@ public class RadioTreeItemController implements ClickHandler,
 				// put earlier, maybe it freezes afterwards?
 				setFocus(true);
 			}
-
 		}
 		updateSelection(event.isControlDown(), event.isShiftDown());
 	}
 
 	/**
 	 * Inform listeners about editing start
-	 * 
+	 *
 	 * @param eventType
 	 *            editor event type
 	 */
@@ -400,7 +408,7 @@ public class RadioTreeItemController implements ClickHandler,
 		app.dispatchEvent(new Event(eventType, item.getGeo(), null));
 	}
 
-	protected void onPointerUp(AbstractEvent event) {
+	protected void onPointerUp(@NonNull AbstractEvent event) {
 		selectionCtrl.setSelectHandled(false);
 
 		GeoElement geo = item.geo;
@@ -428,7 +436,7 @@ public class RadioTreeItemController implements ClickHandler,
 		if (!EuclidianConstants.isMoveOrSelectionMode(mode)
 				&& mode != EuclidianConstants.MODE_SELECTION_LISTENER) {
 			// let euclidianView know about the click
-			ev.clickedGeo(geo, app.isControlDown(event));
+			ev.clickedGeo(geo, event.isControlDown());
 		}
 		ev.mouseMovedOver(null);
 
@@ -445,7 +453,7 @@ public class RadioTreeItemController implements ClickHandler,
 
 	/**
 	 * Adds the needed event handlers to FlowPanel
-	 * 
+	 *
 	 * @param panel
 	 *            add events to.
 	 */
@@ -500,8 +508,7 @@ public class RadioTreeItemController implements ClickHandler,
 	}
 
 	private void editOnTap(boolean active, MouseEvent<?> event) {
-		editOnTap(active,
-				PointerEvent.wrapEventAbsolute(event, ZeroOffset.INSTANCE));
+		editOnTap(active, PointerEvent.wrapEventAbsolute(event, ZeroOffset.INSTANCE));
 	}
 
 	protected boolean editOnTap(boolean active, PointerEvent wrappedEvent) {
@@ -511,8 +518,7 @@ public class RadioTreeItemController implements ClickHandler,
 		ensureMoveMode();
 		markForEdit = false;
 		boolean enable = true;
-		if (item.isSliderItem()
-				&& !isWidgetHit(item.getDefinitionValuePanel(), wrappedEvent)) {
+		if (item.isSliderItem() && !isWidgetHit(item.getDefinitionValuePanel(), wrappedEvent)) {
 			enable = false;
 			if (active) {
 				stopEdit();
@@ -557,8 +563,8 @@ public class RadioTreeItemController implements ClickHandler,
 		if (item.geo != null) {
 			// else: keep (multi)selection, already includes clicked object
 			double scale = app.getGeoGebraElement().getScaleX();
-			new ContextMenuAVItemMore(item).show(item.asWidget(), (int) (evt.getX() / scale),
-					(int) (evt.getY() / scale));
+			new ContextMenuAVItemMore(item)
+					.show(item.asWidget(), (int) (evt.getX() / scale), (int) (evt.getY() / scale));
 		}
 	}
 
@@ -568,15 +574,14 @@ public class RadioTreeItemController implements ClickHandler,
 		if (CancelEventTimer.cancelMouseEvent()) {
 			return;
 		}
-		PointerEvent wrappedEvent = PointerEvent.wrapEvent(evt,
-				ZeroOffset.INSTANCE);
+		PointerEvent wrappedEvent = PointerEvent.wrapEvent(evt, ZeroOffset.INSTANCE);
 		onPointerUp(wrappedEvent);
 	}
 
 	boolean handleAVItem(MouseEvent<?> evt) {
 		ensureMoveMode();
-		return handleAVItem(evt.getClientX(), evt.getClientY(),
-				evt.getNativeButton() == NativeEvent.BUTTON_RIGHT);
+		return handleAVItem(
+				evt.getClientX(), evt.getClientY(), evt.getNativeButton() == NativeEvent.BUTTON_RIGHT);
 	}
 
 	private void ensureMoveMode() {
@@ -610,7 +615,7 @@ public class RadioTreeItemController implements ClickHandler,
 
 	/**
 	 * Update selection with this geo.
-	 * 
+	 *
 	 * @param separated
 	 *            whether to keep previously selected geos (ctrl pressed)
 	 * @param continuous
@@ -666,7 +671,7 @@ public class RadioTreeItemController implements ClickHandler,
 	/**
 	 * When setting to true, all input typed treated as text, so the newly
 	 * created item will be GeoText.
-	 * 
+	 *
 	 * @param value
 	 *            to set.
 	 */
@@ -696,5 +701,13 @@ public class RadioTreeItemController implements ClickHandler,
 	 */
 	public String getCommand(MathField mf) {
 		return inputSuggestions.getCommand(mf);
+	}
+
+	/**
+	 * Listen to scroll events in given panel and cancel editing if needed.
+	 * @param panel sub-panel of the item
+	 */
+	public void cancelOnScroll(FlowPanel panel) {
+		Dom.addEventListener(panel.getElement(), "scroll", evt -> markForEdit = false);
 	}
 }

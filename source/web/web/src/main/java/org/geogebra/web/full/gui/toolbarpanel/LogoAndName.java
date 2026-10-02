@@ -28,7 +28,7 @@ import org.gwtproject.user.client.ui.IsWidget;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.Widget;
 
-public class LogoAndName implements IsWidget, SetLabels {
+public final class LogoAndName implements IsWidget, SetLabels {
 
 	private static final int LOGO_MARGIN = 72; // 24px top + 48px bottom
 	private final Widget panel;
@@ -41,8 +41,7 @@ public class LogoAndName implements IsWidget, SetLabels {
 	public LogoAndName(App app) {
 		this.app = app;
 		name = new Label();
-		NoDragImage icon = new NoDragImage(((AppWFull) app).getActivity().getIcon(),
-				24);
+		NoDragImage icon = new NoDragImage(((AppWFull) app).getActivity().getIcon(), 24);
 		AriaHelper.setAlt(icon, "");
 		panel = LayoutUtilW.panelRow(icon, name);
 		panel.addStyleName("avNameLogo");
@@ -51,8 +50,7 @@ public class LogoAndName implements IsWidget, SetLabels {
 
 	@Override
 	public void setLabels() {
-		name.setText(app.getLocalization().getMenu(
-				app.getConfig().getAppTransKey()));
+		name.setText(app.getLocalization().getMenu(app.getConfig().getAppTransKey()));
 	}
 
 	@Override

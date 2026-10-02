@@ -5,9 +5,9 @@ import Desktop_variants_gradle.Variants.nativesWindowsAmd64
 plugins {
     application
     alias(libs.plugins.geogebra.java)
-    alias(libs.plugins.geogebra.checkstyle)
     alias(libs.plugins.geogebra.spotbugs)
     alias(libs.plugins.geogebra.variants)
+    alias(libs.plugins.geogebra.pmd)
 }
 
 description = "Parts of GeoGebra related to desktop platforms"
@@ -60,12 +60,12 @@ dependencies {
     testImplementation(libs.hamcrest)
 
     // Junit 5 support with backward compatibility
-    testImplementation(platform(libs.junit5.bom))
-    testImplementation(libs.junit5.jupiter)
-    testImplementation(libs.junit5.vintage)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.vintage)
     // Add launcher explicitly to avoid legacy loading
     // https://docs.gradle.org/8.12/userguide/upgrading_version_8.html#manually_declaring_dependencies
-    testRuntimeOnly(libs.junit5.launcher)
+    testRuntimeOnly(libs.junit.launcher)
 }
 
 tasks.test {

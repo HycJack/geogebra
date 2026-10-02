@@ -16,7 +16,10 @@
 
 package org.geogebra.web.full.gui.view.probcalculator;
 
+import org.geogebra.common.gui.AccessibilityGroup;
 import org.geogebra.common.gui.view.data.PlotSettings;
+import org.geogebra.common.gui.view.probcalculator.ProbabilityCalculatorTableValuesViewModel;
+import org.geogebra.common.gui.view.probcalculator.ProbabilityCalculatorTableValuesViewModel.ButtonState;
 import org.geogebra.common.gui.view.probcalculator.ProbabilityCalculatorView;
 import org.geogebra.common.gui.view.probcalculator.ProbabilityManager;
 import org.geogebra.common.gui.view.probcalculator.ProbabilityTable;
@@ -24,11 +27,14 @@ import org.geogebra.common.gui.view.probcalculator.StatisticsCalculator;
 import org.geogebra.common.main.App;
 import org.geogebra.ggbjdk.java.awt.geom.Dimension;
 import org.geogebra.web.full.css.GuiResources;
+import org.geogebra.web.full.css.MaterialDesignResources;
+import org.geogebra.web.full.gui.components.sideSheet.ComponentSideSheet;
+import org.geogebra.web.full.gui.components.sideSheet.SideSheetData;
+import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.IconButton;
+import org.geogebra.web.full.gui.toolbarpanel.tableview.StickyProbabilityTable;
 import org.geogebra.web.full.gui.view.data.PlotPanelEuclidianViewW;
-import org.geogebra.web.html5.euclidian.EuclidianViewW;
-import org.geogebra.web.html5.gui.util.AriaHelper;
-import org.geogebra.web.html5.gui.util.Dom;
-import org.geogebra.web.html5.gui.util.ToggleButton;
+import org.geogebra.web.html5.gui.view.ImageIconSpec;
+import org.geogebra.web.html5.gui.zoompanel.FocusableWidget;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.main.AsyncManager;
 import org.geogebra.web.html5.main.GlobalKeyDispatcherW;
@@ -37,28 +43,36 @@ import org.gwtproject.core.client.Scheduler.ScheduledCommand;
 import org.gwtproject.dom.style.shared.Unit;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Probability Calculator View for web
  */
 public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
-	public static final String SEPARATOR = "--------------------";
 	/** export action */
 	ScheduledCommand exportToEVAction;
 	/** plot panel */
 	FlowPanel plotPanelPlus;
 
 	protected FlowPanel probCalcPanel;
-	private ToggleButton btnNormalOverlay;
-	private ToggleButton btnLineGraph;
-	private ToggleButton btnStepGraph;
-	private ToggleButton btnBarGraph;
+	private IconButton overlayIconButton;
+	private @Nullable IconButton tableIconButton;
+	private IconButton btnLineGraph;
+	private IconButton btnStepGraph;
+	private IconButton btnBarGraph;
 
-	private DistributionPanel distrPanel;
 	protected FlowPanel plotPanelOptions;
+	private ComponentSideSheet sideSheet;
+	private ProbabilityCalculatorTableValuesViewModel tableModel;
+
+	private void updateTableButton(ButtonState buttonState) {
+		tableIconButton.setVisible(buttonState != ButtonState.HIDDEN);
+		tableIconButton.setActive(buttonState == ButtonState.ACTIVE);
+	}
 
 	/**
-	 * @param app creates new probabilitycalculatorView
+	 * @param app creates new probability calculator view
 	 */
 	protected ProbabilityCalculatorViewW(AppW app) {
 		super(app);
@@ -76,35 +90,30 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 		ProbabilityCalculatorViewW view = new ProbabilityCalculatorViewW(app);
 		view.isIniting = false;
 		view.init();
+		view.settingsChanged(app.getSettings().getProbCalcSettings());
 		return view;
-	}
-
-	@Override
-	public void disableInterval(boolean disable) {
-		distrPanel.disableInterval(disable);
 	}
 
 	@Override
 	public void setLabels() {
 		setLabelArrays();
-		if (distrPanel != null) {
-			distrPanel.setLabels();
-		}
 
 		ProbabilityTable table = getTable();
 		if (table != null) {
 			table.setLabels();
 		}
 
-		btnLineGraph.setTitle(loc.getMenu("LineGraph"));
-		btnStepGraph.setTitle(loc.getMenu("StepGraph"));
-		btnBarGraph.setTitle(loc.getMenu("BarChart"));
-		if (app.getConfig().hasDistributionView()) {
-			AriaHelper.setTitle(btnNormalOverlay, loc.getMenu("OverlayNormalCurve"));
-		} else {
-			btnNormalOverlay.setTitle(loc.getMenu("OverlayNormalCurve"));
+		btnLineGraph.setLabels();
+		btnStepGraph.setLabels();
+		btnBarGraph.setLabels();
+		overlayIconButton.setLabels();
+		if (tableIconButton != null) {
+			tableIconButton.setLabels();
 		}
-		btnNormalOverlay.getElement().setAttribute("tooltip-position", "right");
+
+		if (sideSheet != null) {
+			sideSheet.setLabels();
+		}
 	}
 
 	/**
@@ -112,20 +121,19 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 	 * panel to a EuclidianView. The viewID for the target EuclidianView is
 	 * stored as a property with key "euclidianViewID".
 	 *
-	 * This action is passed as a parameter to plotPanel where it is used in the
+	 * <p>This action is passed as a parameter to plotPanel where it is used in the
 	 * plotPanel context menu and the EuclidianView transfer handler when the
-	 * plot panel is dragged into an EV.
+	 * plot panel is dragged into an EV.</p>
 	 */
 	private void createExportToEvAction() {
 		exportToEVAction = () -> {
 			// if null ID then use EV1 unless shift is down, then use EV2
 			int euclidianViewID = GlobalKeyDispatcherW.getShiftDown()
-						? getApp().getEuclidianView2(1).getViewID()
-						: getApp().getEuclidianView1().getViewID();
+					? getApp().getEuclidianView2(1).getViewID()
+					: getApp().getEuclidianView1().getViewID();
 			// do the export, preload Take, Pascal/Binomial, Integral, ...
 			AsyncManager manager = ((AppW) app).getAsyncManager();
-			manager.prefetch(() -> exportGeosToEV(euclidianViewID),
-					"advanced", "stats", "cas");
+			manager.prefetch(() -> exportGeosToEV(euclidianViewID), "advanced", "stats", "cas");
 		};
 	}
 
@@ -135,7 +143,10 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 		plotPanelOptions = new FlowPanel();
 		plotPanelOptions.setStyleName("plotPanelOptions");
 
-		plotPanelOptions.add(btnNormalOverlay);
+		if (tableIconButton != null) {
+			plotPanelOptions.add(tableIconButton);
+		}
+		plotPanelOptions.add(overlayIconButton);
 		if (!app.getConfig().hasDistributionView()) {
 			plotPanelOptions.add(btnBarGraph);
 			plotPanelOptions.add(btnStepGraph);
@@ -152,43 +163,97 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 	protected void init() {
 		setLabels();
 		attachView();
-		settingsChanged(getApp().getSettings().getProbCalcSettings());
 	}
 
 	private void createGUIElements() {
 		setLabelArrays();
 
-		btnNormalOverlay = new ToggleButton(app.getConfig().hasDistributionView()
-				? GuiResources.INSTANCE.normal_overlay_black()
-				: GuiResources.INSTANCE.normal_overlay());
-		btnNormalOverlay.addStyleName("probCalcStylbarBtn");
+		overlayIconButton = new IconButton(
+				(AppW) app,
+				null,
+				new ImageIconSpec(GuiResources.INSTANCE.normal_overlay_black()),
+				"OverlayNormalCurve");
+		overlayIconButton.addStyleName(
+				app.isUnbundled() ? "probCalcStylbarBtn singleButton" : "probCalcStylbarBtn");
+		overlayIconButton.setTooltipPositionRight();
+		overlayIconButton.addFastClickHandler(source -> onOverlayClicked());
+		new FocusableWidget(AccessibilityGroup.PROBABILITY_OVERLAY, null, overlayIconButton)
+				.attachTo((AppW) app);
 		if (app.getConfig().hasDistributionView()) {
-			btnNormalOverlay.removeStyleName("ToggleButton");
-			btnNormalOverlay.addStyleName("suite");
+			createTableButtonAndSideSheet();
 		}
-		btnNormalOverlay.addFastClickHandler(event -> {
-			Dom.toggleClass(btnNormalOverlay, "selected", btnNormalOverlay.isSelected());
-			onOverlayClicked();
-		});
 
-		btnLineGraph = new ToggleButton(GuiResources.INSTANCE.line_graph());
+		btnLineGraph = new IconButton(
+				(AppW) app, null, new ImageIconSpec(GuiResources.INSTANCE.line_graph()), "LineGraph");
 		btnLineGraph.addStyleName("probCalcStylbarBtn");
 		btnLineGraph.addFastClickHandler(event -> setGraphType(GRAPH_LINE));
 
-		btnStepGraph = new ToggleButton(GuiResources.INSTANCE.step_graph());
+		btnStepGraph = new IconButton(
+				(AppW) app, null, new ImageIconSpec(GuiResources.INSTANCE.step_graph()), "StepGraph");
 		btnStepGraph.addStyleName("probCalcStylbarBtn");
 		btnStepGraph.addFastClickHandler(event -> setGraphType(GRAPH_STEP));
 
-		btnBarGraph = new ToggleButton(GuiResources.INSTANCE.bar_chart());
+		btnBarGraph = new IconButton(
+				(AppW) app, null, new ImageIconSpec(GuiResources.INSTANCE.bar_chart()), "BarChart");
 		btnBarGraph.addStyleName("probCalcStylbarBtn");
 		btnBarGraph.addFastClickHandler(event -> setGraphType(GRAPH_BAR));
 	}
-	
+
+	// TODO APPS-7848: Cancel subscription in Web State integration
+	@SuppressWarnings("CheckReturnValue")
+	private void createTableButtonAndSideSheet() {
+		tableIconButton = new IconButton(
+				(AppW) app,
+				null,
+				new ImageIconSpec(MaterialDesignResources.INSTANCE.toolbar_table_view_black()),
+				"Table");
+		tableIconButton.addStyleName(
+				app.isUnbundled() ? "probCalcStylbarBtn singleButton" : "probCalcStylbarBtn");
+		tableIconButton.setTooltipPositionRight();
+		tableIconButton.addFastClickHandler(source -> onTableClicked());
+		new FocusableWidget(AccessibilityGroup.PROBABILITY_TABLE, null, tableIconButton)
+				.attachTo((AppW) app);
+		tableModel = new ProbabilityCalculatorTableValuesViewModel(this);
+		updateTableButton(tableModel.getButtonState().get());
+		tableModel.getButtonState().subscribe(this::updateTableButton);
+		sideSheet = new ComponentSideSheet((AppW) app, new SideSheetData("Table"));
+		sideSheet.addStyleName("probabilityTableSideSheet");
+		sideSheet.addAttachHandler(e -> {
+			if (!e.isAttached()) {
+				tableModel.onClosed();
+			}
+		});
+	}
+
+	/**
+	 * Adds the probability table shared with the distribution view to the side sheet.
+	 * @param table probability table
+	 */
+	public void setSideSheetTable(@NonNull StickyProbabilityTable table) {
+		table.setStyleName("tvTable", true);
+		if (sideSheet != null) {
+			sideSheet.resetContentTo(table);
+		}
+	}
+
+	private void onTableClicked() {
+		if (sideSheet == null) {
+			return;
+		}
+		if (sideSheet.isAttached()) {
+			tableModel.onClosed();
+			sideSheet.close();
+		} else {
+			tableModel.onButtonTapped();
+			sideSheet.show();
+		}
+	}
+
 	/**
 	 * Overlay button action
 	 */
 	protected void onOverlayClicked() {
-		setShowNormalOverlay(btnNormalOverlay.isSelected());
+		setShowNormalOverlay(!isShowNormalOverlay());
 		updateAll(false);
 	}
 
@@ -197,11 +262,6 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 	 */
 	public Widget getWrapperPanel() {
 		return plotPanelPlus;
-	}
-
-	@Override
-	public ResultPanelW getResultPanel() {
-		return distrPanel == null ? null : distrPanel.getResultPanel();
 	}
 
 	@Override
@@ -214,28 +274,12 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 	}
 
 	@Override
-	protected void changeProbabilityType() {
-		if (isCumulative) {
-			probMode = PROB_LEFT;
-		} else if (distrPanel != null) {
-			int oldProbMode = probMode;
-			if (oldProbMode == PROB_TWO_TAILED) {
-				removeTwoTailedGraph();
-			}
-			probMode = distrPanel.getModeGroupValue();
-
-			if (probMode == PROB_TWO_TAILED) {
-				addTwoTailedGraph();
-			}
-
-			validateLowHigh(oldProbMode);
-		}
-	}
-
-	@Override
 	protected void onDistributionUpdate() {
-		btnNormalOverlay.setVisible(isOverlayDefined());
+		overlayIconButton.setVisible(isOverlayDefined());
 		getPlotPanel().repaintView();
+		if (sideSheet != null && sideSheet.isAttached() && !isDiscreteProbability()) {
+			sideSheet.close();
+		}
 	}
 
 	@Override
@@ -245,8 +289,7 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 
 	@Override
 	protected void plotPanelUpdateSettings(PlotSettings settings) {
-		getPlotPanel().commonFields
-				.updateSettings(getPlotPanel(), plotSettings);
+		getPlotPanel().commonFields.updateSettings(getPlotPanel(), plotSettings);
 	}
 
 	@Override
@@ -255,8 +298,7 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 			return;
 		}
 		int[] firstXLastX = generateFirstXLastXCommon();
-		getTable().setTable(selectedDist, parameters,
-				firstXLastX[0], firstXLastX[1]);
+		getTable().setTable(selectedDist, parameters, firstXLastX[0], firstXLastX[1]);
 		selectProbabilityTableRows();
 		tabResized();
 	}
@@ -269,11 +311,8 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 	@Override
 	protected void updateGUI() {
 		updateLowHighResult();
-		if (distrPanel != null) {
-			distrPanel.updateGUI();
-		}
 		updateGraphButtons();
-		btnNormalOverlay.setSelected(isShowNormalOverlay());
+		overlayIconButton.setActive(isShowNormalOverlay());
 	}
 
 	private void updateGraphButtons() {
@@ -281,12 +320,9 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 		btnStepGraph.setVisible(isDiscreteProbability());
 		btnBarGraph.setVisible(isDiscreteProbability());
 
-		btnLineGraph.setSelected(getGraphType()
-				== ProbabilityCalculatorView.GRAPH_LINE);
-		btnStepGraph.setSelected(getGraphType()
-				== ProbabilityCalculatorView.GRAPH_STEP);
-		btnBarGraph.setSelected(getGraphType()
-				== ProbabilityCalculatorView.GRAPH_BAR);
+		btnLineGraph.setActive(getGraphType() == ProbabilityCalculatorView.GRAPH_LINE);
+		btnStepGraph.setActive(getGraphType() == ProbabilityCalculatorView.GRAPH_STEP);
+		btnBarGraph.setActive(getGraphType() == ProbabilityCalculatorView.GRAPH_BAR);
 	}
 
 	/**
@@ -307,31 +343,23 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 		return true;
 	}
 
-	/**
-	 * @return ProbabilitiManager
-	 */
 	@Override
 	public ProbabilityManager getProbManager() {
 		return probManager;
-	}
-
-	/**
-	 * @return plot panel view
-	 */
-	public EuclidianViewW getPlotPanelEuclidianView() {
-		return getPlotPanel();
 	}
 
 	@Override
 	public void setInterval(double low, double high) {
 		setLow(low);
 		setHigh(high);
-		getResultPanel().updateLowHigh("" + low, "" + high);
+		if (getResultPanel() != null) {
+			getResultPanel().updateLowHigh("" + low, "" + high);
+		}
 		setXAxisPoints();
 		updateIntervalProbability();
 		updateGUI();
 	}
-	
+
 	@Override
 	public boolean suggestRepaint() {
 		return false;
@@ -367,8 +395,10 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 				? Math.max(PlotPanelEuclidianViewW.DEFAULT_HEIGHT, maxHeight / 2)
 				: Math.max(maxHeight, 40);
 		getPlotPanel().setPreferredSize(new Dimension(width, height));
-		getPlotPanel().getCanvasElement().getStyle().setMarginTop((maxHeight - height) / 2.0,
-				Unit.PX);
+		double margin = (maxHeight - height) / 2.0;
+
+		getPlotPanel().getCanvasElement().getStyle().setMarginTop(margin, Unit.PX);
+
 		getPlotPanel().repaintView();
 		getPlotPanel().getEuclidianController().calculateEnvironment();
 	}
@@ -385,15 +415,7 @@ public class ProbabilityCalculatorViewW extends ProbabilityCalculatorView {
 		return app;
 	}
 
-	public void setDistributionPanel(DistributionPanel widgets) {
-		this.distrPanel = widgets;
+	public @Nullable ProbabilityCalculatorTableValuesViewModel getModel() {
+		return tableModel;
 	}
-
-	/** table only for discrete distribution
-	 * @return whether the selected distribution discrete is
-	 */
-	public boolean hasTableView() {
-		return isDiscreteProbability();
-	}
-
 }

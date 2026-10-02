@@ -22,18 +22,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.gui.view.algebra.AlgebraOutputFormatFilter;
 import org.geogebra.common.gui.view.algebra.AlgebraView.SortMode;
 import org.geogebra.common.io.XMLStringBuilder;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.Localization;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Settings for the algebra view.
  */
-public class AlgebraSettings extends AbstractSettings {
+public class AlgebraSettings extends AbstractSettings<AlgebraSettings> {
 
 	private SortMode treeMode = SortMode.TYPE;
 
@@ -54,7 +53,7 @@ public class AlgebraSettings extends AbstractSettings {
 	 * @param listeners
 	 *            settings listeners
 	 */
-	public AlgebraSettings(LinkedList<SettingListener> listeners) {
+	public AlgebraSettings(LinkedList<SettingListener<AlgebraSettings>> listeners) {
 		super(listeners);
 	}
 
@@ -67,7 +66,7 @@ public class AlgebraSettings extends AbstractSettings {
 
 	/**
 	 * set tree mode (as int value)
-	 * 
+	 *
 	 * @param val
 	 *            value
 	 */
@@ -86,7 +85,7 @@ public class AlgebraSettings extends AbstractSettings {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return tree mode (as int value)
 	 */
 	public SortMode getTreeMode() {
@@ -95,7 +94,7 @@ public class AlgebraSettings extends AbstractSettings {
 
 	/**
 	 * set if auxiliary objects have to be shown
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -105,7 +104,7 @@ public class AlgebraSettings extends AbstractSettings {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return if auxiliary objects have to be shown
 	 */
 	public boolean getShowAuxiliaryObjects() {
@@ -132,7 +131,7 @@ public class AlgebraSettings extends AbstractSettings {
 	 * Retrieves the set of {@link AlgebraOutputFormatFilter}s.
 	 * @return the set of filters
 	 */
-	public @Nonnull Set<AlgebraOutputFormatFilter> getAlgebraOutputFormatFilters() {
+	public @NonNull Set<AlgebraOutputFormatFilter> getAlgebraOutputFormatFilters() {
 		return algebraOutputFormatFilters;
 	}
 
@@ -142,7 +141,7 @@ public class AlgebraSettings extends AbstractSettings {
 	 * @param algebraOutputFormatFilter the filter to be added
 	 */
 	public void addAlgebraOutputFormatFilter(
-			@Nonnull AlgebraOutputFormatFilter algebraOutputFormatFilter) {
+			@NonNull AlgebraOutputFormatFilter algebraOutputFormatFilter) {
 		algebraOutputFormatFilters.add(algebraOutputFormatFilter);
 	}
 
@@ -152,13 +151,13 @@ public class AlgebraSettings extends AbstractSettings {
 	 * @param algebraOutputFormatFilter the filter to be removed
 	 */
 	public void removeAlgebraOutputFormatFilter(
-			@Nonnull AlgebraOutputFormatFilter algebraOutputFormatFilter) {
+			@NonNull AlgebraOutputFormatFilter algebraOutputFormatFilter) {
 		algebraOutputFormatFilters.remove(algebraOutputFormatFilter);
 	}
 
 	/**
 	 * set the collapsed nodes indices
-	 * 
+	 *
 	 * @param collapsedNodes
 	 *            array of indices
 	 */
@@ -167,12 +166,15 @@ public class AlgebraSettings extends AbstractSettings {
 		settingChanged();
 	}
 
+	/**
+	 * @param collapsedNodes list of collapsed nodes
+	 */
 	public void setCollapsedNodesNoFire(List<Integer> collapsedNodes) {
 		this.collapsedNodes = collapsedNodes;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return list of indices of collapsed nodes
 	 */
 	public List<Integer> getCollapsedNodes() {
@@ -218,8 +220,7 @@ public class AlgebraSettings extends AbstractSettings {
 	 */
 	public static List<String> getDescriptionModes(App app) {
 		Localization loc = app.getLocalization();
-		return AlgebraStyle.getAvailableValues(app)
-				.stream()
+		return AlgebraStyle.getAvailableValues(app).stream()
 				.map(style -> loc.getMenu(style.getTranslationKey()))
 				.collect(Collectors.toList());
 	}

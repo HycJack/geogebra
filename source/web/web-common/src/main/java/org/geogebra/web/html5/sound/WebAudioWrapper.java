@@ -35,6 +35,10 @@ public final class WebAudioWrapper {
 	private ScriptProcessorNode processor;
 
 	interface FunctionAudioListener {
+		/**
+		 * @param t time
+		 * @return amplitude
+		 */
 		double getValueAt(double t);
 	}
 
@@ -59,8 +63,8 @@ public final class WebAudioWrapper {
 
 		processor = context.createScriptProcessor(2048, 0, 1);
 
-		processor.onaudioprocess = ScriptProcessorNode.OnaudioprocessUnionType
-				.of((ScriptProcessorNode.OnaudioprocessFn) this::onAudioProcess);
+		processor.onaudioprocess = ScriptProcessorNode.OnaudioprocessUnionType.of(
+				(ScriptProcessorNode.OnaudioprocessFn) this::onAudioProcess);
 	}
 
 	void start(double min, double max) {

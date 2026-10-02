@@ -33,8 +33,8 @@ import elemental2.dom.FileReader;
 import elemental2.dom.HTMLInputElement;
 import jsinterop.base.Js;
 
-public class CsvImportHandler {
-	protected AppW appW;
+public final class CsvImportHandler {
+	private AppW appW;
 	private DataImportSnackbar progressSnackbar;
 	private final Command csvHandler = () -> {
 		FileUpload csvChooser = getCSVChooser();
@@ -42,8 +42,7 @@ public class CsvImportHandler {
 			csvChooser.click();
 		} else {
 			DialogData data = new DialogData(null, "Cancel", "Overwrite");
-			OverwriteDataDialog overwriteDataDialog = new OverwriteDataDialog(
-					appW, data);
+			OverwriteDataDialog overwriteDataDialog = new OverwriteDataDialog(appW, data);
 			overwriteDataDialog.setOnPositiveAction(csvChooser::click);
 			overwriteDataDialog.show();
 		}
@@ -64,8 +63,7 @@ public class CsvImportHandler {
 			progressSnackbar = new DataImportSnackbar(appW, fileToHandle.name);
 			getTable().getTableValuesModel().removeAllColumns();
 			getTable().clearView();
-			getTable().getTableValuesModel().setOnDataImportedRunnable(
-					progressSnackbar::hide);
+			getTable().getTableValuesModel().setOnDataImportedRunnable(progressSnackbar::hide);
 			openCSV(fileToHandle);
 		});
 
@@ -76,7 +74,7 @@ public class CsvImportHandler {
 	 * open csv file
 	 * @param fileToHandle - selected file
 	 */
-	public final void openCSV(File fileToHandle) {
+	public void openCSV(File fileToHandle) {
 		FileReader reader = new FileReader();
 		String fileName = fileToHandle.name;
 		reader.addEventListener("load", (event) -> {
@@ -89,8 +87,7 @@ public class CsvImportHandler {
 	}
 
 	private void importData(String csv, String fileName) {
-		DataImportHandler handler = new DataImportHandler((AppWFull) appW, fileName,
-				progressSnackbar);
+		DataImportHandler handler = new DataImportHandler((AppWFull) appW, fileName, progressSnackbar);
 		DataImporter importer = new DataImporter(getTable(), handler);
 		importer.importCSV(csv, appW.getLocalization().getDecimalPoint());
 	}

@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.statistics.AlgoPieChart;
 import org.geogebra.common.kernel.statistics.GeoPieChart;
@@ -28,6 +26,7 @@ import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.impl.CommandRedefineHelper;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting the position of the center of a {@link GeoPieChart}.
@@ -62,16 +61,19 @@ public final class PieChartCenterPositionProperty extends AbstractValuedProperty
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
-		return PositionPropertyCollection.validatePointExpression(geoPieChart.getKernel()
-				.getParser(), geoPieChart.getKernel().getLocalization(), value);
+	public @Nullable String validateValue(String value) {
+		return PositionPropertyCollection.validatePointExpression(
+				geoPieChart.getKernel().getParser(), geoPieChart.getKernel().getLocalization(), value);
 	}
 
 	@Override
 	protected void doSetValue(String value) {
-		CommandRedefineHelper.redefineWithParam(geoPieChart, algoPieChart,
-                algoPieChart.getCenterParamIndex(), value,
-                geoPieChart.getKernel().getApplication());
+		CommandRedefineHelper.redefineWithParam(
+				geoPieChart,
+				algoPieChart,
+				algoPieChart.getCenterParamIndex(),
+				value,
+				geoPieChart.getKernel().getApplication());
 	}
 
 	@Override

@@ -29,7 +29,7 @@ import org.geogebra.web.html5.gui.menu.AriaMenuBar;
 import org.gwtproject.core.client.Scheduler.ScheduledCommand;
 import org.gwtproject.resources.client.ResourcePrototype;
 
-public class OrderSubMenu extends AriaMenuBar {
+public final class OrderSubMenu extends AriaMenuBar {
 
 	private App app;
 	private LayerManager layerManager;
@@ -56,8 +56,8 @@ public class OrderSubMenu extends AriaMenuBar {
 	}
 
 	private void addItem(String key, JsConsumer<List<GeoElement>> command) {
-		addItem(factory.newAriaMenuItem((ResourcePrototype) null,
-				app.getLocalization().getMenu(key), wrap(command)));
+		addItem(factory.newAriaMenuItem(
+				(ResourcePrototype) null, app.getLocalization().getMenu(key), wrap(command)));
 	}
 
 	private ScheduledCommand wrap(final JsConsumer<List<GeoElement>> command) {

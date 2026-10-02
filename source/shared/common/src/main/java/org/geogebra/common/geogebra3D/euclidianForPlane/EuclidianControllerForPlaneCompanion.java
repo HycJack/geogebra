@@ -18,8 +18,6 @@ package org.geogebra.common.geogebra3D.euclidianForPlane;
 
 import java.util.ArrayList;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.euclidian.EuclidianController;
 import org.geogebra.common.euclidian.event.AbstractEvent;
 import org.geogebra.common.geogebra3D.euclidianFor3D.EuclidianControllerFor3DCompanion;
@@ -33,15 +31,15 @@ import org.geogebra.common.kernel.kernelND.GeoConicND;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.kernel.matrix.Coords;
 import org.geogebra.common.main.DialogManager.CreateGeoForRotate;
+import org.jspecify.annotations.NonNull;
 
 /**
  * controller creator for view from plane
- * 
+ *
  * @author mathieu
  *
  */
-public class EuclidianControllerForPlaneCompanion
-		extends EuclidianControllerFor3DCompanion {
+public class EuclidianControllerForPlaneCompanion extends EuclidianControllerFor3DCompanion {
 
 	/**
 	 * @param ec
@@ -57,14 +55,12 @@ public class EuclidianControllerForPlaneCompanion
 	}
 
 	@Override
-	protected GeoConicND circle(Construction cons, GeoPointND center,
-			GeoNumberValue radius) {
+	protected GeoConicND circle(Construction cons, GeoPointND center, GeoNumberValue radius) {
 		return circleFor3D(cons, center, radius);
 	}
 
 	@Override
-	public GeoPointND getSingleIntersectionPoint(GeoElement a, GeoElement b,
-			boolean coords2D) {
+	public GeoPointND getSingleIntersectionPoint(GeoElement a, GeoElement b, boolean coords2D) {
 		return super.getSingleIntersectionPoint(a, b, false);
 	}
 
@@ -75,7 +71,7 @@ public class EuclidianControllerForPlaneCompanion
 	}
 
 	@Override
-	public void movePoint(AbstractEvent event, @Nonnull GeoPointND movedPoint) {
+	public void movePoint(AbstractEvent event, @NonNull GeoPointND movedPoint) {
 		Coords coords = getCoordsFromView(ec.xRW, ec.yRW);
 		// cancel 3D controller stuff
 		if (movedPoint.isGeoElement3D()) {
@@ -88,37 +84,33 @@ public class EuclidianControllerForPlaneCompanion
 	}
 
 	@Override
-	protected GeoPointND createNewPoint(boolean forPreviewable,
-			boolean complex) {
+	protected GeoPointND createNewPoint(boolean forPreviewable, boolean complex) {
 
 		Coords coords = getCoordsFromView(ec.xRW, ec.yRW);
 
-		GeoPointND ret = ec.getKernel().getManager3D().point3DIn(null,
-				ec.getView().getPlaneContaining(), coords, !forPreviewable,
-				false);
+		GeoPointND ret = ec.getKernel()
+				.getManager3D()
+				.point3DIn(null, ec.getView().getPlaneContaining(), coords, !forPreviewable, false);
 		return ret;
 	}
 
 	@Override
-	protected GeoPointND createNewPoint(boolean forPreviewable, Path path,
-			boolean complex) {
+	protected GeoPointND createNewPoint(boolean forPreviewable, Path path, boolean complex) {
 		Coords coords = getCoordsFromView(ec.xRW, ec.yRW);
-		return createNewPoint(null, forPreviewable, path, coords.getX(),
-				coords.getY(), coords.getZ(), complex, false);
+		return createNewPoint(
+				null, forPreviewable, path, coords.getX(), coords.getY(), coords.getZ(), complex, false);
 	}
 
 	@Override
-	protected GeoPointND createNewPoint(boolean forPreviewable, Region region,
-			boolean complex) {
+	protected GeoPointND createNewPoint(boolean forPreviewable, Region region, boolean complex) {
 		Coords coords = getCoordsFromView(ec.xRW, ec.yRW);
-		return ec.createNewPoint(null, forPreviewable, region, coords.getX(),
-				coords.getY(), coords.getZ(), complex, false);
+		return ec.createNewPoint(
+				null, forPreviewable, region, coords.getX(), coords.getY(), coords.getZ(), complex, false);
 	}
 
 	@Override
 	protected void processModeLock(GeoPointND point) {
-		Coords coords = ec.getView().getCoordsForView(
-				point.getInhomCoordsInD3());
+		Coords coords = ec.getView().getCoordsForView(point.getInhomCoordsInD3());
 		ec.setRwCoords(coords);
 	}
 
@@ -131,8 +123,7 @@ public class EuclidianControllerForPlaneCompanion
 	}
 
 	@Override
-	public ArrayList<GeoElement> removeParentsOfView(
-			ArrayList<GeoElement> list) {
+	public ArrayList<GeoElement> removeParentsOfView(ArrayList<GeoElement> list) {
 		ArrayList<GeoElement> ret = new ArrayList<>();
 		for (GeoElement geo : list) {
 			if (ec.getView().isMoveable(geo)) {
@@ -149,12 +140,11 @@ public class EuclidianControllerForPlaneCompanion
 	}
 
 	@Override
-	public GeoElement[] rotateByAngle(GeoElement geoRot, GeoNumberValue phi,
-			GeoPointND Q) {
+	public GeoElement[] rotateByAngle(GeoElement geoRot, GeoNumberValue phi, GeoPointND Q) {
 
-		return ec.getKernel().getManager3D().rotate3D(null, geoRot, phi, Q,
-				ec.getView().getDirection());
-
+		return ec.getKernel()
+				.getManager3D()
+				.rotate3D(null, geoRot, phi, Q, ec.getView().getDirection());
 	}
 
 	@Override
@@ -162,5 +152,4 @@ public class EuclidianControllerForPlaneCompanion
 		loc.setCoords(ec.mouseLoc.x, ec.mouseLoc.y, 1.0);
 		return false;
 	}
-
 }

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -19,7 +19,6 @@ package org.geogebra.common.util;
 import static java.util.Map.entry;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -35,18 +34,21 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * either in the current class or in a superclass.
  */
 public final class MockedCasValuesExtension implements BeforeEachCallback {
+
 	@Override
-	public void beforeEach(ExtensionContext context) throws Exception {
+	@SuppressWarnings("PMD.AvoidAccessibilityAlteration")
+	public void beforeEach(ExtensionContext context) throws IllegalAccessException {
 		// Check for test methods annotated with @MockedCasValues
-		MockedCasValues mockedCasValuesAnnotation = context.getTestMethod().get()
-				.getAnnotation(MockedCasValues.class);
+		MockedCasValues mockedCasValuesAnnotation =
+				context.getTestMethod().get().getAnnotation(MockedCasValues.class);
 		if (mockedCasValuesAnnotation == null) {
 			return;
 		}
 
 		// Parse the values of @MockedCasValues
-		List<Map.Entry<String, String>> inputOutputPairs =
-				Arrays.stream(mockedCasValuesAnnotation.value()).map(line -> {
+		List<Map.Entry<String, String>> inputOutputPairs = Arrays.stream(
+						mockedCasValuesAnnotation.value())
+				.map(line -> {
 					String[] parts = line.split(mockedCasValuesAnnotation.delimiter());
 					if (parts.length != 2) {
 						throw new Error("\"" + line + "\" is not in a valid @MockedCasValues "
@@ -55,19 +57,18 @@ public final class MockedCasValuesExtension implements BeforeEachCallback {
 								+ "\"" + mockedCasValuesAnnotation.delimiter() + "\".");
 					}
 					return entry(parts[0].trim(), parts[1].trim());
-				}).collect(Collectors.toList());
+				})
+				.collect(Collectors.toList());
 
 		// Search for MockedCasGiac mockedCasGiac field and its memorize method
 		Object testInstance = context.getRequiredTestInstance();
 		Field mockedCasGiacField = findMockedCasGiacField(testInstance.getClass());
+		// the field likely belongs to a non-public class and should not be public itself
 		mockedCasGiacField.setAccessible(true);
-		Object mockedCasGiacInstance = mockedCasGiacField.get(testInstance);
-		Method memorizeMethod = mockedCasGiacInstance.getClass()
-				.getMethod("memorize", String.class, String.class);
-
+		MockedCasGiac mockedCasGiacInstance = (MockedCasGiac) mockedCasGiacField.get(testInstance);
 		// Call MockedCasGiac::memorize on the parsed input-output pairs
 		for (Map.Entry<String, String> casValue : inputOutputPairs) {
-			memorizeMethod.invoke(mockedCasGiacInstance, casValue.getKey(), casValue.getValue());
+			mockedCasGiacInstance.memorize(casValue.getKey(), casValue.getValue());
 		}
 	}
 

@@ -23,17 +23,17 @@ import org.geogebra.common.kernel.kernelND.GeoConicND;
 
 /**
  * Extension used for extrusion
- * 
+ *
  * @author Mathieu
  *
  */
-public class AlgoQuadricLimitedConicHeightCylinderForExtrusion extends
-		AlgoQuadricLimitedConicHeightCylinder implements AlgoForExtrusion {
+public class AlgoQuadricLimitedConicHeightCylinderForExtrusion
+		extends AlgoQuadricLimitedConicHeightCylinder implements AlgoForExtrusion {
 
 	private ExtrusionComputer extrusionComputer;
 
 	/**
-	 * 
+	 *
 	 * @param c
 	 *            construction
 	 * @param labels
@@ -43,8 +43,8 @@ public class AlgoQuadricLimitedConicHeightCylinderForExtrusion extends
 	 * @param height
 	 *            height
 	 */
-	public AlgoQuadricLimitedConicHeightCylinderForExtrusion(Construction c,
-			String[] labels, GeoConicND bottom, GeoNumberValue height) {
+	public AlgoQuadricLimitedConicHeightCylinderForExtrusion(
+			Construction c, String[] labels, GeoConicND bottom, GeoNumberValue height) {
 		super(c, labels, bottom, height);
 	}
 
@@ -64,10 +64,5 @@ public class AlgoQuadricLimitedConicHeightCylinderForExtrusion extends
 	@Override
 	public GeoElement getGeoToHandle() {
 		return getTopFace();
-	}
-
-	@Override
-	public void setOutputPointsEuclidianVisible(boolean visible) {
-		super.setOutputPointsEuclidianVisible(visible);
 	}
 }

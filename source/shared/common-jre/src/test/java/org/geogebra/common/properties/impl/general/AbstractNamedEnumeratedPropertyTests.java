@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -17,78 +17,80 @@
 package org.geogebra.common.properties.impl.general;
 
 import static java.util.Map.entry;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Map;
 
-import org.geogebra.common.BaseUnitTest;
+import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.ValueFilter;
 import org.geogebra.common.properties.impl.AbstractNamedEnumeratedProperty;
-import org.junit.Test;
+import org.geogebra.test.BaseAppTestSetup;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class AbstractNamedEnumeratedPropertyTests extends BaseUnitTest {
+class AbstractNamedEnumeratedPropertyTests extends BaseAppTestSetup {
 	private AbstractNamedEnumeratedProperty<String> namedEnumeratedProperty;
 
-	@Override
-	public void setup() {
-		super.setup();
-
+	@BeforeEach
+	void setup() {
+		setupApp(SuiteSubApp.GRAPHING);
 		namedEnumeratedProperty = new TestNamedEnumeratedProperty(
 				getLocalization(),
 				"Test property",
-				List.of(entry("value1", "Value One"),
-						entry("value2", "Value Two"),
-						entry("value3", "Value Three")));
+				List.of(
+						entry("value1", "_Value One"),
+						entry("value2", "_Value Two"),
+						entry("value3", "_Value Three")));
 	}
 
 	@Test
-	public void testInitialNamedValues() {
-		assertEquals(List.of("value1", "value2", "value3"),
-				namedEnumeratedProperty.getValues());
-		assertArrayEquals(new String[]{ "Value One", "Value Two", "Value Three" },
+	void testInitialNamedValues() {
+		assertEquals(List.of("value1", "value2", "value3"), namedEnumeratedProperty.getValues());
+		assertArrayEquals(
+				new String[] {"_Value One", "_Value Two", "_Value Three"},
 				namedEnumeratedProperty.getValueNames());
 	}
 
 	@Test
-	public void testNamedValuesWithValueFilters() {
+	void testNamedValuesWithValueFilters() {
 		TestValueFilter valueFilter1 = new TestValueFilter(List.of("value2", "invalid value"));
 		TestValueFilter valueFilter2 = new TestValueFilter(List.of("value3"));
 		TestValueFilter valueFilter3 = new TestValueFilter(List.of("value2"));
 
 		namedEnumeratedProperty.addValueFilter(valueFilter1);
 		assertEquals(List.of("value1", "value3"), namedEnumeratedProperty.getValues());
-		assertArrayEquals(new String[]{ "Value One", "Value Three" },
-				namedEnumeratedProperty.getValueNames());
+		assertArrayEquals(
+				new String[] {"_Value One", "_Value Three"}, namedEnumeratedProperty.getValueNames());
 
 		namedEnumeratedProperty.addValueFilter(valueFilter2);
 		assertEquals(List.of("value1"), namedEnumeratedProperty.getValues());
-		assertArrayEquals(new String[]{ "Value One" }, namedEnumeratedProperty.getValueNames());
+		assertArrayEquals(new String[] {"_Value One"}, namedEnumeratedProperty.getValueNames());
 
 		namedEnumeratedProperty.addValueFilter(valueFilter3);
 		assertEquals(List.of("value1"), namedEnumeratedProperty.getValues());
-		assertArrayEquals(new String[]{ "Value One" }, namedEnumeratedProperty.getValueNames());
+		assertArrayEquals(new String[] {"_Value One"}, namedEnumeratedProperty.getValueNames());
 
 		namedEnumeratedProperty.removeValueFilter(valueFilter1);
 		assertEquals(List.of("value1"), namedEnumeratedProperty.getValues());
-		assertArrayEquals(new String[]{ "Value One" }, namedEnumeratedProperty.getValueNames());
+		assertArrayEquals(new String[] {"_Value One"}, namedEnumeratedProperty.getValueNames());
 
 		namedEnumeratedProperty.removeValueFilter(valueFilter2);
 		assertEquals(List.of("value1", "value3"), namedEnumeratedProperty.getValues());
-		assertArrayEquals(new String[]{ "Value One", "Value Three" },
-				namedEnumeratedProperty.getValueNames());
+		assertArrayEquals(
+				new String[] {"_Value One", "_Value Three"}, namedEnumeratedProperty.getValueNames());
 
 		namedEnumeratedProperty.removeValueFilter(valueFilter3);
-		assertEquals(List.of("value1", "value2", "value3"),
-				namedEnumeratedProperty.getValues());
-		assertArrayEquals(new String[]{ "Value One", "Value Two", "Value Three" },
+		assertEquals(List.of("value1", "value2", "value3"), namedEnumeratedProperty.getValues());
+		assertArrayEquals(
+				new String[] {"_Value One", "_Value Two", "_Value Three"},
 				namedEnumeratedProperty.getValueNames());
 	}
 
 	@Test
-	public void testValueChangesWithValueFilter() {
+	void testValueChangesWithValueFilter() {
 		TestValueFilter valueFilter1 = new TestValueFilter(List.of("value1"));
 
 		namedEnumeratedProperty.addValueFilter(valueFilter1);
@@ -112,10 +114,8 @@ public class AbstractNamedEnumeratedPropertyTests extends BaseUnitTest {
 			extends AbstractNamedEnumeratedProperty<String> {
 		private String value;
 
-		public TestNamedEnumeratedProperty(
-				Localization localization,
-				String name,
-				List<Map.Entry<String, String>> namedValues) {
+		TestNamedEnumeratedProperty(
+				Localization localization, String name, List<Map.Entry<String, String>> namedValues) {
 			super(localization, name);
 			value = namedValues.get(0).getKey();
 			setNamedValues(namedValues);
@@ -135,7 +135,7 @@ public class AbstractNamedEnumeratedPropertyTests extends BaseUnitTest {
 	private static final class TestValueFilter implements ValueFilter {
 		private final List<String> filteredValues;
 
-		public TestValueFilter(List<String> filteredValues) {
+		TestValueFilter(List<String> filteredValues) {
 			this.filteredValues = filteredValues;
 		}
 

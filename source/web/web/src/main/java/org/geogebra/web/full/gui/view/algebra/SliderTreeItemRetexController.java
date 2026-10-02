@@ -25,6 +25,7 @@ import org.gwtproject.event.dom.client.MouseEvent;
 import org.gwtproject.event.dom.client.MouseMoveEvent;
 import org.gwtproject.timer.client.Timer;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Controller for slider items in AV that use RETEX editor.
@@ -32,7 +33,7 @@ import org.gwtproject.user.client.ui.Widget;
  * @author laszlo
  *
  */
-public class SliderTreeItemRetexController extends LatexTreeItemController {
+public final class SliderTreeItemRetexController extends LatexTreeItemController {
 
 	private final SliderTreeItemRetex slider;
 	private boolean hasUnsavedChanges;
@@ -49,7 +50,7 @@ public class SliderTreeItemRetexController extends LatexTreeItemController {
 	}
 
 	@Override
-	protected void onPointerUp(AbstractEvent event) {
+	protected void onPointerUp(@NonNull AbstractEvent event) {
 		selectionCtrl.setSelectHandled(false);
 		if (slider.getMinMax().isVisible()) {
 			return;
@@ -67,8 +68,7 @@ public class SliderTreeItemRetexController extends LatexTreeItemController {
 		evt.stopPropagation();
 
 		if (isWidgetHit(slider.controls.getAnimPanel(), evt)
-				|| (slider.getMinMax() != null
-						&& slider.getMinMax().isVisible())
+				|| (slider.getMinMax() != null && slider.getMinMax().isVisible())
 				|| checkMarbleHit(evt)) {
 			return;
 		}
@@ -88,7 +88,6 @@ public class SliderTreeItemRetexController extends LatexTreeItemController {
 
 		if (isAnotherMinMaxOpen()) {
 			slider.selectItem(false);
-
 		}
 
 		if (slider.getMinMax() != null && slider.getMinMax().isVisible()) {
@@ -109,7 +108,6 @@ public class SliderTreeItemRetexController extends LatexTreeItemController {
 		}
 
 		return false;
-
 	}
 
 	private void handleMinMaxHit(boolean minHit) {
@@ -121,7 +119,6 @@ public class SliderTreeItemRetexController extends LatexTreeItemController {
 			slider.getMinMax().setMaxFocus();
 		}
 		getApp().getKernel().notifyRepaint();
-
 	}
 
 	@Override
@@ -136,8 +133,7 @@ public class SliderTreeItemRetexController extends LatexTreeItemController {
 	@Override
 	protected boolean canEditStart(MouseEvent<?> event) {
 
-		return super.canEditStart(event)
-				&& isWidgetHit(item.getDefinitionValuePanel(), event);
+		return super.canEditStart(event) && isWidgetHit(item.getDefinitionValuePanel(), event);
 	}
 
 	private static boolean isWidgetHit(Widget w, int x, int y) {
@@ -156,13 +152,11 @@ public class SliderTreeItemRetexController extends LatexTreeItemController {
 	 * @return true if another SliderTreeItem's min/max panel is showing.
 	 */
 	boolean isAnotherMinMaxOpen() {
-		return !MinMaxPanel.isOpenedPanel(null)
-				&& !MinMaxPanel.isOpenedPanel(slider.getMinMax());
+		return !MinMaxPanel.isOpenedPanel(null) && !MinMaxPanel.isOpenedPanel(slider.getMinMax());
 	}
 
 	private boolean isClickedOutMinMax(int x, int y) {
-		return MinMaxPanel.isOpenedPanel(slider.getMinMax())
-				&& !isWidgetHit(slider.getMinMax(), x, y);
+		return MinMaxPanel.isOpenedPanel(slider.getMinMax()) && !isWidgetHit(slider.getMinMax(), x, y);
 	}
 
 	/**

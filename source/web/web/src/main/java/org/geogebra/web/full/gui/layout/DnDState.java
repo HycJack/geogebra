@@ -18,10 +18,10 @@ package org.geogebra.web.full.gui.layout;
 
 /**
  * The state of the drag and drop procedure.
- * 
+ *
  * @author Florian Sonner
  */
-public class DnDState {
+public final class DnDState {
 	/**
 	 * The panel will be placed in the top area of the target panel.
 	 */
@@ -62,13 +62,13 @@ public class DnDState {
 
 	/**
 	 * The panel will be placed on the left side of the split pane (just for
-	 * vertical split panes). 
+	 * vertical split panes).
 	 */
 	public static final int LEFT_OUT = 128;
 
 	/**
 	 * The panel which was dragged by the user. Can't be changed from the
-	 * outside as a new source should create a new DockState. 
+	 * outside as a new source should create a new DockState.
 	 */
 	private DockPanelW source;
 
@@ -94,7 +94,7 @@ public class DnDState {
 	public void setTarget(DockPanelW target) {
 		this.target = target;
 	}
-	
+
 	public DockPanelW getTarget() {
 		return target;
 	}
@@ -114,6 +114,9 @@ public class DnDState {
 		return region;
 	}
 
+	/**
+	 * @return whether the current region is one of the "out" regions.
+	 */
 	public boolean isRegionOut() {
 		return region >= TOP_OUT;
 	}

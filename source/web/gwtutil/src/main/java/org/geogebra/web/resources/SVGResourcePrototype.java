@@ -17,6 +17,7 @@
 package org.geogebra.web.resources;
 
 import org.geogebra.gwtutil.DOMParser;
+import org.geogebra.gwtutil.JsObject;
 import org.geogebra.gwtutil.XMLSerializer;
 import org.gwtproject.safehtml.shared.SafeUri;
 import org.gwtproject.safehtml.shared.UriUtils;
@@ -31,8 +32,8 @@ import jsinterop.base.Js;
  */
 public class SVGResourcePrototype implements SVGResource {
 
-	public static final SVGResource EMPTY = new SVGResourcePrototype("empty",
-			"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"/>");
+	public static final SVGResource EMPTY = new SVGResourcePrototype(
+			"empty", "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"/>");
 	private static final DOMParser parser = new DOMParser();
 	private static final XMLSerializer serializer = new XMLSerializer();
 
@@ -73,8 +74,7 @@ public class SVGResourcePrototype implements SVGResource {
 	 */
 	public static String createFilled(String color, String svg) {
 		Document doc = parser.parseFromString(svg, "image/svg+xml");
-		CSSStyleDeclaration style = Js.uncheckedCast(Js.asPropertyMap(doc)
-				.nestedGet("rootElement.style"));
+		CSSStyleDeclaration style = Js.uncheckedCast(JsObject.of(doc).nestedGet("rootElement.style"));
 		if (style != null) {
 			style.setProperty("fill", color);
 		}
@@ -86,6 +86,9 @@ public class SVGResourcePrototype implements SVGResource {
 		return svg;
 	}
 
+	/**
+	 * @return data URL of this image
+	 */
 	public String getUrl() {
 		return "data:image/svg+xml;base64," + DomGlobal.btoa(svg);
 	}

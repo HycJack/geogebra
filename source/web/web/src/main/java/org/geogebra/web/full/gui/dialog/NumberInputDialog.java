@@ -21,7 +21,7 @@ import org.geogebra.web.full.gui.components.ComponentInputDialog;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.components.dialog.DialogData;
 
-public class NumberInputDialog extends ComponentInputDialog {
+public final class NumberInputDialog extends ComponentInputDialog {
 
 	/**
 	 * dialog constructor
@@ -33,11 +33,15 @@ public class NumberInputDialog extends ComponentInputDialog {
 	 * @param labelText - label of input text field
 	 * @param initText - initial text of the field
 	 */
-	public NumberInputDialog(AppW app, DialogData dialogData,
-			boolean autoHide, boolean hasScrim, InputHandler inputHandler,
-			String labelText, String initText) {
-		super(app, dialogData, autoHide, hasScrim, inputHandler, labelText, initText
-		);
+	public NumberInputDialog(
+			AppW app,
+			DialogData dialogData,
+			boolean autoHide,
+			boolean hasScrim,
+			InputHandler inputHandler,
+			String labelText,
+			String initText) {
+		super(app, dialogData, autoHide, hasScrim, inputHandler, labelText, initText);
 	}
 
 	@Override

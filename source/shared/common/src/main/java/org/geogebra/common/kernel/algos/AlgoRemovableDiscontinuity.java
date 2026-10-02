@@ -28,7 +28,6 @@ import org.geogebra.common.kernel.arithmetic.ArbitraryConstantRegistry;
 import org.geogebra.common.kernel.arithmetic.Equation;
 import org.geogebra.common.kernel.arithmetic.ExpressionNode;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
-import org.geogebra.common.kernel.arithmetic.Function;
 import org.geogebra.common.kernel.arithmetic.NumberValue;
 import org.geogebra.common.kernel.arithmetic.Traversing;
 import org.geogebra.common.kernel.cas.UsesCAS;
@@ -43,8 +42,7 @@ import org.geogebra.common.plugin.Operation;
 import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.common.util.debug.Log;
 
-public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements
-		UsesCAS {
+public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements UsesCAS {
 
 	private final GeoFunction f; // input
 	private final ArbitraryConstantRegistry arbconst = new ArbitraryConstantRegistry(this);
@@ -73,8 +71,12 @@ public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements
 	 * @param setLabels whether to set labels
 	 * @param checkLimitsSymbolically Whether to check if limits are equal symbolically (no GIAC)
 	 */
-	public AlgoRemovableDiscontinuity(Construction cons, GeoFunction f, String[] labels,
-			boolean setLabels, boolean checkLimitsSymbolically) {
+	public AlgoRemovableDiscontinuity(
+			Construction cons,
+			GeoFunction f,
+			String[] labels,
+			boolean setLabels,
+			boolean checkLimitsSymbolically) {
 		super(cons, labels, setLabels);
 
 		this.f = f;
@@ -100,9 +102,9 @@ public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements
 
 	@Override
 	public void compute() {
-		Function fun = f.getFunction();
+		ExpressionNode fun = f.getFunctionExpression();
 		List<MyPoint> result = new ArrayList<>();
-		solveExpr(fun.getExpression(), result);
+		solveExpr(fun, result);
 
 		double[] xs = new double[result.size()];
 		double[] ys = new double[result.size()];
@@ -123,8 +125,8 @@ public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements
 			ExpressionNode node = expr.wrap();
 			if (node.getOperation() == Operation.DIVIDE
 					&& node.getRight().wrap().containsFreeFunctionVariable(null)) {
-					solveDivision(node.getRight(), result);
-				}
+				solveDivision(node.getRight(), result);
+			}
 			solveExpr(node.getLeft(), result);
 			solveExpr(node.getRight(), result);
 		}
@@ -136,7 +138,7 @@ public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements
 		for (NumberValue value : values) {
 			double x = value.getDouble();
 			if (checkLimitsSymbolically) {
-				add(x, limit(x, 0), result);
+				add(x, limit(value, 0), result);
 			} else if (hasEqualLimit(x, NUMERIC_LIMIT_CHECK_PRECISION)) {
 				add(x, f.value(x + NUMERIC_LIMIT_CHECK_PRECISION), result);
 			}
@@ -173,14 +175,14 @@ public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements
 		}
 	}
 
-	private double limit(double x, int direction) { // from AlgoLimitAbove
+	private double limit(NumberValue x, int direction) { // from AlgoLimitAbove
 		String limitString = f.getLimit(x, direction);
 
 		try {
-			String numStr = kernel.evaluateCachedGeoGebraCAS(limitString,
-					arbconst);
+			String numStr = kernel.evaluateCachedGeoGebraCAS(limitString, arbconst);
 
-			return kernel.getAlgebraProcessor()
+			return kernel
+					.getAlgebraProcessor()
 					.evaluateToNumeric(numStr, ErrorHelper.silent())
 					.getDouble();
 		} catch (Throwable e) {
@@ -203,12 +205,10 @@ public class AlgoRemovableDiscontinuity extends AlgoGeoPointsFunction implements
 
 		@Override
 		public ExpressionValue process(ExpressionValue ev) {
-			if (ev instanceof Equation) {
-				Equation equation = (Equation) ev;
+			if (ev instanceof Equation equation) {
 				ExpressionValue rhs = equation.getRHS().unwrap();
 				ExpressionNode lhs = equation.getLHS();
-				if (lhs.containsFunctionVariable("x") && rhs instanceof NumberValue) {
-					NumberValue numberValue = (NumberValue) rhs;
+				if (lhs.containsFunctionVariable("x") && rhs instanceof NumberValue numberValue) {
 					values.add(numberValue);
 				}
 			}

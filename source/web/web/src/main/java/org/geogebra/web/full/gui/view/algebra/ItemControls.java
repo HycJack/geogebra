@@ -32,14 +32,13 @@ import org.geogebra.web.html5.util.DataTest;
 import org.geogebra.web.html5.util.HasDataTest;
 import org.geogebra.web.html5.util.TestHarness;
 import org.gwtproject.core.client.Scheduler;
-import org.gwtproject.dom.style.shared.Unit;
 import org.gwtproject.user.client.ui.FlowPanel;
 
 /**
  * Item action bar
  *
  */
-public class ItemControls extends FlowPanel
+public final class ItemControls extends FlowPanel
 		implements AnimPanelListener, SetLabels, HasDataTest {
 
 	private final RadioTreeItem radioTreeItem;
@@ -74,12 +73,11 @@ public class ItemControls extends FlowPanel
 	 */
 	public StandardButton getMoreButton() {
 		if (btnMore == null) {
-			btnMore = new
-					StandardButton(MaterialDesignResources.INSTANCE.more_vert_black(), 24);
+			btnMore = new StandardButton(MaterialDesignResources.INSTANCE.more_vert_black(), 24);
 			btnMore.addStyleName("more");
 			btnMore.addFastClickHandler((event) -> {
-					getController().preventBlur();
-					openMoreMenu();
+				getController().preventBlur();
+				openMoreMenu();
 			});
 			btnMore.addKeyActivateHandler(this::openMoreMenu);
 		}
@@ -107,8 +105,7 @@ public class ItemControls extends FlowPanel
 	}
 
 	void focusFirstMoreMenuElement() {
-		Scheduler.get().scheduleDeferred(
-				() -> cmMore.wrappedPopup.getPopupMenu().moveSelectionDown());
+		Scheduler.get().scheduleDeferred(() -> cmMore.wrappedPopup.getPopupMenu().moveSelectionDown());
 	}
 
 	private void showMoreMenuForInput() {
@@ -126,7 +123,7 @@ public class ItemControls extends FlowPanel
 	AsyncOperation<GeoElementND[]> createOpenMenuCallback() {
 		return obj -> {
 			GeoElement geo = null;
-			if (obj != null && obj.length == 1)  {
+			if (obj != null && obj.length == 1) {
 				geo = (GeoElement) obj[0];
 			}
 
@@ -157,7 +154,7 @@ public class ItemControls extends FlowPanel
 	}
 
 	private void showMoreMenu() {
-		cmMore.show(btnMore, 0, - 8);
+		cmMore.show(btnMore, 0, -8);
 	}
 
 	private void cancelEditItem() {
@@ -201,7 +198,8 @@ public class ItemControls extends FlowPanel
 	}
 
 	private void buildAnimPanel() {
-		if (radioTreeItem.geo != null && radioTreeItem.geo.isAnimatable()
+		if (radioTreeItem.geo != null
+				&& radioTreeItem.geo.isAnimatable()
 				&& animPanelFits(radioTreeItem.geo)) {
 			if (animPanel == null) {
 				createAnimPanel();
@@ -222,7 +220,7 @@ public class ItemControls extends FlowPanel
 	/**
 	 *
 	 */
-	protected void createAnimPanel() {
+	private void createAnimPanel() {
 		GeoElement geo = radioTreeItem.geo;
 		if (geo.isAnimatable() && animPanelFits(geo)) {
 			animPanel = new AnimPanel(radioTreeItem, this);
@@ -241,8 +239,7 @@ public class ItemControls extends FlowPanel
 		if (geo instanceof GeoNumeric) {
 			return radioTreeItem.getItemFactory().matchSlider(geo);
 		}
-		return geo.getApp().getSettings().getAlgebra()
-				.getStyle() == AlgebraStyle.DEFINITION_AND_VALUE
+		return geo.getApp().getSettings().getAlgebra().getStyle() == AlgebraStyle.DEFINITION_AND_VALUE
 				&& !(geo instanceof GeoTurtle);
 	}
 
@@ -276,8 +273,7 @@ public class ItemControls extends FlowPanel
 				|| getController().selectionCtrl.isEmpty()) {
 			radioTreeItem.setFirst(radioTreeItem.first);
 			clear();
-			if (radioTreeItem.geo.isAnimatable()
-					&& animPanelFits(radioTreeItem.geo)) {
+			if (radioTreeItem.geo.isAnimatable() && animPanelFits(radioTreeItem.geo)) {
 				if (animPanel == null) {
 					createAnimPanel();
 				}
@@ -299,15 +295,6 @@ public class ItemControls extends FlowPanel
 
 		updateAnimPanel();
 		return ret;
-	}
-
-	/**
-	 * Remove animation panel
-	 */
-	public void removeAnimPanel() {
-		if (hasAnimPanel()) {
-			remove(animPanel);
-		}
 	}
 
 	/**
@@ -353,20 +340,7 @@ public class ItemControls extends FlowPanel
 	 * Update position
 	 */
 	public void reposition() {
-
-		Scheduler.get().scheduleDeferred(() -> {
-			int right = getItemRightOffset();
-			getElement().getStyle().setRight(right, Unit.PX);
-		});
-	}
-
-	/**
-	 * @return distance of item's right border from AV right border
-	 */
-	protected int getItemRightOffset() {
-		int itemWidth = radioTreeItem.getItemWidth();
-		int avWidth = radioTreeItem.getAV().getOffsetWidth();
-		return Math.max(0, itemWidth - avWidth);
+		// not needed
 	}
 
 	/**

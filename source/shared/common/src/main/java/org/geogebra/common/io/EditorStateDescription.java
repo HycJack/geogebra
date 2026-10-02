@@ -56,7 +56,7 @@ public class EditorStateDescription {
 			}
 			jso.put("caret", caretPathJson);
 			return jso.toString();
-		} catch (JSONException e) {
+		} catch (JSONException ignored) {
 			// only if integers are not valid doubles
 		}
 		return "";
@@ -77,8 +77,7 @@ public class EditorStateDescription {
 					caretPath.add(caretPathJson.getInt(index));
 				}
 			}
-			return new EditorStateDescription(jso.getString("content"),
-					caretPath);
+			return new EditorStateDescription(jso.getString("content"), caretPath);
 		} catch (JSONException e) {
 			Log.debug(e);
 		}
@@ -98,5 +97,4 @@ public class EditorStateDescription {
 	public ArrayList<Integer> getCaretPath() {
 		return caretPath;
 	}
-
 }

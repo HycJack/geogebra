@@ -30,7 +30,7 @@ import org.gwtproject.user.client.ui.RequiresResize;
 /**
  * context menu
  */
-public class ContextMenuPopup extends StandardButton
+public final class ContextMenuPopup extends StandardButton
 		implements CloseHandler<GPopupPanel>, RequiresResize {
 
 	private final AppW app;
@@ -102,7 +102,7 @@ public class ContextMenuPopup extends StandardButton
 	public void onClose(CloseEvent<GPopupPanel> event) {
 		hideMenu();
 	}
-	
+
 	/**
 	 * @return in the menu open
 	 */

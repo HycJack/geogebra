@@ -24,7 +24,7 @@ import org.geogebra.web.resources.SVGResource;
 /**
  * Specific behavior for CAS app
  */
-public class CASActivity extends BaseActivity {
+public final class CASActivity extends BaseActivity {
 
 	/**
 	 * Graphing activity
@@ -39,13 +39,7 @@ public class CASActivity extends BaseActivity {
 	}
 
 	@Override
-	public boolean useValidInput() {
-		return false;
-	}
-
-	@Override
 	public void start(AppW app) {
-		app.getAsyncManager().prefetch(null,
-				"giac", "cas", "advanced", "scripting", "stats");
+		app.getAsyncManager().prefetch(null, "giac", "cas", "advanced", "scripting", "stats");
 	}
 }

@@ -33,7 +33,7 @@ import elemental2.dom.BaseRenderingContext2D;
 import elemental2.dom.CanvasRenderingContext2D;
 import jsinterop.base.Js;
 
-public class CustomColorDialog extends ComponentDialog {
+public final class CustomColorDialog extends ComponentDialog {
 	private static final int PREVIEW_HEIGHT = 40;
 	private static final int PREVIEW_WIDTH = 258;
 	private ColorComponent red;
@@ -58,11 +58,11 @@ public class CustomColorDialog extends ComponentDialog {
 		void onCustomColor(GColor color);
 	}
 
-	private class ColorComponent extends FlowPanel {
+	private final class ColorComponent extends FlowPanel {
 		private Slider slider;
 		private GSpinnerW spinner;
 
-		public ColorComponent() {
+		private ColorComponent() {
 			setStyleName("colorComponent");
 
 			FlowPanel sp = new FlowPanel();
@@ -76,14 +76,14 @@ public class CustomColorDialog extends ComponentDialog {
 			sp.add(minLabel);
 			sp.add(slider);
 			sp.add(maxLabel);
-	
+
 			spinner = new GSpinnerW();
 			spinner.setMinValue(0);
 			spinner.setMaxValue(255);
 			spinner.setStepValue(1);
 			add(sp);
 			add(spinner);
-					
+
 			spinner.addChangeHandler(event -> {
 				slider.setValue(Integer.parseInt(spinner.getValue()));
 				preview.update();
@@ -93,30 +93,29 @@ public class CustomColorDialog extends ComponentDialog {
 				preview.update();
 			});
 		}
-		
-		public void setValue(Integer value) {
+
+		void setValue(Integer value) {
 			slider.setValue(value);
 			spinner.setValue(value.toString());
 		}
 
-		public int getValue() {
+		int getValue() {
 			return slider.getValue();
 		}
 	}
-	
-	private class PreviewPanel extends FlowPanel {
-		private Label title;
-		private Canvas canvas;
-		private CanvasRenderingContext2D ctx;
 
-		public PreviewPanel(GColor oColor) {
+	private final class PreviewPanel extends FlowPanel {
+		private final Label title;
+		private final CanvasRenderingContext2D ctx;
+
+		private PreviewPanel(GColor oColor) {
 			setStyleName("CustomColorPreview");
 			title = new Label();
 			if (getApplication().isWhiteboardActive()) {
 				title.addStyleName("previewLbl");
 			}
 			add(title);
-			canvas = Canvas.createIfSupported();
+			Canvas canvas = Canvas.createIfSupported();
 			canvas.setSize(PREVIEW_WIDTH + "px", PREVIEW_HEIGHT + "px");
 			canvas.setCoordinateSpaceHeight(PREVIEW_HEIGHT);
 			canvas.setCoordinateSpaceWidth(PREVIEW_WIDTH * 2);
@@ -127,20 +126,20 @@ public class CustomColorDialog extends ComponentDialog {
 
 		/**
 		 * Reset both color rectangles to original color.
-		 * 
+		 *
 		 * @param oColor
 		 *            color for both rectangles
 		 */
-		public void reset(GColor oColor) {
+		void reset(GColor oColor) {
 			drawRect(0, oColor);
 			drawRect(PREVIEW_WIDTH, oColor);
 		}
 
-		public void update() {
+		void update() {
 			drawRect(PREVIEW_WIDTH, getColor());
 		}
-		
-		protected void drawRect(int x, GColor color) {
+
+		void drawRect(int x, GColor color) {
 			String htmlColor = StringUtil.toHtmlColor(color);
 			ctx.fillStyle = BaseRenderingContext2D.FillStyleUnionType.of(htmlColor);
 			ctx.globalAlpha = 1.0;
@@ -155,7 +154,7 @@ public class CustomColorDialog extends ComponentDialog {
 
 	/**
 	 * Create new color dialog.
-	 * 
+	 *
 	 * @param app application
 	 * @param data dialog data
 	 * @param listener custom color listener
@@ -164,8 +163,8 @@ public class CustomColorDialog extends ComponentDialog {
 		super((AppW) app, data, false, true);
 		loc = app.getLocalization();
 		addStyleName("customColor");
-		this.origColor = listener.getSelectedColor() != null
-				? listener.getSelectedColor() : GColor.BLACK;
+		this.origColor =
+				listener.getSelectedColor() != null ? listener.getSelectedColor() : GColor.BLACK;
 		createGUI();
 		setOnPositiveAction(() -> {
 			if (listener != null) {
@@ -173,16 +172,15 @@ public class CustomColorDialog extends ComponentDialog {
 			}
 		});
 	}
-	
+
 	/**
 	 * @return custom color
 	 */
 	private GColor getColor() {
-		return GColor.newColor(red.getValue(), green.getValue(),
-				blue.getValue());
+		return GColor.newColor(red.getValue(), green.getValue(), blue.getValue());
 	}
 
-	protected void createGUI() {
+	private void createGUI() {
 		red = new ColorComponent();
 		red.setTitle(StringUtil.capitalize(loc.getColor("red")));
 		green = new ColorComponent();
@@ -203,7 +201,7 @@ public class CustomColorDialog extends ComponentDialog {
 	/**
 	 * Update textfield from original color
 	 */
-	protected void setOriginalValues() {
+	private void setOriginalValues() {
 		red.setValue(origColor.getRed());
 		green.setValue(origColor.getGreen());
 		blue.setValue(origColor.getBlue());
@@ -211,7 +209,7 @@ public class CustomColorDialog extends ComponentDialog {
 
 	/**
 	 * Show and initialize with a color.
-	 * 
+	 *
 	 * @param color
 	 *            new initial color
 	 */

@@ -16,19 +16,18 @@
 
 package org.geogebra.editor.share.catalog;
 
-import javax.annotation.CheckForNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Factory for creating single character templates.
  */
 class CharacterTemplateFactory {
 
-	@CheckForNull CharacterTemplate createCharacter(String name) {
+	@Nullable CharacterTemplate createCharacter(String name) {
 		if (name == null || name.length() != 1) {
 			return null;
 		}
 		char code = name.charAt(0);
 		return new CharacterTemplate(name, code, CharacterTemplate.TYPE_CHARACTER);
 	}
-
 }

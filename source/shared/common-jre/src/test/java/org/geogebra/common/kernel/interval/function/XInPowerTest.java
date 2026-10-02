@@ -2,24 +2,25 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.interval.function;
 
-import static org.geogebra.common.kernel.interval.IntervalHelper.around;
 import static org.geogebra.common.kernel.interval.IntervalHelper.interval;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.connected;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.connectedInterval;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,44 +28,46 @@ import java.util.List;
 
 import org.geogebra.common.kernel.geos.GeoFunction;
 import org.geogebra.common.kernel.interval.Interval;
+import org.geogebra.common.kernel.interval.IntervalSet;
 import org.geogebra.common.kernel.interval.SamplerTest;
 import org.geogebra.common.kernel.interval.TuplesQuery;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class XInPowerTest extends SamplerTest {
+class XInPowerTest extends SamplerTest {
 	private final GeoFunctionConverter converter = new GeoFunctionConverter();
 
 	@Test
-	public void twoPowerX() {
+	void twoPowerX() {
 		IntervalTupleList tuples = functionValues("2^x", -5, 5, -5, 5);
 		TuplesQuery query = new TuplesQuery(tuples);
 		assertFalse(query.noDefinedTuples());
 	}
 
 	@Test
-	public void sinEPowerX() {
+	void sinEPowerX() {
 		IntervalTupleList tuples = functionValues("sin(e^x)", -5, 5, -5, 5);
 		TuplesQuery query = new TuplesQuery(tuples);
 		assertFalse(query.noDefinedTuples());
 	}
 
 	@Test
-	public void twoPowerXEvaluate() {
+	void twoPowerXEvaluate() {
 		IntervalNodeFunction function = createFunction("2^x");
 		List<Double> values = Arrays.asList(0.0625, 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0);
 		List<Interval> expected = new ArrayList<>();
 		List<Interval> actual = new ArrayList<>();
 		int x = -4;
-		for (Double value: values) {
+		for (Double value : values) {
 			expected.add(interval(value));
-			actual.add(function.value(around(x)));
+			IntervalSet set = connected(x, x);
+			actual.add(function.value(connectedInterval(set)));
 			x++;
 		}
 		assertEquals(expected, actual);
 	}
 
 	@Test
-	public void twoPowerXEvaluate1() {
+	void twoPowerXEvaluate1() {
 		IntervalNodeFunction function = createFunction("2^x");
 		assertEquals(interval(0.0625), function.value(interval(-4)));
 		assertEquals(interval(2), function.value(interval(1)));
@@ -77,7 +80,7 @@ public class XInPowerTest extends SamplerTest {
 	}
 
 	@Test
-	public void equalityTest() {
+	void equalityTest() {
 		shouldBeEqual("x");
 		shouldBeEqual("2x");
 	}
@@ -86,13 +89,12 @@ public class XInPowerTest extends SamplerTest {
 		GeoFunction geoFunction = add(definition);
 		IntervalNodeFunction nodeFunction = converter.convert(geoFunction);
 		for (double x = -10; x < 10; x += 1E-4) {
-			assertEquals(interval(geoFunction.evaluate(x, 0)),
-					nodeFunction.value(interval(x)));
+			assertEquals(interval(geoFunction.evaluate(x, 0)), nodeFunction.value(interval(x)));
 		}
 	}
 
 	@Test
-	public void sinEquality() {
+	void sinEquality() {
 		shouldBeEqual("sin(x)");
 	}
 }

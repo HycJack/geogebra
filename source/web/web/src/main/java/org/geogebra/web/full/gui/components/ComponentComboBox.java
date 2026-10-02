@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -39,8 +39,8 @@ import org.gwtproject.user.client.DOM;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 
-public class ComponentComboBox extends FlowPanel implements SetLabels,
-		ConfigurationUpdateDelegate, VisibilityUpdateDelegate {
+public final class ComponentComboBox extends FlowPanel
+		implements SetLabels, ConfigurationUpdateDelegate, VisibilityUpdateDelegate {
 	private final AppW appW;
 	private final AutoCompleteTextFieldW inputTextField;
 	private Label label;
@@ -48,6 +48,7 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 	private DropDownComboBoxController controller;
 	private final String controlsID;
 	private ComboBox comboBoxProperty;
+	private String previousValue = "";
 
 	public ComponentComboBox(AppW app, String label, List<String> items) {
 		this(app, label, () -> items);
@@ -85,9 +86,15 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 		this.comboBoxProperty = property;
 		setValue(property.getValue());
 		addChangeHandler(() -> {
+			String previousValue = property.getValue();
 			String text = getSelectedText().trim();
 			property.setValue(text);
 			String message = property.getErrorMessage();
+			if (message != null && property.restoresPreviousValueOnInvalidInput()) {
+				property.setValue(previousValue);
+				setValue(previousValue);
+				message = null;
+			}
 			AriaHelper.setErrorMessage(inputTextField.getTextBox(), message);
 			setStyleName("error", message != null);
 		});
@@ -96,13 +103,13 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 	}
 
 	private void initController(Supplier<List<String>> items) {
-		controller = new DropDownComboBoxController(appW, comboBoxProperty, this, items,
-				labelTextKey, this::onClose, null);
+		controller = new DropDownComboBoxController(
+				appW, comboBoxProperty, this, items, labelTextKey, this::onClose, null);
 		controller.addChangeHandler(() -> updateSelectionText(getSelectedText()));
 		controller.setPopupID(controlsID);
 		controller.setFocusAnchor(inputTextField.getInputElement());
-		controller.addHighlightingListener(id ->
-				AriaHelper.setActiveDescendant(inputTextField.getTextBox(), id));
+		controller.addHighlightingListener(
+				id -> AriaHelper.setActiveDescendant(inputTextField.getTextBox(), id));
 		inputTextField.setUpDownArrowHandler(controller);
 		updateSelectionText(getSelectedText());
 	}
@@ -181,6 +188,7 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 		inputTextField.getTextBox().addFocusHandler(event -> {
 			addStyleName("focusState");
 			addStyleName("active");
+			previousValue = getSelectedText();
 		});
 		inputTextField.getTextBox().addBlurHandler(event -> {
 			removeStyleName("focusState");
@@ -192,10 +200,8 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 	 * Add mouse over/ out handlers.
 	 */
 	private void addHoverHandlers() {
-		inputTextField.getTextBox()
-				.addMouseOverHandler(event -> addStyleName("hoverState"));
-		inputTextField.getTextBox()
-				.addMouseOutHandler(event -> removeStyleName("hoverState"));
+		inputTextField.getTextBox().addMouseOverHandler(event -> addStyleName("hoverState"));
+		inputTextField.getTextBox().addMouseOutHandler(event -> removeStyleName("hoverState"));
 	}
 
 	private void addFieldKeyAndPointerHandler() {
@@ -206,8 +212,9 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 					setExpanded(false);
 				}
 				controller.onInputChange(inputTextField.getText());
-				inputTextField.setFocus(true);
+				Scheduler.get().scheduleDeferred(() -> inputTextField.setFocus(true));
 			} else if (event.getNativeKeyCode() == GWTKeycodes.KEY_ESCAPE) {
+				inputTextField.setText(previousValue);
 				setExpanded(false);
 				inputTextField.setFocus(true);
 			}
@@ -236,8 +243,7 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 
 	private void setExpanded(boolean expanded) {
 		if (expanded) {
-			controller.setSelectedOption(controller.possibleSelectedIndex(
-					inputTextField.getText()));
+			controller.setSelectedOption(controller.possibleSelectedIndex(inputTextField.getText()));
 			controller.showAsComboBox();
 			AriaHelper.setAriaExpanded(inputTextField.getTextBox(), true);
 			Scheduler.get().scheduleDeferred(() -> inputTextField.setFocus(true));
@@ -264,6 +270,9 @@ public class ComponentComboBox extends FlowPanel implements SetLabels,
 		}
 	}
 
+	/**
+	 * @return index of the selected option, or -1 if nothing is selected.
+	 */
 	public int getSelectedIndex() {
 		return controller.getSelectedIndex();
 	}

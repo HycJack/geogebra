@@ -18,9 +18,6 @@ package org.geogebra.web.html5.gui;
 
 import java.util.ArrayList;
 
-import javax.annotation.CheckForNull;
-
-import org.geogebra.common.annotation.MissingDoc;
 import org.geogebra.common.euclidian.EuclidianStyleBar;
 import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.euclidian.SymbolicEditor;
@@ -38,6 +35,7 @@ import org.geogebra.web.html5.gui.view.browser.BrowseViewI;
 import org.geogebra.web.html5.gui.view.button.StandardButton;
 import org.geogebra.web.html5.main.TemplateChooserControllerI;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 /**
  * GUI manager for the web platform.
@@ -82,10 +80,20 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void removeFromToolbarDefinition(int mode);
 
-	@MissingDoc
+	/**
+	 * Returns the currently set custom toolbar definition string.
+	 * This is the user-defined toolbar configuration (if any).
+	 *
+	 * @return custom toolbar definition or null/empty if none is set
+	 */
 	String getCustomToolbarDefinition();
 
-	@MissingDoc
+	/**
+	 * Returns the input help panel which provides contextual help for
+	 * algebra/command input (for example syntax or suggestions).
+	 *
+	 * @return the input help panel instance or null if not initialized
+	 */
 	SetLabels getInputHelpPanel();
 
 	/**
@@ -99,7 +107,11 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void addAlgebraInput(AlgebraInput ai);
 
-	@MissingDoc
+	/**
+	 * Returns the current algebra input component used by the application.
+	 *
+	 * @return the AlgebraInput instance or null if not present
+	 */
 	AlgebraInput getAlgebraInput();
 
 	/**
@@ -108,7 +120,9 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void setActiveToolbarId(int toolbarID);
 
-	@MissingDoc
+	/**
+	 * Removes any currently displayed context menu popup from the UI.
+	 */
 	void removePopup();
 
 	/**
@@ -123,7 +137,9 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void setActiveView(int evID);
 
-	@MissingDoc
+	/**
+	 * @return whether dragging views is currently enabled.
+	 */
 	boolean isDraggingViews();
 
 	/**
@@ -133,7 +149,9 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void setDraggingViews(boolean enable, boolean temporary);
 
-	@MissingDoc
+	/**
+	 * Refreshes view state and visuals related to dragging operations.
+	 */
 	void refreshDraggingViews();
 
 	/**
@@ -194,13 +212,17 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 * @param ev view
 	 * @param dynamicStylebar style bar
 	 */
-	void addStylebar(EuclidianView ev,
-					 EuclidianStyleBar dynamicStylebar);
+	void addStylebar(EuclidianView ev, EuclidianStyleBar dynamicStylebar);
 
-	@MissingDoc
+	/**
+	 * Recalculates scaling-related variables (pixel ratio).
+	 */
 	void recalculateEnvironments();
 
-	@MissingDoc
+	/**
+	 * Exports the current construction to a GeoGebra file (.ggb) and
+	 * triggers the appropriate save/download flow.
+	 */
 	void exportGGB();
 
 	/**
@@ -221,13 +243,22 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	String getTooltipURL(int mode);
 
-	@MissingDoc
+	/**
+	 * Updates the enabled/disabled state and visibility of toolbar actions
+	 * to reflect the current application state and selection.
+	 */
 	void updateToolbarActions();
 
-	@MissingDoc
+	/**
+	 * Resets the application menu to its default state. This will rebuild
+	 * menu entries and clear any transient selection or open submenu.
+	 */
 	void resetMenu();
 
-	@MissingDoc
+	/**
+	 * Resets the application menu only when the screen size or orientation
+	 * has changed. Useful to reflow menu layout for responsive UIs.
+	 */
 	void resetMenuIfScreenChanged();
 
 	@Override
@@ -239,7 +270,9 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void setActivePanelAndToolbar(int viewID);
 
-	@MissingDoc
+	/**
+	 * Switches the tool panel (sidebar) to show the algebra view.
+	 */
 	void switchToolsToAV();
 
 	/**
@@ -255,11 +288,6 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 * When we remove all drawable, we must to clear this AbsolutePanel too.
 	 */
 	void clearAbsolutePanels();
-
-	/**
-	 * Update global tab of properties if exists
-	 */
-	void updateGlobalOptions();
 
 	/**
 	 * @param fallback fallback value
@@ -283,7 +311,10 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void updateUnbundledToolbar();
 
-	@MissingDoc
+	/**
+	 * Updates the contents (buttons and groups) of the unbundled toolbar
+	 * without recreating the whole toolbar structure.
+	 */
 	void updateUnbundledToolbarContent();
 
 	/**
@@ -333,6 +364,11 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	void removeGeoFromTV(String label);
 
 	/**
+	 * Shows/hides algebra view
+	 */
+	void toggleAlgebraView();
+
+	/**
 	 * Shows/hides table of values view
 	 */
 	void toggleTableValuesView();
@@ -351,7 +387,11 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	 */
 	void showPointsTV(int column, boolean show);
 
-	@MissingDoc
+	/**
+	 * Returns whether the algebra view is currently active/focused.
+	 *
+	 * @return true if algebra view is active, false otherwise
+	 */
 	boolean isAlgebraViewActive();
 
 	/**
@@ -360,7 +400,7 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	boolean toolbarHasImageMode();
 
 	/**
-	 * Add a custom tool with given properties
+	 * Add a custom tool with given properties.
 	 *
 	 * @param iconUrl the URL of the tool icon.
 	 * @param name The name of the tool.
@@ -375,11 +415,16 @@ public interface GuiManagerInterfaceW extends GuiManagerInterface {
 	void toggleSpreadsheetView();
 
 	/**
+	 * Show or hide the distribution view (Classic or unbundled).
+	 */
+	void toggleDistributionView();
+
+	/**
 	 * Open a help page in a new tab or external browser (if running in Electron)
 	 * @param page page type
 	 * @param detail page specifier
 	 */
-	void openHelp(ManualPage page, @CheckForNull String detail);
+	void openHelp(ManualPage page, @Nullable String detail);
 
 	/**
 	 * Focus keyboard input (AV, CAS), if not available, focus active graphics.

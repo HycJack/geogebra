@@ -27,7 +27,9 @@ import jsinterop.base.Js;
 /**
  * Injects scripts into parent document
  */
-public class JavaScriptInjector {
+public final class JavaScriptInjector {
+
+	private JavaScriptInjector() {}
 
 	/**
 	 * @param scriptResource
@@ -60,8 +62,7 @@ public class JavaScriptInjector {
 	}
 
 	private static HTMLScriptElement createScriptElement(String id) {
-		HTMLScriptElement script = Js.uncheckedCast(DomGlobal.document
-				.createElement("script"));
+		HTMLScriptElement script = Js.uncheckedCast(DomGlobal.document.createElement("script"));
 		script.id = id;
 		script.className = StyleInjector.CLASSNAME;
 		return script;

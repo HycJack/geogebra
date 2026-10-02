@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -72,53 +72,80 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Creates new ToolNameIconPanel in a Tool Creation Dialog
-	 * 
+	 *
 	 * @param app
 	 *            Application to which the Tool Creation Dialog belongs
 	 */
 	public ToolNameIconPanelD(final AppD app, boolean edithappens) {
 		this.app = app;
-		Localization loc = app.getLocalization();
+		final Localization loc = app.getLocalization();
 		this.editHappens = edithappens;
 		GridBagLayout namePanelLayout = new GridBagLayout();
-		namePanelLayout.rowWeights = new double[] { 0.1, 0.1, 0.1, 0.1, 0.0 };
-		namePanelLayout.rowHeights = new int[] { 7, 7, 7, 20, 7 };
-		namePanelLayout.columnWidths = new int[] { 7, 7, 7 };
-		namePanelLayout.columnWeights = new double[] { 0.1, 0.9, 0.1 };
-		namePanelLayout.rowWeights = new double[] { 0.1, 0.1, 0.1, 0.1, 0.1 };
-		namePanelLayout.rowHeights = new int[] { 7, 7, 7, 20, 20 };
-		namePanelLayout.columnWidths = new int[] { 7, 7, 7 };
-		namePanelLayout.columnWeights = new double[] { 0.1, 0.9, 0.1 };
-		namePanelLayout.rowWeights = new double[] { 0.1, 0.1, 0.1, 0.1 };
-		namePanelLayout.rowHeights = new int[] { 7, 7, 7, 20 };
-		namePanelLayout.columnWeights = new double[] { 0.1, 0.9, 0.1 };
-		namePanelLayout.columnWidths = new int[] { 7, 7, 7 };
+		namePanelLayout.rowWeights = new double[] {0.1, 0.1, 0.1, 0.1, 0.0};
+		namePanelLayout.rowHeights = new int[] {7, 7, 7, 20, 7};
+		namePanelLayout.columnWidths = new int[] {7, 7, 7};
+		namePanelLayout.columnWeights = new double[] {0.1, 0.9, 0.1};
+		namePanelLayout.rowWeights = new double[] {0.1, 0.1, 0.1, 0.1, 0.1};
+		namePanelLayout.rowHeights = new int[] {7, 7, 7, 20, 20};
+		namePanelLayout.columnWidths = new int[] {7, 7, 7};
+		namePanelLayout.columnWeights = new double[] {0.1, 0.9, 0.1};
+		namePanelLayout.rowWeights = new double[] {0.1, 0.1, 0.1, 0.1};
+		namePanelLayout.rowHeights = new int[] {7, 7, 7, 20};
+		namePanelLayout.columnWeights = new double[] {0.1, 0.9, 0.1};
+		namePanelLayout.columnWidths = new int[] {7, 7, 7};
 		setLayout(namePanelLayout);
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		{
-			JLabel labelToolName = new JLabel();
-			add(labelToolName,
-					new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-							GridBagConstraints.EAST, GridBagConstraints.NONE,
-							new Insets(0, 0, 0, 10), 0, 0));
-			labelToolName.setText(loc.getMenu("ToolName"));
-		}
-		{
-			JLabel labelCmdName = new JLabel();
-			add(labelCmdName,
-					new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-							GridBagConstraints.EAST, GridBagConstraints.NONE,
-							new Insets(0, 0, 0, 10), 0, 0));
-			labelCmdName.setText(loc.getMenu("CommandName"));
-		}
-		{
-			JLabel labelToolHelp = new JLabel();
-			add(labelToolHelp,
-					new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-							GridBagConstraints.EAST, GridBagConstraints.NONE,
-							new Insets(0, 0, 0, 10), 0, 0));
-			labelToolHelp.setText(loc.getMenu("ToolHelp"));
-		}
+
+		JLabel labelToolName = new JLabel();
+		add(
+				labelToolName,
+				new GridBagConstraints(
+						0,
+						0,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.EAST,
+						GridBagConstraints.NONE,
+						new Insets(0, 0, 0, 10),
+						0,
+						0));
+		labelToolName.setText(loc.getMenu("ToolName"));
+
+		JLabel labelCmdName = new JLabel();
+		add(
+				labelCmdName,
+				new GridBagConstraints(
+						0,
+						1,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.EAST,
+						GridBagConstraints.NONE,
+						new Insets(0, 0, 0, 10),
+						0,
+						0));
+		labelCmdName.setText(loc.getMenu("CommandName"));
+
+		JLabel labelToolHelp = new JLabel();
+		add(
+				labelToolHelp,
+				new GridBagConstraints(
+						0,
+						2,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.EAST,
+						GridBagConstraints.NONE,
+						new Insets(0, 0, 0, 10),
+						0,
+						0));
+		labelToolHelp.setText(loc.getMenu("ToolHelp"));
 		KeyListener kl = new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -135,54 +162,102 @@ public class ToolNameIconPanelD extends JPanel {
 				// only handles release
 			}
 		};
-		{
-			tfToolName = new MyTextFieldD(app);
-			int n = app.getKernel().getMacroNumber() + 1;
-			tfToolName.setText(loc.getMenu("Tool") + n);
-			add(tfToolName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-					GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-					new Insets(0, 0, 0, 0), 0, 0));
-			tfToolName.addKeyListener(kl);
-		}
-		{
-			tfCmdName = new MyTextFieldD(app);
-			tfCmdName.setText(tfToolName.getText());
-			add(tfCmdName, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-					GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-					new Insets(0, 0, 0, 0), 0, 0));
-			FocusListener fl = new FocusListener() {
-				@Override
-				public void focusGained(FocusEvent arg0) {
-					// only handles blur
-				}
+		tfToolName = new MyTextFieldD(app);
+		int n = app.getKernel().getMacroNumber() + 1;
+		tfToolName.setText(loc.getMenu("Tool") + n);
+		add(
+				tfToolName,
+				new GridBagConstraints(
+						1,
+						0,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.CENTER,
+						GridBagConstraints.HORIZONTAL,
+						new Insets(0, 0, 0, 0),
+						0,
+						0));
+		tfToolName.addKeyListener(kl);
 
-				@Override
-				public void focusLost(FocusEvent e) {
-					updateCmdName(e.getSource());
-				}
-			};
-			tfCmdName.addFocusListener(fl);
-		}
-		{
-			tfToolHelp = new MyTextFieldD(app);
-			add(tfToolHelp, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-					GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-					new Insets(0, 0, 0, 0), 0, 0));
-		}
-		{
-			labelIcon = new JLabel();
-			labelIcon.setIcon(new ImageIcon(app.getToolIconImage(null)));
-			add(labelIcon,
-					new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-							GridBagConstraints.CENTER, GridBagConstraints.NONE,
-							new Insets(0, 0, 0, 0), 0, 0));
-		}
+		tfCmdName = new MyTextFieldD(app);
+		tfCmdName.setText(tfToolName.getText());
+		add(
+				tfCmdName,
+				new GridBagConstraints(
+						1,
+						1,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.CENTER,
+						GridBagConstraints.HORIZONTAL,
+						new Insets(0, 0, 0, 0),
+						0,
+						0));
+		FocusListener fl = new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				// only handles blur
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateCmdName(e.getSource());
+			}
+		};
+		tfCmdName.addFocusListener(fl);
+
+		tfToolHelp = new MyTextFieldD(app);
+		add(
+				tfToolHelp,
+				new GridBagConstraints(
+						1,
+						2,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.CENTER,
+						GridBagConstraints.HORIZONTAL,
+						new Insets(0, 0, 0, 0),
+						0,
+						0));
+
+		labelIcon = new JLabel();
+		labelIcon.setIcon(new ImageIcon(app.getToolIconImage(null)));
+		add(
+				labelIcon,
+				new GridBagConstraints(
+						0,
+						3,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.CENTER,
+						GridBagConstraints.NONE,
+						new Insets(0, 0, 0, 0),
+						0,
+						0));
 
 		btIconFile = new JButton();
-		add(btIconFile,
-				new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
-						GridBagConstraints.CENTER, GridBagConstraints.NONE,
-						new Insets(0, 0, 0, 0), 0, 0));
+		add(
+				btIconFile,
+				new GridBagConstraints(
+						0,
+						4,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.CENTER,
+						GridBagConstraints.NONE,
+						new Insets(0, 0, 0, 0),
+						0,
+						0));
 		btIconFile.setText(loc.getMenu("Icon") + " ...");
 
 		btIconFile.addActionListener(e -> {
@@ -193,10 +268,20 @@ public class ToolNameIconPanelD extends JPanel {
 		});
 
 		cbShowInToolBar = new JCheckBox();
-		add(cbShowInToolBar,
-				new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
-						GridBagConstraints.WEST, GridBagConstraints.NONE,
-						new Insets(0, 0, 0, 0), 0, 0));
+		add(
+				cbShowInToolBar,
+				new GridBagConstraints(
+						1,
+						3,
+						1,
+						1,
+						0.0,
+						0.0,
+						GridBagConstraints.WEST,
+						GridBagConstraints.NONE,
+						new Insets(0, 0, 0, 0),
+						0,
+						0));
 		cbShowInToolBar.setText(loc.getMenu("ShowInToolBar"));
 		cbShowInToolBar.setSelected(true);
 		cbShowInToolBar.addActionListener(e -> {
@@ -209,10 +294,9 @@ public class ToolNameIconPanelD extends JPanel {
 				if (active) {
 					app.getGuiManager().refreshCustomToolsInToolBar();
 				} else {
-					app.getGuiManager().removeFromToolbarDefinition(
-							macro.getKernel().getMacroID(macro)
-									+ EuclidianConstants.MACRO_MODE_ID_OFFSET
-					);
+					app.getGuiManager()
+							.removeFromToolbarDefinition(
+									macro.getKernel().getMacroID(macro) + EuclidianConstants.MACRO_MODE_ID_OFFSET);
 				}
 				app.updateToolBar();
 				app.updateMenubar();
@@ -222,8 +306,8 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Uses the textfields in this dialog to set the currently shown macro.
-	 * 
-	 * @see #init(ToolManagerDialogD, Macro) 
+	 *
+	 * @see #init(ToolManagerDialogD, Macro)
 	 *
 	 */
 	private void updateMacro() {
@@ -254,7 +338,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Sets all fields using properties of a macro
-	 * 
+	 *
 	 * @param macro
 	 *            macro whose parameters are used
 	 */
@@ -270,7 +354,7 @@ public class ToolNameIconPanelD extends JPanel {
 	 * Inits the textfields in this dialog using the properties of the given
 	 * macro. The ToolManagerDialog is registered as a listener to be updated
 	 * whenever the macro properties are changed.
-	 * 
+	 *
 	 * @param macro1
 	 *            Macro into which new name, help, etc. are stored
 	 * @param managerDialog1
@@ -313,7 +397,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Returns command name
-	 * 
+	 *
 	 * @return command name
 	 */
 	public String getCommandName() {
@@ -322,7 +406,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Gets tool name
-	 * 
+	 *
 	 * @return tool name
 	 */
 	public String getToolName() {
@@ -331,7 +415,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Sets tool name
-	 * 
+	 *
 	 * @param toolName tool name
 	 */
 	public void setToolName(String toolName) {
@@ -340,7 +424,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Gets tool help
-	 * 
+	 *
 	 * @return tool help
 	 */
 	public String getToolHelp() {
@@ -349,7 +433,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Sets tool help (e.g. for tooltip)
-	 * 
+	 *
 	 * @param toolHelp
 	 *            tool help
 	 */
@@ -359,7 +443,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Returns true if the macro should be displayed in toolbar
-	 * 
+	 *
 	 * @return true if "Show in toolbar" checkbox is selected
 	 */
 	public boolean showInToolBar() {
@@ -368,7 +452,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Sets icon filename and updates thumbnail.
-	 * 
+	 *
 	 * @param fileName
 	 *            Path to new icon file.
 	 * @version 2010-06-14 Last change: separated from #actionPerformed (Zbynek
@@ -377,11 +461,9 @@ public class ToolNameIconPanelD extends JPanel {
 	public void setIconFileName(String fileName) {
 		MyImageD image = app.getExternalImage(fileName);
 		if (image != null) {
-			if (image.getWidth() != ICON_WIDTH
-					|| image.getHeight() != ICON_HEIGHT) {
-				BufferedImage bi = ImageResizer.resizeImage(
-						(BufferedImage) image.getImage(), ICON_WIDTH,
-						ICON_HEIGHT);
+			if (image.getWidth() != ICON_WIDTH || image.getHeight() != ICON_HEIGHT) {
+				BufferedImage bi =
+						ImageResizer.resizeImage((BufferedImage) image.getImage(), ICON_WIDTH, ICON_HEIGHT);
 				image = new MyImageD(bi);
 				app.addExternalImage(fileName, image);
 			}
@@ -396,7 +478,7 @@ public class ToolNameIconPanelD extends JPanel {
 
 	/**
 	 * Returns filename of icon.
-	 * 
+	 *
 	 * @return filename of icon
 	 */
 	public String getIconFileName() {
@@ -404,14 +486,12 @@ public class ToolNameIconPanelD extends JPanel {
 	}
 
 	private void updateCmdName(Object source) {
-		String cmdName = source == tfToolName ? tfToolName.getText()
-				: tfCmdName.getText();
+		String cmdName = source == tfToolName ? tfToolName.getText() : tfCmdName.getText();
 
 		// remove spaces
 		cmdName = cmdName.replaceAll(" ", "");
 		try {
-			String parsed = app.getKernel().getAlgebraProcessor()
-					.parseLabel(cmdName);
+			String parsed = app.getKernel().getAlgebraProcessor().parseLabel(cmdName);
 			if (!parsed.equals(tfCmdName.getText())) {
 				tfCmdName.setText(parsed);
 			}
@@ -425,5 +505,4 @@ public class ToolNameIconPanelD extends JPanel {
 		int n = app.getKernel().getMacroNumber() + 1;
 		return app.getLocalization().getMenu("Tool") + n;
 	}
-
 }

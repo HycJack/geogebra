@@ -21,7 +21,7 @@ import org.geogebra.web.full.gui.view.algebra.RadioTreeItem;
 import org.gwtproject.core.client.Scheduler;
 import org.gwtproject.user.client.ui.ScrollPanel;
 
-public class AlgebraViewScroller {
+public final class AlgebraViewScroller {
 	private int savedPosition;
 	private final ScrollPanel panel;
 	private final AlgebraViewW view;
@@ -40,8 +40,7 @@ public class AlgebraViewScroller {
 	 */
 	public void toActiveItem() {
 
-		final RadioTreeItem item = view == null ? null
-				: view.getActiveTreeItem();
+		final RadioTreeItem item = view == null ? null : view.getActiveTreeItem();
 		if (item == null || !item.hasFocus()) {
 			return;
 		}
@@ -50,7 +49,6 @@ public class AlgebraViewScroller {
 			Scheduler.get().scheduleDeferred(this::toBottom);
 		} else {
 			Scheduler.get().scheduleDeferred(this::setPositionToActiveItem);
-
 		}
 	}
 

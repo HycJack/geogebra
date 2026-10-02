@@ -19,8 +19,6 @@ package org.geogebra.web.full.gui.menu;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.exam.ExamType;
@@ -69,11 +67,12 @@ import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.RequiresResize;
 import org.gwtproject.user.client.ui.SimplePanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Controller for the main menu in the apps.
  */
-public class MenuViewController implements EventRenderable, SetLabels, RequiresResize {
+public final class MenuViewController implements EventRenderable, SetLabels, RequiresResize {
 
 	private MenuViewListener menuViewListener;
 
@@ -115,8 +114,8 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 		localization = app.getLocalization();
 		frame = app.getAppletFrame();
 		loginOperation = app.getLoginOperation();
-		menuIconResource = new MenuIconResource(app.isUsingFontAwesome()
-				? new MebisMenuIconProvider() : new DefaultMenuIconProvider());
+		menuIconResource = new MenuIconResource(
+				app.isUsingFontAwesome() ? new MebisMenuIconProvider() : new DefaultMenuIconProvider());
 	}
 
 	private void createViews() {
@@ -173,20 +172,20 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 		}
 	}
 
-	private DrawerMenuFactory createDefaultMenuFactory(AppW app,
-			GeoGebraConstants.Version version) {
+	private DrawerMenuFactory createDefaultMenuFactory(AppW app, GeoGebraConstants.Version version) {
 		if (app.isByCS()) {
-			return new MebisDrawerMenuFactory(app.getPlatform(), version, app.getLoginOperation(),
-					app.enableFileFeatures());
+			return new MebisDrawerMenuFactory(
+					app.getPlatform(), version, app.getLoginOperation(), app.enableFileFeatures());
 		} else {
 			boolean addAppSwitcher = app.isSuite();
 			String versionStr = GeoGebraConstants.getVersionString6();
-			String versionString = app.getLocalization().getPlainDefault("VersionA",
-					"Version %0", versionStr);
+			String versionString =
+					app.getLocalization().getPlainDefault("VersionA", "Version %0", versionStr);
 			if (app.getLAF().hasHelpMenu()) {
 				return new DefaultDrawerMenuFactory(
 						app.getPlatform(),
-						version, versionString,
+						version,
+						versionString,
 						hasLoginButton(app) ? app.getLoginOperation() : null,
 						shouldCreateExamEntry(app),
 						app.enableFileFeatures(),
@@ -195,7 +194,8 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 			}
 			return new ExternalDrawerMenuFactory(
 					app.getPlatform(),
-					version, versionString,
+					version,
+					versionString,
 					hasLoginButton(app) ? app.getLoginOperation() : null,
 					shouldCreateExamEntry(app),
 					app.enableFileFeatures(),
@@ -228,15 +228,15 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 		return examType == null || getEnabledSubAppsFor(examType).size() > 1;
 	}
 
-	private @Nonnull List<SuiteSubApp> getEnabledSubAppsFor(ExamType examType) {
+	private @NonNull List<SuiteSubApp> getEnabledSubAppsFor(ExamType examType) {
 		Restrictions restrictions = examType.createRestrictions();
-		return SuiteSubApp.availableValues().stream().filter(subApp -> !restrictions
-				.getDisabledSubApps().contains(subApp)).collect(Collectors.toList());
+		return SuiteSubApp.availableValues().stream()
+				.filter(subApp -> !restrictions.getDisabledSubApps().contains(subApp))
+				.collect(Collectors.toList());
 	}
 
 	private boolean hasLoginButton(AppW app) {
-		return (app.getConfig().getVersion() != GeoGebraConstants.Version.SCIENTIFIC
-				|| app.isSuite())
+		return (app.getConfig().getVersion() != GeoGebraConstants.Version.SCIENTIFIC || app.isSuite())
 				&& !app.isByCS()
 				&& app.enableOnlineFileFeatures();
 	}
@@ -276,8 +276,7 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 	 * Sets the menu to exam.
 	 */
 	public void setExamMenu() {
-		menuActionRouter =
-				new MenuActionRouter(examActionHandlerFactory.create(), this, localization);
+		menuActionRouter = new MenuActionRouter(examActionHandlerFactory.create(), this, localization);
 		setDrawerMenu(examDrawerMenuFactory.createDrawerMenu(frame.getApp()));
 	}
 
@@ -345,15 +344,13 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 		}
 	}
 
-	private boolean isLastGroupOfGroupList(MenuItemGroup group,
-			List<MenuItemGroup> menuItemGroups) {
+	private boolean isLastGroupOfGroupList(MenuItemGroup group, List<MenuItemGroup> menuItemGroups) {
 		return menuItemGroups.get(menuItemGroups.size() - 1).equals(group);
 	}
 
 	void showSubmenu(HeaderedMenuView headeredSubmenu) {
 		submenuContainer.setWidget(headeredSubmenu);
 		setSubmenuVisibility(true);
-
 	}
 
 	void hideSubmenuAndMoveFocus() {
@@ -409,15 +406,13 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 		if (user == null) {
 			return AppResources.INSTANCE.empty();
 		}
-		return new ImageResourcePrototype("user_icon",
-				UriUtils.fromString(user.getImageURL()),
-				0, 0, 36, 36, false, false);
+		return new ImageResourcePrototype(
+				"user_icon", UriUtils.fromString(user.getImageURL()), 0, 0, 36, 36, false, false);
 	}
 
 	@Override
 	public void onResize() {
-		headerView.setVisible(frame.hasSmallWindowOrCompactHeader()
-				&& activeMenu.getTitle() != null);
+		headerView.setVisible(frame.hasSmallWindowOrCompactHeader() && activeMenu.getTitle() != null);
 	}
 
 	@Override

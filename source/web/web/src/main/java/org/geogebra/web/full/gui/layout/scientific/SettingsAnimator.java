@@ -26,7 +26,7 @@ import org.gwtproject.user.client.ui.Widget;
  * Uses fade-in fade-out animations for large screen
  * and slide-in slide-out animations for small screen.
  */
-public class SettingsAnimator extends Animator {
+public final class SettingsAnimator extends Animator {
 
 	/**
 	 * @param frame The frame of the whole app.
@@ -35,15 +35,9 @@ public class SettingsAnimator extends Animator {
 	public SettingsAnimator(GeoGebraFrameW frame, Widget animatable) {
 		super(frame, animatable);
 
-		largeScreenAnimation =
-				new Animation(
-						"panelFadeIn",
-						"panelFadeOut");
+		largeScreenAnimation = new Animation("panelFadeIn", "panelFadeOut");
 		largeScreenAnimation.setFadeAnimation(true);
 
-		smallScreenAnimation =
-				new Animation(
-						"animateInFromRight",
-						"animateOutToRight");
+		smallScreenAnimation = new Animation("animateInFromRight", "animateOutToRight");
 	}
 }

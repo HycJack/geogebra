@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -18,8 +18,6 @@ package org.geogebra.common.kernel.statistics;
 
 import java.util.ArrayList;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.common.io.XMLStringBuilder;
 import org.geogebra.common.kernel.Construction;
@@ -31,13 +29,14 @@ import org.geogebra.common.kernel.geos.DescriptionMode;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.plugin.GeoClass;
+import org.jspecify.annotations.NonNull;
 
 public class GeoPieChart extends GeoElement implements ChartStyleGeo {
 	private final ArrayList<Double> data = new ArrayList<>();
 	private GPoint2D center;
 	private double radius = 3;
-	private final ChartStyle chartStyle = new ChartStyle(new int[]{0x6557d2, 0xe0bf00,
-			0x3bb4a6, 0xda6a9d, 0x3b1c32, 0xff8c70});
+	private final ChartStyle chartStyle =
+			new ChartStyle(new int[] {0x6557d2, 0xe0bf00, 0x3bb4a6, 0xda6a9d, 0x3b1c32, 0xff8c70});
 
 	/**
 	 * Creates new GeoElement for given construction
@@ -163,7 +162,7 @@ public class GeoPieChart extends GeoElement implements ChartStyleGeo {
 	}
 
 	@Override
-	public @Nonnull ChartStyle getStyle() {
+	public @NonNull ChartStyle getStyle() {
 		return chartStyle;
 	}
 

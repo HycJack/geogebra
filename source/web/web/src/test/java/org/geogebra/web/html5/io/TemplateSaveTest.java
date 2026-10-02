@@ -29,7 +29,6 @@ import org.geogebra.web.test.AppMocker;
 import org.geogebra.web.test.GgbMockitoTestRunner;
 import org.geogebra.web.util.file.FileIO;
 import org.gwtproject.user.client.ui.RootPanel;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,26 +38,21 @@ import com.google.gwtmockito.WithClassesToStub;
 @WithClassesToStub({JLMContext2D.class, RootPanel.class})
 public class TemplateSaveTest {
 
-	@Before
-	public void initAssertions() {
-		this.getClass().getClassLoader().setDefaultAssertionStatus(false);
-	}
-
 	@Test
 	public void testSaveTemplate() {
 		AppletParameters articleElement = new AppletParameters("notes");
 		AppWFull app = AppMocker.mockApplet(articleElement);
 		app.getSaveController().setSaveType(Material.MaterialType.ggsTemplate);
 		PenToolsSettings settings = app.getSettings().getPenTools();
-		settings.setLastPenThickness(30);
+		settings.setLastPenThickness(60);
 		settings.setLastSelectedPenColor(GColor.newColor(204, 0, 153));
-		settings.setLastHighlighterThickness(1);
+		settings.setLastHighlighterThickness(2);
 		settings.setLastSelectedHighlighterColor(GColor.newColor(219, 97, 20));
 		settings.setDeleteToolSize(61);
 		String pathString = "src/test/resources/org/geogebra/web/html5/io/templateXML.txt";
 		String fileContent = FileIO.load(pathString);
 		XMLStringBuilder sb = new XMLStringBuilder();
 		app.getActiveEuclidianView().getXML(sb, false);
-        assertEquals(fileContent, sb.toString().trim());
+		assertEquals(fileContent, sb.toString().trim());
 	}
 }

@@ -16,16 +16,13 @@
 
 package org.geogebra.web.full.gui.layout.panels;
 
-import java.util.Objects;
-
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.EuclidianConstants;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoElementSpreadsheet;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.OptionType;
 import org.geogebra.common.main.settings.SpreadsheetSettings;
+import org.geogebra.common.spreadsheet.core.Spreadsheet;
 import org.geogebra.common.spreadsheet.core.SpreadsheetCoords;
 import org.geogebra.common.spreadsheet.core.TabularRange;
 import org.geogebra.web.full.css.MaterialDesignResources;
@@ -41,19 +38,20 @@ import org.gwtproject.resources.client.ResourcePrototype;
 import org.gwtproject.user.client.ui.AbsolutePanel;
 import org.gwtproject.user.client.ui.Panel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 import elemental2.dom.CanvasRenderingContext2D;
 
 /**
  * @author Arpad Fekete
- * 
+ *
  * Top level GUI for the spreadsheet view
  *
  */
-public class SpreadsheetDockPanelW extends NavigableDockPanelW {
+public final class SpreadsheetDockPanelW extends NavigableDockPanelW {
 
 	private SpreadsheetStyleBar sstylebar;
-	private @CheckForNull SpreadsheetPanel spreadsheetPanel;
+	private @Nullable SpreadsheetPanel spreadsheetPanel;
 	private AbsolutePanel wrapview;
 	boolean scrollToShow = true;
 
@@ -71,24 +69,25 @@ public class SpreadsheetDockPanelW extends NavigableDockPanelW {
 		if (wrapview == null) {
 			wrapview = new AbsolutePanel();
 			wrapview.addStyleName("SpreadsheetWrapView");
-			spreadsheetPanel = new SpreadsheetPanel(app);
-			wrapview.add(spreadsheetPanel);
+			Spreadsheet<?> spreadsheet = app.getSpreadsheet();
+			if (spreadsheet != null) {
+				spreadsheetPanel = new SpreadsheetPanel(app, spreadsheet);
+				wrapview.add(spreadsheetPanel);
+			}
 		}
 		return wrapview;
 	}
 
 	@Override
 	protected Widget loadStyleBar() {
-		if (sstylebar == null) {
-			sstylebar = new SpreadsheetStyleBar(app,
-					Objects.requireNonNull(spreadsheetPanel).getSpreadsheet(),
-					spreadsheetPanel.getStyleBarModel());
-			IconButton settingsBtn = new IconButton(app,
+		if (sstylebar == null && spreadsheetPanel != null) {
+			sstylebar = new SpreadsheetStyleBar(
+					app, spreadsheetPanel.getSpreadsheet(), spreadsheetPanel.getStyleBarModel());
+			IconButton settingsBtn = new IconButton(
+					app,
 					new ImageIconSpec(MaterialDesignResources.INSTANCE.gear()),
 					"Settings",
-					() -> app.getDialogManager().showPropertiesDialog(OptionType.SPREADSHEET,
-							null)
-			);
+					() -> app.getDialogManager().showPropertiesDialog(OptionType.SPREADSHEET, null));
 			settingsBtn.getElement().getStyle().setPadding(6, Unit.PX);
 			sstylebar.add(settingsBtn);
 			sstylebar.addStyleName("noMargin");
@@ -171,8 +170,8 @@ public class SpreadsheetDockPanelW extends NavigableDockPanelW {
 	}
 
 	@Override
-	public void paintToCanvas(CanvasRenderingContext2D context2d,
-			ViewCounter counter, int left, int top) {
+	public void paintToCanvas(
+			CanvasRenderingContext2D context2d, ViewCounter counter, int left, int top) {
 		drawWhiteBackground(context2d, left, top);
 		context2d.save();
 		context2d.rect(left, top, getOffsetWidth(), getOffsetHeight());
@@ -198,14 +197,27 @@ public class SpreadsheetDockPanelW extends NavigableDockPanelW {
 			location = GeoElementSpreadsheet.getSpreadsheetCoordsSafe(labelNew);
 		}
 
-		if (scrollToShow && location != null && (location.column > -1) && (location.row > -1)
+		if (scrollToShow
+				&& location != null
+				&& (location.column > -1)
+				&& (location.row > -1)
 				&& spreadsheetPanel != null) {
-			spreadsheetPanel.getSpreadsheet().scrollRangeIntoView(new TabularRange(location.row,
-					location.column));
+			spreadsheetPanel
+					.getSpreadsheet()
+					.scrollRangeIntoView(new TabularRange(location.row, location.column));
 		}
 	}
 
 	public void setScrollToShow(boolean scrollToShow) {
 		this.scrollToShow = scrollToShow;
+	}
+
+	/**
+	 * Saves the current content and hides the cell editor.
+	 */
+	public void saveContentAndHideCellEditor() {
+		if (spreadsheetPanel != null) {
+			spreadsheetPanel.saveContentAndHideCellEditor();
+		}
 	}
 }

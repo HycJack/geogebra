@@ -52,6 +52,9 @@ public class DrawDynamicCaption {
 		drawCaption.setLabelMargin(0);
 	}
 
+	/**
+	 * @return whether the geo has a dynamic caption to draw
+	 */
 	public boolean isEnabled() {
 		return geo.hasDynamicCaption();
 	}
@@ -92,12 +95,12 @@ public class DrawDynamicCaption {
 			boolean serif = StringUtil.startsWithFormattingCommand(textString)
 					|| getDynamicCaption().isSerifFont();
 
-			GDimension size = app.getDrawEquation().measureEquation(app,
-					textString, drawCaption.getTextFont(), serif);
+			GDimension size =
+					app.getDrawEquation().measureEquation(app, textString, drawCaption.getTextFont(), serif);
 			if (size != null) {
 				captionWidth = size.getWidth();
-				captionHeight = Math.max(size.getHeight(),
-						(int) (1.5 * drawCaption.getTextFont().getSize()));
+				captionHeight =
+						Math.max(size.getHeight(), (int) (1.5 * drawCaption.getTextFont().getSize()));
 			}
 		} else {
 			GFont font = drawCaption.getTextFont();
@@ -130,11 +133,10 @@ public class DrawDynamicCaption {
 
 	private void updateCaptionCopy() {
 		captionCopy.set(getDynamicCaption());
-		captionCopy.setAllVisualPropertiesExceptEuclidianVisible(getDynamicCaption(),
-				false, false);
+		captionCopy.setAllVisualPropertiesExceptEuclidianVisible(getDynamicCaption(), false, false);
 		try {
 			captionCopy.setShowObjectCondition(null);
-		} catch (CircularDefinitionException e) {
+		} catch (CircularDefinitionException ignored) {
 			// never happens
 		}
 		if (geo instanceof GeoInputBox) {
@@ -172,11 +174,13 @@ public class DrawDynamicCaption {
 		if (drawable instanceof CanvasDrawable) {
 			drawCaption.xLabel = drawable.xLabel - captionWidth;
 		} else if (drawable instanceof DrawBoolean) {
-			int margin = getDynamicCaption().isLaTeX() ? DrawBoolean.LABEL_MARGIN_LATEX
+			int margin = getDynamicCaption().isLaTeX()
+					? DrawBoolean.LABEL_MARGIN_LATEX
 					: DrawBoolean.LABEL_MARGIN_TEXT;
 			drawCaption.xLabel = geo.labelOffsetX
 					+ EuclidianConstants.DEFAULT_CHECKBOX_SIZE
-					+ margin + DrawBoolean.LEGACY_OFFSET;
+					+ margin
+					+ DrawBoolean.LEGACY_OFFSET;
 		} else {
 			drawCaption.xLabel = drawable.xLabel;
 		}
@@ -188,9 +192,7 @@ public class DrawDynamicCaption {
 	 */
 	public void highlight() {
 		captionCopy.setBackgroundColor(
-				isHighlighted()
-				? GColor.LIGHT_GRAY
-				: getDynamicCaption().getBackgroundColor());
+				isHighlighted() ? GColor.LIGHT_GRAY : getDynamicCaption().getBackgroundColor());
 	}
 
 	private boolean isHighlighted() {
@@ -221,6 +223,9 @@ public class DrawDynamicCaption {
 		return drawCaption.hit(x, y, hitThreshold);
 	}
 
+	/**
+	 * @return text of the dynamic caption
+	 */
 	public String getDynCaptionText() {
 		return getDynamicCaption().getTextString();
 	}

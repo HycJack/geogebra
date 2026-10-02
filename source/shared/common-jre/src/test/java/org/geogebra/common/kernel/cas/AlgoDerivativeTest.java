@@ -2,18 +2,18 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.cas;
 
 import static org.geogebra.test.TestStringUtil.unicode;
@@ -26,19 +26,19 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoFunction;
 import org.geogebra.test.annotation.Issue;
 import org.geogebra.test.commands.AlgebraTestHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class   AlgoDerivativeTest extends BaseUnitTest {
+class AlgoDerivativeTest extends BaseUnitTest {
 
 	@Test
-	public void nDerivativeShouldNotMaskOtherExpressions() {
+	void nDerivativeShouldNotMaskOtherExpressions() {
 		t("fm(x,y,z)=x*y*z", "x * y * z");
 		t("NDerivative[fm,z]", unicode("NDerivative(fm, z)"));
 		t("fm", "x * y * z");
 	}
 
 	@Test
-	public void fastDerivativeDirac() {
+	void fastDerivativeDirac() {
 		t("f(x)=Dirac(x)", "Dirac(x)");
 		t("g(x)=Heaviside(x)", "Heaviside(x)");
 		AlgoDerivative der = getFastDerivative(lookup("f"));
@@ -49,13 +49,12 @@ public class   AlgoDerivativeTest extends BaseUnitTest {
 
 	private AlgoDerivative getFastDerivative(GeoElement function) {
 		EvalInfo info = new EvalInfo().withCAS(false);
-		return new AlgoDerivative(getConstruction(),
-				(GeoFunction) function, info);
+		return new AlgoDerivative(getConstruction(), (GeoFunction) function, info);
 	}
 
 	@Test
 	@Issue("APPS-5374")
-	public void fastDerivativeLogBase() {
+	void fastDerivativeLogBase() {
 		add("b=3");
 		AlgoDerivative logDerivative = getFastDerivative(add("log(b,x)"));
 		assertThat(logDerivative.getResult(), hasValue("1 / x / ln(3)"));
@@ -66,7 +65,10 @@ public class   AlgoDerivativeTest extends BaseUnitTest {
 	}
 
 	private void t(String s, String s1) {
-		AlgebraTestHelper.checkSyntaxSingle(s, new String[]{s1},
-				getApp().getKernel().getAlgebraProcessor(), StringTemplate.testTemplate);
+		AlgebraTestHelper.checkSyntaxSingle(
+				s,
+				new String[] {s1},
+				getApp().getKernel().getAlgebraProcessor(),
+				StringTemplate.testTemplate);
 	}
 }

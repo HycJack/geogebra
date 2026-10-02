@@ -24,16 +24,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.editor.share.catalog.Tag;
 import org.geogebra.editor.share.controller.CursorController;
+import org.geogebra.editor.share.controller.CursorController.Traversal;
 import org.geogebra.editor.share.controller.EditorState;
 import org.geogebra.editor.share.controller.ExpressionReader;
 import org.geogebra.editor.share.controller.InputController;
 import org.geogebra.editor.share.controller.KeyListenerImpl;
 import org.geogebra.editor.share.controller.MathFieldController;
+import org.geogebra.editor.share.controller.MatrixResizeController;
 import org.geogebra.editor.share.event.ClickListener;
 import org.geogebra.editor.share.event.FocusListener;
 import org.geogebra.editor.share.event.KeyEvent;
@@ -55,6 +54,8 @@ import org.geogebra.editor.share.tree.SequenceNode;
 import org.geogebra.editor.share.util.AltKeys;
 import org.geogebra.editor.share.util.FormulaConverter;
 import org.geogebra.editor.share.util.JavaKeyCodes;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Weak;
 import com.himamis.retex.renderer.share.CursorBox;
@@ -65,9 +66,9 @@ import com.himamis.retex.renderer.share.platform.FactoryProvider;
 /**
  * This class is a Math Field. Displays and allows to edit single formula.
  */
-public class MathFieldInternal
-		implements KeyListener, FocusListener, ClickListener {
+public class MathFieldInternal implements KeyListener, FocusListener, ClickListener {
 	public static final int PADDING_LEFT_SCROLL = 20;
+
 	@Weak
 	private MathField mathField;
 
@@ -84,8 +85,9 @@ public class MathFieldInternal
 	private boolean selectionDrag;
 
 	private final List<MathFieldListener> listeners = new ArrayList<>();
+
 	@Weak
-	private UnhandledArrowListener unhandledArrowListener;
+	private UnhandledKeyListener unhandledKeyListener;
 
 	private boolean scrollOccurred = false;
 
@@ -95,10 +97,11 @@ public class MathFieldInternal
 
 	private final Set<MathFieldInternalListener> mathFieldInternalListeners;
 
-	private static final ArrayList<Integer> LOCKED_CARET_PATH
-			= new ArrayList<>(Arrays.asList(0, 0, 0));
+	private static final ArrayList<Integer> LOCKED_CARET_PATH =
+			new ArrayList<>(Arrays.asList(0, 0, 0));
 
 	private final FormulaConverter formulaConverter;
+	private final MatrixResizeController matrixResizeController;
 
 	/**
 	 * @param mathField
@@ -109,11 +112,17 @@ public class MathFieldInternal
 		inputController = new InputController(mathField.getCatalog());
 		keyListener = new KeyListenerImpl(inputController);
 		formula = new Formula(mathField.getCatalog());
-		mathFieldController = new MathFieldController(mathField);
+
+		matrixResizeController = new MatrixResizeController(this);
+		mathFieldController = new MathFieldController(mathField, matrixResizeController);
 		inputController.setMathField(mathField);
 		mathFieldInternalListeners = new HashSet<>();
 		formulaConverter = new FormulaConverter();
 		setupMathField();
+	}
+
+	public MatrixResizeController getMatrixResizeController() {
+		return matrixResizeController;
 	}
 
 	/**
@@ -207,14 +216,6 @@ public class MathFieldInternal
 		editorState.setCurrentOffset(editorState.getCurrentNode().size());
 		mathFieldController.update(formula, editorState, false);
 		fireInputChangedEvent();
-
-	}
-
-	/**
-	 * Move caret into the first element of the protected component.
-	 */
-	public void setLockedCaretPath() {
-		setCaretPath(LOCKED_CARET_PATH);
 	}
 
 	/**
@@ -239,6 +240,13 @@ public class MathFieldInternal
 	public void setCaretPath(ArrayList<Integer> path) {
 		CursorController.setPath(path, getEditorState());
 		mathFieldController.updateWithCursor(formula, editorState);
+	}
+
+	/**
+	 * Moves the caret to the first position that is editable.
+	 */
+	public void moveCursorToFirstEditablePart() {
+		setCaretPath(LOCKED_CARET_PATH);
 	}
 
 	/**
@@ -327,15 +335,19 @@ public class MathFieldInternal
 		if (handled && !tab) {
 			update();
 			if (!arrow) {
-				for (MathFieldListener listener: listeners) {
+				for (MathFieldListener listener : listeners) {
 					listener.onKeyTyped(null);
 				}
 			}
 		}
-		if (arrow && !handled && unhandledArrowListener != null) {
-			unhandledArrowListener.onArrow(keyEvent.getKeyCode(),
-					keyEvent.getSourceKeyboard());
-			return true;
+		if (!handled && unhandledKeyListener != null) {
+			if (arrow) {
+				unhandledKeyListener.onArrow(keyEvent.getKeyCode(), keyEvent.getSourceKeyboard());
+				return true;
+			} else {
+				return unhandledKeyListener.onUnhandledKey(
+						keyEvent.getKeyCode(), keyEvent.getSourceKeyboard(), keyEvent.getKeyModifiers());
+			}
 		}
 
 		return handled;
@@ -349,14 +361,12 @@ public class MathFieldInternal
 			int keyCode = keyEvent.getKeyCode();
 
 			// eg Alt-94 for ^ with NumLock On
-			if (keyCode >= JavaKeyCodes.VK_NUMPAD0
-					&& keyCode <= JavaKeyCodes.VK_NUMPAD9) {
+			if (keyCode >= JavaKeyCodes.VK_NUMPAD0 && keyCode <= JavaKeyCodes.VK_NUMPAD9) {
 				return false;
 			}
 
-			String str = AltKeys.getAltSymbols(keyCode,
-					(keyEvent.getKeyModifiers() & KeyEvent.SHIFT_MASK) > 0,
-					true);
+			String str = AltKeys.getAltSymbols(
+					keyCode, (keyEvent.getKeyModifiers() & KeyEvent.SHIFT_MASK) > 0, true);
 			// handle alt+f for correct phi unicode
 			if (keyCode == 70 && (keyEvent.getKeyModifiers() & KeyEvent.SHIFT_MASK) <= 0) {
 				str = mathField.getCatalog().getPhiUnicode();
@@ -372,11 +382,9 @@ public class MathFieldInternal
 
 	@Override
 	public boolean onKeyTyped(KeyEvent keyEvent) {
-		boolean enter = keyEvent.getUnicodeKeyChar() == (char) 13
-				|| keyEvent.getUnicodeKeyChar() == (char) 10;
-		boolean handled = enter
-				|| keyListener.onKeyTyped(keyEvent.getUnicodeKeyChar(),
-						editorState);
+		boolean enter =
+				keyEvent.getUnicodeKeyChar() == (char) 13 || keyEvent.getUnicodeKeyChar() == (char) 10;
+		boolean handled = enter || keyListener.onKeyTyped(keyEvent.getUnicodeKeyChar(), editorState);
 		if (handled) {
 			notifyAndUpdate(String.valueOf(keyEvent.getUnicodeKeyChar()));
 		}
@@ -396,7 +404,7 @@ public class MathFieldInternal
 	 * @param key key name
 	 */
 	public void notifyAndUpdate(String key) {
-		for (MathFieldListener listener: listeners) {
+		for (MathFieldListener listener : listeners) {
 			listener.onKeyTyped(key);
 		}
 		update();
@@ -406,8 +414,7 @@ public class MathFieldInternal
 	public void onPointerDown(int x, int y) {
 		if (selectionMode) {
 			if (SelectionBox.isTouchSelection()) {
-				if (length(SelectionBox.startX - x,
-						SelectionBox.startY - y) < 10) {
+				if (length(SelectionBox.startX - x, SelectionBox.startY - y) < 10) {
 					editorState.cursorToSelectionEnd();
 					selectionDrag = true;
 					return;
@@ -421,13 +428,12 @@ public class MathFieldInternal
 			}
 			editorState.resetSelection();
 
-			this.mouseDownPos = new int[] { x, y };
+			this.mouseDownPos = new int[] {x, y};
 
 			moveToSelection(x, y);
 
 			mathFieldController.update(formula, editorState, false);
 		}
-
 	}
 
 	private static double length(double d, double e) {
@@ -445,8 +451,8 @@ public class MathFieldInternal
 				selectionDrag = false;
 				return;
 			}
-			Node cursor = editorState.getCursorField(
-					editorState.getSelectionEnd() != null && selectionLeft(x));
+			Node cursor =
+					editorState.getCursorField(editorState.getSelectionEnd() != null && selectionLeft(x));
 
 			moveToSelection(x, y);
 
@@ -503,7 +509,7 @@ public class MathFieldInternal
 
 	/**
 	 * says if dragging over should select or swype
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -512,8 +518,8 @@ public class MathFieldInternal
 	}
 
 	private boolean mousePositionChanged(int x, int y) {
-		return mouseDownPos != null && (Math.abs(x - mouseDownPos[0]) > 10
-				|| Math.abs(y - mouseDownPos[1]) > 10);
+		return mouseDownPos != null
+				&& (Math.abs(x - mouseDownPos[0]) > 10 || Math.abs(y - mouseDownPos[1]) > 10);
 	}
 
 	private void moveToSelection(int x, int y) {
@@ -521,27 +527,25 @@ public class MathFieldInternal
 	}
 
 	private void moveToSelectionIterative(int x, int y) {
-		CursorController.firstField(editorState);
+		CursorController.firstField(
+				editorState, editorState.getRootNode().extractLocked(), Traversal.SELECTABLE_FIELDS);
 		double dist = Integer.MAX_VALUE;
 		SequenceNode closestComponent = null;
 		int closestOffset = -1;
 		do {
-			mathFieldController.updateCursorPosition(formula,
-					editorState.getCurrentNode(),
-					editorState.getCurrentOffset());
-			double currentDist = Math.abs(x - CursorBox.startX)
-					+ Math.abs(y - CursorBox.startY);
+			mathFieldController.updateCursorPosition(
+					formula, editorState.getCurrentNode(), editorState.getCurrentOffset());
+			double currentDist = Math.abs(x - CursorBox.startX) + Math.abs(y - CursorBox.startY);
 			if (currentDist < dist) {
 				dist = currentDist;
 				closestComponent = editorState.getCurrentNode();
 				closestOffset = editorState.getCurrentOffset();
 			}
-		} while (CursorController.nextCharacter(editorState, false));
+		} while (CursorController.nextCharacter(editorState, false, Traversal.SELECTABLE_FIELDS));
 		if (closestComponent != null) {
 			moveCaretToClosestValidPoint(closestComponent, closestOffset);
-			mathFieldController.updateCursorPosition(formula,
-					editorState.getCurrentNode(),
-					editorState.getCurrentOffset());
+			mathFieldController.updateCursorPosition(
+					formula, editorState.getCurrentNode(), editorState.getCurrentOffset());
 		}
 	}
 
@@ -564,8 +568,8 @@ public class MathFieldInternal
 			mathFieldController.update(formula, editorState, false);
 			return;
 		}
-		Node cursor = editorState.getCursorField(
-				editorState.getSelectionEnd() == null || selectionLeft(x));
+		Node cursor =
+				editorState.getCursorField(editorState.getSelectionEnd() == null || selectionLeft(x));
 		SequenceNode current = editorState.getCurrentNode();
 		int offset = editorState.getCurrentOffset();
 		moveToSelection(x, y);
@@ -577,7 +581,6 @@ public class MathFieldInternal
 		editorState.extendSelection(cursor);
 
 		mathFieldController.update(formula, editorState, false);
-
 	}
 
 	/**
@@ -632,8 +635,7 @@ public class MathFieldInternal
 	public void deleteCurrentCharSequence(Predicate<CharacterNode> predicate) {
 		SequenceNode sel = editorState.getCurrentNode();
 		if (sel != null) {
-			for (int i = Math.min(editorState.getCurrentOffset() - 1,
-					sel.size() - 1); i >= 0; i--) {
+			for (int i = Math.min(editorState.getCurrentOffset() - 1, sel.size() - 1); i >= 0; i--) {
 				if (sel.getChild(i) instanceof CharacterNode) {
 					if (!predicate.test((CharacterNode) sel.getChild(i))) {
 						return;
@@ -648,7 +650,7 @@ public class MathFieldInternal
 	/**
 	 * @return sequence of letters left from the cursor (or selection end).
 	 */
-	public @Nonnull String getCharactersLeftOfCursor() {
+	public @NonNull String getCharactersLeftOfCursor() {
 		return getCharactersLeftOfCursorMatching(CharacterNode::isCharacter);
 	}
 
@@ -656,7 +658,7 @@ public class MathFieldInternal
 	 * @param predicate decides which characters to include
 	 * @return sequence of characters left of the cursor (or selection end) matching the predicate
 	 */
-	public @Nonnull String getCharactersLeftOfCursorMatching(Predicate<CharacterNode> predicate) {
+	public @NonNull String getCharactersLeftOfCursorMatching(Predicate<CharacterNode> predicate) {
 		StringBuilder str = new StringBuilder(" ");
 		SequenceNode currentField = editorState.getCurrentNode();
 		if (currentField != null) {
@@ -679,8 +681,7 @@ public class MathFieldInternal
 	 * predicate, up until (but not including) the first characters (looking left / right) for
 	 * which predicate returns false. Returns null if currentField is null.
 	 */
-	public @CheckForNull String getCharactersAroundCursorMatching(
-			Predicate<CharacterNode> predicate) {
+	public @Nullable String getCharactersAroundCursorMatching(Predicate<CharacterNode> predicate) {
 		SequenceNode currentField = editorState.getCurrentNode();
 		if (currentField == null) {
 			return null;
@@ -708,14 +709,13 @@ public class MathFieldInternal
 	 * @param predicate A predicate for which {@code CharacterNode}s to include.
 	 * @param characterSequences The result (out param).
 	 */
-	public void collectCharacterSequences(Predicate<CharacterNode> predicate,
-			ArrayList<String> characterSequences) {
+	public void collectCharacterSequences(
+			Predicate<CharacterNode> predicate, ArrayList<String> characterSequences) {
 		collectCharacterSequences(editorState.getRootNode(), predicate, characterSequences);
 	}
 
-	private void collectCharacterSequences(InternalNode root,
-			Predicate<CharacterNode> predicate,
-			ArrayList<String> characterSequences) {
+	private void collectCharacterSequences(
+			InternalNode root, Predicate<CharacterNode> predicate, ArrayList<String> characterSequences) {
 		ArrayList<CharacterNode> characterSequence = new ArrayList<>();
 		for (int i = 0; i < root.size(); i++) {
 			Node argument = root.getChild(i);
@@ -727,8 +727,7 @@ public class MathFieldInternal
 				}
 				characterSequence = new ArrayList<>();
 				if (argument instanceof InternalNode node) {
-					collectCharacterSequences(node, predicate,
-							characterSequences);
+					collectCharacterSequences(node, predicate, characterSequences);
 				}
 			}
 		}
@@ -737,7 +736,7 @@ public class MathFieldInternal
 		}
 	}
 
-	private @Nonnull String toString(List<CharacterNode> characters) {
+	private @NonNull String toString(List<CharacterNode> characters) {
 		StringBuilder sb = new StringBuilder();
 		for (CharacterNode character : characters) {
 			sb.append(character.toString());
@@ -755,8 +754,11 @@ public class MathFieldInternal
 	 *            index
 	 * @return true if {@code sequence.arguments[argumentIndex]} is a CharacterNode satisfying predicate
 	 */
-	public static boolean appendChar(StringBuilder sb, SequenceNode sequence,
-			int argumentIndex, Predicate<CharacterNode> predicate) {
+	public static boolean appendChar(
+			StringBuilder sb,
+			SequenceNode sequence,
+			int argumentIndex,
+			Predicate<CharacterNode> predicate) {
 		if (sequence.getChild(argumentIndex) instanceof CharacterNode) {
 			CharacterNode character = (CharacterNode) sequence.getChild(argumentIndex);
 			if (predicate.test(character)) {
@@ -772,12 +774,13 @@ public class MathFieldInternal
 	 */
 	public String copy() {
 		if (editorState.getSelectionStart() != null) {
-			GeoGebraSerializer serializer = new GeoGebraSerializer(getEditorFeatures());
+			GeoGebraSerializer serializer = getSerializer();
 			serializer.setUseTemplates(false);
 			InternalNode parent = editorState.getSelectionStart().getParent();
 			if (parent == null) {
 				// all the formula is selected
-				return serializer.serialize(editorState.getRootNode(), new StringBuilder())
+				return serializer
+						.serialize(editorState.getRootNode(), new StringBuilder())
 						.toString();
 			}
 
@@ -819,8 +822,9 @@ public class MathFieldInternal
 			KeyboardInputAdapter.type(this, text);
 		} else {
 			try {
-				SequenceNode root = new Parser(mathField.getCatalog()).parse(text)
-						.getRootNode();
+				String normalizedText = inputController.normalizeIntegralCommand(text);
+				SequenceNode root =
+						new Parser(mathField.getCatalog()).parse(normalizedText).getRootNode();
 
 				if (allSelected && isMatrixWithSameDimension(rootBefore, root)) {
 					replaceRoot(rootBefore, root);
@@ -830,7 +834,6 @@ public class MathFieldInternal
 			} catch (ParseException parseException) {
 				KeyboardInputAdapter.type(this, text);
 			}
-
 		}
 		onInsertString();
 
@@ -845,8 +848,7 @@ public class MathFieldInternal
 	private void addToMathField(SequenceNode root, boolean filterCommas) {
 		for (int i = 0; i < root.getArgumentCount(); i++) {
 			Node argument = root.getChild(i);
-			if (!filterCommas || (!",".equals(argument.toString())
-					&& !argument.hasTag(Tag.CURLY))) {
+			if (!filterCommas || (!",".equals(argument.toString()) && !argument.hasTag(Tag.CURLY))) {
 				getEditorState().addArgument(argument);
 			}
 		}
@@ -868,9 +870,7 @@ public class MathFieldInternal
 
 	private ArrayNode asMatrix(SequenceNode sequence) {
 		Node argument1 = sequence.getChild(0);
-		return argument1 instanceof ArrayNode an && an.isMatrix()
-				? an
-				: null;
+		return argument1 instanceof ArrayNode an && an.isMatrix() ? an : null;
 	}
 
 	/**
@@ -882,8 +882,8 @@ public class MathFieldInternal
 			return;
 		}
 		ArrayList<Integer> path = new ArrayList<>();
-		path.add(getEditorState().getCurrentOffset()
-				- getEditorState().getCurrentNode().size());
+		path.add(
+				getEditorState().getCurrentOffset() - getEditorState().getCurrentNode().size());
 		InternalNode field = getEditorState().getCurrentNode();
 		while (field != null) {
 			if (field.getParent() != null) {
@@ -893,11 +893,10 @@ public class MathFieldInternal
 		}
 		reverse(path);
 		setFormula(GeoGebraSerializer.reparse(getFormula(), getEditorFeatures()));
-		for (MathFieldListener listener: listeners) {
+		for (MathFieldListener listener : listeners) {
 			listener.onInsertString();
 		}
-		getMathFieldController().setSelectedPath(getFormula(), path,
-				getEditorState());
+		getMathFieldController().setSelectedPath(getFormula(), path, getEditorState());
 		insertStringFinished();
 	}
 
@@ -915,49 +914,52 @@ public class MathFieldInternal
 	 * Trigger the listener
 	 */
 	protected void onKeyTyped() {
-		for (MathFieldListener listener: listeners) {
+		for (MathFieldListener listener : listeners) {
 			listener.onKeyTyped(null);
 		}
 	}
 
 	/**
 	 * Insert a function
-	 * 
+	 *
 	 * @param text
 	 *            function name
 	 */
 	public void insertFunction(String text) {
-		inputController.newFunction(editorState, text, false, null);
+		inputController.newFunction(editorState, text);
 		onKeyTyped();
 	}
 
 	/**
 	 * Handle the tab key.
-	 * 
+	 *
 	 * @param shiftDown
 	 *            whether shift is pressed
 	 *
 	 * @return tab handling
 	 */
 	public boolean onTab(boolean shiftDown) {
-		SequenceNode currentField = editorState.getCurrentNode();
-		int jumpTo = editorState.getCurrentOffset();
-		int dir = shiftDown ? -1 : 1;
-		do {
-			jumpTo += dir;
-			if (currentField.getChild(jumpTo) instanceof PlaceholderNode) {
-				editorState.setCurrentOffset(jumpTo);
+		SequenceNode initialNode = editorState.getCurrentNode();
+		int initialOffset = editorState.getCurrentOffset();
+		while (shiftDown
+				? CursorController.prevCharacter(editorState)
+				: CursorController.nextCharacter(editorState, false, Traversal.NAVIGABLE_FIELDS)) {
+			if (editorState.getCurrentNode().getChild(editorState.getCurrentOffset())
+					instanceof PlaceholderNode) {
+				editorState.resetSelection();
 				update();
 				return true;
 			}
-		} while (jumpTo < currentField.size() && jumpTo >= 0);
-		return notifyListeners(l -> l.onTab(shiftDown));
+		}
+		editorState.setCurrentNode(initialNode);
+		editorState.setCurrentOffset(initialOffset);
+		return notifyListeners(listener -> listener.onTab(shiftDown));
 	}
 
 	private boolean notifyListeners(Predicate<MathFieldListener> eventDispatcher) {
 		boolean handled = false;
 		List<MathFieldListener> listenersCopy = new ArrayList<>(listeners);
-		for (MathFieldListener listener: listenersCopy) {
+		for (MathFieldListener listener : listenersCopy) {
 			handled = eventDispatcher.test(listener) || handled;
 		}
 		return handled;
@@ -1009,12 +1011,11 @@ public class MathFieldInternal
 	 * @return the contained formula serialized in the GeoGebra format
 	 */
 	public String getText() {
-		GeoGebraSerializer s = new GeoGebraSerializer(getEditorFeatures());
-		return s.serialize(getFormula());
+		return getSerializer().serialize(getFormula());
 	}
 
-	public void setUnhandledArrowListener(UnhandledArrowListener arrowListener) {
-		this.unhandledArrowListener = arrowListener;
+	public void setUnhandledKeyListener(UnhandledKeyListener unhandledKeyListener) {
+		this.unhandledKeyListener = unhandledKeyListener;
 	}
 
 	/**
@@ -1066,7 +1067,7 @@ public class MathFieldInternal
 	 * @param mathFieldInternalListener listener
 	 */
 	public void registerMathFieldInternalListener(
-			@Nonnull MathFieldInternalListener mathFieldInternalListener) {
+			@NonNull MathFieldInternalListener mathFieldInternalListener) {
 		mathFieldInternalListeners.add(mathFieldInternalListener);
 	}
 
@@ -1075,12 +1076,12 @@ public class MathFieldInternal
 	 * @param mathFieldInternalListener a previously registered listener
 	 */
 	public void unregisterMathFieldInternalListener(
-			@Nonnull MathFieldInternalListener mathFieldInternalListener) {
+			@NonNull MathFieldInternalListener mathFieldInternalListener) {
 		mathFieldInternalListeners.remove(mathFieldInternalListener);
 	}
 
 	private void fireInputChangedEvent() {
-		for (MathFieldInternalListener listener: mathFieldInternalListeners) {
+		for (MathFieldInternalListener listener : mathFieldInternalListeners) {
 			listener.inputChanged(this);
 		}
 	}
@@ -1112,7 +1113,19 @@ public class MathFieldInternal
 		return getEditorState().getDescription(expressionReader, getEditorFeatures());
 	}
 
+	/**
+	 * @return a new serializer configured with this editor's features
+	 */
 	public GeoGebraSerializer getSerializer() {
 		return new GeoGebraSerializer(getEditorFeatures());
+	}
+
+	/**
+	 * @return preview text with trailing operators omitted
+	 */
+	public String getPreviewText() {
+		GeoGebraSerializer serializer = getSerializer();
+		serializer.setSkipTrailingOperator(true);
+		return serializer.serialize(getFormula());
 	}
 }

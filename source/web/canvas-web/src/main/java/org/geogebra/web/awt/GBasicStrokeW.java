@@ -19,10 +19,12 @@ package org.geogebra.web.awt;
 import org.geogebra.common.awt.GBasicStroke;
 import org.geogebra.ggbjdk.java.awt.DefaultBasicStroke;
 
-public class GBasicStrokeW {
+public final class GBasicStrokeW {
 	// Constants
-	final private static String[] GWT_JOINS = { "miter", "round", "bevel" };
-	final private static String[] GWT_CAPS = { "butt", "round", "square" };
+	private static final String[] GWT_JOINS = {"miter", "round", "bevel"};
+	private static final String[] GWT_CAPS = {"butt", "round", "square"};
+
+	private GBasicStrokeW() {}
 
 	/**
 	 * @param join
@@ -31,12 +33,12 @@ public class GBasicStrokeW {
 	 */
 	public static int getJoin(String join) {
 		switch (join.charAt(0)) {
-		case 'r':
-			return DefaultBasicStroke.JOIN_ROUND;
-		case 'b':
-			return DefaultBasicStroke.JOIN_BEVEL;
-		default:
-			return DefaultBasicStroke.JOIN_MITER;
+			case 'r':
+				return DefaultBasicStroke.JOIN_ROUND;
+			case 'b':
+				return DefaultBasicStroke.JOIN_BEVEL;
+			default:
+				return DefaultBasicStroke.JOIN_MITER;
 		}
 	}
 
@@ -47,12 +49,12 @@ public class GBasicStrokeW {
 	 */
 	public static int getCap(String cap) {
 		switch (cap.charAt(0)) {
-		case 'r':
-			return DefaultBasicStroke.CAP_ROUND;
-		case 's':
-			return DefaultBasicStroke.CAP_SQUARE;
-		default:
-			return DefaultBasicStroke.CAP_BUTT;
+			case 'r':
+				return DefaultBasicStroke.CAP_ROUND;
+			case 's':
+				return DefaultBasicStroke.CAP_SQUARE;
+			default:
+				return DefaultBasicStroke.CAP_BUTT;
 		}
 	}
 
@@ -73,5 +75,4 @@ public class GBasicStrokeW {
 	public static String getLineJoinString(GBasicStroke stroke) {
 		return GWT_JOINS[stroke.getLineJoin()];
 	}
-
 }

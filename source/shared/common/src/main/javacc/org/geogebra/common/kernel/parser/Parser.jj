@@ -1470,7 +1470,6 @@ ExpressionValue enelement():
     LOOKAHEAD(2147483647)
     ev = tuple()
  |
-
   // text (between " ... ")
   c = <TEXT>
     {
@@ -1558,22 +1557,22 @@ ExpressionValue numVecVariable():
     ( c = <SPREADSHEET_LABEL> | c = <LABEL> )
     {
         // should we read e for Euler constant and i for imaginary unit?
-        boolean lookforEulerImaginary = false;
+        boolean lookForEulerImaginary;
 
         if (geoGebraCASParsing) {
             // leave e and i untouched in GeoGebraCAS view
-            lookforEulerImaginary = false;
+            lookForEulerImaginary = false;
         }
         else if (externalCASParsing) {
             // Giac does not need it either, may need changing for other CASes
-            lookforEulerImaginary = false;
+            lookForEulerImaginary = false;
         } else { // GeoGebraCAS or GeoGebra parsing
             // only treat e or i specially when they are undefined in GeoGebra
-            lookforEulerImaginary = true;
+            lookForEulerImaginary = true;
         }
 
         // return defined variables immediately
-        if (lookforEulerImaginary) {
+        if (lookForEulerImaginary) {
             // TREAT e and i specially
             // e for Euler constant
             if (c.image.equals("e") && kernel.lookupLabel(c.image) == null
@@ -1791,7 +1790,7 @@ ExpressionNode functionOrCommand():
     ExpressionNode ret;
 }
 {
-    (c = <X_FUNC> en = expressionOrEquation() (")"|"]")
+    (<X_FUNC> en = expressionOrEquation() (")"|"]")
     {
         if (geoGebraCASParsing) {
             ret = Command.xyzCAS(en, 0, !externalCASParsing, undecided, kernel);
@@ -1801,7 +1800,7 @@ ExpressionNode functionOrCommand():
         }
     }
 |
-     c = <Y_FUNC> en = expressionOrEquation() (")"|"]")
+     <Y_FUNC> en = expressionOrEquation() (")"|"]")
     {
         if (geoGebraCASParsing) {
             // GeoGebra CAS view: y(...) is interpreted as a function
@@ -1812,7 +1811,7 @@ ExpressionNode functionOrCommand():
         }
     }
 |
-     c = <Z_FUNC> en = expressionOrEquation() (")"|"]")
+     <Z_FUNC> en = expressionOrEquation() (")"|"]")
     {
         if (geoGebraCASParsing) {
             ret = Command.xyzCAS(en, 2, !externalCASParsing, undecided, kernel);

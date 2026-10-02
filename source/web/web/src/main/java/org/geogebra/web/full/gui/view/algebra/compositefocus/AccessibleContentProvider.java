@@ -34,15 +34,15 @@ import org.gwtproject.user.client.ui.UIObject;
  * Supplies accessible content text and role descriptions for an algebra view item.
  *
  * <p>This class provides two accessibility resources based on a geo element
- * and its {@link AlgebraStyle}:
+ * and its {@link AlgebraStyle}:</p>
  * <ul>
  *   <li>a supplier of localized content text suitable for screen readers</li>
  *   <li>a localized role description that describes the type of content</li>
  * </ul>
  * The content supplier returns either a combined definition/value representation
- * or a single representation, depending on the algebra style.</p>
+ * or a single representation, depending on the algebra style.
  */
-public class AccessibleContentProvider {
+public final class AccessibleContentProvider {
 	private final GeoElement geo;
 	private final Localization loc;
 	private final AlgebraStyle style;
@@ -65,7 +65,7 @@ public class AccessibleContentProvider {
 	 * @return a supplier providing localized, unescaped content text
 	 */
 	public Supplier<String> getContentSupplier() {
-		if (DEFINITION_AND_VALUE.equals(style) || LINEAR_NOTATION.equals(style)) {
+		if (DEFINITION_AND_VALUE == style || LINEAR_NOTATION == style) {
 			return this::getOutputWithLabel;
 		}
 		return this::getInput;
@@ -81,8 +81,7 @@ public class AccessibleContentProvider {
 
 	private String buildDefinition() {
 		IndexTextBuilder builder = new IndexTextBuilder();
-		AlgebraItem.buildPlainTextItemSimple(geo, builder,
-				style, StringTemplate.defaultTemplate);
+		AlgebraItem.buildPlainTextItemSimple(geo, builder, style, StringTemplate.defaultTemplate);
 		return builder.toString();
 	}
 
@@ -96,11 +95,12 @@ public class AccessibleContentProvider {
 	 * @return the localized role description string for the current style
 	 */
 	public String getRoleDescription() {
-		String roleDescription = switch (style) {
-			case UNDEFINED -> "undefined";
-			case DEFINITION, VALUE, DESCRIPTION -> style.getTranslationKey();
-			case DEFINITION_AND_VALUE, LINEAR_NOTATION -> DEFINITION.getTranslationKey();
-		};
+		String roleDescription =
+				switch (style) {
+					case UNDEFINED -> "undefined";
+					case DEFINITION, VALUE, DESCRIPTION -> style.getTranslationKey();
+					case DEFINITION_AND_VALUE, LINEAR_NOTATION -> DEFINITION.getTranslationKey();
+				};
 		return loc.getMenu(roleDescription);
 	}
 }

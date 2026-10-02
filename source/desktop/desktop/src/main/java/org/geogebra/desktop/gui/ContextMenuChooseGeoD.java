@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -39,14 +39,14 @@ import org.geogebra.desktop.main.AppD;
 
 /**
  * Popup Menu for choosing a geo
- * 
+ *
  * @author mathieu
  *
  */
 public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 
 	/**
-	 * 
+	 *
 	 */
 	protected EuclidianView view;
 
@@ -59,9 +59,10 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 	private GPoint loc;
 
 	private JMenu selectAnotherMenu;
+	private boolean geoAddedForSelectAnother = false;
 
 	/**
-	 * 
+	 *
 	 * @param app
 	 *            application
 	 * @param view
@@ -73,9 +74,13 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 	 * @param location
 	 *            place to show
 	 */
-	public ContextMenuChooseGeoD(AppD app, EuclidianView view,
-			ArrayList<GeoElement> selectedGeos, ArrayList<GeoElement> geos,
-			Point location, GPoint invokerLocation) {
+	public ContextMenuChooseGeoD(
+			AppD app,
+			EuclidianView view,
+			ArrayList<GeoElement> selectedGeos,
+			ArrayList<GeoElement> geos,
+			Point location,
+			GPoint invokerLocation) {
 
 		super(app, selectedGeos, location);
 
@@ -83,7 +88,8 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 		this.selectedGeos = selectedGeos;
 
 		// return if just one geo, or if first geos more than one
-		if (/* geos.size()<2 || */selectedGeos.size() > 1) {
+		if (
+		/* geos.size()<2 || */ selectedGeos.size() > 1) {
 			justOneGeo = false;
 			return;
 		}
@@ -129,11 +135,9 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 	private void createSelectAnotherMenu(int mode) {
 		Localization localization = app.getLocalization();
 		if (EuclidianConstants.isMoveOrSelectionMode(mode)) {
-			selectAnotherMenu = new JMenu(
-					localization.getMenu("SelectAnother"));
+			selectAnotherMenu = new JMenu(localization.getMenu("SelectAnother"));
 		} else {
-			selectAnotherMenu = new JMenu(
-					localization.getMenu("PerformToolOn"));
+			selectAnotherMenu = new JMenu(localization.getMenu("PerformToolOn"));
 		}
 		selectAnotherMenu.setIcon(((AppD) app).getEmptyIcon());
 		selectAnotherMenu.setBackground(getWrappedPopup().getBackground());
@@ -144,13 +148,10 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 
 		// add the selection menu just under the title
 		getWrappedPopup().add(selectAnotherMenu, 1);
-
 	}
 
-	private boolean geoAddedForSelectAnother = false;
-
 	/**
-	 * 
+	 *
 	 */
 	private void addGeo(GeoElement geo) {
 
@@ -177,7 +178,7 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 	 * @author mathieu
 	 *
 	 */
-	private class GeoAction extends AbstractAction {
+	private final class GeoAction extends AbstractAction {
 
 		/**
 		 *
@@ -192,24 +193,22 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 		 * @param geo
 		 *            geo to choose
 		 */
-		public GeoAction(GeoElement geo) {
+		private GeoAction(GeoElement geo) {
 			super();
 			this.geo = geo;
-
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			geoActionCmd(this.geo, selectedGeos, getGeos(), view, loc);
 		}
-
 	}
 
-	private class HighlightingMouseAdapter extends MouseAdapter {
+	private final class HighlightingMouseAdapter extends MouseAdapter {
 
-		private GeoElement geo;
+		private final GeoElement geo;
 
-		public HighlightingMouseAdapter(GeoElement geo) {
+		private HighlightingMouseAdapter(GeoElement geo) {
 			this.geo = geo;
 		}
 
@@ -237,15 +236,15 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 
 				if (selectedGeos.size() < 2) {
 					if (EuclidianConstants.isMoveOrSelectionMode(view.getMode())) { // change
-																			// selection
-																			// to
-																			// geo
-																			// clicked
+						// selection
+						// to
+						// geo
+						// clicked
 
 						app.getSelectionManager().clearSelectedGeos(false); // repaint
-																			// done
-																			// next
-																			// step
+						// done
+						// next
+						// step
 						app.getSelectionManager().addSelectedGeo(getGeo());
 
 					} else { // use geo clicked to process mode
@@ -254,7 +253,6 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 						view.getEuclidianController().processMode(hits, false, false);
 					}
 				}
-
 			}
 		};
 
@@ -266,7 +264,5 @@ public class ContextMenuChooseGeoD extends ContextMenuGeoElementD {
 
 		title.setIcon(((AppD) app).getEmptyIcon());
 		title.setBorder(BorderFactory.createEmptyBorder(5, 0, 2, 15));
-
 	}
-
 }

@@ -16,7 +16,7 @@
 
 package org.geogebra.common.kernel;
 
-import javax.annotation.CheckForNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An umbrella for objects representable by quadratic equations (e.g., conics, quadrics).
@@ -60,24 +60,24 @@ public interface QuadraticEquationRepresentable {
 		 * @return The enum case whose rawValue matches the passed-in rawValue, or {@code null}
 		 * if no such enum case was found.
 		 */
-		public static @CheckForNull Form valueOf(int rawValue) {
+		public static @Nullable Form valueOf(int rawValue) {
 			switch (rawValue) {
-			case CONST_IMPLICIT:
-				return IMPLICIT;
-			case CONST_EXPLICIT:
-				return EXPLICIT;
-			case CONST_SPECIFIC:
-				return SPECIFIC;
-			case CONST_PARAMETRIC:
-				return PARAMETRIC;
-			case CONST_USER:
-				return USER;
-			case CONST_VERTEX:
-				return VERTEX;
-			case CONST_CONICFORM:
-				return CONICFORM;
-			default:
-				return null;
+				case CONST_IMPLICIT:
+					return IMPLICIT;
+				case CONST_EXPLICIT:
+					return EXPLICIT;
+				case CONST_SPECIFIC:
+					return SPECIFIC;
+				case CONST_PARAMETRIC:
+					return PARAMETRIC;
+				case CONST_USER:
+					return USER;
+				case CONST_VERTEX:
+					return VERTEX;
+				case CONST_CONICFORM:
+					return CONICFORM;
+				default:
+					return null;
 			}
 		}
 
@@ -85,17 +85,17 @@ public interface QuadraticEquationRepresentable {
 			this.rawValue = rawValue;
 		}
 	}
-	
+
 	/**
 	 * @return The equation form of this object.
 	 */
-	@CheckForNull Form getEquationForm();
+	@Nullable Form getEquationForm();
 
 	/**
 	 * Set the equation form of this object.
 	 * @param equationForm the equation form. If {@code null}, this method has no effect.
 	 */
-	void setEquationForm(@CheckForNull Form equationForm);
+	void setEquationForm(@Nullable Form equationForm);
 
 	/**
 	 * Set the equation form to {@code IMPLICIT}.

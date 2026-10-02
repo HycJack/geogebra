@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -16,7 +16,7 @@
 
 package org.geogebra.common.properties;
 
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Properties registry listener.
@@ -28,7 +28,7 @@ public interface PropertiesRegistryListener {
 	 *
 	 * @param property The property.
 	 */
-	void propertyRegistered(@Nonnull Property property);
+	void propertyRegistered(@NonNull Property property);
 
 	/**
 	 * Called when a property has been unregistered from a registry.

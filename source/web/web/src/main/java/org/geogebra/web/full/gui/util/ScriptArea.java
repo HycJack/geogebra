@@ -32,18 +32,18 @@ import org.gwtproject.event.dom.client.KeyUpHandler;
 import org.gwtproject.user.client.ui.TextArea;
 
 /** Class for future syntax highlighting, line numbering and so on. */
-public class ScriptArea extends TextArea
- implements KeyPressHandler,
-		KeyDownHandler, KeyUpHandler, HasKeyboardTF {
+public final class ScriptArea extends TextArea
+		implements KeyPressHandler, KeyDownHandler, KeyUpHandler, HasKeyboardTF {
 
 	/** application */
-	protected AppW app;
-	private DummyCursor dummyCursor;
+	private final AppW app;
+
+	private final DummyCursor dummyCursor;
 	private boolean isFocused = false;
 
 	/**
 	 * Creates new script area
-	 * 
+	 *
 	 * @param app
 	 *            application
 	 */
@@ -60,8 +60,7 @@ public class ScriptArea extends TextArea
 	public void onKeyUp(KeyUpEvent e) {
 		if (e.isAltKeyDown() && !e.isControlKeyDown()) {
 
-			String s = AltKeys.getAltSymbols((char) e.getNativeKeyCode(),
-					e.isShiftKeyDown(), true);
+			String s = AltKeys.getAltSymbols((char) e.getNativeKeyCode(), e.isShiftKeyDown(), true);
 
 			if (s != null) {
 				insertString(s);
@@ -118,7 +117,7 @@ public class ScriptArea extends TextArea
 			setSelectionRange(caretPos, 0);
 		}
 	}
-	
+
 	@Override
 	public void setCursorPos(int pos) {
 		setCursorPos(pos, true);
@@ -138,8 +137,7 @@ public class ScriptArea extends TextArea
 	@Override
 	public void onKeyDown(KeyDownEvent e) {
 
-		if (GlobalKeyDispatcherW.isBadKeyEvent(e)
-				|| e.getNativeKeyCode() == GWTKeycodes.KEY_F1) {
+		if (GlobalKeyDispatcherW.isBadKeyEvent(e) || e.getNativeKeyCode() == GWTKeycodes.KEY_F1) {
 			e.preventDefault();
 		}
 		dummyCursor.handleTabletKeyboard(e);

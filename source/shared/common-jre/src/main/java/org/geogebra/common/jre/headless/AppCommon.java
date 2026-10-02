@@ -31,6 +31,7 @@ import org.geogebra.common.factories.CASFactory;
 import org.geogebra.common.factories.CASFactoryDummy;
 import org.geogebra.common.factories.Factory;
 import org.geogebra.common.factories.FormatFactory;
+import org.geogebra.common.factories.UtilFactory;
 import org.geogebra.common.gui.GuiManager;
 import org.geogebra.common.gui.Layout;
 import org.geogebra.common.gui.layout.DockManager;
@@ -59,8 +60,8 @@ import org.geogebra.common.main.GlobalKeyDispatcher;
 import org.geogebra.common.main.GuiManagerInterface;
 import org.geogebra.common.main.SpreadsheetTableModel;
 import org.geogebra.common.main.SpreadsheetTableModelSimple;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.DefaultSettings;
+import org.geogebra.common.main.settings.LayoutSettings;
 import org.geogebra.common.main.settings.config.AppConfigCas;
 import org.geogebra.common.main.settings.config.AppConfigDefault;
 import org.geogebra.common.main.settings.config.AppConfigGeometry;
@@ -77,6 +78,7 @@ import org.geogebra.common.sound.SoundManager;
 import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.common.util.GTimer;
 import org.geogebra.common.util.GTimerListener;
+import org.geogebra.common.util.HttpRequest;
 import org.geogebra.common.util.ImageManager;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.common.util.debug.Log;
@@ -104,7 +106,7 @@ public class AppCommon extends App {
 
 	/**
 	 * Construct an AppCommon.
-	 * 
+	 *
 	 * @param loc
 	 *            localization
 	 * @param awtFactory
@@ -127,13 +129,14 @@ public class AppCommon extends App {
 		Log.setLogger(new Log() {
 
 			@Override
+			@SuppressWarnings({"PMD.SystemPrintln", "PMD.AvoidPrintStackTrace", "CallToPrintStackTrace"})
 			public void print(Level level, Object logEntry) {
 				if (logEntry instanceof RuntimeException) {
 					throw new AssertionError(logEntry);
 				} else if (logEntry instanceof Throwable) {
-					((Throwable) logEntry).printStackTrace(); // NOPMD
+					((Throwable) logEntry).printStackTrace();
 				} else {
-					System.out.println(logEntry); // NOPMD
+					System.out.println(logEntry);
 				}
 			}
 		});
@@ -157,6 +160,18 @@ public class AppCommon extends App {
 		FormatFactory.setPrototypeIfNull(new FormatFactoryJre());
 		StringUtil.setPrototypeIfNull(new StringUtil());
 		UtilFactoryJre.setupRegexFactory();
+		FlushableTimer.clearInstances();
+		UtilFactory.setPrototypeIfNull(new UtilFactoryJre() {
+			@Override
+			public HttpRequest newHttpRequest() {
+				return null;
+			}
+
+			@Override
+			public GTimer newTimer(GTimerListener listener, int delay) {
+				return new FlushableTimer(listener);
+			}
+		});
 	}
 
 	@Override
@@ -177,103 +192,66 @@ public class AppCommon extends App {
 
 	@Override
 	protected EuclidianView newEuclidianView(boolean[] showAxes1, boolean showGrid1) {
-		getSettings().getEuclidian(1).setPreferredSize(
-				AwtFactory.getPrototype().newDimension(800, 600));
-		return new EuclidianViewNoGui(getEuclidianController(), 1,
-				getSettings().getEuclidian(1),
-				createGraphics());
+		getSettings()
+				.getEuclidian(1)
+				.setPreferredSize(AwtFactory.getPrototype().newDimension(800, 600));
+		return new EuclidianViewNoGui(
+				getEuclidianController(), 1, getSettings().getEuclidian(1), createGraphics());
 	}
 
 	protected GGraphics2D createGraphics() {
-		return AwtFactory.getPrototype().createBufferedImage(800, 600, false)
-				.createGraphics();
+		return AwtFactory.getPrototype().createBufferedImage(800, 600, false).createGraphics();
 	}
 
 	@Override
 	public FontManager getFontManager() {
 		return new FontManagerNoGui();
-    }
+	}
 
-    @Override
-    protected int getWindowWidth() {
+	@Override
+	protected int getWindowWidth() {
 		return 800;
-    }
+	}
 
-    @Override
-    protected int getWindowHeight() {
+	@Override
+	protected int getWindowHeight() {
 		return 600;
-    }
+	}
 
-    @Override
-    protected void getLayoutXML(XMLStringBuilder sb, boolean asPreference) {
+	@Override
+	protected void getLayoutXML(XMLStringBuilder sb, boolean asPreference) {
 		// TODO
-    }
+	}
 
-    @Override
-    public CommandDispatcher newCommandDispatcher(Kernel cmdKernel) {
+	@Override
+	public CommandDispatcher newCommandDispatcher(Kernel cmdKernel) {
 		return new CommandDispatcherJre(cmdKernel);
-    }
+	}
 
-    @Override
-    public void invokeLater(Runnable runnable) {
+	@Override
+	public void invokeLater(Runnable runnable) {
 		runnable.run();
-    }
+	}
 
-    @Override
-    public boolean isApplet() {
-        return appletFlag;
-    }
+	@Override
+	public boolean isApplet() {
+		return appletFlag;
+	}
 
-    @Override
-    public void storeUndoInfo() {
+	@Override
+	public void storeUndoInfo() {
 		if (isUndoActive()) {
 			kernel.storeUndoInfo();
 		}
-    }
+	}
 
-    @Override
-    public void closePopups() {
+	@Override
+	public void closePopups() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public GTimer newTimer(GTimerListener listener, int delay) {
-		return new GTimer() {
-
-			@Override
-			public void start() {
-				// stub
-
-			}
-
-			@Override
-			public void startRepeat() {
-				// stub
-
-			}
-
-			@Override
-			public void stop() {
-				// stub
-
-			}
-
-			@Override
-			public boolean isRunning() {
-				// stub
-				return false;
-			}
-
-			@Override
-			public void setDelay(int timerDelay) {
-				// stub
-
-			}
-		};
-    }
-
-    @Override
-    public boolean showView(int view) {
+	@Override
+	public boolean showView(int view) {
 		Perspective p = getTmpPerspective();
 		if (p != null) {
 			for (DockPanelData dp : p.getDockPanelData()) {
@@ -283,75 +261,75 @@ public class AppCommon extends App {
 			}
 		}
 		return view == App.VIEW_EUCLIDIAN;
-    }
+	}
 
-    @Override
-    public void showError(String localizedError) {
+	@Override
+	public void showError(String localizedError) {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void showError(String string, String str) {
+	@Override
+	public void showError(String string, String str) {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public AlgebraView getAlgebraView() {
-        return null;
-    }
+	@Override
+	public AlgebraView getAlgebraView() {
+		return null;
+	}
 
-    @Override
-    public EuclidianView getActiveEuclidianView() {
+	@Override
+	public EuclidianView getActiveEuclidianView() {
 		return getEuclidianView1();
-    }
+	}
 
-    @Override
-    public boolean hasEuclidianView2EitherShowingOrNot(int idx) {
-        return false;
-    }
+	@Override
+	public boolean hasEuclidianView2EitherShowingOrNot(int idx) {
+		return false;
+	}
 
-    @Override
-    public boolean isShowingEuclidianView2(int idx) {
-        return false;
-    }
+	@Override
+	public boolean isShowingEuclidianView2(int idx) {
+		return false;
+	}
 
-    @Override
-    public ImageManager getImageManager() {
-        return imageManager;
-    }
+	@Override
+	public ImageManager getImageManager() {
+		return imageManager;
+	}
 
-    @Override
-    public GuiManagerInterface getGuiManager() {
-        return guiManager;
-    }
+	@Override
+	public GuiManagerInterface getGuiManager() {
+		return guiManager;
+	}
 
-    @Override
+	@Override
 	public DialogManager getDialogManager() {
 		return dialogManager;
 	}
 
-    @Override
-    public void evalJavaScript(App app, String script, String arg) {
+	@Override
+	public void evalJavaScript(App app, String script, String arg) {
 		// TODO delegate to scriptManager
-    }
+	}
 
-    @Override
-    public double getWidth() {
-        return 0;
-    }
+	@Override
+	public double getWidth() {
+		return 0;
+	}
 
-    @Override
-    public double getHeight() {
-        return 0;
-    }
+	@Override
+	public double getHeight() {
+		return 0;
+	}
 
-    @Override
-    public GFont getPlainFontCommon() {
+	@Override
+	public GFont getPlainFontCommon() {
 		return AwtFactory.getPrototype().newFont("serif", 0, 12);
-    }
+	}
 
-    @Override
-    public GeoElementGraphicsAdapter newGeoElementGraphicsAdapter() {
+	@Override
+	public GeoElementGraphicsAdapter newGeoElementGraphicsAdapter() {
 		return new GeoElementGraphicsAdapter() {
 
 			@Override
@@ -373,44 +351,44 @@ public class AppCommon extends App {
 
 			}
 		};
-    }
+	}
 
-    @Override
-    public void setWaitCursor() {
+	@Override
+	public void setWaitCursor() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void updateStyleBars() {
+	@Override
+	public void updateStyleBars() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void updateDynamicStyleBars() {
+	@Override
+	public void updateDynamicStyleBars() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void set1rstMode() {
+	@Override
+	public void set1rstMode() {
 		// TODO
-    }
+	}
 
-    @Override
+	@Override
 	public SpreadsheetTableModel getSpreadsheetTableModel() {
 		if (tableModel == null) {
-			tableModel = new SpreadsheetTableModelSimple(this,
-					SPREADSHEET_INI_ROWS, SPREADSHEET_INI_COLS);
+			tableModel =
+					new SpreadsheetTableModelSimple(this, SPREADSHEET_INI_ROWS, SPREADSHEET_INI_COLS);
 		}
 		return tableModel;
 	}
 
-    @Override
-    public GgbAPI getGgbApi() {
+	@Override
+	public GgbAPI getGgbApi() {
 		return new GgbAPIHeadless(this);
-    }
+	}
 
-    @Override
-    public SoundManager getSoundManager() {
+	@Override
+	public SoundManager getSoundManager() {
 		return new SoundManager() {
 
 			@Override
@@ -419,8 +397,7 @@ public class AppCommon extends App {
 			}
 
 			@Override
-			public void playSequenceNote(int double1, double double2, int i,
-					int j) {
+			public void playSequenceNote(int double1, double double2, int i, int j) {
 				// stub
 			}
 
@@ -430,8 +407,7 @@ public class AppCommon extends App {
 			}
 
 			@Override
-			public void playFunction(GeoFunction geoFunction, double double1,
-					double double2) {
+			public void playFunction(GeoFunction geoFunction, double double1, double double2) {
 				// stub
 			}
 
@@ -441,8 +417,8 @@ public class AppCommon extends App {
 			}
 
 			@Override
-			public void playFunction(GeoFunction geoFunction, double double1,
-					double double2, int double3, int double4) {
+			public void playFunction(
+					GeoFunction geoFunction, double double1, double double2, int double3, int double4) {
 				// stub
 			}
 
@@ -492,44 +468,44 @@ public class AppCommon extends App {
 				return false;
 			}
 		};
-    }
+	}
 
-    @Override
-    public boolean showAlgebraInput() {
-        return false;
-    }
+	@Override
+	public boolean showAlgebraInput() {
+		return false;
+	}
 
-    @Override
-    public GlobalKeyDispatcher getGlobalKeyDispatcher() {
-        return null;
-    }
+	@Override
+	public GlobalKeyDispatcher getGlobalKeyDispatcher() {
+		return null;
+	}
 
-    @Override
-    public void callAppletJavaScript(String string, String args) {
+	@Override
+	public void callAppletJavaScript(String string, String args) {
 		// TODO delegate to ScriptManager
-    }
+	}
 
-    @Override
-    public void updateMenubar() {
+	@Override
+	public void updateMenubar() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void updateUI() {
+	@Override
+	public void updateUI() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void showURLinBrowser(String string) {
+	@Override
+	public void showURLinBrowser(String string) {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void updateApplicationLayout() {
+	@Override
+	public void updateApplicationLayout() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
+	@Override
 	public boolean clearConstruction() {
 		kernel.clearConstruction(true);
 		kernel.initUndoInfo();
@@ -539,116 +515,116 @@ public class AppCommon extends App {
 		return true;
 	}
 
-    @Override
-    public void fileNew() {
+	@Override
+	public void fileNew() {
 		clearConstruction();
-    }
+	}
 
-    @Override
-    public void copyGraphicsViewToClipboard() {
+	@Override
+	public void copyGraphicsViewToClipboard() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void exitAll() {
+	@Override
+	public void exitAll() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public void runScripts(GeoElement geo1, String string) {
+	@Override
+	public void runScripts(GeoElement geo1, String string) {
 		// TODO
-    }
+	}
 
-    @Override
-    public boolean freeMemoryIsCritical() {
-        return false;
-    }
+	@Override
+	public boolean freeMemoryIsCritical() {
+		return false;
+	}
 
-    @Override
-    public long freeMemory() {
-        return 0;
-    }
+	@Override
+	public long freeMemory() {
+		return 0;
+	}
 
-    @Override
-    public EuclidianView createEuclidianView() {
-        return null;
-    }
+	@Override
+	public EuclidianView createEuclidianView() {
+		return null;
+	}
 
-    @Override
-    public void setActiveView(int evID) {
+	@Override
+	public void setActiveView(int evID) {
 		// only needed with 3D: overridden
-    }
+	}
 
-    @Override
-    public UndoManager getUndoManager(Construction cons) {
+	@Override
+	public UndoManager getUndoManager(Construction cons) {
 		return new DefaultUndoManager(cons);
-    }
+	}
 
-    @Override
-    public boolean isHTML5Applet() {
-        return false;
-    }
+	@Override
+	public boolean isHTML5Applet() {
+		return false;
+	}
 
-    @Override
-    public CASFactory getCASFactory() {
+	@Override
+	public CASFactory getCASFactory() {
 		return casFactory;
-    }
+	}
 
-    @Override
-    public Factory getFactory() {
-        return null;
-    }
+	@Override
+	public Factory getFactory() {
+		return null;
+	}
 
-    @Override
-    public void reset() {
+	@Override
+	public void reset() {
 		// TODO
-    }
+	}
 
-    @Override
-    public EuclidianController newEuclidianController(Kernel kernel1) {
+	@Override
+	public EuclidianController newEuclidianController(Kernel kernel1) {
 		return new EuclidianControllerNoGui(this, kernel1);
-    }
+	}
 
-    @Override
-    public DrawEquation getDrawEquation() {
-        return new DrawEquationStub();
-    }
+	@Override
+	public DrawEquation getDrawEquation() {
+		return new DrawEquationStub();
+	}
 
-    @Override
-    public void resetUniqueId() {
+	@Override
+	public void resetUniqueId() {
 		// TODO
-    }
+	}
 
-    @Override
-    public LocalizationJre getLocalization() {
-        return localization;
-    }
+	@Override
+	public LocalizationJre getLocalization() {
+		return localization;
+	}
 
 	@Override
 	public MyXMLio createXMLio(Construction cons) {
 		return new MyXMLioCommon(cons.getKernel(), cons);
 	}
 
-    @Override
-    public void showCustomizeToolbarGUI() {
+	@Override
+	public void showCustomizeToolbarGUI() {
 		// not needed with no UI
-    }
+	}
 
-    @Override
-    public boolean isSelectionRectangleAllowed() {
+	@Override
+	public boolean isSelectionRectangleAllowed() {
 		return true;
-    }
+	}
 
-    @Override
-    public MyImage getExternalImageAdapter(String filename, int width, int height) {
+	@Override
+	public MyImage getExternalImageAdapter(String filename, int width, int height) {
 		if (StringUtil.empty(filename)) {
 			return null;
 		}
-        return externalImages.computeIfAbsent(filename, foo -> new MyImageCommon(width, height));
-    }
+		return externalImages.computeIfAbsent(filename, foo -> new MyImageCommon(width, height));
+	}
 
 	@Override
-    public ScriptManager newScriptManager() {
+	public ScriptManager newScriptManager() {
 		return new ScriptManager(this) {
 
 			@Override
@@ -656,7 +632,7 @@ public class AppCommon extends App {
 				// no JS
 			}
 		};
-    }
+	}
 
 	/**
 	 * @param clear
@@ -728,6 +704,9 @@ public class AppCommon extends App {
 		setConfig(new AppConfigNotes());
 	}
 
+	/**
+	 * @param scriptManager script manager
+	 */
 	public void setScriptManager(ScriptManager scriptManager) {
 		this.scriptManager = scriptManager;
 	}
@@ -769,7 +748,7 @@ public class AppCommon extends App {
 		}
 
 		@Override
-		public void settingsChanged(AbstractSettings settings) {
+		public void settingsChanged(LayoutSettings settings) {
 			// stub
 		}
 	}

@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoImage;
 import org.geogebra.common.main.Localization;
@@ -27,6 +25,7 @@ import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.impl.objects.PlacementProperty.Placement;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting the corners of an image.
@@ -56,10 +55,14 @@ public class CornerPositionProperty extends AbstractValuedProperty<String>
 	@Override
 	public String getName() {
 		switch (cornerIndex) {
-		case 0: return super.getName() + " 1";
-		case 1: return super.getName() + " 2";
-		case 2: return super.getName() + " 4";
-		default: return "";
+			case 0:
+				return super.getName() + " 1";
+			case 1:
+				return super.getName() + " 2";
+			case 2:
+				return super.getName() + " 4";
+			default:
+				return "";
 		}
 	}
 
@@ -69,7 +72,7 @@ public class CornerPositionProperty extends AbstractValuedProperty<String>
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
+	public @Nullable String validateValue(String value) {
 		return PositionPropertyCollection.validatePointExpression(
 				geoImage.getKernel().getParser(), geoImage.getKernel().getLocalization(), value);
 	}
@@ -94,4 +97,3 @@ public class CornerPositionProperty extends AbstractValuedProperty<String>
 		return geoImage;
 	}
 }
-

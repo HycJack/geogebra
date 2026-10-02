@@ -16,9 +16,11 @@
 
 package org.geogebra.common.gui.view.algebra;
 
+import org.geogebra.common.euclidian.ScreenReaderAdapter;
 import org.geogebra.common.gui.Editing;
 import org.geogebra.common.gui.SetLabels;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Algebra view -- shows algebraic representation of the objects either as
@@ -27,7 +29,7 @@ import org.geogebra.common.kernel.geos.GeoElement;
 public interface AlgebraView extends Editing, SetLabels {
 	/**
 	 * Returns whether this view is currently visible
-	 * 
+	 *
 	 * @return whether this view is currently visible
 	 */
 	boolean isVisible();
@@ -48,6 +50,13 @@ public interface AlgebraView extends Editing, SetLabels {
 	 * @return element dragged from AV to graphics
 	 */
 	GeoElement getDraggedGeo();
+
+	/**
+	 * @return screen reader adapter for reading selected rows
+	 */
+	default @Nullable ScreenReaderAdapter getScreenReaderAdapter() {
+		return null;
+	}
 
 	/**
 	 * DEPENDENCY: Tree mode where the objects are categorized by their
@@ -90,14 +99,14 @@ public interface AlgebraView extends Editing, SetLabels {
 		 */
 		public static SortMode fromInt(int mode) {
 			switch (mode) {
-			case 0:
-				return SortMode.DEPENDENCY;
-			case 1:
-				return SortMode.TYPE;
-			case 2:
-				return SortMode.LAYER;
-			case 3:
-				return SortMode.ORDER;
+				case 0:
+					return SortMode.DEPENDENCY;
+				case 1:
+					return SortMode.TYPE;
+				case 2:
+					return SortMode.LAYER;
+				case 3:
+					return SortMode.ORDER;
 			}
 			return SortMode.TYPE;
 		}
@@ -107,18 +116,17 @@ public interface AlgebraView extends Editing, SetLabels {
 		 */
 		public int toInt() {
 			switch (this) {
-			case DEPENDENCY:
-				return 0;
-			case TYPE:
-				return 1;
-			case LAYER:
-				return 2;
-			case ORDER:
-				return 3;
+				case DEPENDENCY:
+					return 0;
+				case TYPE:
+					return 1;
+				case LAYER:
+					return 2;
+				case ORDER:
+					return 3;
 			}
 			return 1;
 		}
-
 	}
 
 	/**
@@ -155,16 +163,15 @@ public interface AlgebraView extends Editing, SetLabels {
 
 	/**
 	 * This is just used from Html5/Web, but interface is in Common
-	 * 
+	 *
 	 * @param visible
 	 *            whether to show AV input
 	 */
 	void setShowAlgebraInput(boolean visible);
 
-    /**
-     * remove the geo (with no check)
-     * @param geo geo
-     */
-    void doRemove(GeoElement geo);
-
+	/**
+	 * remove the geo (with no check)
+	 * @param geo geo
+	 */
+	void doRemove(GeoElement geo);
 }

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.geos.GeoButton;
 import org.geogebra.common.kernel.geos.GeoPoint;
@@ -32,34 +33,34 @@ import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StylePropertiesTests extends BaseAppTestSetup {
+class StylePropertiesTests extends BaseAppTestSetup {
 	private final GeoElementPropertiesFactory propertiesFactory = new GeoElementPropertiesFactory();
 
 	@BeforeEach
-	public void setupApp() {
+	void setupApp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@Test
-	public void testPointStyleProperties() {
+	void testPointStyleProperties() {
 		GeoPoint zeroPoint = evaluateGeoElement("(0,0)");
 		PropertiesArray propertiesArray = propertiesFactory.createStyleProperties(
-				getAlgebraProcessor(), getApp().getImageManager(), getLocalization(),
-				List.of(zeroPoint));
+				getAlgebraProcessor(), getApp().getImageManager(), getLocalization(), List.of(zeroPoint));
 		List<String> styleProperties = Arrays.stream(propertiesArray.getProperties())
-				.map(Property::getName).collect(Collectors.toList());
+				.map(Property::getName)
+				.collect(Collectors.toList());
 		assertEquals(List.of("Style"), styleProperties);
 	}
 
 	@Test
-	public void testButtonStyleProperties() {
+	void testButtonStyleProperties() {
+		getApp().setPlatform(GeoGebraConstants.Platform.WEB);
 		GeoButton button = evaluateGeoElement("Button[]");
 		PropertiesArray propertiesArray = propertiesFactory.createStyleProperties(
-				getAlgebraProcessor(), getApp().getImageManager(), getLocalization(),
-				List.of(button));
+				getAlgebraProcessor(), getApp().getImageManager(), getLocalization(), List.of(button));
 		List<String> styleProperties = Arrays.stream(propertiesArray.getProperties())
-				.map(Property::getName).collect(Collectors.toList());
-		assertEquals(List.of("Text", "Icon", "Background", "Size"),
-				styleProperties);
+				.map(Property::getName)
+				.collect(Collectors.toList());
+		assertEquals(List.of("Text", "Icon", "Background", "Size"), styleProperties);
 	}
 }

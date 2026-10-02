@@ -16,34 +16,41 @@
 
 package org.geogebra.common.properties.impl.graphics;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.EuclidianViewInterfaceCommon;
+import org.geogebra.common.kernel.commands.AlgebraProcessor;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This property controls the cross point of axis
  */
 public class CrossAtProperty extends AbstractValuedProperty<String>
 		implements StringProperty, SettingsDependentProperty {
+	private final AlgebraProcessor algebraProcessor;
 	private final EuclidianSettings euclidianSettings;
 	private final EuclidianViewInterfaceCommon euclidianView;
 	private final int axis;
 
 	/**
 	 * Constructs an axis cross point property.
+	 * @param algebraProcessor algebra processor
 	 * @param localization localization for the title
 	 * @param euclidianSettings euclidian settings
 	 * @param euclidianView the active euclidian view
 	 * @param axis the axis for the numbering distance will be set
 	 */
-	public CrossAtProperty(Localization localization, EuclidianSettings euclidianSettings,
-			EuclidianViewInterfaceCommon euclidianView, int axis) {
+	public CrossAtProperty(
+			AlgebraProcessor algebraProcessor,
+			Localization localization,
+			EuclidianSettings euclidianSettings,
+			EuclidianViewInterfaceCommon euclidianView,
+			int axis) {
 		super(localization, "CrossAt");
+		this.algebraProcessor = algebraProcessor;
 		this.euclidianSettings = euclidianSettings;
 		this.euclidianView = euclidianView;
 		this.axis = axis;
@@ -51,11 +58,8 @@ public class CrossAtProperty extends AbstractValuedProperty<String>
 
 	@Override
 	protected void doSetValue(String value) {
-		String str = value;
-		if ("".equals(str)) {
-			str = "0";
-		}
-		double cross = Double.parseDouble(str);
+		String input = "".equals(value) ? "0" : value;
+		double cross = algebraProcessor.evaluateToDouble(input);
 		if (!(Double.isInfinite(cross) || Double.isNaN(cross))) {
 			euclidianSettings.setAxisCross(axis, cross);
 		}
@@ -74,7 +78,7 @@ public class CrossAtProperty extends AbstractValuedProperty<String>
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
+	public @Nullable String validateValue(String value) {
 		return null;
 	}
 

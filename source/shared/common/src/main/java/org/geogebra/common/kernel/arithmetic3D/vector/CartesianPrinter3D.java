@@ -16,28 +16,32 @@
 
 package org.geogebra.common.kernel.arithmetic3D.vector;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.printing.printable.vector.PrintableVector;
 import org.geogebra.common.kernel.printing.printer.Printer;
+import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.settings.GeneralSettings;
+import org.jspecify.annotations.Nullable;
 
 class CartesianPrinter3D implements Printer {
 
-	private final @CheckForNull GeneralSettings settings;
+	private final @Nullable GeneralSettings settings;
 
-	CartesianPrinter3D(@CheckForNull GeneralSettings settings) {
+	CartesianPrinter3D(@Nullable GeneralSettings settings) {
 		this.settings = settings;
 	}
 
 	@Override
-	public String print(String xCoord, String yCoord, String zCoord,
-			PrintableVector vector, StringTemplate tpl) {
+	public String print(
+			String xCoord,
+			String yCoord,
+			String zCoord,
+			PrintableVector vector,
+			StringTemplate tpl,
+			Localization loc) {
 		if (tpl.getStringType().isGiac()) {
 			boolean vectorNot3dPoint = vector.isCASVector();
-			return (vectorNot3dPoint
-					? "ggbvect[" : "point(")
+			return (vectorNot3dPoint ? "ggbvect[" : "point(")
 					+ xCoord
 					+ ','
 					+ yCoord
@@ -46,21 +50,15 @@ class CartesianPrinter3D implements Printer {
 					+ (vectorNot3dPoint ? "]" : ")");
 		}
 		if (tpl.usePointTemplate()) {
-			return "$point("
-					+ xCoord
-					+ ','
-					+ yCoord
-					+ ','
-					+ zCoord
-					+ ')';
+			return "$point(" + xCoord + ',' + yCoord + ',' + zCoord + ')';
 		}
 		String delimiter = tpl.getCartesianDelimiter(settings);
-		return tpl.leftBracket()
+		return tpl.leftBracket(loc)
 				+ xCoord
 				+ delimiter
 				+ yCoord
 				+ delimiter
 				+ zCoord
-				+ tpl.rightBracket();
+				+ tpl.rightBracket(loc);
 	}
 }

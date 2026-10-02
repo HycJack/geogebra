@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -18,8 +18,8 @@ package org.geogebra.common.gui.view.table.dialog;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
@@ -29,17 +29,17 @@ import org.geogebra.common.gui.view.table.TableValuesProcessor;
 import org.geogebra.common.gui.view.table.TableValuesView;
 import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.statistics.Statistic;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class StatisticGroupsBuilderTest extends BaseUnitTest {
+class StatisticGroupsBuilderTest extends BaseUnitTest {
 
 	protected TableValuesView view;
 	protected TableValuesModel model;
 	protected TableValuesProcessor processor;
 
-	@Before
-	public void setupTest() {
+	@BeforeEach
+	void setupTest() {
 		view = new TableValuesView(getKernel());
 		getKernel().attach(view);
 		model = view.getTableValuesModel();
@@ -48,7 +48,7 @@ public class StatisticGroupsBuilderTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testBugAPPS3753() {
+	void testBugAPPS3753() {
 		processor.processInput("1", view.getValues(), 0);
 		processor.processInput("2", view.getValues(), 1);
 		processor.processInput("1", null, 0);
@@ -63,7 +63,7 @@ public class StatisticGroupsBuilderTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testFiltering() {
+	void testFiltering() {
 		StatisticGroupsBuilder builder = new StatisticGroupsBuilder();
 		GeoList list = add("{1, 2, 3, 4, 5}");
 		builder.setStatisticsFilter(statistic -> statistic == Statistic.MEAN);
@@ -72,9 +72,8 @@ public class StatisticGroupsBuilderTest extends BaseUnitTest {
 				() -> assertEquals(1, groups.size()),
 				() -> assertEquals(
 						getLocalization().getMenu(Statistic.MEAN.getMenuLocalizationKey()),
-						groups.get(0).getHeading()),
-				() -> assertEquals(1, groups.get(0).getValues().length),
-				() -> assertThat(groups.get(0).getValues()[0], containsString("= 3"))
-		);
+						groups.get(0).heading()),
+				() -> assertEquals(1, groups.get(0).values().size()),
+				() -> assertThat(groups.get(0).values().get(0), containsString("= 3")));
 	}
 }

@@ -20,7 +20,6 @@ import java.util.TreeMap;
 
 import org.geogebra.common.main.MaterialsManager;
 import org.geogebra.common.move.ggtapi.models.Material;
-import org.geogebra.common.util.debug.Log;
 import org.geogebra.web.full.util.SaveCallback;
 import org.geogebra.web.html5.bridge.GeoGebraJSNativeBridge;
 import org.geogebra.web.html5.main.AppW;
@@ -30,15 +29,14 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 
 @JsType
-public class TabletFileManager extends FileManagerT {
+public final class TabletFileManager extends FileManagerT {
 
 	private static TabletFileManager INSTANCE;
-	private final static int NO_CALLBACK = 0;
+	private static final int NO_CALLBACK = 0;
 	private TreeMap<Integer, NativeBridgeCallback> callbacks;
 	private int callbacksCount = NO_CALLBACK;
 
 	private abstract static class NativeBridgeCallback {
-		private int id;
 
 		protected NativeBridgeCallback() {
 			// protected
@@ -47,14 +45,6 @@ public class TabletFileManager extends FileManagerT {
 		abstract void onSuccess(Object result);
 
 		abstract void onFailure(Object exception);
-
-		public void setId(int id) {
-			this.id = id;
-		}
-
-		public int getId() {
-			return id;
-		}
 	}
 
 	/**
@@ -67,7 +57,7 @@ public class TabletFileManager extends FileManagerT {
 		setInstance();
 	}
 
-	protected void init() {
+	private void init() {
 		callbacks = new TreeMap<>();
 	}
 
@@ -79,10 +69,9 @@ public class TabletFileManager extends FileManagerT {
 		INSTANCE = this;
 	}
 
-	protected int addNewCallback(NativeBridgeCallback callback) {
+	private int addNewCallback(NativeBridgeCallback callback) {
 		callbacksCount++;
 		callbacks.put(callbacksCount, callback);
-		callback.setId(callbacksCount);
 		return callbacksCount;
 	}
 
@@ -124,13 +113,13 @@ public class TabletFileManager extends FileManagerT {
 		String fileName = getFileKey(material);
 		int callback = addNewCallback(new NativeBridgeCallback() {
 			@Override
-			public void onSuccess(Object result) {
+			void onSuccess(Object result) {
 				material.setBase64((String) result);
 				doOpenMaterial(material);
 			}
 
 			@Override
-			public void onFailure(Object result) {
+			void onFailure(Object result) {
 				// not needed
 			}
 		});
@@ -152,8 +141,7 @@ public class TabletFileManager extends FileManagerT {
 
 	@JsIgnore
 	@Override
-	public void saveFile(final String base64, final long modified,
-			final SaveCallback cb) {
+	public void saveFile(final String base64, final long modified, final SaveCallback cb) {
 		Material material = createMaterial("", modified);
 		material.setBase64("");
 		final Material saveFileMaterial = material;
@@ -161,23 +149,23 @@ public class TabletFileManager extends FileManagerT {
 		if (cb != null) {
 			callback = addNewCallback(new NativeBridgeCallback() {
 				@Override
-				public void onSuccess(Object result) {
+				void onSuccess(Object result) {
 					saveFileMaterial.setLocalID((Integer) result);
 					cb.onSaved(saveFileMaterial, true);
 				}
 
 				@Override
-				public void onFailure(Object result) {
+				void onFailure(Object result) {
 					cb.onError();
 				}
 			});
 		} else {
 			callback = NO_CALLBACK;
 		}
-		String cleanTitle = getTitleWithoutReservedCharacters(
-				getApp().getKernel().getConstruction().getTitle());
-		saveFileNative(getApp().getLocalID(), cleanTitle,
-				base64, saveFileMaterial.toJson().toString(), callback);
+		String cleanTitle =
+				getTitleWithoutReservedCharacters(getApp().getKernel().getConstruction().getTitle());
+		saveFileNative(
+				getApp().getLocalID(), cleanTitle, base64, saveFileMaterial.toJson().toString(), callback);
 	}
 
 	/**
@@ -187,27 +175,26 @@ public class TabletFileManager extends FileManagerT {
 		runCallback(cb, result > 0, result);
 	}
 
-	private void saveFileNative(int id, String title, String base64,
-			String metaData, int callback) {
+	private void saveFileNative(int id, String title, String base64, String metaData, int callback) {
 		if (GeoGebraJSNativeBridge.get() != null) {
 			GeoGebraJSNativeBridge.get().saveFile(id, title, base64, metaData, callback);
 		}
 	}
 
 	@Override
-	protected void updateFile(final String key, final long modified,
-			final Material material) {
+	protected void updateFile(final String key, final long modified, final Material material) {
 		material.setModified(modified);
 		if (key == null) {
 			// save as a new local file
 			String base64 = material.getBase64();
 			material.setBase64("");
-			createFileFromTubeNative(getTitleWithoutReservedCharacters(material.getTitle()),
-					base64, material.toJson().toString());
+			createFileFromTubeNative(
+					getTitleWithoutReservedCharacters(material.getTitle()),
+					base64,
+					material.toJson().toString());
 		} else {
 			material.setLocalID(MaterialsManager.getIDFromKey(key));
-			String newKey = MaterialsManager.createKeyString(
-					material.getLocalID(), material.getTitle());
+			String newKey = MaterialsManager.createKeyString(material.getLocalID(), material.getTitle());
 			if (key.equals(newKey)) {
 				// re-save file and meta data
 				String base64 = material.getBase64();
@@ -255,31 +242,28 @@ public class TabletFileManager extends FileManagerT {
 
 	@JsIgnore
 	@Override
-	public void rename(final String newTitle, final Material mat,
-			final Runnable callback) {
-		final String newKey = MaterialsManager.createKeyString(mat.getLocalID(),
-				newTitle);
+	public void rename(final String newTitle, final Material mat, final Runnable callback) {
+		final String newKey = MaterialsManager.createKeyString(mat.getLocalID(), newTitle);
 		final String oldKey = getFileKey(mat);
 		mat.setBase64("");
 		mat.setTitle(newTitle);
 		int callback1 = addNewCallback(new NativeBridgeCallback() {
 			@Override
-			public void onSuccess(Object result) {
+			void onSuccess(Object result) {
 				if (callback != null) {
 					callback.run();
 				}
 			}
 
 			@Override
-			public void onFailure(Object reason) {
+			void onFailure(Object reason) {
 				// not needed
 			}
 		});
 		renameNative(oldKey, newKey, mat.toJson().toString(), callback1);
 	}
 
-	private void renameNative(String oldKey, String newKey,
-			String metaData, int callback) {
+	private void renameNative(String oldKey, String newKey, String metaData, int callback) {
 		if (GeoGebraJSNativeBridge.get() != null) {
 			GeoGebraJSNativeBridge.get().rename(oldKey, newKey, metaData, callback);
 		}
@@ -297,8 +281,7 @@ public class TabletFileManager extends FileManagerT {
 
 	@JsIgnore
 	@Override
-	public void delete(final Material mat, boolean permanent,
-			final Runnable onSuccess) {
+	public void delete(final Material mat, boolean permanent, final Runnable onSuccess) {
 
 		if (!permanent) {
 			mat.setDeleted(true);
@@ -309,13 +292,13 @@ public class TabletFileManager extends FileManagerT {
 
 		int callback = addNewCallback(new NativeBridgeCallback() {
 			@Override
-			public void onSuccess(Object result) {
+			void onSuccess(Object result) {
 				removeFile(mat);
 				onSuccess.run();
 			}
 
 			@Override
-			public void onFailure(Object result) {
+			void onFailure(Object result) {
 				// not needed
 			}
 		});
@@ -353,16 +336,5 @@ public class TabletFileManager extends FileManagerT {
 	public void setTubeID(String localID, Material mat) {
 		mat.setBase64("");
 		overwriteMetaDataNative(localID, mat.toJson().toString(), NO_CALLBACK);
-	}
-
-	protected void debug(String s) {
-		Log.debug(s);
-		debugNative(s);
-	}
-
-	private void debugNative(String s) {
-		if (GeoGebraJSNativeBridge.get() != null) {
-			GeoGebraJSNativeBridge.get().debug(s);
-		}
 	}
 }

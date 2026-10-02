@@ -27,8 +27,8 @@ import org.geogebra.common.kernel.geos.GeoText;
 import org.geogebra.common.util.StringUtil;
 
 /**
- * 
- * 
+ *
+ *
  * @author G. Sturr
  */
 public class AlgoZProportionTest extends AlgoElement {
@@ -53,8 +53,12 @@ public class AlgoZProportionTest extends AlgoElement {
 	 * @param tail
 	 *            &lt; &gt; for one-sided test, default two-sided
 	 */
-	public AlgoZProportionTest(Construction cons, GeoNumeric proportion,
-			GeoNumeric n, GeoNumeric hypProportion, GeoText tail) {
+	public AlgoZProportionTest(
+			Construction cons,
+			GeoNumeric proportion,
+			GeoNumeric n,
+			GeoNumeric hypProportion,
+			GeoText tail) {
 		super(cons);
 		this.hypProportion = hypProportion;
 		this.tail = tail;
@@ -113,7 +117,7 @@ public class AlgoZProportionTest extends AlgoElement {
 		double testStatistic = (phat - hyp) / se;
 
 		NormalDistribution normalDist = new NormalDistribution(0, 1);
-		double P = 0;
+		double P;
 		try {
 			P = normalDist.cumulativeProbability(testStatistic);
 		} catch (Exception e) {
@@ -127,7 +131,5 @@ public class AlgoZProportionTest extends AlgoElement {
 		result.clear();
 		result.addNumber(P, null);
 		result.addNumber(testStatistic, null);
-
 	}
-
 }

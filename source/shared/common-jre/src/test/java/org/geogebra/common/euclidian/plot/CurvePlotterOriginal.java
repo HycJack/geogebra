@@ -43,8 +43,7 @@ public class CurvePlotterOriginal {
 	private static final double MAX_ANGLE = 10; // degrees
 	private static final double MAX_ANGLE_OFF_SCREEN = 45; // degrees
 	public static final double MAX_BEND = Math.tan(MAX_ANGLE * Kernel.PI_180);
-	private static final double MAX_BEND_OFF_SCREEN = Math
-			.tan(MAX_ANGLE_OFF_SCREEN * Kernel.PI_180);
+	private static final double MAX_BEND_OFF_SCREEN = Math.tan(MAX_ANGLE_OFF_SCREEN * Kernel.PI_180);
 
 	// maximum number of bisections (max number of plot points = 2^MAX_DEPTH)
 	private static final int MAX_DEFINED_BISECTIONS = 16;
@@ -100,16 +99,21 @@ public class CurvePlotterOriginal {
 	 * @return label position as Point
 	 * @author Markus Hohenwarter, based on an algorithm by John Gillam
 	 */
-	public static GPoint plotCurve(CurveEvaluable curve, double t1,
-			double t2, EuclidianView view, PathPlotter gp, boolean calcLabelPos,
+	public static GPoint plotCurve(
+			CurveEvaluable curve,
+			double t1,
+			double t2,
+			EuclidianView view,
+			PathPlotter gp,
+			boolean calcLabelPos,
 			org.geogebra.common.euclidian.plot.Gap moveToAllowed) {
 
 		// ensure MIN_PLOT_POINTS
 		double minSamplePoints = Math.max(MIN_SAMPLE_POINTS, view.getWidth() / 6);
 		double max_param_step = Math.abs(t2 - t1) / minSamplePoints;
 		// plot Interval [t1, t2]
-		GPoint labelPoint = plotInterval(curve, t1, t2, 0, max_param_step, view,
-				gp, calcLabelPos, moveToAllowed);
+		GPoint labelPoint =
+				plotInterval(curve, t1, t2, 0, max_param_step, view, gp, calcLabelPos, moveToAllowed);
 		if (moveToAllowed == org.geogebra.common.euclidian.plot.Gap.CORNER) {
 			gp.corner();
 		}
@@ -131,9 +135,15 @@ public class CurvePlotterOriginal {
 	 * @return label position as Point
 	 * @author Markus Hohenwarter, based on an algorithm by John Gillam
 	 */
-	private static GPoint plotInterval(CurveEvaluable curve, double t1,
-			double t2, int intervalDepth, double max_param_step,
-			EuclidianView view, PathPlotter gp, boolean calcLabelPos,
+	private static GPoint plotInterval(
+			CurveEvaluable curve,
+			double t1,
+			double t2,
+			int intervalDepth,
+			double max_param_step,
+			EuclidianView view,
+			PathPlotter gp,
+			boolean calcLabelPos,
 			org.geogebra.common.euclidian.plot.Gap moveToAllowed) {
 		// plot interval for t in [t1, t2]
 		// If we run into a problem, i.e. an undefined point f(t), we bisect
@@ -153,8 +163,16 @@ public class CurvePlotterOriginal {
 		// evaluate for t1
 		curve.evaluateCurve(t1, eval);
 		if (isUndefined(eval)) {
-			return plotProblemInterval(curve, t1, t2, intervalDepth,
-					max_param_step, view, gp, calcLabelPos, moveToAllowed,
+			return plotProblemInterval(
+					curve,
+					t1,
+					t2,
+					intervalDepth,
+					max_param_step,
+					view,
+					gp,
+					calcLabelPos,
+					moveToAllowed,
 					labelPoint);
 		}
 		eval0 = Cloner.clone(eval);
@@ -162,8 +180,16 @@ public class CurvePlotterOriginal {
 		// evaluate for t2
 		curve.evaluateCurve(t2, eval);
 		if (isUndefined(eval)) {
-			return plotProblemInterval(curve, t1, t2, intervalDepth,
-					max_param_step, view, gp, calcLabelPos, moveToAllowed,
+			return plotProblemInterval(
+					curve,
+					t1,
+					t2,
+					intervalDepth,
+					max_param_step,
+					view,
+					gp,
+					calcLabelPos,
+					moveToAllowed,
 					labelPoint);
 		}
 		boolean onScreen = view.isOnView(eval);
@@ -175,16 +201,15 @@ public class CurvePlotterOriginal {
 		// TODO
 		// INIT plotting algorithm
 		int length = MAX_DEFINED_BISECTIONS + 1;
-		int[] dyadicStack = new int[length];
-		int[] depthStack = new int[length];
-		double[][] posStack = new double[length][];
-		boolean[] onScreenStack = new boolean[length];
 		double[] divisors = new double[length];
 		divisors[0] = t2 - t1;
 		for (int i = 1; i < length; i++) {
 			divisors[i] = divisors[i - 1] / 2;
 		}
-		int i = 1;
+		int[] dyadicStack = new int[length];
+		int[] depthStack = new int[length];
+		double[][] posStack = new double[length][];
+		boolean[] onScreenStack = new boolean[length];
 		dyadicStack[0] = 1;
 		depthStack[0] = 0;
 
@@ -193,20 +218,18 @@ public class CurvePlotterOriginal {
 
 		// slope between (t1, t2)
 		double[] diff = view.getOnScreenDiff(eval0, eval1);
-		int countDiffZeros = 0;
 
 		// init previous slope using (t1, t1 + min_step)
 		curve.evaluateCurve(t1 + divisors[length - 1], eval);
 		double[] prevDiff = view.getOnScreenDiff(eval0, eval);
 
-		int top = 1;
-		int depth = 0;
-		double t = t1;
-		double left = t1;
+		int top = 1, depth = 0;
+		double t = t1, left = t1;
 		boolean distanceOK, angleOK, segOffScreen, minDistReached;
 		boolean nextLineToNeedsMoveToFirst = false;
 		double[] move = curve.newDoubleArray();
 		boolean needLabelPos = calcLabelPos;
+		int i = 1, countDiffZeros = 0;
 		// Actual plotting algorithm:
 		// use bisection for interval until we reach
 		// a small pixel distance between two points and
@@ -217,18 +240,16 @@ public class CurvePlotterOriginal {
 			// segment from last point off screen?
 			segOffScreen = view.isSegmentOffView(eval0, eval1);
 			// pixel distance from last point OK?
-			minDistReached =  diff[0] < curve.getMinDistX();
+			minDistReached = diff[0] < curve.getMinDistX();
 			distanceOK = segOffScreen || isDistanceOK(diff);
 			// angle from last segment OK?
-			angleOK = isAngleOK(prevDiff, diff, segOffScreen
-					? MAX_BEND_OFF_SCREEN : MAX_BEND);
+			angleOK = isAngleOK(prevDiff, diff, segOffScreen ? MAX_BEND_OFF_SCREEN : MAX_BEND);
 
 			// bisect interval as long as max bisection depth not reached & ...
 			while (depth < MAX_DEFINED_BISECTIONS
 					// ... distance not ok or angle not ok or step too big
 					&& !minDistReached
-					&& (!distanceOK || !angleOK
-					|| divisors[depth] > max_param_step)
+					&& (!distanceOK || !angleOK || divisors[depth] > max_param_step)
 					// make sure we don't get stuck on eg Curve[0sin(t), 0t, t,
 					// 0, 6]
 					&& countDiffZeros < MAX_ZERO_COUNT) {
@@ -249,14 +270,21 @@ public class CurvePlotterOriginal {
 				// c(t) undefined; c(t-eps) and c(t+eps) both defined
 				if (isUndefined(eval)) {
 					// check if c(t-eps) and c(t+eps) are both defined
-					boolean singularity = isContinuousAround(curve, t,
-							divisors[length - 1], view, eval);
+					boolean singularity = isContinuousAround(curve, t, divisors[length - 1], view, eval);
 
 					// split interval: f(t+eps) or f(t-eps) not defined
 					if (!singularity) {
-						return plotProblemInterval(curve, left, t2,
-								intervalDepth, max_param_step, view, gp,
-								calcLabelPos, moveToAllowed, labelPoint);
+						return plotProblemInterval(
+								curve,
+								left,
+								t2,
+								intervalDepth,
+								max_param_step,
+								view,
+								gp,
+								calcLabelPos,
+								moveToAllowed,
+								labelPoint);
 					}
 					Log.debug("SINGULARITY AT" + t);
 				}
@@ -276,9 +304,7 @@ public class CurvePlotterOriginal {
 				// pixel distance from last point OK?
 				distanceOK = segOffScreen || isDistanceOK(diff);
 				// angle from last segment OK?
-				angleOK = isAngleOK(prevDiff, diff, segOffScreen
-						? MAX_BEND_OFF_SCREEN : MAX_BEND);
-
+				angleOK = isAngleOK(prevDiff, diff, segOffScreen ? MAX_BEND_OFF_SCREEN : MAX_BEND);
 			} // end of while-loop for interval bisections
 
 			// add point to general path: lineTo or moveTo?
@@ -369,10 +395,17 @@ public class CurvePlotterOriginal {
 	/**
 	 * Plots an interval where f(t1) or f(t2) is undefined.
 	 */
-	private static GPoint plotProblemInterval(CurveEvaluable curve, double t1,
-			double t2, int intervalDepth, double max_param_step,
-			EuclidianView view, PathPlotter gp, boolean calcLabelPos,
-			org.geogebra.common.euclidian.plot.Gap moveToAllowed, GPoint labelPoint) {
+	private static GPoint plotProblemInterval(
+			CurveEvaluable curve,
+			double t1,
+			double t2,
+			int intervalDepth,
+			double max_param_step,
+			EuclidianView view,
+			PathPlotter gp,
+			boolean calcLabelPos,
+			org.geogebra.common.euclidian.plot.Gap moveToAllowed,
+			GPoint labelPoint) {
 		boolean calcLabel = calcLabelPos;
 		// stop recursion for too many intervals
 		if (intervalDepth > MAX_PROBLEM_BISECTIONS || t1 == t2) {
@@ -393,13 +426,29 @@ public class CurvePlotterOriginal {
 		if (intervalsTooLarge) {
 			// bisect interval
 			calcLabel = calcLabel && labelPoint == null;
-			labelPoint1 = plotInterval(curve, t1, splitParam, intervalDepth + 1,
-					max_param_step, view, gp, calcLabel, moveToAllowed);
+			labelPoint1 = plotInterval(
+					curve,
+					t1,
+					splitParam,
+					intervalDepth + 1,
+					max_param_step,
+					view,
+					gp,
+					calcLabel,
+					moveToAllowed);
 
 			// plot interval [(t1+t2)/2, t2]
 			calcLabel = calcLabel && labelPoint1 == null;
-			labelPoint2 = plotInterval(curve, splitParam, t2, intervalDepth + 1,
-					max_param_step, view, gp, calcLabel, moveToAllowed);
+			labelPoint2 = plotInterval(
+					curve,
+					splitParam,
+					t2,
+					intervalDepth + 1,
+					max_param_step,
+					view,
+					gp,
+					calcLabel,
+					moveToAllowed);
 		} else {
 			// look at the end points of the intervals [t1, (t1+t2)/2] and
 			// [(t1+t2)/2, t2]
@@ -413,15 +462,29 @@ public class CurvePlotterOriginal {
 			double[] borders = new double[2];
 			getDefinedInterval(curve, t1, splitParam, borders);
 			calcLabel = calcLabel && labelPoint == null;
-			labelPoint1 = plotInterval(curve, borders[0], borders[1],
-					intervalDepth + 1, max_param_step, view, gp, calcLabel,
+			labelPoint1 = plotInterval(
+					curve,
+					borders[0],
+					borders[1],
+					intervalDepth + 1,
+					max_param_step,
+					view,
+					gp,
+					calcLabel,
 					moveToAllowed);
 
 			// plot interval [(t1+t2)/2, t2]
 			getDefinedInterval(curve, splitParam, t2, borders);
 			calcLabel = calcLabel && labelPoint1 == null;
-			labelPoint2 = plotInterval(curve, borders[0], borders[1],
-					intervalDepth + 1, max_param_step, view, gp, calcLabel,
+			labelPoint2 = plotInterval(
+					curve,
+					borders[0],
+					borders[1],
+					intervalDepth + 1,
+					max_param_step,
+					view,
+					gp,
+					calcLabel,
 					moveToAllowed);
 		}
 
@@ -437,8 +500,8 @@ public class CurvePlotterOriginal {
 	/**
 	 * Returns whether curve is defined for c(t-eps) and c(t + eps).
 	 */
-	private static boolean isContinuousAround(CurveEvaluable curve, double t,
-			double eps, EuclidianView view, double[] evalT) {
+	private static boolean isContinuousAround(
+			CurveEvaluable curve, double t, double eps, EuclidianView view, double[] evalT) {
 		// check if c(t) is undefined
 		double[] eval = curve.newDoubleArray();
 
@@ -451,8 +514,7 @@ public class CurvePlotterOriginal {
 			if (!isUndefined(eval)) {
 				// SINGULARITY for functions: c(t) undef, c(t-eps) and c(t+eps)
 				// defined and close
-				if (curve.isFunctionInX()
-						&& Math.abs(oldy - eval[1]) * view.getYscale() < MAX_JUMP) {
+				if (curve.isFunctionInX() && Math.abs(oldy - eval[1]) * view.getYscale() < MAX_JUMP) {
 					evalT[1] = (oldy + eval[1]) * 0.5;
 					return true;
 				}
@@ -533,8 +595,7 @@ public class CurvePlotterOriginal {
 	 *
 	 * @return true when t1 and t2 get closer than Kernel.MAX_DOUBLE_PRECISION
 	 */
-	public static boolean isContinuous(CurveEvaluable c, double from, double to,
-			int maxIterations) {
+	public static boolean isContinuous(CurveEvaluable c, double from, double to, int maxIterations) {
 		double t1 = from;
 		double t2 = to;
 		if (DoubleUtil.isEqual(t1, t2, Kernel.MAX_DOUBLE_PRECISION)) {
@@ -560,8 +621,7 @@ public class CurvePlotterOriginal {
 		// Start with distance between left and right points.
 		// Bisect until the maximum distance of middle to right resp. left
 		// is clearly smaller than the initial distance.
-		double initialDistance = Math.max(Math.abs(left[0] - right[0]),
-				Math.abs(left[1] - right[1]));
+		double initialDistance = Math.max(Math.abs(left[0] - right[0]), Math.abs(left[1] - right[1]));
 		double eps = initialDistance * 0.9;
 		double dist = Double.POSITIVE_INFINITY;
 		int iterations = 0;
@@ -595,8 +655,8 @@ public class CurvePlotterOriginal {
 	/**
 	 * Sets borders to a defined interval in [a, b] if possible.
 	 */
-	private static void getDefinedInterval(CurveEvaluable curve, double a,
-			double b, double[] borders) {
+	private static void getDefinedInterval(
+			CurveEvaluable curve, double a, double b, double[] borders) {
 		double[] eval = curve.newDoubleArray();
 
 		// check first and last point in interval
@@ -636,8 +696,8 @@ public class CurvePlotterOriginal {
 	 *            coordinate system to be applied on 2D points
 	 * @return last point drawn
 	 */
-	static public double[] draw(PathPlotter gp,
-			ArrayList<? extends MyPoint> pointList, CoordSys transformSys) {
+	public static double[] draw(
+			PathPlotter gp, ArrayList<? extends MyPoint> pointList, CoordSys transformSys) {
 		double[] coords = gp.newDoubleArray();
 		int size = pointList.size();
 		if (!gp.supports(transformSys) || size == 0) {
@@ -675,8 +735,7 @@ public class CurvePlotterOriginal {
 		return coords;
 	}
 
-	private static double[] moveTo(PathPlotter gp, double[] coords,
-			double[] previousLastMove) {
+	private static double[] moveTo(PathPlotter gp, double[] coords, double[] previousLastMove) {
 		double[] lastMove;
 		if (previousLastMove != null) {
 			gp.lineTo(previousLastMove);

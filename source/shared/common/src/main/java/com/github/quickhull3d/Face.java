@@ -24,13 +24,13 @@ package com.github.quickhull3d;
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -51,7 +51,7 @@ package com.github.quickhull3d;
  * The information stored for each face consists of a planar normal, a planar
  * offset, and a doubly-linked list of three <a href=HalfEdge>HalfEdges</a>
  * which surround the face in a counter-clockwise direction.
- * 
+ *
  * @author John E. Lloyd, Fall 2004
  */
 class Face {
@@ -113,7 +113,7 @@ class Face {
 
 	/**
 	 * Constructs a triangle Face from vertices v0, v1, and v2.
-	 * 
+	 *
 	 * @param v0
 	 *            first vertex
 	 * @param v1
@@ -121,8 +121,7 @@ class Face {
 	 * @param v2
 	 *            third vertex
 	 */
-	public static Face createTriangle(Vertex v0, Vertex v1, Vertex v2,
-			double minArea) {
+	public static Face createTriangle(Vertex v0, Vertex v1, Vertex v2, double minArea) {
 		Face face = new Face();
 		HalfEdge he0 = new HalfEdge(v0, face);
 		HalfEdge he1 = new HalfEdge(v1, face);
@@ -181,7 +180,6 @@ class Face {
 			normal.y += d1z * d2x - d1x * d2z;
 			normal.z += d1x * d2y - d1y * d2x;
 
-			he1 = he2;
 			he2 = he2.next;
 			numVerts++;
 		}
@@ -225,7 +223,7 @@ class Face {
 
 	/**
 	 * Computes the distance from a point p to the plane of this face.
-	 * 
+	 *
 	 * @param p
 	 *            the point
 	 * @return distance from the point to the plane
@@ -237,7 +235,7 @@ class Face {
 	/**
 	 * Finds the half-edge within this face which has tail <code>vt</code> and
 	 * head <code>vh</code>.
-	 * 
+	 *
 	 * @param vt
 	 *            tail point
 	 * @param vh
@@ -261,7 +259,7 @@ class Face {
 
 	/**
 	 * Gets the i-th half-edge associated with the face.
-	 * 
+	 *
 	 * @param i
 	 *            the half-edge index, in the range 0-2.
 	 * @return the half-edge
@@ -285,7 +283,7 @@ class Face {
 
 	/**
 	 * Returns the normal of the plane associated with this face.
-	 * 
+	 *
 	 * @return the planar normal
 	 */
 	public Vector3d getNormal() {
@@ -387,8 +385,7 @@ class Face {
 		Face face0 = null;
 
 		for (hedge = hedge.next; hedge != he0.prev; hedge = hedge.next) {
-			Face face = createTriangle(v0, hedge.prev.head(), hedge.head(),
-					minArea);
+			Face face = createTriangle(v0, hedge.prev.head(), hedge.head(), minArea);
 			face.he0.next.setOpposite(oppPrev);
 			face.he0.prev.setOpposite(hedge.opposite);
 			oppPrev = face.he0;
@@ -412,13 +409,12 @@ class Face {
 		for (Face face = face0; face != null; face = face.next) {
 			face.checkConsistency();
 		}
-
 	}
 
 	/**
 	 * return the squared area of the triangle defined by the half edge hedge0
 	 * and the point at the head of hedge1.
-	 * 
+	 *
 	 * @param hedge0 first half-edge
 	 * @param hedge1 second half-edge
 	 * @return area squared
@@ -454,8 +450,8 @@ class Face {
 			he = he.next;
 		} while (he != he0);
 		if (numv != numVerts) {
-			throw new InternalErrorException("face " + getVertexString()
-					+ " numVerts=" + numVerts + " should be " + numv);
+			throw new InternalErrorException(
+					"face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
 		}
 	}
 
@@ -469,10 +465,10 @@ class Face {
 		Face discardedFace = null;
 
 		if (hedgePrev.oppositeFace() == hedge.oppositeFace()) { // then there is
-																// a redundant
-																// edge that we
-																// can get rid
-																// off
+			// a redundant
+			// edge that we
+			// can get rid
+			// off
 
 			Face oppFace = hedge.oppositeFace();
 			HalfEdge hedgeOpp;
@@ -481,7 +477,7 @@ class Face {
 				he0 = hedge;
 			}
 			if (oppFace.numVertices() == 3) { // then we can get rid of the
-												// opposite face altogether
+				// opposite face altogether
 				hedgeOpp = hedge.getOpposite().prev.getOpposite();
 
 				oppFace.mark = DELETED;
@@ -517,8 +513,7 @@ class Face {
 		int numv = 0;
 
 		if (numVerts < 3) {
-			throw new InternalErrorException(
-					"degenerate face: " + getVertexString());
+			throw new InternalErrorException("degenerate face: " + getVertexString());
 		}
 		do {
 			HalfEdge hedgeOpp = hedge.getOpposite();
@@ -532,8 +527,7 @@ class Face {
 						+ hedgeOpp.getVertexString() + " has opposite "
 						+ hedgeOpp.getOpposite().getVertexString());
 			}
-			if (hedgeOpp.head() != hedge.tail()
-					|| hedge.head() != hedgeOpp.tail()) {
+			if (hedgeOpp.head() != hedge.tail() || hedge.head() != hedgeOpp.tail()) {
 				throw new InternalErrorException("face " + getVertexString()
 						+ ": " + "half edge " + hedge.getVertexString()
 						+ " reflected by " + hedgeOpp.getVertexString());
@@ -544,9 +538,8 @@ class Face {
 						+ ": " + "no face on half edge "
 						+ hedgeOpp.getVertexString());
 			} else if (oppFace.mark == DELETED) {
-				throw new InternalErrorException(
-						"face " + getVertexString() + ": " + "opposite face "
-								+ oppFace.getVertexString() + " not on hull");
+				throw new InternalErrorException("face " + getVertexString() + ": " + "opposite face "
+						+ oppFace.getVertexString() + " not on hull");
 			}
 			double d = Math.abs(distanceToPlane(hedge.head().pnt));
 			if (d > maxd) {
@@ -557,9 +550,8 @@ class Face {
 		} while (hedge != he0);
 
 		if (numv != numVerts) {
-			throw new InternalErrorException("face " + getVertexString()
-					+ " numVerts=" + numVerts + " should be " + numv);
+			throw new InternalErrorException(
+					"face " + getVertexString() + " numVerts=" + numVerts + " should be " + numv);
 		}
-
 	}
 }

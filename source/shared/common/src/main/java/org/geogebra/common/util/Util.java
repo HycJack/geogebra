@@ -18,20 +18,18 @@ package org.geogebra.common.util;
 
 import java.util.concurrent.Callable;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.util.debug.Log;
+import org.jspecify.annotations.NonNull;
 
 public final class Util {
 
 	/** available font sizes (will be reused in OptionsAdvanced) */
-	final private static int[] MENU_FONT_SIZES = { 12, 14, 16, 18, 20, 24, 28,
-			32, 48 };
+	private static final int[] MENU_FONT_SIZES = {12, 14, 16, 18, 20, 24, 28, 32, 48};
 
 	/**
 	 * used when value is needed through a callback
 	 */
-	static final public class Wrap<T> {
+	public static final class Wrap<T> {
 		private T value;
 
 		public Wrap(T value) {
@@ -56,7 +54,7 @@ public final class Util {
 
 	/**
 	 * Removes &lt; &gt; " * / ? | \ and replaces them with underscore (_)
-	 * 
+	 *
 	 * @author Michael Borcherds
 	 * @param name
 	 *            suggested filename
@@ -69,8 +67,15 @@ public final class Util {
 		for (int i = 0; i < length; i++) {
 			char c = name.charAt(i);
 			// u00a3 seems to turn into ? inside zips
-			if (c == '<' || c == '>' || c == '"' || c == ':' || c == '*'
-					|| c == '/' || c == '\\' || c == '?' || c == '\u00a3'
+			if (c == '<'
+					|| c == '>'
+					|| c == '"'
+					|| c == ':'
+					|| c == '*'
+					|| c == '/'
+					|| c == '\\'
+					|| c == '?'
+					|| c == '\u00a3'
 					|| c == '|') {
 				sb.append("_");
 			} else {
@@ -86,10 +91,10 @@ public final class Util {
 	}
 
 	/**
-	 * 
+	 *
 	 * Optimised for short code - checks every number in List. Use
 	 * ConcurrentSkipListMap for longer lists
-	 * 
+	 *
 	 * @param num
 	 *            number to check against list
 	 * @param nums
@@ -148,8 +153,7 @@ public final class Util {
 			// all bitmaps (except JPG) saved as PNG
 			// eg .TIFF/.TIF/.BMP
 			ret = StringUtil.changeFileExtension(fn, FileExtensions.PNG);
-			Log.debug(
-					"changing image extension " + ext + " -> " + ret);
+			Log.debug("changing image extension " + ext + " -> " + ret);
 		} else {
 
 			ret = fn;
@@ -166,7 +170,7 @@ public final class Util {
 	 * or {@code null} if the callable throws any exception
 	 * @param <T> the type of the result produced by the callable
 	 */
-	public static <T> T tryOrNull(@Nonnull Callable<T> callable) {
+	public static <T> T tryOrNull(@NonNull Callable<T> callable) {
 		try {
 			return callable.call();
 		} catch (Exception exception) {

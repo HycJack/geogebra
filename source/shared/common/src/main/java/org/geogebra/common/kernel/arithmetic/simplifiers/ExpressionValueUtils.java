@@ -16,13 +16,12 @@
 
 package org.geogebra.common.kernel.arithmetic.simplifiers;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.arithmetic.ExpressionNode;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.common.util.DoubleUtil;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utility class to find out properties of ExpressionValue in a short way.
@@ -36,13 +35,12 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if ev holds an integer.
 	 */
-	static boolean isIntegerValue(@CheckForNull ExpressionValue ev) {
+	static boolean isIntegerValue(@Nullable ExpressionValue ev) {
 		if (ev == null) {
 			return false;
 		}
 
 		return DoubleUtil.isInteger(ev.evaluateDouble());
-
 	}
 
 	/**
@@ -50,7 +48,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if ev evaluates to 1 (within standard precision).
 	 */
-	public static boolean isOne(@CheckForNull ExpressionValue ev) {
+	public static boolean isOne(@Nullable ExpressionValue ev) {
 		return ev != null && DoubleUtil.isOne(ev.evaluateDouble());
 	}
 
@@ -59,7 +57,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if ev evaluates to -1 (within standard precision).
 	 */
-	public static boolean isMinusOne(@CheckForNull ExpressionNode ev) {
+	public static boolean isMinusOne(@Nullable ExpressionNode ev) {
 		return ev != null && DoubleUtil.isMinusOne(ev.evaluateDouble());
 	}
 
@@ -68,7 +66,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if ev holds a natural number.
 	 */
-	static boolean isNaturalNumber(@CheckForNull ExpressionValue ev) {
+	static boolean isNaturalNumber(@Nullable ExpressionValue ev) {
 		if (ev == null) {
 			return false;
 		}
@@ -82,7 +80,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return true if square root is valid, ie the value under it is a natural number.
 	 */
-	public static boolean isSqrtValid(@CheckForNull ExpressionValue ev) {
+	public static boolean isSqrtValid(@Nullable ExpressionValue ev) {
 		return isSqrtNode(ev) && isNaturalNumber(ev.wrap().getLeft());
 	}
 
@@ -91,7 +89,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if operation of the ev is SQRT.
 	 */
-	public static boolean isSqrtNode(@CheckForNull ExpressionValue ev) {
+	public static boolean isSqrtNode(@Nullable ExpressionValue ev) {
 		return ev != null && ev.isOperation(Operation.SQRT);
 	}
 
@@ -100,21 +98,19 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if ev is supported by {@link RationalizableFraction}
 	 */
-	public static boolean isNodeSupported(@CheckForNull ExpressionValue ev) {
+	public static boolean isNodeSupported(@Nullable ExpressionValue ev) {
 		if (ev == null) {
 			return false;
 		}
 
-		return (ev.isLeaf() && isIntegerValue(ev))
-				|| isSqrtValid(ev)
-				|| isSqrtAndInteger(ev);
+		return (ev.isLeaf() && isIntegerValue(ev)) || isSqrtValid(ev) || isSqrtAndInteger(ev);
 	}
 
 	/**
 	 * @param ev to check.
 	 * @return if ev is in (sqrt(a) +/- b) or (a +/- sqrt(b)) form
 	 */
-	private static boolean isSqrtAndInteger(@CheckForNull ExpressionValue ev) {
+	private static boolean isSqrtAndInteger(@Nullable ExpressionValue ev) {
 		if (!isAtomicSurdAdditionNode(ev)) {
 			return false;
 		}
@@ -129,13 +125,14 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if ev is in a + b or a - b form.
 	 */
-	static boolean isAddSubNode(@CheckForNull ExpressionValue ev) {
+	static boolean isAddSubNode(@Nullable ExpressionValue ev) {
 		if (ev == null) {
 			return false;
 		}
 
 		ExpressionNode node = ev.wrap();
-		return node.getLeftTree() != null && node.getRightTree() != null
+		return node.getLeftTree() != null
+				&& node.getRightTree() != null
 				&& (node.isOperation(Operation.PLUS) || node.isOperation(Operation.MINUS));
 	}
 
@@ -146,7 +143,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if ev is an a+/-b expression, where a, b are atomic expressions.
 	 */
-	public static boolean isAtomicSurdAdditionNode(@CheckForNull ExpressionValue ev) {
+	public static boolean isAtomicSurdAdditionNode(@Nullable ExpressionValue ev) {
 		if (ev == null) {
 			return false;
 		}
@@ -158,7 +155,7 @@ public final class ExpressionValueUtils {
 	 * @param ev ExpressionValue to check
 	 * @return Whether {@code ev} is a multiplication a * b, where a and b are atomic expressions.
 	 */
-	public static boolean isAtomicSurdMultiplicationNode(@CheckForNull ExpressionValue ev) {
+	public static boolean isAtomicSurdMultiplicationNode(@Nullable ExpressionValue ev) {
 		if (ev == null) {
 			return false;
 		}
@@ -174,7 +171,9 @@ public final class ExpressionValueUtils {
 	 * @return if ev is atomic
 	 */
 	public static boolean isAtomic(ExpressionValue ev) {
-		return ev.isLeaf() || isIntegerValue(ev) || isSqrtNode(ev)
+		return ev.isLeaf()
+				|| isIntegerValue(ev)
+				|| isSqrtNode(ev)
 				|| (isMultiplyNode(ev) && isSqrtNode(ev.wrap().getRight()));
 	}
 
@@ -183,7 +182,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return a if ev is sqrt(a), null otherwise.
 	 */
-	public static ExpressionValue radicandOf(@CheckForNull ExpressionValue ev) {
+	public static ExpressionValue radicandOf(@Nullable ExpressionValue ev) {
 		return isSqrtNode(ev) ? ev.wrap().getLeftTree() : null;
 	}
 
@@ -203,7 +202,7 @@ public final class ExpressionValueUtils {
 	 * @param ev to check
 	 * @return if operation of the ev is DIVIDE.
 	 */
-	public static boolean isDivNode(@CheckForNull ExpressionValue ev) {
+	public static boolean isDivNode(@Nullable ExpressionValue ev) {
 		return ev != null && ev.isOperation(Operation.DIVIDE);
 	}
 

@@ -16,8 +16,6 @@
 
 package org.geogebra.common.gui.view.table;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.advanced.AlgoParseToNumberOrFunction;
@@ -26,6 +24,7 @@ import org.geogebra.common.kernel.commands.Commands;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.geos.GeoText;
+import org.jspecify.annotations.NonNull;
 
 public class TableValuesInputProcessor implements TableValuesProcessor {
 
@@ -45,7 +44,7 @@ public class TableValuesInputProcessor implements TableValuesProcessor {
 	}
 
 	@Override
-	public void processInput(@Nonnull String input, GeoList list, int rowIndex) {
+	public void processInput(@NonNull String input, GeoList list, int rowIndex) {
 		GeoElement element = parseInput(input);
 		if (model.isEmptyValue(element) && (list == null || rowIndex >= list.size())) {
 			// Do not process empty input at the end of the table
@@ -78,8 +77,8 @@ public class TableValuesInputProcessor implements TableValuesProcessor {
 		if (tableValues.getValues() == list && !list.isLabelSet()) {
 			model.setupXValues(list);
 			list.setLabel(cons.buildIndexedLabel("x", false));
-			if (GeoGebraConstants.PROBABILITY_APPCODE
-					.equals(cons.getApplication().getConfig().getSubAppCode())) {
+			if (GeoGebraConstants.PROBABILITY_APPCODE.equals(
+					cons.getApplication().getConfig().getSubAppCode())) {
 				cons.removeFromConstructionList(list);
 			}
 		}
@@ -87,7 +86,7 @@ public class TableValuesInputProcessor implements TableValuesProcessor {
 
 	private GeoElement parseInput(String input) {
 		String trimmedInput = input.trim();
-		if (trimmedInput.equals("")) {
+		if (trimmedInput.isEmpty()) {
 			return model.createEmptyValue();
 		}
 		try {
@@ -95,9 +94,8 @@ public class TableValuesInputProcessor implements TableValuesProcessor {
 			return model.createValue(parsedInput);
 		} catch (NumberFormatException e) {
 			preloadScripting();
-			AlgoParseToNumberOrFunction algoParseToNumberOrFunction =
-					new AlgoParseToNumberOrFunction(cons,
-							new GeoText(cons, input), null, Commands.ParseToNumber, null);
+			AlgoParseToNumberOrFunction algoParseToNumberOrFunction = new AlgoParseToNumberOrFunction(
+					cons, new GeoText(cons, input), null, Commands.ParseToNumber, null);
 			GeoElement el = algoParseToNumberOrFunction.getOutput(0);
 			if (el.isDefined()) {
 				algoParseToNumberOrFunction.remove();
@@ -109,9 +107,11 @@ public class TableValuesInputProcessor implements TableValuesProcessor {
 
 	private void preloadScripting() {
 		try {
-			cons.getKernel().getAlgebraProcessor().getCommandDispatcher()
+			cons.getKernel()
+					.getAlgebraProcessor()
+					.getCommandDispatcher()
 					.getScriptingCommandProcessorFactory();
-		} catch (CommandNotLoadedError err) {
+		} catch (CommandNotLoadedError expected) {
 			// preloading
 		}
 	}

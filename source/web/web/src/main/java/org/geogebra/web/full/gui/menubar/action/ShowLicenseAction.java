@@ -25,15 +25,14 @@ import elemental2.dom.DomGlobal;
 /**
  * Shows license.
  */
-public class ShowLicenseAction extends DefaultMenuAction<AppWFull> {
+public final class ShowLicenseAction extends DefaultMenuAction<AppWFull> {
 
 	@Override
 	public void execute(AppWFull app) {
 		if (app.isByCS()) {
 			DomGlobal.window.open(GeoGebraConstants.BYCS_LICENCE_URL, "_blank", "");
 		} else {
-			DomGlobal.window.open(GeoGebraConstants.GGB_LICENSE_URL,
-					"_blank", "");
+			DomGlobal.window.open(GeoGebraConstants.GGB_LICENSE_URL, "_blank", "");
 		}
 	}
 }

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -77,12 +77,13 @@ import org.geogebra.desktop.main.AppD;
 import org.geogebra.desktop.main.LocalizationD;
 import org.geogebra.desktop.util.GuiResourcesD;
 
-public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
-		ActionListener, FocusListener, SetLabels {
+public class InputBarHelpPanelD extends JPanel
+		implements TreeSelectionListener, ActionListener, FocusListener, SetLabels {
 
 	private static final long serialVersionUID = 1L;
 	/** application */
 	AppD app;
+
 	private final InputBarHelpPanelD thisPanel;
 	private final Color bgColor;
 
@@ -107,8 +108,9 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 	private final JLabel titleLabel;
 	private JLabel syntaxLabel;
 	private JButton btnPaste;
-	private JScrollPane scroller;
-	private LocalizationD loc;
+	private final JScrollPane scroller;
+	private final LocalizationD loc;
+	private JScrollPane syntaxScroller;
 
 	/***************************************************
 	 * Constructor
@@ -132,13 +134,11 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		scroller = new JScrollPane(commandPanel);
 
 		// scroller.setBorder(BorderFactory.createEmptyBorder());
-		scroller.setVerticalScrollBarPolicy(
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
 		JPanel titlePanel = new JPanel();
 		titlePanel.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 0, 0, 0,
-						SystemColor.controlShadow),
+				BorderFactory.createMatteBorder(1, 0, 0, 0, SystemColor.controlShadow),
 				BorderFactory.createEmptyBorder(0, 2, 0, 2)));
 		titlePanel.setLayout(new BorderLayout());
 
@@ -152,8 +152,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		mainPanel.add(scroller, BorderLayout.CENTER);
 		mainPanel.add(titlePanel, BorderLayout.NORTH);
 
-		cmdSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainPanel,
-				syntaxHelpPanel);
+		cmdSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainPanel, syntaxHelpPanel);
 		cmdSplitPane.setResizeWeight(1.0);
 		cmdSplitPane.setBorder(BorderFactory.createEmptyBorder());
 
@@ -166,13 +165,13 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		updateFonts();
 	}
 
+	/**
+	 * @return the preferred width of this panel, based on the command tree's preferred size
+	 */
 	public int getPreferredWidth() {
 		return (int) (1.2 * cmdTree.getPreferredSize().width);
 	}
 
-	private JScrollPane syntaxScroller;
-
-	// private JLabel errorLabel;
 	private void createSyntaxPanel() {
 		JPanel p = new JPanel(new BorderLayout());
 		try {
@@ -191,8 +190,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		p.setBorder(BorderFactory.createEmptyBorder());
 		JPanel titlePanel = new JPanel(new BorderLayout());
 		titlePanel.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 0, 1, 0,
-						SystemColor.controlShadow),
+				BorderFactory.createMatteBorder(1, 0, 1, 0, SystemColor.controlShadow),
 				BorderFactory.createEmptyBorder(0, 2, 0, 2)));
 		syntaxLabel = new JLabel();
 		syntaxLabel.setForeground(Color.darkGray);
@@ -201,16 +199,13 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		syntaxHelpPanel = new JPanel(new BorderLayout());
 
 		syntaxScroller = new JScrollPane(this.helpTextPane);
-		syntaxScroller.setVerticalScrollBarPolicy(
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		syntaxScroller.setHorizontalScrollBarPolicy(
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		syntaxScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		syntaxScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		// scroller.setBorder(BorderFactory.createEmptyBorder());
 
 		JPanel corner = new JPanel(new FlowLayout());
 		corner.setBackground(this.getBackground());
-		syntaxScroller.setCorner(ScrollPaneConstants.LOWER_RIGHT_CORNER,
-				corner);
+		syntaxScroller.setCorner(ScrollPaneConstants.LOWER_RIGHT_CORNER, corner);
 
 		syntaxHelpPanel.add(syntaxScroller, BorderLayout.CENTER);
 		// syntaxHelpPanel.add(titlePanel,BorderLayout.NORTH);
@@ -230,8 +225,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		btnPaste.addActionListener(this);
 		btnPaste.setFocusable(false);
 
-		btnOnlineHelp = new JButton(
-				app.getLocalization().getMenu("ShowOnlineHelp"));
+		btnOnlineHelp = new JButton(app.getLocalization().getMenu("ShowOnlineHelp"));
 		btnOnlineHelp.setFocusable(false);
 		btnOnlineHelp.addActionListener(this);
 		// btnOnlineHelp.setBorderPainted(false);
@@ -249,8 +243,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		buttonPanel.add(leftPanel, loc.borderWest());
 		buttonPanel.add(rightPanel, loc.borderEast());
 		buttonPanel.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 0, 0, 0,
-						SystemColor.controlShadow),
+				BorderFactory.createMatteBorder(1, 0, 0, 0, SystemColor.controlShadow),
 				BorderFactory.createEmptyBorder(0, 2, 0, 2)));
 		// errorLabel = new JLabel();
 		// errorLabel.setForeground(Color.RED);
@@ -261,19 +254,21 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 
 	private void createFunctionPanel() {
 
-		functionTable = new SelectionTableD(app,
-				TableSymbols.getTranslatedFunctions(app), -1, 2,
-				new Dimension(20, 16), SelectionTable.MODE_TEXT);
+		functionTable = new SelectionTableD(
+				app,
+				TableSymbols.getTranslatedFunctions(app),
+				-1,
+				2,
+				new Dimension(20, 16),
+				SelectionTable.MODE_TEXT);
 		functionTable.setShowGrid(true);
 		functionTable.setHorizontalAlignment(SwingConstants.LEFT);
-		functionTable.setBorder(
-				BorderFactory.createLineBorder(functionTable.getGridColor()));
+		functionTable.setBorder(BorderFactory.createLineBorder(functionTable.getGridColor()));
 		functionTable.addMouseListener(new TableSelectionListener());
 		functionTable.setBackground(bgColor);
 		// functionTable.setVisible(false);
 
-		functionTitleNode = new DefaultMutableTreeNode(
-				loc.getMenu("MathematicalFunctions"));
+		functionTitleNode = new DefaultMutableTreeNode(loc.getMenu("MathematicalFunctions"));
 		functionTitleNode.add(new DefaultMutableTreeNode(""));
 
 		/*
@@ -359,13 +354,11 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		// Application.setShowInputHelpPanel)
 		d = this.getPreferredSize();
 		d.width = Math.max(
-				(int) (1.1 * this.cmdSplitPane.getPreferredSize().width),
-				this.getPreferredSize().width);
+				(int) (1.1 * this.cmdSplitPane.getPreferredSize().width), this.getPreferredSize().width);
 		this.setMinimumSize(d);
 
 		// adjust scrolling increments to match font size
-		scroller.getVerticalScrollBar()
-				.setBlockIncrement(10 * app.getFontSize());
+		scroller.getVerticalScrollBar().setBlockIncrement(10 * app.getFontSize());
 		scroller.getVerticalScrollBar().setUnitIncrement(3 * app.getFontSize());
 		btnOnlineHelp.setFont(app.getPlainFont());
 		btnPaste.setFont(app.getPlainFont());
@@ -390,8 +383,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		cmdTree.addMouseMotionListener(rollOverListener);
 		cmdTree.addMouseListener(rollOverListener);
 
-		cmdTree.getSelectionModel()
-				.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		cmdTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		cmdTree.setCellRenderer(new CommandTreeRenderer());
 		cmdTree.setLargeModel(true);
 		// tree.putClientProperty("JTree.lineStyle", "none");
@@ -424,8 +416,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 			rootSubCommands = new DefaultMutableTreeNode();
 		}
 		if (rootAllCommands == null) {
-			rootAllCommands = new DefaultMutableTreeNode(
-					loc.getMenu("AllCommands"));
+			rootAllCommands = new DefaultMutableTreeNode(loc.getMenu("AllCommands"));
 		}
 		rootSubCommands.removeAllChildren();
 		rootAllCommands.removeAllChildren();
@@ -440,8 +431,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 			}
 
 			// add stem node: sub-command set name
-			String name = app.getKernel().getAlgebraProcessor()
-					.getSubCommandSetName(i);
+			String name = app.getKernel().getAlgebraProcessor().getSubCommandSetName(i);
 			child = new DefaultMutableTreeNode(name);
 			addNodeInSortedOrder(rootSubCommands, child);
 
@@ -449,8 +439,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 			for (String s : subDict[i]) {
 				String cmdName = subDict[i].get(s);
 				if (cmdName != null && cmdName.length() > 0) {
-					addNodeInSortedOrder(child,
-							new DefaultMutableTreeNode(cmdName));
+					addNodeInSortedOrder(child, new DefaultMutableTreeNode(cmdName));
 				}
 			}
 		}
@@ -460,15 +449,13 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		for (String s : dict) {
 			String cmdName = dict.get(s);
 			if (cmdName != null && cmdName.length() > 0) {
-				addNodeInSortedOrder(rootAllCommands,
-						new DefaultMutableTreeNode(cmdName));
+				addNodeInSortedOrder(rootAllCommands, new DefaultMutableTreeNode(cmdName));
 			}
 		}
 		// ignore sort and put this one first
 		rootSubCommands.insert(rootAllCommands, 0);
 
-		functionTitleNode = new DefaultMutableTreeNode(
-				loc.getMenu("MathematicalFunctions"));
+		functionTitleNode = new DefaultMutableTreeNode(loc.getMenu("MathematicalFunctions"));
 		rootSubCommands.insert(functionTitleNode, 0);
 	}
 
@@ -476,8 +463,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 	 * Adds a new node to a sorted tree. Node leaf strings are sorted in
 	 * ascending order using a locale-sensitive Collator class.
 	 */
-	private void addNodeInSortedOrder(DefaultMutableTreeNode parent,
-			DefaultMutableTreeNode child) {
+	private void addNodeInSortedOrder(DefaultMutableTreeNode parent, DefaultMutableTreeNode child) {
 
 		int n = parent.getChildCount();
 		if (n == 0) {
@@ -489,7 +475,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		Collator collator = Collator.getInstance(app.getLocale());
 		collator.setStrength(Collator.SECONDARY);
 		collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-		DefaultMutableTreeNode node = null;
+		DefaultMutableTreeNode node;
 
 		for (int i = 0; i < n; i++) {
 			node = (DefaultMutableTreeNode) parent.getChildAt(i);
@@ -504,8 +490,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 
 	@Override
 	public void valueChanged(TreeSelectionEvent e) {
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode) cmdTree
-				.getLastSelectedPathComponent();
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) cmdTree.getLastSelectedPathComponent();
 
 		if (node == null) {
 			return; // Nothing is selected.
@@ -523,7 +508,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		}
 	}
 
-	private class RollOverListener extends MouseInputAdapter {
+	private final class RollOverListener extends MouseInputAdapter {
 
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -569,8 +554,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 
 					// get the help text for this node
 					TreePath tp = tree.getPathForRow(row);
-					DefaultMutableTreeNode node = (DefaultMutableTreeNode) tp
-							.getLastPathComponent();
+					DefaultMutableTreeNode node = (DefaultMutableTreeNode) tp.getLastPathComponent();
 					if (node.isLeaf()) {
 						Object nodeInfo = node.getUserObject();
 						rollOverCommand = (String) nodeInfo;
@@ -606,17 +590,15 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 			doc.remove(0, doc.getLength());
 		} catch (BadLocationException e1) {
 			// this should never occur
-			e1.printStackTrace();
+			Log.debug(e1);
 		}
 
 		// define the regular and italic style
-		Style def = StyleContext.getDefaultStyleContext()
-				.getStyle(StyleContext.DEFAULT_STYLE);
+		Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
 		Style regular = doc.addStyle("regular", def);
 
 		// changed to use getFontCanDisplayAwt() so that Armenian displays OK
-		StyleConstants.setFontFamily(def,
-				app.getFontCanDisplayAwt(description).getFamily());
+		StyleConstants.setFontFamily(def, app.getFontCanDisplayAwt(description).getFamily());
 
 		Style s = doc.addStyle("italic", regular);
 		StyleConstants.setItalic(s, true);
@@ -638,29 +620,25 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		if (loc.isCASCommand(cmd)) {
 			if (!description.equals(cmd + Localization.syntaxStr)) {
 				try {
-					doc.insertString(doc.getLength(), description + "\n",
-							doc.getStyle("regular"));
+					doc.insertString(doc.getLength(), description + "\n", doc.getStyle("regular"));
 				} catch (BadLocationException e) {
 					// should never occur
-					e.printStackTrace();
+					Log.debug(e);
 				}
 			}
 			try {
-				doc.insertString(doc.getLength(), descriptionCASHeader,
-						doc.getStyle("italic"));
-				doc.insertString(doc.getLength(), descriptionCAS,
-						doc.getStyle("regular"));
+				doc.insertString(doc.getLength(), descriptionCASHeader, doc.getStyle("italic"));
+				doc.insertString(doc.getLength(), descriptionCAS, doc.getStyle("regular"));
 			} catch (BadLocationException e) {
 				// should never occur
-				e.printStackTrace();
+				Log.debug(e);
 			}
 		} else {
 			try {
-				doc.insertString(doc.getLength(), description,
-						doc.getStyle("regular"));
+				doc.insertString(doc.getLength(), description, doc.getStyle("regular"));
 			} catch (BadLocationException e) {
 				// should never occur
-				e.printStackTrace();
+				Log.debug(e);
 			}
 		}
 		// helpTextArea.setText(app.getCommandSyntax(cmd));
@@ -672,17 +650,16 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 	// Tree Cell Renderer
 	// =============================================
 
-	private class CommandTreeRenderer extends DefaultTreeCellRenderer {
+	private final class CommandTreeRenderer extends DefaultTreeCellRenderer {
 
 		private static final long serialVersionUID = 1L;
 
 		private final Color selectionColor;
 		private final Color rollOverColor;
 
-		public CommandTreeRenderer() {
+		private CommandTreeRenderer() {
 			update();
-			selectionColor = GColorD.getAwtColor(
-					GeoGebraColorConstants.TABLE_SELECTED_BACKGROUND_COLOR);
+			selectionColor = GColorD.getAwtColor(GeoGebraColorConstants.TABLE_SELECTED_BACKGROUND_COLOR);
 			// this.getBackgroundSelectionColor()
 			rollOverColor = Color.LIGHT_GRAY;
 
@@ -690,23 +667,25 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 			this.setTextNonSelectionColor(Color.black);
 			this.setBorderSelectionColor(null);
 			this.setBackground(bgColor);
-
 		}
 
-		public void update() {
+		private void update() {
 			setOpenIcon(app.getScaledIcon(GuiResourcesD.TREE_CLOSE));
 			setClosedIcon(app.getScaledIcon(GuiResourcesD.TREE_OPEN));
 			setLeafIcon(GeoGebraIconD.createEmptyIcon(5, 1));
-
 		}
 
 		@Override
-		public Component getTreeCellRendererComponent(JTree tree, Object value,
-				boolean isSelected, boolean expanded, boolean leaf, int row,
+		public Component getTreeCellRendererComponent(
+				JTree tree,
+				Object value,
+				boolean isSelected,
+				boolean expanded,
+				boolean leaf,
+				int row,
 				boolean hasFocus) {
 
-			super.getTreeCellRendererComponent(tree, value, isSelected,
-					expanded, leaf, row, hasFocus);
+			super.getTreeCellRendererComponent(tree, value, isSelected, expanded, leaf, row, hasFocus);
 			update();
 			if (value == null) {
 				setText("");
@@ -719,8 +698,7 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 
 				if (isSelected) {
 					setBackgroundSelectionColor(selectionColor);
-				} else if ((tree instanceof CommandTree)
-						&& row == ((CommandTree) tree).rollOverRow) {
+				} else if ((tree instanceof CommandTree) && row == ((CommandTree) tree).rollOverRow) {
 					setBackgroundNonSelectionColor(rollOverColor);
 				} else {
 					setBackgroundSelectionColor(bgColor);
@@ -752,20 +730,15 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 			helpTextPane.setText("");
 			selectedCommand = null;
 			selectedFunction = null;
-		}
-
-		else if (e.getSource() == btnOnlineHelp) {
+		} else if (e.getSource() == btnOnlineHelp) {
 			if (selectedCommand != null) {
-				app.getGuiManager().openHelp(ManualPage.COMMAND,
-						app.getReverseCommand(selectedCommand));
+				app.getGuiManager().openHelp(ManualPage.COMMAND, app.getReverseCommand(selectedCommand));
 			} else if (selectedFunction != null) {
 				app.getGuiManager().openHelp(ManualPage.OPERATORS, null);
 			} else {
 				app.getGuiManager().openHelp(ManualPage.INPUT_BAR, null);
 			}
-		}
-
-		else if (e.getSource() == btnPaste) {
+		} else if (e.getSource() == btnPaste) {
 			doPaste();
 		}
 	}
@@ -773,13 +746,13 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 	private void doPaste() {
 
 		if (selectedFunction != null) {
-			((AlgebraInputD) ((GuiManagerD) app.getGuiManager())
-					.getAlgebraInput()).insertString(selectedFunction);
+			((AlgebraInputD) ((GuiManagerD) app.getGuiManager()).getAlgebraInput())
+					.insertString(selectedFunction);
 		}
 
 		if (selectedCommand != null) {
-			((AlgebraInputD) ((GuiManagerD) app.getGuiManager())
-					.getAlgebraInput()).insertCommand(selectedCommand);
+			((AlgebraInputD) ((GuiManagerD) app.getGuiManager()).getAlgebraInput())
+					.insertCommand(selectedCommand);
 		}
 	}
 
@@ -791,14 +764,14 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 	 * ((GuiManagerD)app.getGuiManager()).getAlgebraInput()).insertString(cmd);
 	 * //((GuiManagerD)app.getGuiManager()).insertStringIntoTextfield(cmd,
 	 * false,false,false);
-	 * 
-	 * 
+	 *
+	 *
 	 * if(((GuiManagerD)app.getGuiManager()).getCurrentKeyboardListener() !=
 	 * null){ VirtualKeyboardListener tf =
 	 * ((GuiManagerD)app.getGuiManager()).getCurrentKeyboardListener();
 	 * tf.insertString(cmd); }
-	 * 
-	 * 
+	 *
+	 *
 	 * }
 	 */
 
@@ -812,13 +785,13 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 		// TODO Auto-generated method stub
 	}
 
-	private static class CommandTree extends JTree {
+	private static final class CommandTree extends JTree {
 
 		private static final long serialVersionUID = 1L;
 
-		public int rollOverRow = -1;
+		private int rollOverRow = -1;
 
-		public CommandTree(TreeModel tm) {
+		private CommandTree(TreeModel tm) {
 			super(tm);
 		}
 	}
@@ -832,13 +805,11 @@ public class InputBarHelpPanelD extends JPanel implements TreeSelectionListener,
 			for (int j = 0; j < group.getChildCount(); j++) {
 
 				if (group.getChildAt(j) instanceof DefaultMutableTreeNode) {
-					DefaultMutableTreeNode cmdNode = (DefaultMutableTreeNode) group
-							.getChildAt(j);
+					DefaultMutableTreeNode cmdNode = (DefaultMutableTreeNode) group.getChildAt(j);
 					Log.debug(cmdNode.getUserObject());
 					if (command.equals(cmdNode.getUserObject())) {
 						TreePath path = new TreePath(
-								((DefaultTreeModel) cmdTree.getModel())
-										.getPathToRoot(group.getChildAt(j)));
+								((DefaultTreeModel) cmdTree.getModel()).getPathToRoot(group.getChildAt(j)));
 						cmdTree.setSelectionPath(path);
 						return;
 					}

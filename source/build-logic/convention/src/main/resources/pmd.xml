@@ -14,6 +14,7 @@
     <exclude-pattern>.*/org/geogebra/common/kernel/parser/.*</exclude-pattern>
     <exclude-pattern>.*/org/geogebra/common/kernel/prover/polynomial/.*</exclude-pattern>
     <exclude-pattern>.*/org/geogebra/editor/share/io/latex.*</exclude-pattern>
+    <exclude-pattern>.*/org/geogebra/desktop/gui/editor/.*</exclude-pattern>
     <!-- We'll use the entire 'strings' ruleset -->
     <rule ref="category/java/bestpractices.xml">
         <exclude name="AccessorMethodGeneration"/>
@@ -32,7 +33,6 @@
         <exclude name="NonExhaustiveSwitch"/>
         <exclude name="OneDeclarationPerLine"/>
         <exclude name="ReplaceVectorWithList"/>
-        <exclude name="UnusedAssignment"/>
         <exclude name="AvoidReassigningLoopVariables"/>
         <exclude name="LiteralsFirstInComparisons"/>
         <exclude name="ForLoopVariableCount"/>
@@ -41,6 +41,17 @@
         <exclude name="UnitTestShouldIncludeAssert"/>
         <exclude name="UseEnumCollections"/>
         <exclude name="ExhaustiveSwitchHasDefault"/>
+        <exclude name="EnumComparison"/>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/UnusedAssignment">
+        <properties>
+            <property name="violationSuppressRegex" value="The( value assigned to)? (field).*"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/OnDemandImport">
+        <properties>
+            <property name="allowStaticImportsFrom" value="*" />
+        </properties>
     </rule>
     <rule ref="category/java/codestyle.xml">
         <exclude name="AtLeastOneConstructor"/>
@@ -50,11 +61,9 @@
         <exclude name="OnlyOneReturn"/>
         <exclude name="CallSuperInConstructor"/>
         <exclude name="ConfusingTernary"/>
-        <exclude name="ClassNamingConventions"/>
         <exclude name="FieldNamingConventions"/>
         <exclude name="LocalVariableNamingConventions"/>
         <exclude name="FormalParameterNamingConventions"/>
-        <exclude name="MethodNamingConventions"/>
         <exclude name="CommentDefaultAccessModifier"/>
         <exclude name="PackageCase"/>
         <exclude name="ShortVariable"/>
@@ -64,20 +73,29 @@
         <exclude name="LongVariable"/>
         <exclude name="ModifierOrder"/>
         <exclude name="VariableCanBeInlined"/>
-        <exclude name="UnnecessaryModifier"/>
         <exclude name="UnnecessaryLocalBeforeReturn"/>
         <exclude name="EmptyMethodInAbstractClassShouldBeAbstract"/>
-        <exclude name="UselessParentheses"/>
         <exclude name="PrematureDeclaration"/>
         <exclude name="LinguisticNaming"/>
         <exclude name="UseUnderscoresInNumericLiterals"/>
         <exclude name="UseShortArrayInitializer"/>
-        <exclude name="EmptyControlStatement"/> <!-- handled by checkstyle -->
     </rule>
     <rule ref="category/java/codestyle.xml/UnnecessaryFullyQualifiedName">
         <properties>
             <property name="reportStaticFields" value="false"/>
             <property name="reportStaticMethods" value="false"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/codestyle.xml/VariableDeclarationUsageDistance">
+        <properties>
+            <property name="violationSuppressXPath" value="//PackageDeclaration[matches(@Name, 'org.geogebra.desktop.*')]"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/codestyle.xml/MethodNamingConventions ">
+        <properties>
+            <property name="methodPattern" value="[a-z][a-zA-Z0-9_]*"/>
+            <property name="staticPattern" value="[a-z][a-zA-Z0-9_]*"/>
+            <property name="junitJupiterTestPattern" value="[a-z][a-zA-Z0-9_]*"/>
         </properties>
     </rule>
     <rule ref="category/java/design.xml">
@@ -95,7 +113,6 @@
         <exclude name="AvoidCatchingGenericException"/>
         <exclude name="AvoidThrowingRawExceptionTypes"/>
         <exclude name="SingularField"/>
-        <exclude name="UselessOverridingMethod"/>
         <exclude name="CognitiveComplexity"/>
         <exclude name="CyclomaticComplexity"/>
         <exclude name="NPathComplexity"/>
@@ -107,22 +124,35 @@
         <exclude name="TooManyFields"/>
         <exclude name="LawOfDemeter"/>
         <exclude name="SwitchDensity"/>
-        <exclude name="UseUtilityClass"/>
+        <exclude name="InstantiableUtilityClass"/>
         <exclude name="AbstractClassWithoutAnyMethod"/>
         <exclude name="DoNotExtendJavaLangError"/>
         <exclude name="AvoidUncheckedExceptionsInSignatures"/>
         <exclude name="MutableStaticState"/>
         <exclude name="SimplifyBooleanReturns" />
     </rule>
+    <rule ref="category/java/design.xml/UselessOverridingMethod">
+        <properties>
+            <property name="violationSuppressXPath" value=".[@Name = ('equals', 'hashCode')]"/>
+        </properties>
+    </rule>
     <rule ref="category/java/design.xml/AvoidDeeplyNestedIfStmts">
         <properties>
             <property name="problemDepth" value="4"/>
+            <property name="violationSuppressXPath" value="//PackageDeclaration[matches(@Name, 'org.geogebra.desktop.*')]"/>
         </properties>
     </rule>
     <rule ref="category/java/documentation.xml">
-        <exclude name="CommentRequired"/>
         <exclude name="CommentSize"/>
         <exclude name="UncommentedEmptyConstructor"/>
+    </rule>
+    <rule ref="category/java/documentation.xml/CommentRequired">
+        <properties>
+            <property name="classCommentRequirement" value="ignored" />
+            <property name="fieldCommentRequirement" value="ignored" />
+            <property name="protectedMethodCommentRequirement" value="ignored" />
+            <property name="violationSuppressXPath" value="./self::ConstructorDeclaration[count(Block/*)&lt;2]|.[@EffectiveVisibility='private' or @EffectiveVisibility='package']|.[not(FormalParameters/FormalParameter) and count(Block/*)=1 and Block/ReturnStatement[FieldAccess|VariableAccess]]|.[pmd-java:hasAnnotation('org.geogebra.common.annotation.MissingDoc') or pmd-java:hasAnnotation('org.junit.Test') or pmd-java:hasAnnotation('org.junit.Before') or pmd-java:hasAnnotation('org.gwtproject.resources.client.ClientBundle.Source')]|.[pmd-java:modifiers() = 'native']|.[//PackageDeclaration[matches(@Name, '.*gui.dialog.options.*')]]"/>
+        </properties>
     </rule>
     <rule ref="category/java/errorprone.xml">
         <exclude name="MissingSerialVersionUID"/>
@@ -136,7 +166,6 @@
         <exclude name="NullAssignment"/>
         <exclude name="AvoidDecimalLiteralsInBigDecimalConstructor"/>
         <exclude name="ProperLogger"/>
-        <exclude name="EmptyCatchBlock"/>
         <exclude name="AssignmentInOperand"/>
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="CloseResource"/>
@@ -145,6 +174,18 @@
         <exclude name="ReplaceJavaUtilDate"/>
         <exclude name="CollectionTypeMismatch"/>
     </rule>
+    <rule ref="category/java/errorprone.xml/AvoidCatchingGenericException">
+        <properties>
+            <property name="typesThatShouldNotBeCaught" value="java.lang.NullPointerException,java.lang.ClassCastException" />
+        </properties>
+    </rule>
+    <rule ref="category/java/errorprone.xml/WrongTestAnnotation">
+        <properties>
+            <!-- migrating web tests to Jupiter TBD -->
+            <property name="violationSuppressXPath" value="//PackageDeclaration[matches(@Name, 'org\.geogebra\.(keyboard\.)?web\.*')]"/>
+        </properties>
+    </rule>
+
     <rule ref="category/java/design.xml/FinalFieldCouldBeStatic">
         <properties>
             <property name="violationSuppressXPath" value=".[pmd-java:typeIs('org.geogebra.common.exam.ExamController')]"/>
@@ -177,30 +218,50 @@
         <exclude name="AvoidFileStream"/>
     </rule>
 
-    <rule name="AbstractClassWithManyAbstractMethods"
+    <rule name="UseJSpecify"
           language="java"
           class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
           typeResolution="true"
-          message="Common project should define abstract methods in interfaces.">
-        <description>
-            Common project should define abstract methods in interfaces. Only filters classes with many violations, should be made incrementally stricter.
-        </description>
+          message="Only JSpecify annotations should be used.">
         <priority>1</priority>
         <properties>
             <property name="xpath">
                 <value>
                     <![CDATA[
-//ClassOrInterfaceDeclaration
-    [@Abstract = 'true']
-    [count(//MethodDeclaration[@Abstract = 'true']) > 200]
+//ImportDeclaration[matches(@ImportedSimpleName, "^(Nullable|Nonnull|NonNull|NotNull|CheckForNull)$") and @PackageName != "org.jspecify.annotations"]
 ]]>
                 </value>
             </property>
         </properties>
-        <example>
-            <![CDATA[
-Class with too many abstract methods will fail.
+    </rule>
+
+    <rule name="UseOrgGwtproject"
+          language="java"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          typeResolution="true"
+          message="Use imports from org.gwtproject instead of com.google.">
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//ImportDeclaration[matches(@ImportedName, "^com.google.gwt.(core.client.JavaScriptObject|user|dom)$")]
 ]]>
-        </example>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="UseBitlessEventHandler"
+          language="java"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          typeResolution="true"
+          message="Use addBitlessDomHandler instead of addDomHandler for touch events.">
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>//MethodCall[@MethodName="addDomHandler" and ArgumentList/MethodCall/TypeExpression/ClassType[matches(@SimpleName, "Touch.*")]]</value>
+            </property>
+        </properties>
     </rule>
 </ruleset>

@@ -50,7 +50,15 @@ public enum Tag {
 
 	LOG("log"),
 
+	LOG_POWER("$logPower"),
+
 	DEF_INT("$defint"),
+
+	INTEGRAL("Integral"),
+
+	N_INTEGRAL("NIntegral"),
+
+	INTEGRAL_SYMBOLIC("IntegralSymbolic"),
 
 	LIM_EQ("$limeq"),
 
@@ -115,13 +123,13 @@ public enum Tag {
 	 */
 	public boolean isRenderingOwnPlaceholders() {
 		switch (this) {
-		case POINT:
-		case POINT_AT:
-		case VECTOR:
-		case MATRIX:
-			return true;
-		default:
-			return false;
+			case POINT:
+			case POINT_AT:
+			case VECTOR:
+			case MATRIX:
+				return true;
+			default:
+				return false;
 		}
 	}
 }

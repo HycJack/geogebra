@@ -19,12 +19,14 @@ package org.geogebra.common.jre.util;
 import java.io.UnsupportedEncodingException;
 
 import org.geogebra.common.factories.UtilFactory;
+import org.geogebra.common.kernel.prover.AbstractProverReciosMethod;
+import org.geogebra.common.util.Prover;
 import org.geogebra.common.util.Reflection;
 import org.geogebra.common.util.URLEncoder;
 import org.geogebra.regexp.server.JavaRegExpFactory;
 import org.geogebra.regexp.shared.RegExpFactory;
 
-public abstract class UtilFactoryJre extends UtilFactory  {
+public abstract class UtilFactoryJre extends UtilFactory {
 
 	public UtilFactoryJre() {
 		setupRegexFactory();
@@ -38,16 +40,37 @@ public abstract class UtilFactoryJre extends UtilFactory  {
 	}
 
 	@Override
+	public Prover newProver() {
+		return new Prover() {
+			@Override
+			protected ProofResult openGeoProver(ProverEngine pe) {
+				return null;
+			}
+
+			@Override
+			protected AbstractProverReciosMethod getNewReciosProver() {
+				return null;
+			}
+		};
+	}
+
+	@Override
 	public Reflection newReflection(Class clazz) {
 		return new ReflectionJre(clazz);
 	}
 
 	@Override
+	public double getMillisecondTime() {
+		return System.nanoTime() / 1000000.0;
+	}
+
+	@Override
+	@SuppressWarnings("PMD.UseStandardCharsets") // for Android
 	public URLEncoder newURLEncoder() {
 		return urlComponent -> {
 			try {
 				return java.net.URLEncoder.encode(urlComponent, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
+			} catch (UnsupportedEncodingException ignored) {
 				// cannot happen, UTF-8 supported everywhere
 			}
 			return urlComponent;

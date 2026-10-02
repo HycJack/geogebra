@@ -21,13 +21,19 @@ import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.impl.objects.delegate.ThicknessPropertyDelegate;
 
-/**
- * Line thickness
- */
 public class NotesThicknessProperty extends ThicknessProperty {
-	/***/
+
+	/**
+	 * Line thickness for notes.
+	 * @param localization localization
+	 * @param element geo
+	 * @throws NotApplicablePropertyException exception
+	 */
 	public NotesThicknessProperty(Localization localization, GeoElement element)
 			throws NotApplicablePropertyException {
-		super(localization, 60, new ThicknessPropertyDelegate(element));
+		super(
+				localization,
+				ThicknessProperty.MAX_PEN_HIGHLIGHTER_SIZE,
+				new ThicknessPropertyDelegate(element));
 	}
 }

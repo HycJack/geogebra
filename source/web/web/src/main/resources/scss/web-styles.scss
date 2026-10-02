@@ -173,32 +173,6 @@
 		float: right;
 	}
 
-	.textButton {
-		color: #6161FF;
-		cursor: pointer;
-	}
-
-	.textButton:hover {
-		text-decoration: underline;
-	}
-
-	.gwt-DisclosurePanel {
-		margin-top: 5px;
-	}
-
-	.gwt-DisclosurePanel .header, .gwt-DisclosurePanel .header a,
-	.gwt-DisclosurePanel .header td {
-		text-decoration: none; /* Remove underline from header */
-		cursor: pointer;
-		color: #666666;
-	}
-
-	.gwt-DisclosurePanel .content {
-		border-left: 3px solid #e7e7e7;
-		padding: 4px 0 4px 8px;
-		margin-left: 6px;
-	}
-
 	.gwt-Frame {
 		border-top: 2px solid #666;
 		border-left: 2px solid #666;
@@ -461,15 +435,11 @@
 		cursor: pointer;
 	}
 
-	.gwt-TreeItem .gwt-RadioButton input, .gwt-TreeItem .gwt-CheckBox input {
+	.gwt-TreeItem .gwt-RadioButton input {
 		margin-left: 0;
 	}
 
-	.gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
-		border-bottom: 1px solid #DCDCDC;
-	}
-
-	.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab, .gwt-TabBar .gwt-TabBarItem {
+	.gwt-TabBar .gwt-TabBarItem {
 		position: relative;
 		bottom: -1px;
 		margin-right: 4px;
@@ -493,12 +463,7 @@
 		margin: 0;
 	}
 
-	.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab img {
-		height: 16px;
-		margin: -2px 0;
-	}
-
-	.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected, .gwt-TabBar .gwt-TabBarItem-selected {
+	.gwt-TabBar .gwt-TabBarItem-selected {
 		cursor: default;
 		background: white;
 		color: colors.$teal-default;
@@ -514,8 +479,7 @@
 		box-sizing: border-box;
 	}
 
-	.gwt-TabPanelBottom,
-	.gwt-TabLayoutPanelContent {
+	.gwt-TabPanelBottom {
 		padding: 8px;
 		border: 1px solid #DCDCDC;
 	}
@@ -1033,11 +997,6 @@
 	###       DIALOGS
 	#####################################################################################*/
 
-	.TextInputDialog .gwt-ToggleButton {
-		padding-right: 6px;
-		cursor: pointer;
-	}
-
 	/*-------- RECOVER AUTO SAVED DIALOG ------------*/
 
 	.RecoverAutoSavedDialog .buttonPanel {
@@ -1048,49 +1007,10 @@
 		max-width: 500px;
 	}
 
-	/*-------- SLIDER DIALOG ------------------------*/
-
-	.dialogContent .sliderIntervalPanel .inlineOption,
-	.dialogContent .sliderWidthPanel .inlineOption {
-		margin: 8px 8px 0 0;
-		display: inline-block;
-		width: 30%;
-	}
-
-	.dialogContent .sliderWidthPanel .AutoCompleteTextFieldW .fieldContainer {
-		@extends .dialogContent .sliderWidthPanel div;
-		width: 100%;
-	}
-
-	.dialogContent .sliderIntervalPanel .gwt-Label {
-		display: block;
-	}
-
-	.dialogContent .sliderWidthPanel .gwt-Label {
-		padding-top: 8px;
-		display: block;
-	}
-
-	.dialogContent .sliderPanelWidget {
-		min-width: 400px;
-		margin-top: 10px;
-	}
-
-	.sliderDialog .dialogContent .gwt-TabPanelBottom {
-		min-height: 150px;
-		margin-bottom: 15px;
-	}
-
 	/* ----------- BUTTON DIALOG -------------*/
 
 	.buttonDialog .dialogContent {
 		min-width: 400px;
-	}
-
-	.buttonDialog .scriptArea {
-		width: 100%;
-		height: 200px;
-		border-radius: 2px;
 	}
 
 	/* ------------ IMAGE DIALOG -------------*/
@@ -1114,60 +1034,10 @@
 	/*========= End Dialogs ===========*/
 
 
-	/*========= FileChooser ===========*/
-
-	.GeoGebraFileChooser .titlePanel {
-		width: 100%;
-		padding: 5px;
-	}
-
-	.GeoGebraFileChooser .titlePanel input {
-		float: right;
-	}
-
-	.GeoGebraFileChooser .titlePanel .gwt-Label {
-		padding-right: 10px;
-	}
-
-	.GeoGebraFileChooser .buttonPanel {
-		float: right;
-	}
-
-	.GeoGebraFileChooser .buttonPanel button {
-		float: right;
-		margin-left: 5px;
-	}
-
-	.GeoGebraFileChooser .buttonPanel a {
-		float: right;
-		margin-left: 5px;
-	}
-
-	.GoogleFileDescriptors {
-		font-size: 80%;
-	}
-
-	.GoogleFileDescriptors .fileLabel {
-		padding-right: 3px;
-		font-weight: bold;
-	}
-
-	.GoogleFileDescriptors .fileName {
-		text-decoration: underline;
-	}
+	/*========= Context menu ===========*/
 
 	.menuTitle span {
 		font-weight: bold;
-	}
-
-	.GeoGebraFileChooser {
-		font-family: geogebra-sans-serif, Arial Unicode MS, Arial, sans-serif;
-	}
-
-	.GeoGebraFileChooser .buttonPanel .save, .GeoGebraFileChooser .buttonPanel .cancel {
-		width: 60px;
-		text-align: center;
-		margin: auto;
 	}
 
 	/*========= End FileChooser ===========*/
@@ -1481,21 +1351,6 @@
 		overflow: auto;
 	}
 
-	.textEditorAdvancedPanel {
-		width: 380px;
-		height: 180px;
-	}
-
-	.textEditorDisclosurePanelContent {
-		margin: 0;
-		padding: 0;
-		font-size: 80%;
-	}
-
-	.textEditorDisclosurePanelHeader {
-		margin-bottom: 3px;
-	}
-
 	/* ========== Text Editor end ============ */
 	/*#####################################################################################
 	###      INPUT HELP
@@ -1524,12 +1379,19 @@
 		width: 100%;
 		height: 37px;
 		font-weight: bold;
-		padding: 1px 10px;
+		padding: 0 10px 10px;
 		border-bottom: 1px solid lightgray;
 		cursor: default;
 
 		.gwt-InlineLabel {
 			line-height: 36px;
+		}
+
+		.buttonPanel {
+			margin-right: 10px;
+			float: right;
+			display: flex;
+			gap: 8px;
 		}
 	}
 
@@ -1546,32 +1408,6 @@
 	.inputHelp-CAScmdSyntax {
 		font-style: italic;
 		color: darkred;
-	}
-
-	.inputHelp-OnlineHelpBtn {
-		text-align: right;
-		font-size: 100%;
-		margin: 3px;
-	}
-
-	.inputHelp-CancelBtn {
-		font-size: 110%;
-		margin: 3px;
-		color: #666666;
-		border: none;
-		background: none;
-		text-decoration: underline;
-		padding: 5px 15px;
-		box-shadow: none;
-		font-weight: normal;
-	}
-
-	.inputHelp-CancelBtn:hover,
-	.inputHelp-CancelBtn:active {
-		color: #6161FF;
-		background: none;
-		border: none;
-		box-shadow: none;
 	}
 
 	.inputHelp-headerCAS {
@@ -1672,91 +1508,11 @@
 		PROPERTIES
 	###################################################################*/
 
-	.contentsPanel {
-		overflow-x: hidden;
-		overflow-y: hidden;
-		height: 100%;
-	}
-
-	.contentsPanel > table.gwt-TabPanel {
-		width: 100%;
-	}
-
 	.ggb-MultiRowsTabPanel > * {
 		float: left;
 	}
 
 	/* OBJECT PROPERTIES */
-
-	.settingsBtn {
-		min-width: 160px;
-	}
-
-	.propView_deckPanel {
-		flex: 1;
-		overflow-x: hidden;
-	}
-
-	.panelTitle {
-		margin-bottom: 8px;
-		margin-top: 16px;
-		padding-bottom: 0px;
-		display: block;
-		color: colors.$black;
-		font-size: 95%;
-		opacity: 0.7;
-		border-bottom: 1px solid colors.$tool-border;
-	}
-
-	.panelRow, .panelRowIndent, .panelIndent, .listBoxPanel, .optionsInput, .optionsPanel,
-	.optionsPanel .optionsPanelIndent {
-		display: block;
-	}
-
-	.panelIndent, .panelRowIndent, .optionsPanelIndent {
-		padding-left: 25px;
-	}
-
-	.optionsInput, .optionsPanel, .textPropertiesTab > * {
-		margin-bottom: 10px;
-	}
-
-	.panelRow > *, .listBoxPanel > *, .panelRowIndent > *, .panelRowCell > *,
-	.panelRowCell > *, .optionsPanel > *, .optionsPanelIndent > *, .optionsPanelCell > *,
-	.textOptionsToolBar > *, .BackgroundColorPanel > * {
-		display: inline-block;
-		vertical-align: middle;
-		margin: 3px 10px 3px 0;
-	}
-
-	.optionsInput > *, .CustomColorPreview > * {
-		display: block;
-		margin: 3px 0 3px 0;
-	}
-
-	.panelRowCell {
-		white-space: nowrap;
-		margin-right: 20px;
-	}
-
-	.optionsPanelCell {
-		display: block;
-	}
-
-	.optionsPanelCell .gwt-Label {
-		min-width: 100px;
-	}
-
-	.optionsInput table {
-		display: inline-table;
-		button {
-				display: none;
-			}
-	}
-
-	.textOptionsToolBar {
-		display: inline-block;
-	}
 
 	.colorChooserPreview, .optionsSlider {
 		display: table-row;
@@ -1773,14 +1529,6 @@
 		padding: 3px;
 		border-radius: 5px;
 		border: 1px solid #DCDCDC;
-	}
-
-	.gwt-PopupPanel .panelTitle {
-		padding: 5px 10px 10px 10px;
-	}
-
-	.textOptionsToolBar .gwt-ToggleButton {
-		display: inline-block;
 	}
 
 	.colorComponent {
@@ -1832,49 +1580,10 @@
 		width: 100%;
 	}
 
-	.scriptTabPanel {
-		width: 100%;
-	}
-
-	/* disabled styles */
-
-	.disabled > .panelIndent, .disabled > div > .panelRowIndent {
-		color: #CCCCCC;
-	}
-
-	.disabled .gwt-ListBox {
-		opacity: 0.4;
-		cursor: default;
-	}
-
-	/*++++++++++++++++ ADVANCED LIST ++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-	.advanced-TextButtonPanel {
-		position: relative;
-		margin: 3px 0;
-
-		.matKeyboardOpenBtn {
-			display: none;
-		}
-	}
-
-	.advanced-TextButtonPanel input[disabled=""] {
-		opacity: 1;
-		cursor: default;
-	}
-
-	.geoSelectFirst {
-		width: 50%;
-	}
-
 	/*#####################################################################################
 	###       PROBABILITY CALCULATOR
 	#####################################################################################*/
 
-	.gwt-TabLayoutPanel .gwt-TabLayoutPanelContent.ProbCalcPanel {
-		// no scrollbar for main panel, only for value table
-		overflow: hidden;
-	}
 	.plotSplitPane {
 		float: left;
 	}
@@ -1925,39 +1634,10 @@
 		float: left;
 	}
 
-	.probCalcStylbarBtn {
-		float: right;
-	}
-
-	.distrPanel {
-		display: grid;
-	}
-
-	.comboParamPanel, .resultPanel {
-		display: flex;
-		flex-wrap: wrap;
-	}
-
 	.resultPanel {
 		.gwt-Label {
 			line-height: 52px;
 		}
-	}
-
-	.comboParamPanel .comboDistribution {
-		line-height: 20px
-	}
-
-	.comboParamPanel .parameterPanel {
-		margin-top: 12px;
-	}
-
-	.comboParamPanel, .intervalPanel {
-		padding: 8px 0;
-		float: left;
-		white-space: nowrap;
-		flex-wrap: wrap;
-		align-items: center;
 	}
 
 	.intervalPanel.disabled {
@@ -1969,42 +1649,24 @@
 		}
 	}
 
-	.parameterPanel, .resultPanel {
-		display: flex;
-		align-items: center;
-
-		.mathTextField {
-			min-width: 64px;
-			width: 64px;
-		}
-
-		.holder .gwt-Label {
-			line-height: 36px;
-		}
-	}
-
-	.comboParamPanel .ToggleButton, .comboParamPanel .gwt-ListBox {
-		display: inline-block;
-		margin-right: 10px;
-	}
-
-	.parameterPanel > *, .resultPanel > *, .parameterPanel .holder > * {
+	.resultPanel > * {
 		margin: 0 5px;
-	}
-
-	.distrPanelClassic .holder {
-		display: flex;
 	}
 
 	/* --------- STATISTICS CALCULATOR --------------- */
 
+	.StatisticsCalculatorW {
+		overflow-y: scroll;
+	}
+
 	.StatisticsCalculatorW .panelControl {
-		margin: 5px 0 5px 0;
+		margin: 20px 0 16px 16px;
 	}
 
 	.StatisticsCalculatorW .scroller {
 		overflow: auto;
 		padding-bottom: 8px;
+		margin-left: 16px;
 	}
 
 	.StatisticsCalculatorW .lineBreak {
@@ -2014,14 +1676,8 @@
 		width: 100%;
 	}
 
-	.StatisticsCalculatorW .gwt-RadioButton label,
-	.StatisticsCalculatorW .gwt-CheckBox label {
+	.StatisticsCalculatorW .gwt-RadioButton label {
 		margin: 0 20px 0 5px;
-	}
-
-	.StatisticsCalculatorW span.gwt-CheckBox {
-		margin-top: 10px;
-		min-width: 170px;
 	}
 
 	.StatisticsCalculatorW .lblSampleStat {
@@ -2029,20 +1685,13 @@
 		text-align: right;
 	}
 
-	.StatisticsCalculatorW .checkboxPanel .checkboxLbl {
-        margin-right: 30px;
-        margin-left: 8px;
-    }
-
 	.StatisticsCalculatorW .gwt-Label, .StatisticsCalculatorW .AutoCompleteTextFieldW,
 	.StatisticsCalculatorW .gwt-ListBox, .StatisticsCalculatorW .gwt-RadioButton {
 		display: inline-block;
 		margin: 3px 5px;
 	}
 
-	.StatisticsCalculatorW .AutoCompleteTextFieldW, .daRegressionPanel .AutoCompleteTextFieldW{
-		border-bottom: 1px solid colors.$black-36;
-
+	.StatisticsCalculatorW .AutoCompleteTextFieldW {
 		input[type=text].gwt-SuggestBox {
 			border: none;
 			box-shadow: none;
@@ -2053,6 +1702,15 @@
 		&.kbdInput {
 			border-color: colors.$teal-default;
 		}
+	}
+
+	.StatisticsCalculatorW .ChiSquarePanelW .AutoCompleteTextFieldW {
+		border-bottom: 1px solid colors.$black-36;
+	}
+
+	.StatisticsCalculatorW .inputTextField {
+		width: initial;
+		margin: 8px 0;
 	}
 
 	.StatisticsCalculatorW .radioButtonPanel {
@@ -2079,8 +1737,16 @@
 		display: block;
 	}
 
-	.StatisticsCalculatorW .pnlControl .gwt-Label {
-		min-width: 80px;
+	.StatisticsCalculatorW .pnlControl {
+		.rowColumnHolder {
+			display: flex;
+			gap: 16px;
+			margin-top: 16px;
+		}
+
+		.checkboxPanel {
+			margin: 16px 0 16px 16px;
+		}
 	}
 
 	.StatisticsCalculatorW .pnlCount {
@@ -2467,6 +2133,29 @@
 		width: 100%;
 		min-height: 50px;
 	}
+	.evaluationRow {
+		&.focusState .mathTextField {
+			margin-bottom: 0;
+			border-bottom: 2px solid colors.$purple-default;
+		}
+
+		.mathTextField {
+			width: 120px;
+			border: none;
+			border-bottom: 1px rgba(0, 0, 0, .42) solid;
+			margin-bottom: 1px;
+			border-radius: 0;
+			cursor: pointer;
+			padding-top: 0;
+		}
+
+		.gwt-Label {
+			height: 32px;
+			line-height: 28px;
+		}
+		display: flex;
+		align-items: center;
+	}
 
 	.daRegEquation {
 		width: 100%;
@@ -2518,10 +2207,6 @@
 	.usedToolsPanel:first-child,
 	.allToolsPanel:first-child {
 		overflow-y: hidden;
-	}
-
-	.usedToolsPanel .panelTitle, .allToolsPanel .panelTitle {
-		cursor: default;
 	}
 
 	.toolBarDropping {
@@ -2577,11 +2262,6 @@
 		border-top: 1px solid #EDEDED;
 		box-shadow: 0 0 2px rgba(204, 204, 204, 0.5);
 	}
-
-	.customizeToolbarButtonPanel .gwt-Button {
-		margin-left: 10px;
-	}
-
 	/*
 	  ########################################
 	  ###   END OF CUSTOMIZE TOOLBAR GUI   ###
@@ -2630,22 +2310,6 @@
 		color: inherit;
 	}
 
-	/* CAS Context menu */
-
-	.gwt-PopupPanel td.gwt-MenuItemSeparator {
-		height: 0;
-		padding: 0;
-		border: 0;
-		border-top: 1px solid #dcdcdc;
-		overflow: hidden
-	}
-
-	.stepTree {
-		td:first-child {
-			width: 30px;
-		}
-	}
-
 	/*
 	   ########################################
 	   ###       New Start Screen           ###
@@ -2663,12 +2327,6 @@
 
 	.fiButton img {
 		opacity: 0.54;
-	}
-
-	.materialPopupPanel {
-		border-radius: 4px;
-		padding: 8px;
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
 	}
 
 	.panelRow .optionsSlider input[type=range] {

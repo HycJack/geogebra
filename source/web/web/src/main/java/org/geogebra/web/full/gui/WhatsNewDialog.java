@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -29,7 +29,7 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  * A Dialog that describes what has changed recently in the app.
  */
-public class WhatsNewDialog extends ComponentDialog {
+public final class WhatsNewDialog extends ComponentDialog {
 	/**
 	 * Create a new WhatsNewDialog.
 	 * @param app the app
@@ -42,8 +42,8 @@ public class WhatsNewDialog extends ComponentDialog {
 		buildContent(app.getLocalization(), whatsNewMessage, readMoreLink);
 	}
 
-	private void buildContent(Localization localization, String whatsNewMessage,
-						   String readMoreLink) {
+	private void buildContent(
+			Localization localization, String whatsNewMessage, String readMoreLink) {
 		addStyleName("whatsNewDialog");
 		FlowPanel contentPanel = new FlowPanel();
 		contentPanel.addStyleName("messagePanel");

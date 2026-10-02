@@ -42,14 +42,13 @@ public interface IsEuclidianController extends LongTouchHandler {
 	 * @param pointerEventType pointer event type
 	 * @param pointerDown whether this was triggered by pointer down event
 	 */
-	void setDefaultEventType(PointerEventType pointerEventType,
-			boolean pointerDown);
+	void setDefaultEventType(PointerEventType pointerEventType, boolean pointerDown);
 
 	/**
 	 * Handle touch move event for two pointers.
-	 * @param x1 first posinter's x-coordinate
+	 * @param x1 first pointer's x-coordinate
 	 * @param y1 first pointer's y-coordinate
-	 * @param x2 second posinter's x-coordinate
+	 * @param x2 second pointer's x-coordinate
 	 * @param y2 second pointer's y-coordinate
 	 */
 	void twoTouchMove(double x1, double y1, double x2, double y2);
@@ -109,4 +108,12 @@ public interface IsEuclidianController extends LongTouchHandler {
 	 * @return mouse, touch and gesture controller
 	 */
 	MouseTouchGestureControllerW getOffsets();
+
+	/**
+	 * Called when pointer event canceled.
+	 * Happens e.g. when device is touched by stylus after being touched by finger
+	 */
+	default void onPointerCancel() {
+		// not needed in 3D
+	}
 }

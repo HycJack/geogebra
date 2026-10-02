@@ -23,23 +23,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public class AnalyticsTest {
+class AnalyticsTest {
 
 	private long time = 0;
-	
+
 	@AfterEach
-	public void tearDown() {
+	void tearDown() {
 		Analytics.setInstance(null);
 		Analytics.resetToolCreationTracking();
 	}
 
 	@Test
-	public void shouldTrackDurationAndUseCountAcrossStickyCreations() {
+	void shouldTrackDurationAndUseCountAcrossStickyCreations() {
 		TestAnalytics analytics = new TestAnalytics();
 		Analytics.setTimeSupplier(() -> time);
 		Analytics.setInstance(analytics);
@@ -52,27 +51,36 @@ public class AnalyticsTest {
 		Analytics.logToolCreated();
 
 		assertEquals(3, analytics.events.size());
-		assertEquals(new LoggedEvent(
-						Analytics.Event.TOOL_SELECTED, Map.of(
-						Analytics.Param.TOOL_NAME, "Segment")),
+		assertEquals(
+				new LoggedEvent(
+						Analytics.Event.TOOL_SELECTED, Map.of(Analytics.Param.TOOL_NAME, "Segment")),
 				analytics.events.get(0));
-		assertEquals(new LoggedEvent(
-						Analytics.Event.TOOL_CREATED, Map.of(
-						Analytics.Param.TOOL_NAME, "Segment",
-						Analytics.Param.DURATION_MS, 450L,
-						Analytics.Param.USE_COUNT, 1)),
+		assertEquals(
+				new LoggedEvent(
+						Analytics.Event.TOOL_CREATED,
+						Map.of(
+								Analytics.Param.TOOL_NAME,
+								"Segment",
+								Analytics.Param.DURATION_MS,
+								450L,
+								Analytics.Param.USE_COUNT,
+								1)),
 				analytics.events.get(1));
-		assertEquals(new LoggedEvent(
-						Analytics.Event.TOOL_CREATED, Map.of(
-						Analytics.Param.TOOL_NAME, "Segment",
-						Analytics.Param.DURATION_MS, 280L,
-						Analytics.Param.USE_COUNT, 2)),
+		assertEquals(
+				new LoggedEvent(
+						Analytics.Event.TOOL_CREATED,
+						Map.of(
+								Analytics.Param.TOOL_NAME,
+								"Segment",
+								Analytics.Param.DURATION_MS,
+								280L,
+								Analytics.Param.USE_COUNT,
+								2)),
 				analytics.events.get(2));
-
 	}
 
 	@Test
-	public void shouldResetUseCountWhenToolChanges() {
+	void shouldResetUseCountWhenToolChanges() {
 		TestAnalytics analytics = new TestAnalytics();
 		Analytics.setTimeSupplier(() -> time);
 		Analytics.setInstance(analytics);
@@ -87,30 +95,39 @@ public class AnalyticsTest {
 		Analytics.logToolCreated();
 
 		assertEquals(4, analytics.events.size());
-		assertEquals(new LoggedEvent(
-						Analytics.Event.TOOL_SELECTED, Map.of(
-						Analytics.Param.TOOL_NAME, "Segment")),
+		assertEquals(
+				new LoggedEvent(
+						Analytics.Event.TOOL_SELECTED, Map.of(Analytics.Param.TOOL_NAME, "Segment")),
 				analytics.events.get(0));
-		assertEquals(new LoggedEvent(
-						Analytics.Event.TOOL_CREATED, Map.of(
-						Analytics.Param.TOOL_NAME, "Segment",
-						Analytics.Param.DURATION_MS, 150L,
-						Analytics.Param.USE_COUNT, 1)),
+		assertEquals(
+				new LoggedEvent(
+						Analytics.Event.TOOL_CREATED,
+						Map.of(
+								Analytics.Param.TOOL_NAME,
+								"Segment",
+								Analytics.Param.DURATION_MS,
+								150L,
+								Analytics.Param.USE_COUNT,
+								1)),
 				analytics.events.get(1));
-		assertEquals(new LoggedEvent(
-						Analytics.Event.TOOL_SELECTED, Map.of(
-						Analytics.Param.TOOL_NAME, "Circle")),
+		assertEquals(
+				new LoggedEvent(Analytics.Event.TOOL_SELECTED, Map.of(Analytics.Param.TOOL_NAME, "Circle")),
 				analytics.events.get(2));
-		assertEquals(new LoggedEvent(
-						Analytics.Event.TOOL_CREATED, Map.of(
-						Analytics.Param.TOOL_NAME, "Circle",
-						Analytics.Param.DURATION_MS, 400L,
-						Analytics.Param.USE_COUNT, 1)),
+		assertEquals(
+				new LoggedEvent(
+						Analytics.Event.TOOL_CREATED,
+						Map.of(
+								Analytics.Param.TOOL_NAME,
+								"Circle",
+								Analytics.Param.DURATION_MS,
+								400L,
+								Analytics.Param.USE_COUNT,
+								1)),
 				analytics.events.get(3));
 	}
 
 	@Test
-	public void shouldIgnoreCreationWithoutSelectedTool() {
+	void shouldIgnoreCreationWithoutSelectedTool() {
 		TestAnalytics analytics = new TestAnalytics();
 		Analytics.setInstance(analytics);
 
@@ -127,10 +144,10 @@ public class AnalyticsTest {
 		}
 
 		@Override
-		protected void setDefaultEventParametersInternal(@Nonnull Map<String, Object> params) {
+		protected void setDefaultEventParametersInternal(@NonNull Map<String, Object> params) {
+			// not keeping track of default parameters (yet)
 		}
 	}
 
-	private record LoggedEvent(String name, Map<String, Object> params) {
-	}
+	private record LoggedEvent(String name, Map<String, Object> params) {}
 }

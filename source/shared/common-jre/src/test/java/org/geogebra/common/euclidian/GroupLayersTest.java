@@ -25,17 +25,17 @@ import org.geogebra.common.jre.headless.AppCommon;
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.groups.Group;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class GroupLayersTest {
+class GroupLayersTest {
 
 	private LayerManager layerManager;
 	private GeoElement[] geos;
 	private Construction construction;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		AppCommon app = AppCommonFactory.create();
 		construction = app.getKernel().getConstruction();
 		layerManager = new LayerManager();
@@ -43,7 +43,7 @@ public class GroupLayersTest {
 	}
 
 	@Test
-	public void testMoveToFront() {
+	void testMoveToFront() {
 		withDefaultGroup();
 		layerManager.moveToFront(selection(1));
 		assertOrdering(0, 2, 3, 1, 4);
@@ -67,13 +67,12 @@ public class GroupLayersTest {
 
 	private void withGroup(int... indexes) {
 		ArrayList<GeoElement> members = new ArrayList<>();
-		for (int idx: indexes) {
+		for (int idx : indexes) {
 			members.add(geos[idx]);
 		}
 
 		Group group = new Group(members);
 		construction.addGroupToGroupList(group);
-
 	}
 
 	private void assertOrdering(int... newOrder) {
@@ -81,7 +80,7 @@ public class GroupLayersTest {
 	}
 
 	@Test
-	public void testMoveFirstToFront() {
+	void testMoveFirstToFront() {
 		withDefaultGroup();
 		layerManager.moveToFront(selection(3));
 		assertOrderingUnchanged();
@@ -92,49 +91,49 @@ public class GroupLayersTest {
 	}
 
 	@Test
-	public void testMoveToBack() {
+	void testMoveToBack() {
 		withDefaultGroup();
 		layerManager.moveToBack(selection(3));
 		assertOrdering(0, 3, 1, 2, 4);
 	}
 
 	@Test
-	public void testMoveLastToBack() {
+	void testMoveLastToBack() {
 		withDefaultGroup();
 		layerManager.moveToBack(selection(1));
 		assertOrderingUnchanged();
 	}
 
 	@Test
-	public void testMoveForward() {
+	void testMoveForward() {
 		withDefaultGroup();
 		layerManager.moveForward(selection(1));
 		assertOrdering(0, 2, 1, 3, 4);
 	}
 
 	@Test
-	public void testMoveForwardLastInGroup() {
+	void testMoveForwardLastInGroup() {
 		withDefaultGroup();
 		layerManager.moveForward(selection(3));
 		assertOrderingUnchanged();
 	}
 
 	@Test
-	public void testMoveBackwardInGroup() {
+	void testMoveBackwardInGroup() {
 		withDefaultGroup();
 		layerManager.moveBackward(selection(3));
 		assertOrdering(0, 1, 3, 2, 4);
 	}
 
 	@Test
-	public void testMoveBackwardLastInGroup() {
+	void testMoveBackwardLastInGroup() {
 		withDefaultGroup();
 		layerManager.moveBackward(selection(1));
 		assertOrderingUnchanged();
 	}
 
 	@Test
-	public void testMoveToFrontAndBack() {
+	void testMoveToFrontAndBack() {
 		withDefaultGroup();
 		layerManager.moveToFront(selection(1));
 		layerManager.moveToBack(selection(1));
@@ -142,7 +141,7 @@ public class GroupLayersTest {
 	}
 
 	@Test
-	public void testMoveForwardAndBack() {
+	void testMoveForwardAndBack() {
 		withDefaultGroup();
 		layerManager.moveForward(selection(1));
 		layerManager.moveForward(selection(1));
@@ -151,7 +150,7 @@ public class GroupLayersTest {
 	}
 
 	@Test
-	public void testMoveBackwardAndReset() {
+	void testMoveBackwardAndReset() {
 		withDefaultGroup();
 		layerManager.moveBackward(selection(3));
 		layerManager.moveBackward(selection(3));
@@ -161,28 +160,28 @@ public class GroupLayersTest {
 	}
 
 	@Test
-	public void testMoveForwardThroughGroup() {
+	void testMoveForwardThroughGroup() {
 		withDefaultGroup();
 		layerManager.moveForward(selection(0));
 		assertOrdering(1, 2, 3, 0, 4);
 	}
 
 	@Test
-	public void testMoveForwardThroughGroupAtTop() {
+	void testMoveForwardThroughGroupAtTop() {
 		withGroup(2, 3, 4);
 		layerManager.moveForward(selection(1));
 		assertOrdering(0, 2, 3, 4, 1);
 	}
 
 	@Test
-	public void testMoveBackwardThroughGroup() {
+	void testMoveBackwardThroughGroup() {
 		withDefaultGroup();
 		layerManager.moveBackward(selection(4));
 		assertOrdering(0, 4, 1, 2, 3);
 	}
 
 	@Test
-	public void testMoveBackwardThroughGroupAtBeginning() {
+	void testMoveBackwardThroughGroupAtBeginning() {
 		withGroup(0, 1, 2);
 		layerManager.moveBackward(selection(3));
 		assertOrdering(3, 0, 1, 2, 4);

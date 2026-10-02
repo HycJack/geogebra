@@ -23,6 +23,7 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.matrix.CoordMatrix4x4;
 import org.geogebra.common.kernel.matrix.Coords;
 import org.geogebra.common.main.settings.EuclidianSettings3D;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Interface for 3D view.
@@ -35,13 +36,32 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 	double YZERO_SCENE_STANDARD = 0;
 	/** default scene z-coord of origin */
 	double ZZERO_SCENE_STANDARD = -1.5;
+
 	double ANGLE_ROT_OZ = -60;
 	double ANGLE_ROT_XOY = 20;
 
-    int PROJECTION_ORTHOGRAPHIC = 0;
-    int PROJECTION_PERSPECTIVE = 1;
-    int PROJECTION_GLASSES = 2;
-    int PROJECTION_OBLIQUE = 3;
+	int PROJECTION_ORTHOGRAPHIC = 0;
+	int PROJECTION_PERSPECTIVE = 1;
+	int PROJECTION_GLASSES = 2;
+	int PROJECTION_OBLIQUE = 3;
+
+	/** Listener notified when the 3D view state changes in a way that may affect settings views. */
+	interface Listener {
+		/** Called after the AR ratio visibility has changed. */
+		void arRatioVisibilityUpdated();
+	}
+
+	/**
+	 * Registers a listener for 3D view state changes.
+	 * @param listener listener to add
+	 */
+	void addListener(@NonNull Listener listener);
+
+	/**
+	 * Unregisters a 3D view state listener.
+	 * @param listener listener to remove
+	 */
+	void removeListener(@NonNull Listener listener);
 
 	/**
 	 * rotate to default
@@ -50,7 +70,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * start a rotation animation to be in the vector direction
-	 * 
+	 *
 	 * @param vn
 	 *            vector direction
 	 * @param checkSameValues
@@ -58,12 +78,11 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 	 * @param animated
 	 *            say if rotation will be animated
 	 */
-	void setRotAnimation(Coords vn, boolean checkSameValues,
-			boolean animated);
+	void setRotAnimation(Coords vn, boolean checkSameValues, boolean animated);
 
 	/**
 	 * start a rotation animation to set angle around Oz axis
-	 * 
+	 *
 	 * @param rotOz
 	 *            angle around Oz
 	 * @param checkSameValues
@@ -71,12 +90,11 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 	 * @param animated
 	 *            say if rotation will be animated
 	 */
-	void setRotAnimation(double rotOz, boolean checkSameValues,
-			boolean animated);
+	void setRotAnimation(double rotOz, boolean checkSameValues, boolean animated);
 
 	/**
 	 * start a rotation animation to be in the vector direction, shortest way
-	 * 
+	 *
 	 * @param v
 	 *            vector direction
 	 * @param animated
@@ -96,7 +114,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets the use of the clipping cube
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -104,7 +122,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets if the clipping cube is shown
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -112,14 +130,14 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets the reduction of the clipping box
-	 * 
+	 *
 	 * @param value
 	 *            reduction
 	 */
 	void setClippingReduction(int value);
 
 	/**
-	 * 
+	 *
 	 * @param projection
 	 *            projection type
 	 */
@@ -127,7 +145,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets the visibility of xOy plane grid
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 * @return whether it changed
@@ -136,7 +154,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets the visibility of xOy plane
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -144,7 +162,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets the visibility of xOy plane plate
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -152,7 +170,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets the rotation matrix
-	 * 
+	 *
 	 * @param theta
 	 *            argument
 	 * @param phi
@@ -162,7 +180,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * sets the origin
-	 * 
+	 *
 	 * @param x
 	 *            x coord
 	 * @param y
@@ -184,13 +202,13 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * tell the view that it has to be updated
-	 * 
+	 *
 	 */
 	void setWaitForUpdate();
 
 	/**
 	 * set if y axis is up (and not z axis)
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */
@@ -207,7 +225,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 	void updateAllDrawables();
 
 	/**
-	 * 
+	 *
 	 * @return eye position
 	 */
 	Coords getEyePosition();
@@ -219,18 +237,18 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 	 *            real world view max
 	 */
 	void zoomRW(Coords boundsMin2, Coords boundsMax2);
-	
+
 	/**
 	 * set export will be done on next 3D frame
-	 * 
+	 *
 	 * @param format - export format
 	 * @param showDialog - true if export dialog should be shown, export directly otherwise
 	 */
 	void setExport3D(Format format, boolean showDialog);
-	
+
 	/**
 	 * zoom y &amp; z axes ratio regarding x axis
-	 * 
+	 *
 	 * @param zoomFactorY
 	 *            y:x ratio
 	 * @param zoomFactorZ
@@ -250,7 +268,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 	void setSettingsToStandardView();
 
 	/**
-	 * 
+	 *
 	 * @return renderer
 	 */
 	Renderer getRenderer();
@@ -294,7 +312,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * show focus on geo (if something needs to be done)
-	 * 
+	 *
 	 * @param geo
 	 *            geo
 	 */
@@ -302,7 +320,7 @@ public interface EuclidianView3DInterface extends EuclidianViewInterfaceCommon {
 
 	/**
 	 * set 3D cursor visibility
-	 * 
+	 *
 	 * @param flag
 	 *            flag
 	 */

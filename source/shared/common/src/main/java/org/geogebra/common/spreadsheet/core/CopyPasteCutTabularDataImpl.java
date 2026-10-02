@@ -21,14 +21,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-final class CopyPasteCutTabularDataImpl<T>
-		implements CopyPasteCutTabularData {
+final class CopyPasteCutTabularDataImpl<T> implements CopyPasteCutTabularData {
 	private final TabularData<T> tabularData;
 	private final ClipboardInterface clipboard;
 	private final TabularDataPasteInterface<T> paste;
 	private final TabularDataFormatter<T> tabularDataFormatter;
 	private final TableLayout layout;
-	private TabularClipboard<T> internalClipboard;
+	private final TabularClipboard<T> internalClipboard;
 	private final SpreadsheetSelectionController selectionController;
 	private final List<Selection> pastedSelections = new ArrayList<>();
 	private String lastCopiedValue;
@@ -39,12 +38,17 @@ final class CopyPasteCutTabularDataImpl<T>
 	 * @param layout Spreadsheet dimensions
 	 * @param selectionController {@link SpreadsheetSelectionController}
 	 */
-	CopyPasteCutTabularDataImpl(TabularData<T> tabularData, ClipboardInterface clipboard,
-			TableLayout layout, SpreadsheetSelectionController selectionController) {
+	CopyPasteCutTabularDataImpl(
+			TabularData<T> tabularData,
+			ClipboardInterface clipboard,
+			TableLayout layout,
+			SpreadsheetSelectionController selectionController) {
 		this.tabularData = tabularData;
 		this.clipboard = clipboard;
 		this.layout = layout;
 		this.selectionController = selectionController;
+		// Keep this non-null because paste may be requested before copyDeep() populates it.
+		internalClipboard = new TabularClipboard<>();
 		paste = tabularData.getPaste();
 		tabularDataFormatter = new TabularDataFormatter<>(tabularData);
 	}
@@ -55,8 +59,11 @@ final class CopyPasteCutTabularDataImpl<T>
 
 	@Override
 	public void copy(TabularRange range) {
-		lastCopiedValue = tabularDataFormatter.toString(range);
-		clipboard.setContent(lastCopiedValue);
+		lastCopiedValue =
+				tabularDataFormatter.toString(range, TabularData.SerializationFormat.FORMULAS);
+		clipboard.setContent(
+				lastCopiedValue,
+				tabularDataFormatter.toString(range, TabularData.SerializationFormat.VALUES));
 	}
 
 	@Override
@@ -70,25 +77,22 @@ final class CopyPasteCutTabularDataImpl<T>
 			sourceToCopy = getAllCellsCopy();
 		}
 		copy(sourceToCopy);
-		if (internalClipboard == null) {
-			internalClipboard = new TabularClipboard<>();
-		}
 		internalClipboard.copy(tabularData, sourceToCopy, new Selection(source).getType());
 	}
 
 	private TabularRange getColumnCopy(TabularRange source) {
-		return TabularRange.range(0, tabularData.numberOfRows() - 1,
-				source.getFromColumn(), source.getToColumn());
+		return TabularRange.range(
+				0, tabularData.numberOfRows() - 1, source.getFromColumn(), source.getToColumn());
 	}
 
 	private TabularRange getRowCopy(TabularRange source) {
-		return TabularRange.range(source.getFromRow(), source.getToRow(),
-				0, tabularData.numberOfColumns() - 1);
+		return TabularRange.range(
+				source.getFromRow(), source.getToRow(), 0, tabularData.numberOfColumns() - 1);
 	}
 
 	private TabularRange getAllCellsCopy() {
-		return TabularRange.range(0, tabularData.numberOfRows() - 1,
-				0, tabularData.numberOfColumns() - 1);
+		return TabularRange.range(
+				0, tabularData.numberOfRows() - 1, 0, tabularData.numberOfColumns() - 1);
 	}
 
 	@Override
@@ -128,8 +132,11 @@ final class CopyPasteCutTabularDataImpl<T>
 		// to make sure internal clipboard is used instead
 		clipboard.readContent(rawExternalContent -> {
 			String externalContent = rawExternalContent.replace("\r\n", "\n");
+			boolean canPasteInternal = !internalClipboard.isEmpty();
 			reader.accept(
-					Objects.equals(lastCopiedValue, externalContent) ? null : externalContent);
+					canPasteInternal && Objects.equals(lastCopiedValue, externalContent)
+							? null
+							: externalContent);
 		});
 	}
 
@@ -153,15 +160,19 @@ final class CopyPasteCutTabularDataImpl<T>
 			int numberOfColumnsNeeded = tabularData.numberOfColumns();
 			if (currentNumberOfColumns < numberOfColumnsNeeded) {
 				layout.setNumberOfColumns(numberOfColumnsNeeded);
-				layout.setWidthForColumns(layout.getWidth(lastSelection.getRange().getMaxColumn()),
-						currentNumberOfColumns, numberOfColumnsNeeded - 1);
+				layout.setWidthForColumns(
+						layout.getWidth(lastSelection.getRange().getMaxColumn()),
+						currentNumberOfColumns,
+						numberOfColumnsNeeded - 1);
 			}
 			int currentNumberOfRows = layout.numberOfRows();
 			int numberOfRowsNeeded = tabularData.numberOfRows();
 			if (currentNumberOfRows < numberOfRowsNeeded) {
 				layout.setNumberOfRows(numberOfRowsNeeded);
-				layout.setHeightForRows(layout.getHeight(lastSelection.getRange().getMaxRow()),
-						currentNumberOfRows, numberOfRowsNeeded - 1);
+				layout.setHeightForRows(
+						layout.getHeight(lastSelection.getRange().getMaxRow()),
+						currentNumberOfRows,
+						numberOfRowsNeeded - 1);
 			}
 		}
 	}
@@ -171,11 +182,11 @@ final class CopyPasteCutTabularDataImpl<T>
 		if (type == SelectionType.ALL) {
 			destinationToSelect = TabularRange.range(-1, -1, -1, -1);
 		} else if (type == SelectionType.ROWS) {
-			destinationToSelect = TabularRange.range(
-					destination.getFromRow(), destination.getToRow(), -1, -1);
+			destinationToSelect =
+					TabularRange.range(destination.getFromRow(), destination.getToRow(), -1, -1);
 		} else if (type == SelectionType.COLUMNS) {
-			destinationToSelect = TabularRange.range(
-					-1, -1, destination.getFromColumn(), destination.getToColumn());
+			destinationToSelect =
+					TabularRange.range(-1, -1, destination.getFromColumn(), destination.getToColumn());
 		}
 		pastedSelections.add(new Selection(destinationToSelect));
 	}
@@ -199,14 +210,15 @@ final class CopyPasteCutTabularDataImpl<T>
 		}
 		int columnStep = internalClipboard.numberOfColumns();
 		int rowStep = internalClipboard.numberOfRows();
-		TabularRange tiledRange = CopyPasteCutTabularData
-				.getTiledRange(destination, rowStep, columnStep);
+		TabularRange tiledRange =
+				CopyPasteCutTabularData.getTiledRange(destination, rowStep, columnStep);
 
 		for (int column = tiledRange.getMinColumn();
-				column <= tiledRange.getMaxColumn(); column += columnStep) {
+				column <= tiledRange.getMaxColumn();
+				column += columnStep) {
 			for (int row = tiledRange.getMinRow(); row <= tiledRange.getMaxRow(); row += rowStep) {
-				pasteInternalOnce(new TabularRange(row, column,
-						row + rowStep - 1, column + columnStep - 1));
+				pasteInternalOnce(
+						new TabularRange(row, column, row + rowStep - 1, column + columnStep - 1));
 			}
 		}
 		addDestinationToPastedSelections(tiledRange, internalClipboard.getType());
@@ -215,8 +227,8 @@ final class CopyPasteCutTabularDataImpl<T>
 	@Override
 	public void cut(TabularRange range) {
 		copyDeep(range);
-		TabularRange validRange = range.restrictTo(tabularData.numberOfRows(),
-				tabularData.numberOfColumns());
+		TabularRange validRange =
+				range.restrictInfiniteRangeTo(tabularData.numberOfRows(), tabularData.numberOfColumns());
 		validRange.forEach(tabularData::removeContentAt);
 	}
 }

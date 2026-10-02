@@ -39,17 +39,50 @@ import org.geogebra.common.util.debug.Log;
  */
 class StatementFeatures {
 
-	private static final String[] rules = { "Intersect", "Segment", "Midpoint",
-			"OrthogonalLine", "Circle", "Line", "Point", "Free Point",
-			"Ray", "Area", "Distance", "LineBisector", "Expression",
-			"Translate", "Vector", "Polygon", "Tangent", "Parabola",
-			"Mirror", "Ellipse", "AngularBisector", "Rotate", "Angle",
-			"Hyperbola" };
+	private static final String[] rules = {
+		"Intersect",
+		"Segment",
+		"Midpoint",
+		"OrthogonalLine",
+		"Circle",
+		"Line",
+		"Point",
+		"Free Point",
+		"Ray",
+		"Area",
+		"Distance",
+		"LineBisector",
+		"Expression",
+		"Translate",
+		"Vector",
+		"Polygon",
+		"Tangent",
+		"Parabola",
+		"Mirror",
+		"Ellipse",
+		"AngularBisector",
+		"Rotate",
+		"Angle",
+		"Hyperbola"
+	};
 
-	private static final String[] obj_types = { "Point", "Circle", "Line",
-			"Segment", "Triangle", "Numeric", "Pentagon", "Angle",
-			"Triangle", "Parabola", "Ray", "Ellipse", "Hyperbola",
-			"Quadrilateral", "Vector" };
+	private static final String[] obj_types = {
+		"Point",
+		"Circle",
+		"Line",
+		"Segment",
+		"Triangle",
+		"Numeric",
+		"Pentagon",
+		"Angle",
+		"Triangle",
+		"Parabola",
+		"Ray",
+		"Ellipse",
+		"Hyperbola",
+		"Quadrilateral",
+		"Vector"
+	};
 
 	private static String csv_header = "";
 	private static String csv_data = "";
@@ -93,8 +126,7 @@ class StatementFeatures {
 		 */
 
 		if (ae instanceof AlgoDependentBoolean) {
-			ExpressionNode root = ((AlgoDependentBoolean) ae)
-					.getExpression();
+			ExpressionNode root = ((AlgoDependentBoolean) ae).getExpression();
 
 			HashMap<GeoElement, Integer> gSet = new HashMap<>();
 			GeoCollector gc = GeoCollector.getCollector(gSet);
@@ -104,8 +136,7 @@ class StatementFeatures {
 			while (it.hasNext()) {
 				Entry<GeoElement, Integer> entry = it.next();
 				GeoElement dependency = entry.getKey();
-				parentsComplexity += computeNodeComplexity(dependency)
-						* entry.getValue();
+				parentsComplexity += computeNodeComplexity(dependency) * entry.getValue();
 			}
 
 		} else {
@@ -124,17 +155,14 @@ class StatementFeatures {
 	 * @param nodes
 	 *            nodes
 	 * @param categories
-	 *            ccategories
+	 *            categories
 	 */
-	static void generateStatistics(String description, List<?> nodes,
-			String[] categories) {
+	static void generateStatistics(String description, List<?> nodes, String[] categories) {
 		/*
 		 * collecting algos, generating population and computing basic
 		 * statistics
 		 */
-		int size = 0;
-
-		double mean, variation_coefficient, minimum, maximum, entropy;
+		double mean, minimum, maximum;
 		HashMap<Object, Integer> frequencies = new HashMap<>();
 		Iterator<?> it = nodes.iterator();
 
@@ -172,6 +200,7 @@ class StatementFeatures {
 		}
 
 		int zeros;
+		int size;
 		if (categories != null) {
 			size = categories.length;
 			minimum = maximum;
@@ -188,14 +217,13 @@ class StatementFeatures {
 		/* computing rest of statistics */
 
 		/* ((3/7-1/23)^2+(1/7-1/23)^2*4+18*(1/23)^2)/23 == .00925 */
-		variation_coefficient = 0;
+		double variation_coefficient = 0;
 		/*
 		 * -((3/7)*log(3/7;A)+(1/7)*log(1/7;A)+(1/7)*log(1/7;A)+(1/7)*log(1/
 		 * 7 ;A)+(1/7)*log(1/7;A))
 		 */
-		entropy = 0;
-		Iterator<Entry<Object, Integer>> it2 = frequencies.entrySet()
-				.iterator();
+		double entropy = 0;
+		Iterator<Entry<Object, Integer>> it2 = frequencies.entrySet().iterator();
 		while (it2.hasNext()) {
 			Entry<Object, Integer> entry = it2.next();
 			Object node = entry.getKey();
@@ -236,8 +264,7 @@ class StatementFeatures {
 			double rel_freq;
 			for (String category : categories) {
 				if (frequencies.containsKey(category)) {
-					rel_freq = (double) frequencies.get(category)
-							/ number_of_nodes;
+					rel_freq = (double) frequencies.get(category) / number_of_nodes;
 				} else {
 					rel_freq = 0;
 				}
@@ -286,10 +313,7 @@ class StatementFeatures {
 
 		TreeSet<GeoElement> geos = statement.getAllPredecessors();
 		geos.add(statement);
-		Iterator<GeoElement> it = geos.iterator();
-
-		List<Object> geo_nodes, nodes_in_deg, nodes_out_deg, nodes_deg,
-				types;
+		List<Object> geo_nodes, nodes_in_deg, nodes_out_deg, nodes_deg, types;
 		List<GeoElement> objs;
 		geo_nodes = new ArrayList<>();
 		nodes_in_deg = new ArrayList<>();
@@ -302,14 +326,13 @@ class StatementFeatures {
 		StringBuilder nodes_created = new StringBuilder("[");
 		boolean firstNode = true;
 		boolean firstNodesCreated = true;
-		String nodeLabel = null;
-		
-		int number_of_nodes = 0, free = 0, edges = 0;
 
+		int number_of_nodes = 0, free = 0, edges = 0;
+		Iterator<GeoElement> it = geos.iterator();
 		while (it.hasNext()) {
 			GeoElement geo = it.next();
 			StringBuilder node_edges = new StringBuilder(" (");
-			nodeLabel = nodeLabel(geo);
+			String nodeLabel = nodeLabel(geo);
 			node_edges.append(nodeLabel(geo)).append(",[");
 			boolean firstEdge = true;
 			TreeSet<GeoElement> children = geo.getAllChildren();
@@ -317,8 +340,7 @@ class StatementFeatures {
 			for (GeoElement child : children) {
 				if (geos.contains(child)) {
 					boolean directChild = false;
-					for (GeoElement father : child.getParentAlgorithm()
-							.getInput()) {
+					for (GeoElement father : child.getParentAlgorithm().getInput()) {
 						if (father.equals(geo)) {
 							directChild = true;
 						}
@@ -343,7 +365,7 @@ class StatementFeatures {
 				}
 				nodes.append(node_edges);
 			}
-			
+
 			int in = 0;
 			AlgoElement ae = geo.getParentAlgorithm();
 			String algo = "Free Point";
@@ -378,8 +400,12 @@ class StatementFeatures {
 				} else {
 					firstNodesCreated = false;
 				}
-				nodes_created.append(" (").append(nodeLabel(geo)).append(",")
-						.append(algo).append(")");
+				nodes_created
+						.append(" (")
+						.append(nodeLabel(geo))
+						.append(",")
+						.append(algo)
+						.append(")");
 
 				number_of_nodes++;
 			}
@@ -395,30 +421,20 @@ class StatementFeatures {
 		csvAdd("number of nodes", number_of_nodes);
 		csvAdd("number of nodes with in-degree 0", free);
 		csvAdd("number of edges", edges);
-		csvAdd("num of nodes/num of edges",
-				(double) number_of_nodes / edges);
-		csvAdd("num of edges/num of nodes",
-				(double) edges / number_of_nodes);
-		csvAdd("max path length/num of nodes",
-				(double) longestPath / number_of_nodes);
-		csvAdd("num of nodes/max path length",
-				(double) number_of_nodes / longestPath);
-		csvAdd("max path length/num of edges",
-				(double) longestPath / edges);
-		csvAdd("num of edges/max path length",
-				(double) edges / longestPath);
+		csvAdd("num of nodes/num of edges", (double) number_of_nodes / edges);
+		csvAdd("num of edges/num of nodes", (double) edges / number_of_nodes);
+		csvAdd("max path length/num of nodes", (double) longestPath / number_of_nodes);
+		csvAdd("num of nodes/max path length", (double) number_of_nodes / longestPath);
+		csvAdd("max path length/num of edges", (double) longestPath / edges);
+		csvAdd("num of edges/max path length", (double) edges / longestPath);
 		csvAdd("statement complexity", nodeComplexity.get(statement));
-		GetCommand dominantPredicate = statement.getParentAlgorithm()
-				.getClassName();
+		GetCommand dominantPredicate = statement.getParentAlgorithm().getClassName();
 		String dominantPredicateS = "";
 		if (dominantPredicate != null) {
 			dominantPredicateS = dominantPredicate.toString();
 		}
-		csvAdd("statement dominant predicate",
-				dominantPredicateS);
-		csvAdd("statement predicates",
-				'"' + statement.getDefinition(StringTemplate.ogpTemplate)
-						+ '"');
+		csvAdd("statement dominant predicate", dominantPredicateS);
+		csvAdd("statement predicates", '"' + statement.getDefinition(StringTemplate.ogpTemplate) + '"');
 		generateStatistics("node in-degree", nodes_in_deg, null);
 		generateStatistics("node out-degree", nodes_out_deg, null);
 		generateStatistics("node degree", nodes_deg, null);
@@ -459,7 +475,5 @@ class StatementFeatures {
 
 		Log.debug("portfolio csv_header:" + csv_header);
 		Log.debug("portfolio csv_data:" + csv_data);
-
 	}
-
 }

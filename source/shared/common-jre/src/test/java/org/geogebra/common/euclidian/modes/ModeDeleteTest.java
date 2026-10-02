@@ -16,8 +16,8 @@
 
 package org.geogebra.common.euclidian.modes;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,41 +32,60 @@ import org.geogebra.common.main.AppConfig;
 import org.geogebra.common.main.settings.config.AppConfigGraphing;
 import org.geogebra.common.main.settings.config.AppConfigNotes;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ModeDeleteTest extends BaseEuclidianControllerTest {
+class ModeDeleteTest extends BaseEuclidianControllerTest {
+
+	@BeforeEach
+	void setUp() {
+		setUpController();
+	}
 
 	@Test
-	public void eraserTest() {
+	void eraserTest() {
 		setMode(EuclidianConstants.MODE_ERASER);
 		add("stroke = PenStroke((2,-4),(2,-2),(4,-2),(4,-4))");
 		click(140, 90);
 
-		assertEquals("PenStroke[2.0000E0,-4.0000E0,1.8720E0,-3.5232E0,"
-						+ "1.7760E0,-3.0656E0,1.7440E0,-2.6464E0,1.8080E0,-2.2848E0,"
-						+ "2.0000E0,-2.0000E0,2.3360E0,-1.8080E0,2.6000E0,-1.7365E0,"
-						+ "?,?,3.0000E0,-1.7000E0,3.2320E0,-1.7120E0,"
-						+ "3.6640E0,-1.8080E0,4.0000E0,-2.0000E0,4.1920E0,-2.2848E0,"
-						+ "4.2560E0,-2.6464E0,4.2240E0,-3.0656E0,4.1280E0,-3.5232E0,"
-						+ "4.0000E0,-4.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.0000E0,-4.0000E0,1,1.8720E0,-3.5232E0,0,1.8329E0,"
+						+ "-3.3664E0,4,1.7991E0,-3.2128E0,4,1.7760E0,-3.0656E0,3,1.7529E0,-2.9184E0,4,1.7404E0,"
+						+ "-2.7776E0,4,1.7440E0,-2.6464E0,3,1.7476E0,-2.5152E0,4,1.7671E0,-2.3936E0,4,1.8080E0,"
+						+ "-2.2848E0,3,1.8489E0,-2.1760E0,4,1.9111E0,-2.0800E0,4,2.0000E0,-2.0000E0,3,2.0889E0,"
+						+ "-1.9200E0,4,2.2044E0,-1.8560E0,4,2.3360E0,-1.8080E0,3,2.6000E0,-1.7365E0,0,?,?,0,"
+						+ "3.0000E0,-1.7000E0,1,3.2320E0,-1.7120E0,0,3.3849E0,-1.7280E0,4,3.5324E0,-1.7600E0,"
+						+ "4,3.6640E0,-1.8080E0,3,3.7956E0,-1.8560E0,4,3.9111E0,-1.9200E0,4,4.0000E0,-2.0000E0,"
+						+ "3,4.0889E0,-2.0800E0,4,4.1511E0,-2.1760E0,4,4.1920E0,-2.2848E0,3,4.2329E0,-2.3936E0,"
+						+ "4,4.2524E0,-2.5152E0,4,4.2560E0,-2.6464E0,3,4.2596E0,-2.7776E0,4,4.2471E0,-2.9184E0,"
+						+ "4,4.2240E0,-3.0656E0,3,4.2009E0,-3.2128E0,4,4.1671E0,-3.3664E0,4,4.1280E0,-3.5232E0,"
+						+ "3,4.0000E0,-4.0000E0,0,?,?,0]",
 				getDefinition());
 
 		add("stroke = PenStroke((2,-4),(2,-2),(4,-2),(4,-4))");
 		click(100, 100);
 
-		assertEquals("PenStroke[2.0000E0,-4.0000E0,1.8720E0,-3.5232E0,"
-						+ "1.7760E0,-3.0656E0,1.7440E0,-2.6464E0,1.8080E0,-2.2848E0,"
-						+ "1.8456E0,-2.2000E0,?,?,2.2000E0,-1.8664E0,"
-						+ "2.3360E0,-1.8080E0,2.7680E0,-1.7120E0,3.2320E0,-1.7120E0,"
-						+ "3.6640E0,-1.8080E0,4.0000E0,-2.0000E0,4.1920E0,-2.2848E0,"
-						+ "4.2560E0,-2.6464E0,4.2240E0,-3.0656E0,4.1280E0,-3.5232E0,"
-						+ "4.0000E0,-4.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.0000E0,-4.0000E0,1,1.8720E0,-3.5232E0,0,1.8329E0,"
+						+ "-3.3664E0,4,1.7991E0,-3.2128E0,4,1.7760E0,-3.0656E0,3,1.7529E0,"
+						+ "-2.9184E0,4,1.7404E0,-2.7776E0,4,1.7440E0,-2.6464E0,3,1.7476E0,"
+						+ "-2.5152E0,4,1.7671E0,-2.3936E0,4,1.8080E0,-2.2848E0,3,1.8456E0,"
+						+ "-2.2000E0,0,?,?,0,2.2000E0,-1.8664E0,1,2.3360E0,-1.8080E0,0,"
+						+ "2.4676E0,-1.7600E0,4,2.6151E0,-1.7280E0,4,2.7680E0,-1.7120E0,"
+						+ "3,2.9209E0,-1.6960E0,4,3.0791E0,-1.6960E0,4,3.2320E0,-1.7120E0,"
+						+ "3,3.3849E0,-1.7280E0,4,3.5324E0,-1.7600E0,4,3.6640E0,-1.8080E0,3,"
+						+ "3.7956E0,-1.8560E0,4,3.9111E0,-1.9200E0,4,4.0000E0,-2.0000E0,3,"
+						+ "4.0889E0,-2.0800E0,4,4.1511E0,-2.1760E0,4,4.1920E0,-2.2848E0,3,"
+						+ "4.2329E0,-2.3936E0,4,4.2524E0,-2.5152E0,4,4.2560E0,-2.6464E0,3,"
+						+ "4.2596E0,-2.7776E0,4,4.2471E0,-2.9184E0,4,4.2240E0,-3.0656E0,3,"
+						+ "4.2009E0,-3.2128E0,4,4.1671E0,-3.3664E0,4,4.1280E0,-3.5232E0,3,"
+						+ "4.0000E0,-4.0000E0,0,?,?,0]",
 				getDefinition());
 	}
 
 	@Test
 	@Issue("MOW-1791")
-	public void eraseWholeStrokeTest() {
+	void eraseWholeStrokeTest() {
 		getApp().setUndoActive(true);
 		setMode(EuclidianConstants.MODE_ERASER);
 		add("stroke = PenStroke((2,-4),(2,-2),(4,-2),(4,-4))");
@@ -74,24 +93,37 @@ public class ModeDeleteTest extends BaseEuclidianControllerTest {
 		assertArrayEquals(new String[0], getApp().getGgbApi().getAllObjectNames());
 		getKernel().undo();
 
-		assertEquals("PenStroke[2.0000E0,-4.0000E0,1.8720E0,-3.5232E0,1.7760E0,-3.0656E0,"
-						+ "1.7440E0,-2.6464E0,1.8080E0,-2.2848E0,2.0000E0,-2.0000E0,2.3360E0,"
-						+ "-1.8080E0,2.7680E0,-1.7120E0,3.2320E0,-1.7120E0,3.6640E0,-1.8080E0,"
-						+ "4.0000E0,-2.0000E0,4.1920E0,-2.2848E0,4.2560E0,-2.6464E0,4.2240E0,"
-						+ "-3.0656E0,4.1280E0,-3.5232E0,4.0000E0,-4.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.0000E0,-4.0000E0,1,1.8720E0,-3.5232E0,0,1.8329E0,"
+						+ "-3.3664E0,4,1.7991E0,-3.2128E0,4,1.7760E0,-3.0656E0,3,1.7529E0,"
+						+ "-2.9184E0,4,1.7404E0,-2.7776E0,4,1.7440E0,-2.6464E0,3,1.7476E0,"
+						+ "-2.5152E0,4,1.7671E0,-2.3936E0,4,1.8080E0,-2.2848E0,3,1.8489E0,"
+						+ "-2.1760E0,4,1.9111E0,-2.0800E0,4,2.0000E0,-2.0000E0,3,2.0889E0,"
+						+ "-1.9200E0,4,2.2044E0,-1.8560E0,4,2.3360E0,-1.8080E0,3,2.4676E0,"
+						+ "-1.7600E0,4,2.6151E0,-1.7280E0,4,2.7680E0,-1.7120E0,3,2.9209E0,"
+						+ "-1.6960E0,4,3.0791E0,-1.6960E0,4,3.2320E0,-1.7120E0,3,3.3849E0,"
+						+ "-1.7280E0,4,3.5324E0,-1.7600E0,4,3.6640E0,-1.8080E0,3,3.7956E0,"
+						+ "-1.8560E0,4,3.9111E0,-1.9200E0,4,4.0000E0,-2.0000E0,3,4.0889E0,"
+						+ "-2.0800E0,4,4.1511E0,-2.1760E0,4,4.1920E0,-2.2848E0,3,4.2329E0,"
+						+ "-2.3936E0,4,4.2524E0,-2.5152E0,4,4.2560E0,-2.6464E0,3,4.2596E0,"
+						+ "-2.7776E0,4,4.2471E0,-2.9184E0,4,4.2240E0,-3.0656E0,3,4.2009E0,"
+						+ "-3.2128E0,4,4.1671E0,-3.3664E0,4,4.1280E0,-3.5232E0,3,4.0000E0,"
+						+ "-4.0000E0,0,?,?,0]",
 				getDefinition());
 	}
 
 	@Test
 	@Issue("MOW-1791")
-	public void eraseStrokeGrouped() {
+	void eraseStrokeGrouped() {
 		getApp().setUndoActive(true);
 		getApp().setConfig(new AppConfigNotes());
 		setMode(EuclidianConstants.MODE_ERASER);
 		GeoElement geo1 = add("stroke = PenStroke((2,-4),(2,-2),(4,-2),(4,-4))");
 		GeoElement geo2 = add("stroke2 = PenStroke((12,-4),(12,-2),(14,-2),(14,-4))");
-		getApp().getKernel().getConstruction().createGroupFromSelected(
-				new ArrayList<>(List.of(geo1, geo2)));
+		getApp()
+				.getKernel()
+				.getConstruction()
+				.createGroupFromSelected(new ArrayList<>(List.of(geo1, geo2)));
 		eraseWholeStroke();
 		assertArrayEquals(new String[0], getApp().getGgbApi().getAllObjectNames());
 		getKernel().undo();
@@ -108,10 +140,10 @@ public class ModeDeleteTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void eraserTestStraight() {
+	void eraserTestStraight() {
 		getApp().setUndoActive(true);
 		getApp().setConfig(new AppConfigNotes());
-		getConstruction().getUndoManager().setAllowCheckpoints(false);
+		getKernel().getConstruction().getUndoManager().setAllowCheckpoints(false);
 		setMode(EuclidianConstants.MODE_ERASER);
 		// delete the middle
 		add("stroke = PenStroke((2,-2),(3,-2),(4,-2))");
@@ -119,8 +151,9 @@ public class ModeDeleteTest extends BaseEuclidianControllerTest {
 		int y = 95;
 		dragStart(x, y);
 		dragEnd(x + 5, y + 5);
-		assertEquals("PenStroke[2.0000E0,-2.0000E0,2.8000E0,-2.0000E0,?,?,"
-						+ "3.2000E0,-2.0000E0,4.0000E0,-2.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.0000E0,-2.0000E0,1,2.8000E0,-2.0000E0,0,?,?,"
+						+ "0,3.2000E0,-2.0000E0,1,4.0000E0,-2.0000E0,0,?,?,0]",
 				getDefinition());
 		// delete the start
 		add("stroke = PenStroke((2,-2),(3,-2),(4,-2))");
@@ -128,49 +161,53 @@ public class ModeDeleteTest extends BaseEuclidianControllerTest {
 		y = 95;
 		dragStart(x, y);
 		dragEnd(x + 5, y + 5);
-		assertEquals("PenStroke[2.2000E0,-2.0000E0,3.0000E0,-2.0000E0,"
-						+ "4.0000E0,-2.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.2000E0,-2.0000E0,1,3.0000E0,"
+						+ "-2.0000E0,0,4.0000E0,-2.0000E0,0,?,?,0]",
 				getDefinition());
 		getKernel().undo();
-		assertEquals("PenStroke[2.0000E0,-2.0000E0,3.0000E0,-2.0000E0,"
-						+ "4.0000E0,-2.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.0000E0,-2.0000E0,1,3.0000E0,"
+						+ "-2.0000E0,0,4.0000E0,-2.0000E0,0,?,?,0]",
 				getDefinition());
 	}
 
 	@Test
-	public void eraserTestLongDragGraphing() {
+	void eraserTestLongDragGraphing() {
 		eraserTestLongDrag(new AppConfigGraphing());
 	}
 
 	@Test
-	public void eraserTestLongDragNotes() {
+	void eraserTestLongDragNotes() {
 		eraserTestLongDrag(new AppConfigNotes());
 	}
 
 	private void eraserTestLongDrag(AppConfig config) {
 		getApp().setUndoActive(true);
 		getApp().setConfig(config);
-		getConstruction().getUndoManager().setAllowCheckpoints(false);
+		getKernel().getConstruction().getUndoManager().setAllowCheckpoints(false);
 		setMode(EuclidianConstants.MODE_ERASER);
 		// delete the start
 		add("stroke = PenStroke((2,-2),(3,-2),(4,-2))");
 		dragLinear(95, 95, 130, 105);
-		assertEquals("PenStroke[2.8000E0,-2.0000E0,3.0000E0,-2.0000E0,"
-						+ "4.0000E0,-2.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.8000E0,-2.0000E0,1,3.0000E0,-2.0000E0,0,"
+						+ "4.0000E0,-2.0000E0,0,?,?,0]",
 				getDefinition());
 		getKernel().undo();
-		assertEquals("PenStroke[2.0000E0,-2.0000E0,3.0000E0,-2.0000E0,"
-						+ "4.0000E0,-2.0000E0,?,?]",
+		assertEquals(
+				"PenStrokeBezier[2.0000E0,-2.0000E0,1,3.0000E0,-2.0000E0,0,"
+						+ "4.0000E0,-2.0000E0,0,?,?,0]",
 				getDefinition());
 	}
 
 	@Test
-	public void eraseMultipleTestGraphing() {
+	void eraseMultipleTestGraphing() {
 		eraseMultipleTest(new AppConfigGraphing());
 	}
 
 	@Test
-	public void eraseMultipleTestNotes() {
+	void eraseMultipleTestNotes() {
 		eraseMultipleTest(new AppConfigNotes());
 	}
 
@@ -202,12 +239,12 @@ public class ModeDeleteTest extends BaseEuclidianControllerTest {
 	private void dragInside(int x1, int y1, int x2, int y2) {
 		int steps = 20;
 		for (int i = 0; i < 20; i++) {
-			drag(x1 + (i * (x2 - x1)) / steps, y1 + (i * (y2 - y1)) / steps);
+			drag(x1 + i * (x2 - x1) / steps, y1 + i * (y2 - y1) / steps);
 		}
 	}
 
 	@Test
-	public void shouldNotDeleteFixedObjects() {
+	void shouldNotDeleteFixedObjects() {
 		getApp().setAppletFlag(true);
 		setMode(EuclidianConstants.MODE_DELETE);
 		add("a:x=1");
@@ -221,7 +258,7 @@ public class ModeDeleteTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void shouldDeleteAngles() {
+	void shouldDeleteAngles() {
 		getApp().setAppletFlag(true);
 		add("Angle((1,-2),(1,-1),(2,-1))");
 		setMode(EuclidianConstants.MODE_DELETE);
@@ -230,7 +267,7 @@ public class ModeDeleteTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	public void shouldNotDeleteFixedSliders() {
+	void shouldNotDeleteFixedSliders() {
 		getApp().setAppletFlag(true);
 		setMode(EuclidianConstants.MODE_DELETE);
 		GeoElement slider = add("a=Slider(-1,1)");

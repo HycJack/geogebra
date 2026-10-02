@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -19,6 +19,7 @@ package org.geogebra.web.full.gui.dialog;
 import org.geogebra.common.javax.swing.RelationPane;
 import org.geogebra.common.kernel.Relation;
 import org.geogebra.common.main.App;
+import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.gui.Shades;
 import org.geogebra.web.html5.gui.util.FastClickHandler;
 import org.geogebra.web.html5.gui.view.button.StandardButton;
@@ -35,9 +36,7 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  * Web implementation of the Relation Tool dialog
  */
-
-public class RelationPaneW extends ComponentDialog
-		implements RelationPane, FastClickHandler {
+public final class RelationPaneW extends ComponentDialog implements RelationPane, FastClickHandler {
 	private Relation[] callbacks;
 	private FlowPanel numerical;
 	private int rels;
@@ -70,9 +69,8 @@ public class RelationPaneW extends ComponentDialog
 		mainPanel.add(numerical);
 
 		if (hasSymbolicSolution(relations)) {
-			StandardButton checkSym = new StandardButton(app.getLocalization()
-					.getMenu("RelationDialog.CheckSymbolically"));
-			checkSym.addStyleName("materialTextButton");
+			StandardButton checkSym = BaseWidgetFactory.INSTANCE.newTextButton(
+					app.getLocalization().getMenu("RelationDialog.CheckSymbolically"));
 			checkSym.addStyleName("checkSymBtn");
 			checkSym.addFastClickHandler(this);
 			mainPanel.add(checkSym);
@@ -93,8 +91,7 @@ public class RelationPaneW extends ComponentDialog
 	private Label getHeader(String label) {
 		Label header = new Label();
 		header.addStyleName("headerLbl");
-		header.getElement().setInnerHTML(app.getLocalization()
-				.getMenu(label));
+		header.getElement().setInnerHTML(app.getLocalization().getMenu(label));
 		return header;
 	}
 
@@ -109,14 +106,18 @@ public class RelationPaneW extends ComponentDialog
 
 	@Override
 	public void onClick(final Widget source) {
-		((AppW) app).getAsyncManager().asyncEvalCommand("Delete(Prove(true))",
-				(_unused) -> {
-					LoggerW.loaded("prover");
-					emptyAndRebuildContent();
-					for (int i = 0; i < rels; ++i) {
-						expandRow(i);
-					}
-				}, null);
+		((AppW) app)
+				.getAsyncManager()
+				.asyncEvalCommand(
+						"Delete(Prove(true))",
+						(_unused) -> {
+							LoggerW.loaded("prover");
+							emptyAndRebuildContent();
+							for (int i = 0; i < rels; ++i) {
+								expandRow(i);
+							}
+						},
+						null);
 	}
 
 	private void emptyAndRebuildContent() {
@@ -135,7 +136,7 @@ public class RelationPaneW extends ComponentDialog
 	 * Add symbolical solutions
 	 * @param row - row number
 	 */
-	protected void expandRow(int row) {
+	private void expandRow(int row) {
 		Relation callback = callbacks[row];
 		if (callback != null) {
 			RelationRow relation = callback.getExpandedRow(row);

@@ -16,17 +16,36 @@
 
 package org.geogebra.common.gui.view.probcalculator;
 
+import static org.geogebra.common.gui.view.probcalculator.Procedure.ZMEAN_TEST;
+
+import java.util.List;
+
 import org.geogebra.common.io.XMLStringBuilder;
 import org.geogebra.common.kernel.arithmetic.ExpressionNodeConstants;
 
 /**
  * @author G. Sturr
- * 
+ *
  */
 public class StatisticsCollection {
 	public static final String tail_left = "<";
 	public static final String tail_right = ">";
 	public static final String tail_two = ExpressionNodeConstants.strNOT_EQUAL;
+	public static final List<Procedure> statisticalTests = List.of(
+			Procedure.ZMEAN_TEST,
+			Procedure.TMEAN_TEST,
+			Procedure.ZMEAN2_TEST,
+			Procedure.TMEAN2_TEST,
+			Procedure.ZPROP_TEST,
+			Procedure.ZPROP2_TEST,
+			Procedure.ZMEAN_CI,
+			Procedure.TMEAN_CI,
+			Procedure.ZMEAN2_CI,
+			Procedure.TMEAN2_CI,
+			Procedure.ZPROP_CI,
+			Procedure.ZPROP2_CI,
+			Procedure.GOF_TEST,
+			Procedure.CHISQ_TEST);
 
 	public double mean;
 	public double mean2;
@@ -60,7 +79,7 @@ public class StatisticsCollection {
 	public double[][] diff;
 	public double[] columnSum;
 	public double[] rowSum;
-	private Procedure selectedProcedure;
+	private Procedure selectedProcedure = ZMEAN_TEST;
 	private boolean active;
 	public boolean showExpected;
 	public boolean showDiff;
@@ -71,7 +90,6 @@ public class StatisticsCollection {
 	 * Construct StatisticsCollection
 	 */
 	public StatisticsCollection() {
-
 		mean = Double.NaN;
 		mean2 = Double.NaN;
 		sd = Double.NaN;
@@ -90,7 +108,7 @@ public class StatisticsCollection {
 		count2 = Double.NaN;
 
 		level = .95;
-		setSelectedProcedure(Procedure.ZMEAN_TEST);
+		setSelectedProcedure(ZMEAN_TEST);
 	}
 
 	public void setActive(boolean active) {
@@ -127,7 +145,6 @@ public class StatisticsCollection {
 
 		columnSum = new double[initColumns];
 		rowSum = new double[initRows];
-
 	}
 
 	/**
@@ -183,7 +200,7 @@ public class StatisticsCollection {
 
 	/**
 	 * Add this to XML string
-	 * 
+	 *
 	 * @param sb
 	 *            string builder
 	 */
@@ -229,8 +246,7 @@ public class StatisticsCollection {
 	private void addObservedRow(XMLStringBuilder sb, int row) {
 		for (int column = 0; column < chiSquareData[0].length; column++) {
 			sb.startTag("entry");
-			sb.attr("val", chiSquareData[row][column] != null
-					? chiSquareData[row][column] : "");
+			sb.attr("val", chiSquareData[row][column] != null ? chiSquareData[row][column] : "");
 			sb.endTag();
 		}
 	}
@@ -252,8 +268,7 @@ public class StatisticsCollection {
 	 *            one of &lt;, &gt;, !=
 	 */
 	public void setTail(String tail) {
-		if (tail_two.equals(tail) || tail_left.equals(tail)
-				|| tail_right.equals(tail)) {
+		if (tail_two.equals(tail) || tail_left.equals(tail) || tail_right.equals(tail)) {
 			this.tail = tail;
 		}
 	}

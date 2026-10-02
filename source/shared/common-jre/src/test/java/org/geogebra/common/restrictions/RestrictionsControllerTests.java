@@ -30,58 +30,54 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.contextmenu.ContextMenuFactory;
 import org.geogebra.common.exam.BaseExamTestSetup;
 import org.geogebra.common.exam.ExamType;
 import org.geogebra.common.gui.view.algebra.filter.AlgebraOutputFilter;
 import org.geogebra.common.gui.view.algebra.filter.DefaultAlgebraOutputFilter;
-import org.geogebra.common.gui.view.algebra.filter.ProtectiveAlgebraOutputFilter;
 import org.geogebra.common.kernel.commands.Commands;
-import org.geogebra.common.main.settings.config.AppConfigGraphing;
 import org.junit.jupiter.api.Test;
 
-public class RestrictionsControllerTests extends BaseExamTestSetup {
+class RestrictionsControllerTests extends BaseExamTestSetup {
 
 	@Test
-	public void testRestrictedSubApp() {
+	void testRestrictedSubApp() {
 		setupApp(SuiteSubApp.GRAPHING);
 		Restrictions mmsRestrictions = ExamType.MMS.createRestrictions();
 		restrictionsController.applyRestrictions(mmsRestrictions);
-		assertTrue(restrictionsController.getDisabledSubAppCodes()
-				.contains(SuiteSubApp.GRAPHING.appCode));
+		assertTrue(
+				restrictionsController.getDisabledSubAppCodes().contains(SuiteSubApp.GRAPHING.appCode));
 		assertEquals(SuiteSubApp.CAS, getCurrentSubApp());
 	}
 
 	@Test
-	public void testRestrictions() {
+	void testRestrictions() {
 		setupApp(SuiteSubApp.GRAPHING);
 		restrictionsController.applyRestrictions(ExamType.CVTE.createRestrictions());
 
 		assertAll(
 				// feature restrictions
-				() -> assertTrue(restrictionsController
-						.isFeatureRestricted(FeatureRestriction.HIDE_CALCULATED_EQUATION)),
+				() -> assertTrue(restrictionsController.isFeatureRestricted(
+						FeatureRestriction.HIDE_CALCULATED_EQUATION)),
 				// command restrictions
-				() -> assertFalse(getCommandDispatcher()
-						.isAllowedByCommandFilters(Commands.Difference)),
+				() -> assertFalse(getCommandDispatcher().isAllowedByCommandFilters(Commands.Difference)),
 				// expression restrictions
 				() -> assertNull(evaluate("{{1,2},{3,4}}")),
 				// context menu restrictions
 				() -> assertEquals(
 						List.of(Expression, Text, Help),
-						ContextMenuFactory.makeInputContextMenu(true,
-								restrictionsController.getContextMenuItemFilters())));
+						ContextMenuFactory.makeInputContextMenu(
+								true, restrictionsController.getContextMenuItemFilters())));
 
 		restrictionsController.removeRestrictions();
 		assertTrue(getCommandDispatcher().isAllowedByCommandFilters(Commands.Derivative));
 		assertFalse(restrictionsController.isFeatureRestricted(
-				FeatureRestriction.HIDE_SPECIAL_POINTS));
+				FeatureRestriction.SPECIAL_POINTS_ONLY_ON_GRAPHICS_VIEW_SELECTION));
 	}
 
 	@Test
-	public void testAppAlgebraOutputFilterUsesRestrictionsController() {
+	void testAppAlgebraOutputFilterUsesRestrictionsController() {
 		setupApp(SuiteSubApp.GRAPHING);
 		AlgebraOutputFilter base = getApp().getAlgebraOutputFilter();
 

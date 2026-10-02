@@ -27,7 +27,7 @@ import org.geogebra.web.html5.gui.menu.AriaMenuItem;
 /**
  * Class to create group related menu items.
  */
-public class GroupItems {
+public final class GroupItems {
 
 	private final App app;
 
@@ -67,21 +67,19 @@ public class GroupItems {
 	}
 
 	private AriaMenuItem createUngroupItem() {
-		return new AriaMenuItem(app.getLocalization().getMenu("ContextMenu.Ungroup"), null,
-				() -> {
-					app.getKernel().getConstruction().ungroupGroups(getGeos());
-					app.storeUndoInfo();
-					app.getEventDispatcher().ungroupObjects(getGeos());
-				});
+		return new AriaMenuItem(app.getLocalization().getMenu("ContextMenu.Ungroup"), null, () -> {
+			app.getKernel().getConstruction().ungroupGroups(getGeos());
+			app.storeUndoInfo();
+			app.getEventDispatcher().ungroupObjects(getGeos());
+		});
 	}
 
 	private AriaMenuItem createGroupItem() {
-		return new AriaMenuItem(app.getLocalization().getMenu("ContextMenu.Group"), null,
-				() -> {
-					app.getKernel().getConstruction().createGroupFromSelected(getGeos());
-					app.storeUndoInfo();
-					app.getEventDispatcher().groupObjects(getGeos());
-				});
+		return new AriaMenuItem(app.getLocalization().getMenu("ContextMenu.Group"), null, () -> {
+			app.getKernel().getConstruction().createGroupFromSelected(getGeos());
+			app.storeUndoInfo();
+			app.getEventDispatcher().groupObjects(getGeos());
+		});
 	}
 
 	private ArrayList<GeoElement> getGeos() {

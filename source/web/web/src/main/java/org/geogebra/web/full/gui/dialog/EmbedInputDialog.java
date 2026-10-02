@@ -23,7 +23,7 @@ import org.geogebra.web.html5.main.AppW;
 
 /** embed dialog
  */
-public class EmbedInputDialog extends MediaDialog {
+public final class EmbedInputDialog extends MediaDialog {
 	private final EmbedFactory embedFactory;
 
 	/** Creates dialog for embed input
@@ -63,7 +63,6 @@ public class EmbedInputDialog extends MediaDialog {
 	@Override
 	public void hide() {
 		super.hide();
-		app.getGuiManager().setMode(EuclidianConstants.MODE_SELECT_MOW,
-				ModeSetter.TOOLBAR);
+		app.getGuiManager().setMode(EuclidianConstants.MODE_SELECT_MOW, ModeSetter.TOOLBAR);
 	}
 }

@@ -17,6 +17,7 @@
 package org.geogebra.web.full.gui.dialog.text;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import org.geogebra.common.gui.inputfield.DynamicTextElement;
 import org.geogebra.common.gui.inputfield.DynamicTextElement.DynamicTextType;
@@ -53,23 +54,22 @@ import jsinterop.base.Js;
 /**
  * Extension of RichTextArea for editing GeoText strings with dynamic references
  * to GeoElements.
- * 
+ *
  * @author G. Sturr
- * 
+ *
  */
-public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
-
+public final class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 	private static final String DYNAMIC_TEXT_CLASS = "dynamicText";
 	private final AppW app;
-	protected ITextEditPanel editPanel;
+	private final ITextEditPanel editPanel;
 
-	protected GPopupPanel textEditPopup;
-	protected EditorTextField editBox;
+	private GPopupPanel textEditPopup;
+	private EditorTextField editBox;
 	private elemental2.dom.Element targetChild;
 
 	/**************************************
 	 * Constructor
-	 * 
+	 *
 	 * @param app
 	 *            application
 	 * @param editPanel
@@ -96,36 +96,34 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 	private void registerHandlers() {
 		addDomHandler(event -> editPanel.updatePreviewPanel(true), KeyUpEvent.getType());
 		editBox.addKeyUpHandler(event -> {
-
 			int keyCode = event.getNativeKeyCode();
 
 			switch (keyCode) {
-			case GWTKeycodes.KEY_ESCAPE:
-			case GWTKeycodes.KEY_ENTER:
-				showEditPopup(false);
-				break;
+				case GWTKeycodes.KEY_ESCAPE:
+				case GWTKeycodes.KEY_ENTER:
+					showEditPopup(false);
+					break;
 
-			default:
-				editPanel.updatePreviewPanel(true);
+				default:
+					editPanel.updatePreviewPanel(true);
 			}
 		});
 
-		addDomHandler(event -> {
+		addDomHandler(
+				event -> {
+					showEditPopup(false);
 
-			showEditPopup(false);
+					Element target = Element.as(event.getNativeEvent().getEventTarget());
 
-			Element target = Element
-					.as(event.getNativeEvent().getEventTarget());
-
-			if (DYNAMIC_TEXT_CLASS
-					.equalsIgnoreCase(target.getClassName())) {
-				editBox.setText(target.getAttribute("value"));
-				editBox.setTarget(target);
-				showEditPopup(true);
-			} else if (target.getClassName().contains("textEditor")) {
-				target.focus();
-			}
-		}, ClickEvent.getType());
+					if (DYNAMIC_TEXT_CLASS.equalsIgnoreCase(target.getClassName())) {
+						editBox.setText(target.getAttribute("value"));
+						editBox.setTarget(target);
+						showEditPopup(true);
+					} else if (target.getClassName().contains("textEditor")) {
+						target.focus();
+					}
+				},
+				ClickEvent.getType());
 	}
 
 	/**
@@ -137,7 +135,7 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return content as HTML without formatting
 	 */
 	public String getUnformattedContent() {
@@ -147,14 +145,13 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 	private String getUnformattedContent(Node e) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < e.childNodes.length; i++) {
-			Node c = e.childNodes.getAt(i);
+			Node c = Objects.requireNonNull(e.childNodes.getAt(i));
 			if (c.childNodes.length > 0) {
 				sb.append(getUnformattedContent(c));
 			} else {
 				if (c.nodeType == Node.ELEMENT_NODE) {
 					Element el = Js.uncheckedCast(c);
-					if (el.getClassName()
-							.contains(GeoTextEditor.DYNAMIC_TEXT_CLASS)) {
+					if (el.getClassName().contains(GeoTextEditor.DYNAMIC_TEXT_CLASS)) {
 						sb.append(el.getString());
 						continue;
 					}
@@ -197,18 +194,18 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 	/**
 	 * Inserts an HTML element at the current cursor position and updates the
 	 * editor.
-	 * 
+	 *
 	 * Note: The insertHTML method is not supported in IE11 so it can't be used
 	 * here. Instead, insertImage (browser safe) is used to insert a dummy image
 	 * element which is then replaced with the actual element to be inserted.
-	 * 
+	 *
 	 * @param elem
 	 *            input element
 	 */
 	public void insertElement(Node elem) {
 		getElement().focus();
 		try {
-			Range range = DomGlobal.document.getSelection().getRangeAt(0);
+			Range range = Objects.requireNonNull(DomGlobal.document.getSelection()).getRangeAt(0);
 			range.deleteContents();
 			range.insertNode(elem);
 			range.collapse(false);
@@ -224,8 +221,7 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 		elem.setPropertyString("type", "button");
 		elem.setPropertyString("value", value);
 		elem.setAttribute("data-type", type.name());
-		elem.getStyle().setFontSize(app.getSettings().getFontSettings().getAppFontSize(),
-				Unit.PX);
+		elem.getStyle().setFontSize(app.getSettings().getFontSettings().getAppFontSize(), Unit.PX);
 		return Js.uncheckedCast(elem);
 	}
 
@@ -235,7 +231,7 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 
 	/**
 	 * Add textfield for given element.
-	 * 
+	 *
 	 * @param geo
 	 *            element
 	 */
@@ -251,7 +247,7 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 
 	/**
 	 * Insert static text into the editor
-	 * 
+	 *
 	 * @param str0
 	 *            static text
 	 * @param isLatex
@@ -272,7 +268,7 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 
 	/**
 	 * Update dialog with text elements.
-	 * 
+	 *
 	 * @param dynamicList
 	 *            list of text elements
 	 */
@@ -296,7 +292,7 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 
 	/**
 	 * Parses the RichTextArea HTML to create a list of DynamicTextElements
-	 * 
+	 *
 	 * @return list of DynamicTextElements represented by current editor text
 	 */
 	public ArrayList<DynamicTextElement> getDynamicTextList() {
@@ -307,20 +303,19 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 
 	/**
 	 * Parses a node into a list of DynamicTextElements
-	 * 
+	 *
 	 * @param list
 	 *            parsed dynamic texts
 	 * @param node
 	 *            HTML node
 	 */
-	public void getDynamicTextListRecursive(
-			ArrayList<DynamicTextElement> list, Node node) {
+	public void getDynamicTextListRecursive(ArrayList<DynamicTextElement> list, Node node) {
 		if (node == null) {
 			return;
 		}
 
 		for (int i = 0; i < node.childNodes.length; i++) {
-			Node child = node.childNodes.getAt(i);
+			Node child = Objects.requireNonNull(node.childNodes.getAt(i));
 			if (child.nodeType == Node.TEXT_NODE) {
 				processTextNode(child, list);
 			} else if (child.nodeType == Node.ELEMENT_NODE) {
@@ -331,8 +326,7 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 
 	private void processTextNode(Node child, ArrayList<DynamicTextElement> list) {
 		if (child.nodeValue != null) {
-			list.add(new DynamicTextElement(child.nodeValue,
-					DynamicTextType.STATIC));
+			list.add(new DynamicTextElement(child.nodeValue, DynamicTextType.STATIC));
 		}
 	}
 
@@ -341,23 +335,18 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 		String tagName = childEl.getTagName();
 
 		// convert input element to dynamic text string
-		if (DYNAMIC_TEXT_CLASS
-				.equals(childEl.getClassName())) {
+		if (DYNAMIC_TEXT_CLASS.equals(childEl.getClassName())) {
 			String dataType = childEl.getAttribute("data-type");
 			DynamicTextType dynamicTextType = DynamicTextType.VALUE;
 			if (!StringUtil.empty(dataType)) {
 				dynamicTextType = DynamicTextType.valueOf(dataType);
 			}
-			list.add(new DynamicTextElement(
-					childEl.getPropertyString("value"),
-					dynamicTextType));
+			list.add(new DynamicTextElement(childEl.getPropertyString("value"), dynamicTextType));
 
 			// convert DIV or P (browser dependent) to newline
-		} else if ("div".equalsIgnoreCase(tagName)
-				|| "p".equalsIgnoreCase(tagName)) {
+		} else if ("div".equalsIgnoreCase(tagName) || "p".equalsIgnoreCase(tagName)) {
 
-			list.add(new DynamicTextElement("\n",
-					DynamicTextType.STATIC));
+			list.add(new DynamicTextElement("\n", DynamicTextType.STATIC));
 
 			// parse the inner HTML of this element
 			getDynamicTextListRecursive(list, child);
@@ -370,27 +359,24 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 	// Editor Popup
 	// ======================================================
 
-	protected void showEditPopup(boolean isVisible) {
+	private void showEditPopup(boolean isVisible) {
 		if (isVisible) {
-			textEditPopup
-					.setPopupPositionAndShow((offsetWidth, offsetHeight) -> {
+			textEditPopup.setPopupPositionAndShow((offsetWidth, offsetHeight) -> {
+				int left =
+						getAbsoluteLeft() - (int) app.getAbsLeft() + getOffsetWidth() / 2 - offsetWidth / 2;
+				int top =
+						getAbsoluteTop() - (int) app.getAbsTop() + getOffsetHeight() / 2 - offsetHeight / 2;
 
-						int left = getAbsoluteLeft() - (int) app.getAbsLeft() + getOffsetWidth() / 2
-								- offsetWidth / 2;
-						int top = getAbsoluteTop()  - (int) app.getAbsTop() + getOffsetHeight() / 2
-								- offsetHeight / 2;
-
-						textEditPopup.setPopupPosition(left, top);
-						Scheduler.get().scheduleDeferred(
-								() -> editBox.setFocus(true));
-					});
+				textEditPopup.setPopupPosition(left, top);
+				Scheduler.get().scheduleDeferred(() -> editBox.setFocus(true));
+			});
 			textEditPopup.getElement().getStyle().setZIndex(1000);
 		} else {
 			textEditPopup.hide();
 		}
 	}
 
-	protected void createEditPopup() {
+	private void createEditPopup() {
 		if (textEditPopup == null) {
 			textEditPopup = new GPopupPanel(app.getAppletFrame(), app);
 			textEditPopup.addStyleName("textEditPopup");
@@ -403,7 +389,6 @@ public class GeoTextEditor extends FocusWidget implements HasKeyboardTF {
 
 			textEditPopup.setAutoHideEnabled(true);
 			editBox.addValueChangeHandler(event -> textEditPopup.hide());
-
 		}
 	}
 

@@ -22,6 +22,11 @@ import org.geogebra.common.properties.IconAssociatedProperty;
 /**
  * A property associated with an action and an icon.
  */
-public interface ActionableIconProperty extends ActionableProperty,
-		IconAssociatedProperty {
+public interface ActionableIconProperty extends ActionableProperty, IconAssociatedProperty {
+	/**
+	 * @return whether it should be displayed as a button with an outline in the UI
+	 */
+	default boolean isDisplayedAsOutlinedButton() {
+		return false;
+	}
 }

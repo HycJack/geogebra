@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -24,14 +24,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.arithmetic.ValidExpression;
 import org.geogebra.common.kernel.parser.ParseException;
 import org.geogebra.common.main.App;
 import org.geogebra.common.util.SyntaxAdapterImpl;
 import org.geogebra.common.util.debug.Log;
+import org.geogebra.editor.share.catalog.TemplateCatalog;
 import org.geogebra.editor.share.controller.CursorController;
 import org.geogebra.editor.share.controller.EditorState;
 import org.geogebra.editor.share.editor.AddPlaceholders;
@@ -40,15 +39,15 @@ import org.geogebra.editor.share.editor.MathFieldInternal;
 import org.geogebra.editor.share.event.KeyEvent;
 import org.geogebra.editor.share.input.KeyboardInputAdapter;
 import org.geogebra.editor.share.io.latex.Parser;
-import org.geogebra.editor.share.catalog.TemplateCatalog;
-import org.geogebra.editor.share.tree.Formula;
-import org.geogebra.editor.share.tree.SequenceNode;
 import org.geogebra.editor.share.serializer.GeoGebraSerializer;
 import org.geogebra.editor.share.serializer.TeXBuilder;
 import org.geogebra.editor.share.serializer.TeXSerializer;
-import org.geogebra.editor.share.util.JavaKeyCodes;
+import org.geogebra.editor.share.tree.Formula;
+import org.geogebra.editor.share.tree.SequenceNode;
 import org.geogebra.editor.share.util.FormulaConverter;
+import org.geogebra.editor.share.util.JavaKeyCodes;
 import org.geogebra.editor.share.util.Unicode;
+import org.jspecify.annotations.Nullable;
 
 import com.himamis.retex.renderer.share.Atom;
 import com.himamis.retex.renderer.share.CharAtom;
@@ -74,17 +73,29 @@ class EditorChecker {
 		typer = new EditorTyper(mathField);
 	}
 
+	public MathFieldCommon getMathField() {
+		return mathField;
+	}
+
 	public void checkAsciiMath(String output) {
 		SequenceNode rootComponent = getRootComponent();
-		assertEquals(output,
-				GeoGebraSerializer.serialize(rootComponent, (EditorFeatures) null));
+		assertEquals(output, GeoGebraSerializer.serialize(rootComponent, (EditorFeatures) null));
 		// clean the checker after typing
 		reset();
 	}
 
 	public void checkLaTeX(String output) {
-		assertEquals(output,
-				TeXSerializer.serialize(getRootComponent()));
+		assertEquals(output, TeXSerializer.serialize(getRootComponent()));
+		// clean the checker after typing
+		reset();
+	}
+
+	public void checkLaTeXWithCursor(String output) {
+		EditorState state = mathField.getInternal().getEditorState();
+		assertEquals(
+				output,
+				new TeXSerializer()
+						.serialize(state.getRootNode(), state.getCurrentNode(), state.getCurrentOffset()));
 		// clean the checker after typing
 		reset();
 	}
@@ -93,12 +104,13 @@ class EditorChecker {
 		checkGGBMath(output, null);
 	}
 
-	public void checkGGBMath(String output, @CheckForNull EditorFeatures editorFeatures) {
+	public void checkGGBMath(String output, @Nullable EditorFeatures editorFeatures) {
 		SequenceNode rootComponent = getRootComponent();
 		String exp = new GeoGebraSerializer(editorFeatures)
-				.serialize(rootComponent, new StringBuilder()).toString();
+				.serialize(rootComponent, new StringBuilder())
+				.toString();
 		try {
-			ValidExpression en = parse(exp);
+			ValidExpression en = app.getKernel().getParser().parseGeoGebraExpression(exp);
 			assertEquals(output, en.toString(StringTemplate.defaultTemplate));
 		} catch (ParseException e) {
 			Log.debug(e);
@@ -114,15 +126,14 @@ class EditorChecker {
 		SequenceNode currentField = editorState.getCurrentNode();
 		TeXBuilder builder = new TeXBuilder();
 		RowAtom atom =
-				(RowAtom) builder.build(currentField, currentField, editorState.getCurrentOffset(),
-						false);
+				(RowAtom) builder.build(currentField, currentField, editorState.getCurrentOffset(), false);
 		assertEquals(expected, serializeRow(atom));
 		return this;
 	}
 
 	private String serializeRow(RowAtom row) {
 		StringBuilder sb = new StringBuilder();
-		for (Atom atom: row.getElements()) {
+		for (Atom atom : row.getElements()) {
 			sb.append(serializeAtom(atom));
 		}
 		return sb.toString();
@@ -234,7 +245,7 @@ class EditorChecker {
 		return this;
 	}
 
-	public EditorChecker fromParser(String input) {
+	public EditorChecker parse(String input) {
 		Parser parser = new Parser(mathField.getCatalog());
 		Formula formula;
 		try {
@@ -247,8 +258,8 @@ class EditorChecker {
 	}
 
 	public EditorChecker withPlaceholders() {
-		new AddPlaceholders().process(mathField.getInternal().getFormula()
-				.getRootNode().getChild(0));
+		new AddPlaceholders()
+				.process(mathField.getInternal().getFormula().getRootNode().getChild(0));
 		return this;
 	}
 
@@ -259,13 +270,13 @@ class EditorChecker {
 	private EditorChecker convertFormulaAndProtect(String input, boolean protect) {
 		try {
 			FormulaConverter converter =
-					new FormulaConverter(mathField.getCatalog());
+					new FormulaConverter(mathField.getCatalog(), new TeXSerializer());
 			mathField.getInternal().setFormula(converter.buildFormula(input));
 			if (protect) {
 				mathField.getInternal().getFormula().getRootNode().setProtected();
 			}
 
-			mathField.getInternal().setLockedCaretPath();
+			mathField.getInternal().moveCursorToFirstEditablePart();
 		} catch (org.geogebra.editor.share.io.latex.ParseException e) {
 			throw new RuntimeException(e);
 		}
@@ -283,7 +294,7 @@ class EditorChecker {
 			formula = parser.parse(input);
 			mathField.getInternal().setFormula(formula);
 			mathField.getInternal().getFormula().getRootNode().setProtected();
-			mathField.getInternal().setLockedCaretPath();
+			mathField.getInternal().moveCursorToFirstEditablePart();
 		} catch (Exception e) {
 			throw new AssertionError("Problem parsing: " + input, e);
 		}
@@ -299,28 +310,22 @@ class EditorChecker {
 		return this;
 	}
 
-	public EditorChecker checkPath(Integer... indexes) {
+	public EditorChecker checkCaret(Integer... indexes) {
 		MathFieldInternal mathFieldInternal = mathField.getInternal();
 		mathField.requestViewFocus();
 		mathFieldInternal.update();
-		ArrayList<Integer> actual = CursorController.getPath(mathFieldInternal
-				.getEditorState());
+		ArrayList<Integer> actual = CursorController.getPath(mathFieldInternal.getEditorState());
 		assertArrayEquals(indexes, actual.toArray());
 		return this;
 	}
 
 	public void serializeAs(String latex) {
 		TeXSerializer teXSerializer = new TeXSerializer();
-		assertEquals(latex,
-				teXSerializer.serialize(mathField.getInternal().getFormula()));
+		assertEquals(latex, teXSerializer.serialize(mathField.getInternal().getFormula()));
 	}
 
 	protected void checkEditorInsert(String input, String output) {
 		new EditorChecker(app).insert(input).checkAsciiMath(output);
-	}
-
-	public ValidExpression parse(String exp) throws ParseException {
-		return app.getKernel().getParser().parseGeoGebraExpression(exp);
 	}
 
 	public void setFormatConverter(SyntaxAdapterImpl formatConverter) {
@@ -370,8 +375,7 @@ class EditorChecker {
 
 	public EditorChecker select(int from, int to) {
 		EditorState state = mathField.getInternal().getEditorState();
-		state.setSelectionStart(state.getRootNode().getChild(from));
-		state.setSelectionEnd(state.getRootNode().getChild(to));
+		state.selectSubsequence(state.getRootNode(), from, to);
 		return this;
 	}
 
@@ -422,7 +426,7 @@ class EditorChecker {
 	}
 
 	private void reset() {
-		fromParser("");
+		parse("");
 		setModifiers(0);
 	}
 }

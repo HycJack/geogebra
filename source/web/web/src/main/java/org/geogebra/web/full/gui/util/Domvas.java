@@ -25,16 +25,15 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "window")
-public class Domvas {
+public final class Domvas {
 
-	protected Domvas() {
+	private Domvas() {
 		// use Domvas.get() instead, may return null
 	}
 
 	@JsProperty(name = "domvas")
 	public static native Domvas get();
 
-	public native void toImage(Element el,
-			JsConsumer<BaseRenderingContext2D.DrawImageImageUnionType> callback);
-
+	public native void toImage(
+			Element el, JsConsumer<BaseRenderingContext2D.DrawImageImageUnionType> callback);
 }

@@ -16,10 +16,9 @@
 
 package org.geogebra.common.media;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.common.util.debug.Log;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Helper methods for getting material ID from URLs
@@ -37,8 +36,10 @@ public final class GeoGebraURLParser {
 			return false;
 		}
 		String host = urlNoProtocol.split("/")[0];
-		return "geogebra.org".equals(host) || "ggbm.at".equals(host)
-				|| "ggbtu.be".equals(host) || host.endsWith(".geogebra.org");
+		return "geogebra.org".equals(host)
+				|| "ggbm.at".equals(host)
+				|| "ggbtu.be".equals(host)
+				|| host.endsWith(".geogebra.org");
 	}
 
 	/**
@@ -46,7 +47,7 @@ public final class GeoGebraURLParser {
 	 *            GeoGebra URL
 	 * @return material sharing key (or numeric ID); null if URL does not specify any ID
 	 */
-	public static @CheckForNull String getIDfromURL(String url) {
+	public static @Nullable String getIDfromURL(String url) {
 		String urlNoProtocol = removeProtocol(url);
 		final String material = "/material/show/id/";
 
@@ -85,7 +86,7 @@ public final class GeoGebraURLParser {
 		}
 		// fetch ID
 		id = pathAndQuery.substring(start, end);
-		return id.length() > 5 ||  id.matches("\\d+") ? id : null;
+		return id.length() > 5 || id.matches("\\d+") ? id : null;
 	}
 
 	/**

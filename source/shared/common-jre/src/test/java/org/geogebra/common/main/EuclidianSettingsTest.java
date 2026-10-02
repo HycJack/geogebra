@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,25 +16,25 @@
 
 package org.geogebra.common.main;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.euclidian.background.BackgroundType;
 import org.geogebra.common.main.settings.EuclidianSettings;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class EuclidianSettingsTest extends BaseUnitTest {
+class EuclidianSettingsTest extends BaseUnitTest {
 	private static EuclidianSettings settings;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		settings = new EuclidianSettings(getApp());
 	}
 
 	@Test
-	public void isometricBackgroundShouldShowGrid() {
+	void isometricBackgroundShouldShowGrid() {
 		assertGridAt(BackgroundType.ISOMETRIC);
 	}
 
@@ -44,22 +44,22 @@ public class EuclidianSettingsTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void polarBackgroundShouldShowGrid() {
+	void polarBackgroundShouldShowGrid() {
 		assertGridAt(BackgroundType.POLAR);
 	}
 
 	@Test
-	public void changeBackgroundFromIsometricShouldHideGrid() {
+	void changeBackgroundFromIsometricShouldHideGrid() {
 		changeBackgroundShouldHideGridFrom(BackgroundType.ISOMETRIC);
 	}
 
 	@Test
-	public void changeBackgroundFromPolarShouldHideGrid() {
+	void changeBackgroundFromPolarShouldHideGrid() {
 		changeBackgroundShouldHideGridFrom(BackgroundType.POLAR);
 	}
 
 	private void changeBackgroundShouldHideGridFrom(BackgroundType backgroundType) {
-		for (BackgroundType type: BackgroundType.values()) {
+		for (BackgroundType type : BackgroundType.values()) {
 			if (noGridBackground(type)) {
 				changeShouldHideGrid(backgroundType, type);
 			}
@@ -81,7 +81,7 @@ public class EuclidianSettingsTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void noBackgroundShouldClearShowGrid() {
+	void noBackgroundShouldClearShowGrid() {
 		settings.setBackgroundType(BackgroundType.ISOMETRIC);
 		settings.setBackgroundType(BackgroundType.NONE);
 		assertFalse(settings.getShowGrid());

@@ -12,10 +12,14 @@
 // You can read more here:
 // https://on.cypress.io/configuration
 // ***********************************************************
-/*global cy*/
 import { addGeoGebraCommands } from '@geogebra/web-test-harness/commands';
+import 'cypress-axe';
 
 addGeoGebraCommands();
 
 beforeEach(cy.skipDialog)
 afterEach(cy.setSaved)
+
+Cypress.on('uncaught:exception', (err) => {
+    return !err.toString().includes('Failed to register a ServiceWorker');
+});

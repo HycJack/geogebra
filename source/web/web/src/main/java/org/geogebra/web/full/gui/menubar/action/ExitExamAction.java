@@ -40,11 +40,12 @@ import org.gwtproject.canvas.client.Canvas;
 /**
  * Exits exam mode.
  */
-public class ExitExamAction extends DefaultMenuAction<AppWFull> {
+public final class ExitExamAction extends DefaultMenuAction<AppWFull> {
 	/**
 	 * Canvas line height
 	 */
-	protected static final int LINE_HEIGHT = 24;
+	private static final int LINE_HEIGHT = 24;
+
 	private static final double PADDING = 24;
 	private static final GColor EXAM_OK_COLOR = GColor.newColorRGB(0x3DA196);
 	private static final int SCREENSHOT_HEADER_HEIGHT = 78;
@@ -61,9 +62,8 @@ public class ExitExamAction extends DefaultMenuAction<AppWFull> {
 	/**
 	 * Show exit exam dialog
 	 */
-	protected void showExamExitDialog() {
-		DialogData data = new DialogData(null,
-				"Cancel", "Exit");
+	private void showExamExitDialog() {
+		DialogData data = new DialogData(null, "Cancel", "Exit");
 		ExamExitConfirmDialog exit = new ExamExitConfirmDialog(app, data);
 		Runnable returnHandler = () -> {
 			if (app.getConfig().hasExam()) {
@@ -83,18 +83,16 @@ public class ExitExamAction extends DefaultMenuAction<AppWFull> {
 	/**
 	 * Exit exam and restore normal mode
 	 */
-	protected void exitAndResetExam() {
+	private void exitAndResetExam() {
 		app.getLAF().toggleFullscreen(false);
-		saveScreenshot(app.getLocalization().getMenu("exam_log_header")
-				+ " " + app.getVersionString());
+		saveScreenshot(app.getLocalization().getMenu("exam_log_header") + " " + app.getVersionString());
 		app.endExam();
 	}
 
 	private void saveScreenshot(String title) {
 		Canvas canvas = Canvas.createIfSupported();
 		final GGraphics2DW g2 = new GGraphics2DW(canvas);
-		ExamSummary examSummary = examController.getExamSummary(
-				app.getConfig(), app.getLocalization());
+		ExamSummary examSummary = examController.getExamSummary(app.getConfig(), app.getLocalization());
 		int yOffset = LINE_HEIGHT + SCREENSHOT_HEADER_HEIGHT;
 
 		addHeaderToScreenshot(g2, canvas, title);
@@ -138,8 +136,7 @@ public class ExitExamAction extends DefaultMenuAction<AppWFull> {
 	}
 
 	private void addHeaderToScreenshot(GGraphics2DW g2, Canvas canvas, String title) {
-		g2.setCoordinateSpaceSize(500,
-				examController.getCheatingEvents().size() * LINE_HEIGHT + 350);
+		g2.setCoordinateSpaceSize(500, examController.getCheatingEvents().size() * LINE_HEIGHT + 350);
 		g2.setColor(GColor.WHITE);
 		g2.fillRect(0, 0, canvas.getCoordinateSpaceWidth(), canvas.getCoordinateSpaceHeight());
 		GColor color = examController.isCheating() ? GColor.DARK_RED : EXAM_OK_COLOR;
@@ -154,32 +151,30 @@ public class ExitExamAction extends DefaultMenuAction<AppWFull> {
 	}
 
 	private int addStartDateToScreenshot(GGraphics2DW g2, ExamSummary examSummary, int yOffset) {
-		return addFieldToScreenshot(g2, examSummary.getStartDateHintText(),
-				examSummary.getStartDateLabelText(), yOffset);
+		return addFieldToScreenshot(
+				g2, examSummary.getStartDateHintText(), examSummary.getStartDateLabelText(), yOffset);
 	}
 
 	private int addStartTimeToScreenshot(GGraphics2DW g2, ExamSummary examSummary, int yOffset) {
-		return addFieldToScreenshot(g2, examSummary.getStartTimeHintText(),
-				examSummary.getStartTimeLabelText(), yOffset);
+		return addFieldToScreenshot(
+				g2, examSummary.getStartTimeHintText(), examSummary.getStartTimeLabelText(), yOffset);
 	}
 
 	private int addEndTimeToScreenshot(GGraphics2DW g2, ExamSummary examSummary, int yOffset) {
-		return addFieldToScreenshot(g2, examSummary.getEndTimeHintText(),
-				examSummary.getEndTimeLabelText(), yOffset);
+		return addFieldToScreenshot(
+				g2, examSummary.getEndTimeHintText(), examSummary.getEndTimeLabelText(), yOffset);
 	}
 
 	private int addActivityToScreenshot(GGraphics2DW g2, int yOffset) {
-		return addFieldToScreenshot(g2, app.getLocalization().getMenu("exam_activity"),
-				null, yOffset);
+		return addFieldToScreenshot(g2, app.getLocalization().getMenu("exam_activity"), null, yOffset);
 	}
 
 	private void addLogTimesToScreenshot(GGraphics2DW g2, ExamSummary examSummary, int yOffset) {
-		addCheatingEventsLogTimesToScreenshot(g2, examSummary,
-				yOffset);
+		addCheatingEventsLogTimesToScreenshot(g2, examSummary, yOffset);
 	}
 
-	private void addCheatingEventsLogTimesToScreenshot(GGraphics2DW g2,
-			ExamSummary examSummary, int yOffset) {
+	private void addCheatingEventsLogTimesToScreenshot(
+			GGraphics2DW g2, ExamSummary examSummary, int yOffset) {
 		int yOffsetForNextEntry = yOffset;
 		for (String line : examSummary.getActivityLabelText().split("\n")) {
 			yOffsetForNextEntry = addLineToScreenshot(g2, line, yOffsetForNextEntry);
@@ -207,7 +202,7 @@ public class ExitExamAction extends DefaultMenuAction<AppWFull> {
 	/**
 	 * Exit exam and restore normal mode
 	 */
-	protected void exitAndResetExamOffline() {
+	private void exitAndResetExamOffline() {
 		app.getLAF().toggleFullscreen(false);
 		ExamType examType = !examController.isIdle() ? examController.getExamType() : null;
 		String title = "";

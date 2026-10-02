@@ -29,7 +29,7 @@ import org.geogebra.web.html5.util.AppletParameters;
 /**
  * Evaluator Activity.
  */
-public class EvaluatorActivity extends BaseActivity {
+public final class EvaluatorActivity extends BaseActivity {
 
 	private EvaluatorEditor editor;
 
@@ -75,8 +75,8 @@ public class EvaluatorActivity extends BaseActivity {
 	 * @param transparent whether to use transparent background
 	 * @param callback callback, receives the image
 	 */
-	public void exportImage(String type, boolean transparent,
-			MathFieldExporter.ImageConsumer callback) {
+	public void exportImage(
+			String type, boolean transparent, MathFieldExporter.ImageConsumer callback) {
 		editor.exportImage(type, transparent, callback);
 	}
 

@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -28,15 +28,14 @@ import org.geogebra.web.resources.SVGResource;
  * Toggle button that should be visible if no geos are selected or to be
  * created and no special icons appear in stylebar (eg. delete mode)
  */
-public class ToggleButtonWforEV extends ToggleButton {
+public final class ToggleButtonWforEV extends ToggleButton {
 	private EuclidianStyleBarW stylebar;
 
 	/**
 	 * @param img - image
 	 * @param stylebar - parent stylebar
 	 */
-	public ToggleButtonWforEV(SVGResource img,
-			EuclidianStyleBarW stylebar) {
+	public ToggleButtonWforEV(SVGResource img, EuclidianStyleBarW stylebar) {
 		super(img);
 		this.stylebar = stylebar;
 	}
@@ -47,7 +46,8 @@ public class ToggleButtonWforEV extends ToggleButton {
 			this.setVisible(geos.size() == 0);
 		} else {
 			int mode = stylebar.mode;
-			this.setVisible(geos.size() == 0 && !EuclidianView.isPenMode(mode)
+			this.setVisible(geos.size() == 0
+					&& !EuclidianView.isPenMode(mode)
 					&& mode != EuclidianConstants.MODE_DELETE
 					&& mode != EuclidianConstants.MODE_ERASER);
 		}

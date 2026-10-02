@@ -34,7 +34,7 @@ import org.geogebra.web.shared.GlobalHeader;
 /**
  * Activity class for the GeoGebra Suite app
  */
-public class SuiteActivity extends BaseActivity {
+public final class SuiteActivity extends BaseActivity {
 
 	private ScientificActivity scientificSubApp;
 
@@ -47,23 +47,23 @@ public class SuiteActivity extends BaseActivity {
 
 	private static AppConfig getAppConfig(SuiteSubApp subAppCode, boolean casDisabled) {
 		switch (subAppCode) {
-		default:
-		case GRAPHING:
-			if (casDisabled) {
-				return new AppConfigGraphing(GeoGebraConstants.SUITE_APPCODE);
-			} else {
-				return new AppConfigUnrestrictedGraphing(GeoGebraConstants.SUITE_APPCODE);
-			}
-		case GEOMETRY:
-			return new AppConfigGeometry(GeoGebraConstants.SUITE_APPCODE);
-		case CAS:
-			return new AppConfigCas(GeoGebraConstants.SUITE_APPCODE);
-		case G3D:
-			return new AppConfigGraphing3D(GeoGebraConstants.SUITE_APPCODE);
-		case PROBABILITY:
-			return new AppConfigProbability(GeoGebraConstants.SUITE_APPCODE);
-		case SCIENTIFIC:
-			return new AppConfigScientific(GeoGebraConstants.SUITE_APPCODE);
+			default:
+			case GRAPHING:
+				if (casDisabled) {
+					return new AppConfigGraphing(GeoGebraConstants.SUITE_APPCODE);
+				} else {
+					return new AppConfigUnrestrictedGraphing(GeoGebraConstants.SUITE_APPCODE);
+				}
+			case GEOMETRY:
+				return new AppConfigGeometry(GeoGebraConstants.SUITE_APPCODE);
+			case CAS:
+				return new AppConfigCas(GeoGebraConstants.SUITE_APPCODE);
+			case G3D:
+				return new AppConfigGraphing3D(GeoGebraConstants.SUITE_APPCODE);
+			case PROBABILITY:
+				return new AppConfigProbability(GeoGebraConstants.SUITE_APPCODE);
+			case SCIENTIFIC:
+				return new AppConfigScientific(GeoGebraConstants.SUITE_APPCODE);
 		}
 	}
 
@@ -89,11 +89,6 @@ public class SuiteActivity extends BaseActivity {
 
 	private boolean isSubAppScientific() {
 		return GeoGebraConstants.SCIENTIFIC_APPCODE.equals(getConfig().getSubAppCode());
-	}
-
-	@Override
-	public boolean useValidInput() {
-		return !isSubAppScientific();
 	}
 
 	@Override

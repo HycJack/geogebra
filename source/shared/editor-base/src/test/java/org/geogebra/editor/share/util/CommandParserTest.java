@@ -25,10 +25,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class CommandParserTest {
+class CommandParserTest {
 
 	@Test
-	public void testRegularCommandSyntaxes() {
+	void testRegularCommandSyntaxes() {
 		List<String> constructionStep = Collections.singletonList("ConstructionStep");
 		assertEquals(constructionStep, parseCommand("ConstructionStep( )"));
 
@@ -38,17 +38,16 @@ public class CommandParserTest {
 	}
 
 	@Test
-	public void testTrickySyntaxes() {
+	void testTrickySyntaxes() {
 		List<String> locus = Arrays.asList("Locus", "f(x, y)", "Point");
 		assertEquals(locus, parseCommand("Locus(<f(x, y)>, <Point>)"));
 
 		List<String> join = Arrays.asList("Join", "List", "List", "...");
 		assertEquals(join, parseCommand("Join(<List>, <List>, ...)"));
 
-		List<String> uniform = Arrays.asList("Uniform", "Lower Bound",
-				"Upper Bound", "x", "Boolean Cumulative");
-		assertEquals(uniform,
-				parseCommand("Uniform( <Lower Bound>, <Upper Bound>, x, <Boolean Cumulative> )"));
+		List<String> uniform =
+				Arrays.asList("Uniform", "Lower Bound", "Upper Bound", "x", "Boolean Cumulative");
+		assertEquals(
+				uniform, parseCommand("Uniform( <Lower Bound>, <Upper Bound>, x, <Boolean Cumulative> )"));
 	}
-
 }

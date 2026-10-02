@@ -30,7 +30,7 @@ import org.geogebra.common.kernel.geos.GeoLocusStroke;
 
 /**
  * Creates a PolyLine from a given list of points or point array.
- * 
+ *
  * @author Michael Borcherds
  */
 public class AlgoLocusStroke extends AlgoElement {
@@ -48,7 +48,7 @@ public class AlgoLocusStroke extends AlgoElement {
 		super(cons);
 		poly = new GeoLocusStroke(this.cons);
 		if (!points.isEmpty()) {
-			poly.appendPointArray(points);
+			poly.appendVertexPointArray(points);
 		}
 
 		// updatePointArray already covered compute
@@ -62,7 +62,7 @@ public class AlgoLocusStroke extends AlgoElement {
 
 	@Override
 	public Commands getClassName() {
-		return Commands.PenStroke;
+		return Commands.PenStrokeBezier;
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class AlgoLocusStroke extends AlgoElement {
 	}
 
 	@Override
-	final public String toString(StringTemplate tpl) {
+	public final String toString(StringTemplate tpl) {
 		return "";
 	}
 
@@ -124,7 +124,7 @@ public class AlgoLocusStroke extends AlgoElement {
 
 	@Override
 	public String getDefinition(StringTemplate tpl) {
-		String def = "PenStroke";
+		String def = "PenStrokeBezier";
 		// #2706
 		if (input == null) {
 			return null;
@@ -137,7 +137,7 @@ public class AlgoLocusStroke extends AlgoElement {
 		}
 
 		sbAE.append(tpl.leftSquareBracket());
-		poly.appendPoints(sbAE);
+		sbAE.append(poly.getPointString());
 		sbAE.append(tpl.rightSquareBracket());
 		return sbAE.toString();
 	}

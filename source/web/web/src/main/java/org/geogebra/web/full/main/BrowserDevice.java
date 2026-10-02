@@ -17,13 +17,18 @@
 package org.geogebra.web.full.main;
 
 import org.geogebra.common.gui.view.consprotocol.ConstructionProtocolView;
+import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.web.full.gui.view.consprotocol.ConstructionProtocolViewW;
 import org.geogebra.web.html5.Browser;
+import org.geogebra.web.html5.gui.util.NoDragImage;
 import org.geogebra.web.html5.gui.view.browser.BrowseViewI;
+import org.geogebra.web.html5.gui.view.button.StandardButton;
 import org.geogebra.web.html5.main.AppW;
+import org.geogebra.web.resources.SVGResource;
 import org.gwtproject.dom.client.Element;
 import org.gwtproject.user.client.DOM;
 import org.gwtproject.user.client.ui.FlowPanel;
+import org.gwtproject.user.client.ui.Label;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.File;
@@ -33,30 +38,25 @@ import jsinterop.base.Js;
 /**
  * Device class for case we are running in the browser (eg Chrome app)
  */
-public class BrowserDevice implements GDevice {
+public final class BrowserDevice implements GDevice {
 
 	/**
 	 * Button for opening local files
 	 *
 	 */
-	public static class FileOpenButton extends FlowPanel {
+	public static class FileOpenButton extends StandardButton {
 		private final AppW app;
 		private Element input;
-		private Element div;
+		private final Element div;
 
 		/**
 		 * New Button
-		 *
-		 * @param style
-		 *            style class of the button
-		 * @param app
-		 *            application
+		 * @param app application
 		 */
-		public FileOpenButton(String style, AppW app) {
+		public FileOpenButton(AppW app) {
 			super();
-			this.setStyleName(style);
 			this.app = app;
-			div = DOM.createElement("div");
+			div = DOM.createDiv();
 		}
 
 		/**
@@ -70,29 +70,33 @@ public class BrowserDevice implements GDevice {
 				if (fileInput.files.length > 0) {
 					File fileToHandle = fileInput.files.getAt(0);
 					openFileView.close();
-					app.getSaveController().showDialogIfNeeded((ignore) -> {
-						app.openFile(fileToHandle);
-					}, false);
+					app.getSaveController()
+							.showDialogIfNeeded(
+									(ignore) -> {
+										app.openFile(fileToHandle);
+									},
+									false);
 					fileInput.value = "";
 				}
 			});
 		}
 
 		/**
-		 * @param imgUrl
-		 *            icon url
-		 * @param text
-		 *            button text
+		 * @param svgResource svg
+		 * @param text button text
 		 */
-		public void setImageAndText(String imgUrl, String text) {
+		public void setImageAndText(SVGResource svgResource, String text) {
 			Element form = DOM.createElement("form");
 			input = DOM.createElement("input");
 			input.setAttribute("type", "file");
 			form.appendChild(input);
 
-			div.setInnerHTML(" <img src=\"" + imgUrl
-					+ "\"  class=\"gwt-Image\" draggable=\"false\" role=\"button\"> "
-					+ "<div class=\"gwt-Label\"/>" + text + "</div>");
+			FlowPanel holder = new FlowPanel();
+			holder.addStyleName("materialTonalButton");
+			holder.add(new NoDragImage(
+					svgResource.withFill(GeoGebraColorConstants.PURPLE_700.toString()), 24, 24));
+			holder.add(new Label(text));
+			div.appendChild(holder.getElement());
 			div.appendChild(form);
 			DOM.insertChild(getElement(), div, 0);
 		}
@@ -122,8 +126,7 @@ public class BrowserDevice implements GDevice {
 
 	@Override
 	public void resizeView(int width0, int height0) {
-		if (width0 > Browser.getScreenWidth()
-				|| height0 > Browser.getScreenHeight()) {
+		if (width0 > Browser.getScreenWidth() || height0 > Browser.getScreenHeight()) {
 			int width = Browser.getScreenWidth();
 			int height = Browser.getScreenHeight();
 			DomGlobal.window.moveTo(0, 0);
@@ -131,6 +134,5 @@ public class BrowserDevice implements GDevice {
 		} else {
 			DomGlobal.window.resizeTo(width0, height0);
 		}
-
 	}
 }

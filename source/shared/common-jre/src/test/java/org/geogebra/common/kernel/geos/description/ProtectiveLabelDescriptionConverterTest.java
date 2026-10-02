@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -30,20 +30,20 @@ import org.geogebra.common.kernel.geos.GeoLine;
 import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.main.settings.config.AppConfigGraphing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ProtectiveLabelDescriptionConverterTest extends BaseUnitTest {
+class ProtectiveLabelDescriptionConverterTest extends BaseUnitTest {
 
 	private ProtectiveGeoElementValueConverter converter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		converter = new ProtectiveGeoElementValueConverter(new FunctionAndEquationFilter());
 	}
 
 	@Test
-	public void testDoesNotFilterCaption() {
+	void testDoesNotFilterCaption() {
 		getApp().setConfig(new AppConfigGraphing());
 		getApp().getKernel().setPrintDecimals(2);
 		String functionString = "g(x) = x";
@@ -51,8 +51,7 @@ public class ProtectiveLabelDescriptionConverterTest extends BaseUnitTest {
 		checkCaption(function, GeoElementND.LABEL_NAME_VALUE, functionString);
 
 		GeoConic conicWithUserEquation = addAvInput("c: x^2 + y^2 = 1");
-		checkCaption(conicWithUserEquation, GeoElementND.LABEL_NAME_VALUE,
-				"c: x² + y² = 1");
+		checkCaption(conicWithUserEquation, GeoElementND.LABEL_NAME_VALUE, "c: x² + y² = 1");
 
 		String pointString = "A = (1, 2)";
 		GeoPoint point = addAvInput(pointString);
@@ -88,7 +87,7 @@ public class ProtectiveLabelDescriptionConverterTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testFiltersCaption() {
+	void testFiltersCaption() {
 		GeoLine line = createRayWithCommand();
 
 		checkCaption(line, GeoElementND.LABEL_NAME, "f");
@@ -99,7 +98,7 @@ public class ProtectiveLabelDescriptionConverterTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testFiltersCaptionDependentCopy() {
+	void testFiltersCaptionDependentCopy() {
 		createRayWithCommand();
 		String dependentCopyString = "g:f";
 		GeoLine lineCopy = addAvInput(dependentCopyString);
@@ -112,7 +111,7 @@ public class ProtectiveLabelDescriptionConverterTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testFiltersCaptionDependentCopySecondLevel() {
+	void testFiltersCaptionDependentCopySecondLevel() {
 		createRayWithCommand();
 		addAvInput("g:f");
 		GeoLine lineSecondLevel = addAvInput("h:g");
@@ -132,7 +131,8 @@ public class ProtectiveLabelDescriptionConverterTest extends BaseUnitTest {
 
 	private void checkCaption(GeoElement element, int labelMode, String expectedLabelText) {
 		element.setLabelMode(labelMode);
-		assertThat(converter.toLabelAndDescription(element,
-				StringTemplate.defaultTemplate), is(expectedLabelText));
+		assertThat(
+				converter.toLabelAndDescription(element, StringTemplate.defaultTemplate),
+				is(expectedLabelText));
 	}
 }

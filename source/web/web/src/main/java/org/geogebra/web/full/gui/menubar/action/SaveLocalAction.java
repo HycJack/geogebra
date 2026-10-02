@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,6 +16,7 @@
 
 package org.geogebra.web.full.gui.menubar.action;
 
+import org.geogebra.common.util.debug.AccessibilityAnalytics;
 import org.geogebra.web.full.gui.menubar.DefaultMenuAction;
 import org.geogebra.web.full.main.AppWFull;
 
@@ -23,10 +24,12 @@ import org.geogebra.web.full.main.AppWFull;
  * Shows the save file chooser in browsers that support the file system access API,
  * downloads directly in other browsers.
  */
-public class SaveLocalAction extends DefaultMenuAction<AppWFull> {
+public final class SaveLocalAction extends DefaultMenuAction<AppWFull> {
 	@Override
 	public void execute(AppWFull app) {
+		app.getAccessibilityAnalyticsContext()
+				.setTrigger(AccessibilityAnalytics.Value.BURGER_MENU)
+				.setFlow(AccessibilityAnalytics.Value.DIRECT);
 		app.getSaveController().showLocalSaveDialog(() -> {});
 	}
-
 }

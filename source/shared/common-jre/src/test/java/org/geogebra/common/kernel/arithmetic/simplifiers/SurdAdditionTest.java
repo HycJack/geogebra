@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -32,25 +32,25 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class SurdAdditionTest extends BaseAppTestSetup {
+class SurdAdditionTest extends BaseAppTestSetup {
 	@BeforeEach
-	public void setup() {
+	void setup() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"16 - 6sqrt(2), 2 (8 - 3sqrt(2))",
-			"-16 + 6sqrt(2), 2 (-8 + 3sqrt(2))",
-			"-16 - 6sqrt(2), -2 (8 + 3sqrt(2))",
-			"2sqrt(3) + 2sqrt(4), 2 (1 + sqrt(3))",
-			"2sqrt(4) + 2sqrt(3), 2 (2 + sqrt(3))",
-			"2sqrt(6) + 2sqrt(3), 2 (sqrt(6) + sqrt(3))",
-			"2sqrt(6) + 4sqrt(3), 2 (sqrt(6) + 2sqrt(3))",
-			"5sqrt(10) + 5sqrt(2), 5 (sqrt(10) + sqrt(2))",
-			"-5sqrt(10) + 5sqrt(2), 5 (-sqrt(10) + sqrt(2))",
-			"5sqrt(10) - 5sqrt(2), 5 (sqrt(10) - sqrt(2))",
-			"-5sqrt(10) - 5sqrt(2), -5 (sqrt(10) + sqrt(2))",
+		"16 - 6sqrt(2), 2 (8 - 3sqrt(2))",
+		"-16 + 6sqrt(2), 2 (-8 + 3sqrt(2))",
+		"-16 - 6sqrt(2), -2 (8 + 3sqrt(2))",
+		"2sqrt(3) + 2sqrt(4), 2 (1 + sqrt(3))",
+		"2sqrt(4) + 2sqrt(3), 2 (2 + sqrt(3))",
+		"2sqrt(6) + 2sqrt(3), 2 (sqrt(6) + sqrt(3))",
+		"2sqrt(6) + 4sqrt(3), 2 (sqrt(6) + 2sqrt(3))",
+		"5sqrt(10) + 5sqrt(2), 5 (sqrt(10) + sqrt(2))",
+		"-5sqrt(10) + 5sqrt(2), 5 (-sqrt(10) + sqrt(2))",
+		"5sqrt(10) - 5sqrt(2), 5 (sqrt(10) - sqrt(2))",
+		"-5sqrt(10) - 5sqrt(2), -5 (sqrt(10) + sqrt(2))",
 	})
 	void testFactorOut(String definition, String expected) {
 		SurdAddition surdAddition = newTag(definition);
@@ -63,45 +63,41 @@ public class SurdAdditionTest extends BaseAppTestSetup {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"1 + sqrt(2)",
-			"1 - sqrt(2)"
-	})
+	@ValueSource(strings = {"1 + sqrt(2)", "1 - sqrt(2)"})
 	void factorOutShouldHaveNoEffect(String definition) {
 		assertNull(newTag(definition).factorOut());
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"-1, 3 + sqrt(2), -(3 + sqrt(2))",
-			"-1, -3 - sqrt(2), 3 + sqrt(2)",
-			"-1, -3 + sqrt(2), 3 - sqrt(2)",
-			"3, 3 + sqrt(2), 9 + 3sqrt(2)",
-			"-3, 3 + sqrt(2), -(9 + 3sqrt(2))",
-			"-3, -3 + sqrt(2), 9 - 3sqrt(2)",
-			"-3, -3 - sqrt(2), 9 + 3sqrt(2)",
+		"-1, 3 + sqrt(2), -(3 + sqrt(2))",
+		"-1, -3 - sqrt(2), 3 + sqrt(2)",
+		"-1, -3 + sqrt(2), 3 - sqrt(2)",
+		"3, 3 + sqrt(2), 9 + 3sqrt(2)",
+		"-3, 3 + sqrt(2), -(9 + 3sqrt(2))",
+		"-3, -3 + sqrt(2), 9 - 3sqrt(2)",
+		"-3, -3 - sqrt(2), 9 + 3sqrt(2)",
 	})
-	public void testMultiply(int multiplier, String definition, String expected) {
+	void testMultiply(int multiplier, String definition, String expected) {
 		SurdAddition tag = newTag(definition);
 		assertEquals(expected, tag.multiply(multiplier).toString(StringTemplate.defaultTemplate));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"sqrt(3), 3 + sqrt(2), 3sqrt(3) + sqrt(6)",
-			"sqrt(3), sqrt(2) + 3, sqrt(6) + 3sqrt(3)",
-			"2sqrt(3), sqrt(2) + 3, 2sqrt(6) + 6sqrt(3)",
+		"sqrt(3), 3 + sqrt(2), 3sqrt(3) + sqrt(6)",
+		"sqrt(3), sqrt(2) + 3, sqrt(6) + 3sqrt(3)",
+		"2sqrt(3), sqrt(2) + 3, 2sqrt(6) + 6sqrt(3)",
 	})
-	public void testMultiplyWithExpression(String multiplierDef, String definition,
-			String expected) {
+	void testMultiplyWithExpression(String multiplierDef, String definition, String expected) {
 		SurdAddition tag = newTag(definition);
 		GeoElementND multiplier = evaluateGeoElement(multiplierDef);
-		ExpressionNode expectedResult = evaluateGeoElement(definition).getDefinition()
-				.multiply(multiplier);
+		ExpressionNode expectedResult =
+				evaluateGeoElement(definition).getDefinition().multiply(multiplier);
 		ExpressionValue ev = tag.multiply(multiplier.getDefinition());
-		assertAll(() -> assertEquals(expected, ev.toString(StringTemplate.defaultTemplate)),
-				() -> assertEquals(expectedResult.evaluateDouble(), ev.evaluateDouble(),
-						Kernel.STANDARD_PRECISION));
-
+		assertAll(
+				() -> assertEquals(expected, ev.toString(StringTemplate.defaultTemplate)),
+				() -> assertEquals(
+						expectedResult.evaluateDouble(), ev.evaluateDouble(), Kernel.STANDARD_PRECISION));
 	}
 }

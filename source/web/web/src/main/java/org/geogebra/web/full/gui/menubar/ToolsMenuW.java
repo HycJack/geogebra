@@ -30,7 +30,7 @@ import org.geogebra.web.shared.components.dialog.DialogData;
 /**
  * Web implementation of ToolsMenu
  */
-public class ToolsMenuW extends Submenu {
+public final class ToolsMenuW extends Submenu {
 
 	private final ExamController examController;
 
@@ -50,7 +50,7 @@ public class ToolsMenuW extends Submenu {
 	/**
 	 * Initialize the menu items
 	 */
-	protected void initActions() {
+	private void initActions() {
 		Localization loc = getApp().getLocalization();
 		if (examController.isIdle()) {
 			addItem(MainMenu.getMenuBarItem(
@@ -59,7 +59,7 @@ public class ToolsMenuW extends Submenu {
 					new MenuCommand(getApp()) {
 
 						@Override
-						public void doExecute() {
+						void doExecute() {
 							getApp().showCustomizeToolbarGUI();
 						}
 					}));
@@ -67,30 +67,26 @@ public class ToolsMenuW extends Submenu {
 
 		addItem(MainMenu.getMenuBarItem(
 				MaterialDesignResources.INSTANCE.tools_create_black(),
-				loc.getMenu(getApp().isOpenedForMacroEditing() ? "Tool.SaveAs"
-						: "Tool.CreateNew"),
+				loc.getMenu(getApp().isOpenedForMacroEditing() ? "Tool.SaveAs" : "Tool.CreateNew"),
 				new MenuCommand(getApp()) {
 
 					@Override
-					public void doExecute() {
-						ToolCreationDialogW toolCreationDialog = new ToolCreationDialogW(
-								getApp());
+					void doExecute() {
+						ToolCreationDialogW toolCreationDialog = new ToolCreationDialogW(getApp());
 						toolCreationDialog.center();
 					}
 				}));
 
 		if (examController.isIdle()) {
-			addItem(MainMenu
-					.getMenuBarItem(
-							MaterialDesignResources.INSTANCE.tools_black(),
-							loc.getMenu("Tool.Manage"),
+			addItem(MainMenu.getMenuBarItem(
+					MaterialDesignResources.INSTANCE.tools_black(),
+					loc.getMenu("Tool.Manage"),
 					new MenuCommand(getApp()) {
 
 						@Override
-						public void doExecute() {
+						void doExecute() {
 							DialogData data = new DialogData("Tool.Manage", "Close", null);
-							ToolManagerDialogW toolManageDialog = new ToolManagerDialogW(
-									getApp(), data);
+							ToolManagerDialogW toolManageDialog = new ToolManagerDialogW(getApp(), data);
 							toolManageDialog.show();
 						}
 					}));
@@ -118,5 +114,4 @@ public class ToolsMenuW extends Submenu {
 	protected String getTitleTranslationKey() {
 		return "Tools";
 	}
-
 }

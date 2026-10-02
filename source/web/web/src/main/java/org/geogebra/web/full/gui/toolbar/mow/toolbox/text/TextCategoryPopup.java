@@ -31,7 +31,7 @@ import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.main.toolbox.ToolboxIcon;
 
-public class TextCategoryPopup extends GPopupMenuW implements SetLabels {
+public final class TextCategoryPopup extends GPopupMenuW implements SetLabels {
 	private final IconButton textButton;
 	private int lastSelectedMode = -1;
 	private final List<Integer> tools;
@@ -49,7 +49,7 @@ public class TextCategoryPopup extends GPopupMenuW implements SetLabels {
 	}
 
 	private void buildGui(List<Integer> tools) {
-		for (int mode: tools) {
+		for (int mode : tools) {
 			addItem(mode);
 		}
 

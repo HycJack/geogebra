@@ -100,7 +100,8 @@ public class CharacterNode extends Node {
 	 * @return whether this is one of ;,:
 	 */
 	public boolean isSeparator() {
-		return template.getUnicode() == ',' || template.getUnicode() == ';'
+		return template.getUnicode() == ','
+				|| template.getUnicode() == ';'
 				|| template.getUnicode() == ':';
 	}
 
@@ -119,19 +120,24 @@ public class CharacterNode extends Node {
 		return isOperator() || isSeparator() || Character.isSpace(template.getUnicode());
 	}
 
+	/**
+	 * @return whether this character is the Unicode multiplication or division sign
+	 */
 	public boolean isUnicodeMulOrDiv() {
-		return template.getUnicode() == Unicode.DIVIDE
-				|| template.getUnicode() == Unicode.MULTIPLY;
+		return template.getUnicode() == Unicode.DIVIDE || template.getUnicode() == Unicode.MULTIPLY;
 	}
 
+	/**
+	 * @return Unicode representation of this character
+	 */
 	public String getUnicodeString() {
 		return template.getUnicodeString();
 	}
 
 	/**
-	 * Try to merge unicode characters
+	 * Try to merge Unicode characters
 	 * @param s string to append
-	 * @return whether result is a single unicode character
+	 * @return whether result is a single Unicode character
 	 */
 	public boolean mergeUnicode(String s) {
 		if (ZERO_WIDTH_JOINER.equals(s) // zero width joiner
@@ -162,10 +168,16 @@ public class CharacterNode extends Node {
 		return template.getUnicode() == ',' || template.getUnicode() == Unicode.verticalLine;
 	}
 
+	/**
+	 * @return whether this character is a letter
+	 */
 	public boolean isLetter() {
 		return org.geogebra.editor.share.input.Character.isLetter(template.getUnicode());
 	}
 
+	/**
+	 * @return whether this character is a digit
+	 */
 	public boolean isDigit() {
 		return Character.isDigit(template.getUnicode());
 	}

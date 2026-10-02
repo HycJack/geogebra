@@ -16,7 +16,7 @@
 
 package org.geogebra.common.properties.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,20 +27,20 @@ import org.geogebra.common.properties.Property;
 import org.geogebra.common.properties.PropertyValueObserver;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.impl.collections.AbstractPropertyCollection;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PropertyArrayValueObservingTest extends BaseUnitTest {
+class PropertyArrayValueObservingTest extends BaseUnitTest {
 	private final List<Object> observedValueChanges = new ArrayList<>();
-	private final PropertyValueObserver<?> propertyValueObserver = property ->
-			observedValueChanges.add(property.getValue());
+	private final PropertyValueObserver<?> propertyValueObserver =
+			property -> observedValueChanges.add(property.getValue());
 
 	@Test
-	public void testObserverRegisteredForNestedProperties() {
+	void testObserverRegisteredForNestedProperties() {
 		TestValuedProperty testValuedProperty = new TestValuedProperty(getLocalization());
 		TestPropertyCollection testPropertyCollection =
 				new TestPropertyCollection(getLocalization(), testValuedProperty);
 		PropertyArrayValueObserving.addObserver(
-				new Property[]{testPropertyCollection}, propertyValueObserver);
+				new Property[] {testPropertyCollection}, propertyValueObserver);
 
 		testValuedProperty.setValue(3);
 		testValuedProperty.setValue(4);
@@ -50,14 +50,14 @@ public class PropertyArrayValueObservingTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testObserverRegisteredForDoubleNestedProperties() {
+	void testObserverRegisteredForDoubleNestedProperties() {
 		TestValuedProperty testValuedProperty = new TestValuedProperty(getLocalization());
 		TestPropertyCollection innerCollection =
 				new TestPropertyCollection(getLocalization(), testValuedProperty);
 		TestPropertyCollection outerCollection =
 				new TestPropertyCollection(getLocalization(), innerCollection);
 		PropertyArrayValueObserving.addObserver(
-				new Property[]{outerCollection}, propertyValueObserver);
+				new Property[] {outerCollection}, propertyValueObserver);
 
 		testValuedProperty.setValue(5);
 		testValuedProperty.setValue(12);
@@ -67,10 +67,10 @@ public class PropertyArrayValueObservingTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testObserverRegisteredForDirectProperties() {
+	void testObserverRegisteredForDirectProperties() {
 		TestValuedProperty testValuedProperty = new TestValuedProperty(getLocalization());
 		PropertyArrayValueObserving.addObserver(
-				new Property[]{ testValuedProperty }, propertyValueObserver);
+				new Property[] {testValuedProperty}, propertyValueObserver);
 
 		testValuedProperty.setValue(34);
 		testValuedProperty.setValue(55);

@@ -16,8 +16,6 @@
 
 package org.geogebra.common.util.clipper;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 class OutRec {
 	int Idx;
 
@@ -36,20 +34,17 @@ class OutRec {
 		}
 		double a = 0;
 		do {
-			a = a + (op.prev.getPt().getX() + op.getPt().getX())
-					* (op.prev.getPt().getY() - op.getPt().getY());
+			a = a
+					+ (op.prev.getPt().getX() + op.getPt().getX())
+							* (op.prev.getPt().getY() - op.getPt().getY());
 			op = op.next;
 		} while (op != pts);
 		return a * 0.5;
 	}
 
-	@SuppressFBWarnings(value = "SA_FIELD_SELF_ASSIGNMENT",
-			justification = "https://github.com/spotbugs/spotbugs/issues/2258")
 	void fixHoleLinkage() {
-		// skip if an outermost polygon or
-		// already already points to the correct FirstLeft ...
-		if (firstLeft == null
-				|| isHole != firstLeft.isHole && firstLeft.pts != null) {
+		// skip if an outermost polygon or already points to the correct FirstLeft ...
+		if (firstLeft == null || isHole != firstLeft.isHole && firstLeft.pts != null) {
 			return;
 		}
 
@@ -75,5 +70,4 @@ class OutRec {
 		}
 		return ret;
 	}
-
 }

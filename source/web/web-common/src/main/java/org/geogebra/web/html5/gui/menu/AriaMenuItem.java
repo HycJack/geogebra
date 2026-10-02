@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.util.AttributedString;
 import org.geogebra.common.util.Range;
 import org.geogebra.web.html5.gui.util.HasResource;
@@ -33,6 +31,7 @@ import org.gwtproject.dom.client.Document;
 import org.gwtproject.resources.client.ResourcePrototype;
 import org.gwtproject.user.client.ui.SimplePanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Element;
@@ -70,8 +69,8 @@ public class AriaMenuItem extends SimplePanel implements HasResource {
 	 * @param icon icon
 	 * @param cmd item action
 	 */
-	public AriaMenuItem(AttributedString text, @CheckForNull ResourcePrototype icon,
-			ScheduledCommand cmd) {
+	public AriaMenuItem(
+			AttributedString text, @Nullable ResourcePrototype icon, ScheduledCommand cmd) {
 		this();
 		Set<Range> attribute = text.getAttribute(AttributedString.Attribute.Subscript);
 		setHTMLContent(addSubscript(text.getRawValue(), attribute), icon);
@@ -81,7 +80,7 @@ public class AriaMenuItem extends SimplePanel implements HasResource {
 	private Node addSubscript(String rawValue, Set<Range> attribute) {
 		List<Integer> splits = new ArrayList<>();
 		splits.add(0);
-		for (Range range: attribute) {
+		for (Range range : attribute) {
 			splits.add(range.getStart());
 			splits.add(range.getEnd());
 		}
@@ -168,26 +167,26 @@ public class AriaMenuItem extends SimplePanel implements HasResource {
 	 * @param text content
 	 * @param icon icon
 	 */
-	private void setContent(String text, @CheckForNull ResourcePrototype icon) {
+	private void setContent(String text, @Nullable ResourcePrototype icon) {
 		this.textNode = DomGlobal.document.createTextNode(text == null ? "" : text);
 		setHTMLContent(textNode, icon);
 	}
 
 	private void setHTMLContent(Node textNode, ResourcePrototype icon) {
 		getElement().removeAllChildren();
-		try {
-			Element el = Js.uncheckedCast(getElement());
-			if (icon != null) {
-				img = Js.uncheckedCast(DomGlobal.document.createElement("img"));
-				img.setAttribute("src", NoDragImage.safeURI(icon));
-				img.setAttribute("draggable", "false");
-				img.classList.add("menuImg");
-				el.appendChild(img);
-			}
-			el.appendChild(textNode);
-		} catch (ClassCastException ex) {
-			// mockito
+		Element el = castElement(getElement());
+		if (icon != null) {
+			img = Js.uncheckedCast(DomGlobal.document.createElement("img"));
+			img.setAttribute("src", NoDragImage.safeURI(icon));
+			img.setAttribute("draggable", "false");
+			img.classList.add("menuImg");
+			el.appendChild(img);
 		}
+		el.appendChild(textNode);
+	}
+
+	private Element castElement(Object element) {
+		return Js.uncheckedCast(element);
 	}
 
 	/**
@@ -197,25 +196,20 @@ public class AriaMenuItem extends SimplePanel implements HasResource {
 	private void setContent(String text, IconSpec icon) {
 		getElement().removeAllChildren();
 		this.textNode = DomGlobal.document.createTextNode(text);
-		try {
-			Element el = Js.uncheckedCast(getElement());
-			if (icon != null) {
-				img = Js.uncheckedCast(DomGlobal.document.createElement("img"));
-				if (icon instanceof ImageIconSpec) {
-					img.setAttribute("src", NoDragImage.safeURI(((ImageIconSpec) icon).getImage()));
-					img.setAttribute("draggable", "false");
-					img.classList.add("menuImg");
-					el.appendChild(img);
-				} else {
-					Element iconElem = Js.uncheckedCast(icon.toElement());
-					el.insertAdjacentElement("afterbegin", iconElem);
-				}
-
+		Element el = castElement(getElement());
+		if (icon != null) {
+			img = Js.uncheckedCast(DomGlobal.document.createElement("img"));
+			if (icon instanceof ImageIconSpec) {
+				img.setAttribute("src", NoDragImage.safeURI(((ImageIconSpec) icon).getImage()));
+				img.setAttribute("draggable", "false");
+				img.classList.add("menuImg");
+				el.appendChild(img);
+			} else {
+				Element iconElem = castElement(icon.toElement());
+				el.insertAdjacentElement("afterbegin", iconElem);
 			}
-			el.appendChild(textNode);
-		} catch (ClassCastException ex) {
-			// mockito
 		}
+		el.appendChild(textNode);
 	}
 
 	/**
@@ -251,6 +245,9 @@ public class AriaMenuItem extends SimplePanel implements HasResource {
 		return submenu;
 	}
 
+	/**
+	 * @return text content
+	 */
 	public String getText() {
 		return getElement().getInnerText();
 	}

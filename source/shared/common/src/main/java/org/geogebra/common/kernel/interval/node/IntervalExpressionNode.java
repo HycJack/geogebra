@@ -52,8 +52,8 @@ public class IntervalExpressionNode implements IntervalNode {
 	 * @param left subtree.
 	 * @param operation on left.
 	 */
-	public IntervalExpressionNode(IntervalNodeEvaluator evaluator, IntervalNode left,
-			IntervalOperation operation) {
+	public IntervalExpressionNode(
+			IntervalNodeEvaluator evaluator, IntervalNode left, IntervalOperation operation) {
 		this(evaluator, left, operation, null);
 	}
 
@@ -63,7 +63,9 @@ public class IntervalExpressionNode implements IntervalNode {
 	 * @param left subtree.
 	 * @param operation on left.
 	 */
-	public IntervalExpressionNode(IntervalNodeEvaluator evaluator, IntervalNode left,
+	public IntervalExpressionNode(
+			IntervalNodeEvaluator evaluator,
+			IntervalNode left,
 			IntervalOperation operation,
 			IntervalNode right) {
 		this.evaluator = evaluator;
@@ -102,8 +104,7 @@ public class IntervalExpressionNode implements IntervalNode {
 
 	@Override
 	public boolean hasFunctionVariable() {
-		return hasLeft() && left.hasFunctionVariable()
-				|| hasRight() && right.hasFunctionVariable();
+		return hasLeft() && left.hasFunctionVariable() || hasRight() && right.hasFunctionVariable();
 	}
 
 	@Override
@@ -113,6 +114,16 @@ public class IntervalExpressionNode implements IntervalNode {
 		}
 		if (right != null) {
 			right = right.simplify();
+		}
+		if (isOperation(IntervalOperation.LOG) && left instanceof IntervalExpressionNode) {
+			IntervalExpressionNode node = left.asExpressionNode();
+			if (node.isOperation(IntervalOperation.EXP)) {
+				return node.getLeft();
+			}
+			if (node.isOperation(IntervalOperation.POWER)
+					&& IntervalConstants.E.almostEqual(node.getLeft().value(), 0)) {
+				return node.getRight();
+			}
 		}
 		// fractions can't be simplified because x^(1/3) is not x^(0.33)
 		if (left instanceof IntervalFunctionValue

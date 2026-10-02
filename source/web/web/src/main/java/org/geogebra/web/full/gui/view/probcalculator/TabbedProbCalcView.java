@@ -17,28 +17,28 @@
 package org.geogebra.web.full.gui.view.probcalculator;
 
 import org.geogebra.common.gui.view.probcalculator.StatisticsCalculator;
-import org.geogebra.common.main.App;
 import org.geogebra.common.ownership.GlobalScope;
 import org.geogebra.web.full.css.MaterialDesignResources;
+import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.IconButton;
 import org.geogebra.web.full.javax.swing.GPopupMenuW;
 import org.geogebra.web.html5.gui.menu.AriaMenuItem;
-import org.geogebra.web.html5.gui.util.ToggleButton;
+import org.geogebra.web.html5.gui.view.ImageIconSpec;
 import org.geogebra.web.html5.main.AppW;
+import org.geogebra.web.shared.components.tab.ComponentTab;
+import org.geogebra.web.shared.components.tab.TabData;
 import org.gwtproject.core.client.Scheduler;
-import org.gwtproject.dom.style.shared.Unit;
-import org.gwtproject.event.dom.client.ClickEvent;
-import org.gwtproject.event.dom.client.ClickHandler;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
-import org.gwtproject.user.client.ui.TabLayoutPanel;
+import org.jspecify.annotations.Nullable;
 
-public class TabbedProbCalcView extends ProbabilityCalculatorViewW {
-	private final ProbCalcTabLayoutPanel tabbedPane;
-	protected final StatisticsCalculatorW statCalculator;
-	protected FlowPanel plotSplitPane;
-	protected FlowPanel mainSplitPane;
+public final class TabbedProbCalcView extends ProbabilityCalculatorViewW {
+	private ComponentTab probabilityTab;
+	private final StatisticsCalculatorW statCalculator;
+	private DistributionPanel distrPanel;
+	private FlowPanel plotSplitPane;
+	private @Nullable FlowPanel mainSplitPane;
 	private Label lblMeanSigma;
-	private static final int CONTROL_PANEL_HEIGHT = 180;
+	private static final int CONTROL_PANEL_HEIGHT = 300;
 	private static final int TABLE_PADDING_AND_SCROLLBAR = 32;
 	private static final int DEFAULT_MENU_WIDTH = 208;
 	private static final int BTN_SIZE = 36; // includes margin
@@ -49,35 +49,39 @@ public class TabbedProbCalcView extends ProbabilityCalculatorViewW {
 	 */
 	public TabbedProbCalcView(AppW app) {
 		super(app);
-		//table panel
+		// table panel
 		setTable(new ProbabilityTableW(app, this));
 		buildButtons();
+		settingsChanged(getApp().getSettings().getProbCalcSettings());
 		buildProbCalcPanel();
 		isIniting = false;
 		statCalculator = new StatisticsCalculatorW(app);
-		tabbedPane = new ProbCalcTabLayoutPanel();
-		tabbedPane.add(probCalcPanel, loc.getMenu("Distribution"));
-		tabbedPane.add(statCalculator.getWrappedPanel(),
-				loc.getMenu("Statistics"));
 
-		tabbedPane.onResize();
-		tabbedPane.selectTab(getApp().getSettings().getProbCalcSettings()
-				.getCollection().isActive() ? 1 : 0);
+		buildTab();
 		init();
 	}
 
+	private void buildTab() {
+		TabData distributionTab = new TabData("Distribution", probCalcPanel);
+		TabData statisticsTab = new TabData("Statistics", statCalculator.getWrappedPanel());
+		probabilityTab = new ComponentTab((AppW) app, "", distributionTab, statisticsTab);
+		probabilityTab.addStyleName("probabilityTab");
+		probabilityTab.switchToTab(
+				getApp().getSettings().getProbCalcSettings().getCollection().isActive() ? 1 : 0);
+	}
+
 	private void buildButtons() {
-		lblMeanSigma = new Label();
-		lblMeanSigma.addStyleName("lblMeanSigma");
-		plotPanelOptions.add(lblMeanSigma);
 		if (!GlobalScope.isExamActive(app)) {
-			ToggleButton btnExport = createExportMenu();
+			IconButton btnExport = createExportMenu();
 			btnExport.addStyleName("probCalcStylbarBtn");
 			plotPanelOptions.add(btnExport);
 		}
+		lblMeanSigma = new Label();
+		lblMeanSigma.addStyleName("lblMeanSigma");
+		plotPanelOptions.add(lblMeanSigma);
 	}
 
-	private ToggleButton createExportMenu() {
+	private IconButton createExportMenu() {
 		GPopupMenuW menuExport = new GPopupMenuW((AppW) app, true);
 		menuExport.getPopupMenu().addStyleName("probCalcStylbarBtn");
 
@@ -87,8 +91,11 @@ public class TabbedProbCalcView extends ProbabilityCalculatorViewW {
 		if (((AppW) app).getLAF().copyToClipboardSupported()) {
 			addExportItem(menuExport, "ExportAsPicture", this::showExportDialog);
 		}
-		ToggleButton btnExport = new ToggleButton(MaterialDesignResources.INSTANCE
-				.prob_calc_export());
+		IconButton btnExport = new IconButton(
+				(AppW) app,
+				null,
+				new ImageIconSpec(MaterialDesignResources.INSTANCE.signout_black()),
+				null);
 		btnExport.addFastClickHandler(e -> {
 			if (menuExport.isMenuShown()) {
 				menuExport.hide();
@@ -97,49 +104,36 @@ public class TabbedProbCalcView extends ProbabilityCalculatorViewW {
 			}
 		});
 		menuExport.getPopupPanel().addAutoHidePartner(btnExport.getElement());
-		menuExport.getPopupPanel().addCloseHandler(i -> btnExport.setSelected(false));
+		menuExport.getPopupPanel().addCloseHandler(i -> btnExport.setActive(false));
 		return btnExport;
 	}
 
 	private void showExportDialog() {
 		String url = getPlotPanel().getExportImageDataUrl(3, true, false);
-		((AppW) getApp()).getFileManager().showExportAsPictureDialog(url,
-				getApp().getExportTitle(), "png", "ExportAsPicture", getApp());
+		((AppW) getApp())
+				.getFileManager()
+				.showExportAsPictureDialog(
+						url, getApp().getExportTitle(), "png", "ExportAsPicture", getApp());
 	}
 
-	private void addExportItem(GPopupMenuW exportMenu, String title,
-			Scheduler.ScheduledCommand copyCmd) {
+	private void addExportItem(
+			GPopupMenuW exportMenu, String title, Scheduler.ScheduledCommand copyCmd) {
 		AriaMenuItem item = new AriaMenuItem(loc.getMenu(title), null, copyCmd);
 		item.addStyleName("no-image");
 		exportMenu.addItem(item);
 	}
 
-	private class ProbCalcTabLayoutPanel extends TabLayoutPanel implements ClickHandler {
-
-		public ProbCalcTabLayoutPanel() {
-			super(30, Unit.PX);
-			this.addDomHandler(this, ClickEvent.getType());
-		}
-
-		@Override
-		public final void onResize() {
-			tabResized();
-		}
-
-		@Override
-		public void onClick(ClickEvent event) {
-			getApp().setActiveView(App.VIEW_PROBABILITY_CALCULATOR);
-		}
-	}
-
 	@Override
 	public void tabResized() {
 		ProbabilityTableW table = (ProbabilityTableW) getTable();
-		int tableWidth = isDiscreteProbability() && table != null ? table.getStatTable()
-				.getTable().getOffsetWidth() + TABLE_PADDING_AND_SCROLLBAR : 0;
-		int width = mainSplitPane.getOffsetWidth()
-				- tableWidth
-				- 5;
+		if (mainSplitPane == null) {
+			return;
+		}
+		int totalWidth = mainSplitPane.getOffsetWidth();
+		int tableWidth = isDiscreteProbability() && table != null
+				? table.getStatTable().getTable().getOffsetWidth() + TABLE_PADDING_AND_SCROLLBAR
+				: 0;
+		int width = totalWidth - tableWidth - 5;
 		int height = probCalcPanel.getOffsetHeight() - 20;
 		if (width > 0) {
 			resizePlotPanel(width, height - CONTROL_PANEL_HEIGHT);
@@ -147,8 +141,7 @@ public class TabbedProbCalcView extends ProbabilityCalculatorViewW {
 		}
 
 		if (height > 0 && isDiscreteProbability() && table != null) {
-			table.getWrappedPanel()
-					.setPixelSize(tableWidth, height);
+			table.getWrappedPanel().setPixelSize(tableWidth, height);
 		}
 	}
 
@@ -157,20 +150,20 @@ public class TabbedProbCalcView extends ProbabilityCalculatorViewW {
 	 */
 	@Override
 	public boolean isDistributionTabOpen() {
-		return tabbedPane.getSelectedIndex() == 0;
+		return probabilityTab.getSelectedTabIdx() == 0;
 	}
 
 	@Override
 	public void setLabels() {
 		super.setLabels();
 		statCalculator.setLabels();
-		tabbedPane.setTabText(0, loc.getMenu("Distribution"));
-		tabbedPane.setTabText(1, loc.getMenu("Statistics"));
+		distrPanel.rebuild();
+		probabilityTab.setLabels();
 	}
 
 	@Override
-	public TabLayoutPanel getWrapperPanel() {
-		return tabbedPane;
+	public ComponentTab getWrapperPanel() {
+		return probabilityTab;
 	}
 
 	@Override
@@ -178,35 +171,34 @@ public class TabbedProbCalcView extends ProbabilityCalculatorViewW {
 		return statCalculator;
 	}
 
-	protected void buildProbCalcPanel() {
-		DistributionPanel distrPanel = new DistributionPanel(this, loc);
-		distrPanel.addStyleName("distrPanelClassic");
-		setDistributionPanel(distrPanel);
+	private void buildProbCalcPanel() {
+		distrPanel = new DistributionPanel(this, (AppW) app);
 		plotSplitPane = new FlowPanel();
 		plotSplitPane.add(plotPanelPlus);
 		plotSplitPane.add(distrPanel);
 		plotSplitPane.addStyleName("plotSplitPane");
-		mainSplitPane = new FlowPanel();
-		mainSplitPane.addStyleName("mainSplitPanel");
-		mainSplitPane.add(plotSplitPane);
+		FlowPanel mainPane = new FlowPanel();
+		mainPane.addStyleName("mainSplitPanel");
+		mainPane.add(plotSplitPane);
+		this.mainSplitPane = mainPane;
 
 		probCalcPanel = new FlowPanel();
-		probCalcPanel.addStyleName("ProbCalcPanel");
-		probCalcPanel.add(mainSplitPane);
+		probCalcPanel.addStyleName("ProbCalcPanel tabPanel");
+		probCalcPanel.add(mainPane);
 	}
 
 	@Override
 	protected void addRemoveTable(boolean showTable) {
 		ProbabilityTableW table = (ProbabilityTableW) getTable();
-		if (table != null) {
+		if (table != null && mainSplitPane != null) {
 			FlowPanel tablePanel = table.getWrappedPanel();
 			if (showTable) {
 				mainSplitPane.add(tablePanel);
 			} else {
 				mainSplitPane.remove(tablePanel);
 			}
+			tabResized();
 		}
-		tabResized();
 	}
 
 	@Override

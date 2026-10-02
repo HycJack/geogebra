@@ -29,7 +29,7 @@ import org.gwtproject.user.client.ui.Widget;
 
 import elemental2.dom.KeyboardEvent;
 
-public class ComponentConnectedButtonGroup extends FlowPanel
+public final class ComponentConnectedButtonGroup extends FlowPanel
 		implements ConfigurationUpdateDelegate, VisibilityUpdateDelegate {
 	private final ConnectedButtonGroup connectedButtonGroupProperty;
 	private StandardButton selectedButton;
@@ -40,8 +40,8 @@ public class ComponentConnectedButtonGroup extends FlowPanel
 	 * @param connectedButtonGroupProperty {@link ConnectedButtonGroup}
 	 * @param widgets list of focusable widgets
 	 */
-	public ComponentConnectedButtonGroup(ConnectedButtonGroup connectedButtonGroupProperty,
-			List<Widget> widgets) {
+	public ComponentConnectedButtonGroup(
+			ConnectedButtonGroup connectedButtonGroupProperty, List<Widget> widgets) {
 		this.connectedButtonGroupProperty = connectedButtonGroupProperty;
 		addStyleName("connectedButtonGroup");
 		buildConnectedButtonGroup();
@@ -55,7 +55,7 @@ public class ComponentConnectedButtonGroup extends FlowPanel
 		AriaHelper.setRole(this, "radiogroup");
 
 		widgets.addAll(buttonList);
-		Dom.addEventListener(getElement(),  "keydown", event -> {
+		Dom.addEventListener(getElement(), "keydown", event -> {
 			KeyboardEvent e = (KeyboardEvent) event;
 			if ("ArrowLeft".equals(e.code) || "ArrowRight".equals(e.code)) {
 				moveTabSelection("ArrowLeft".equals(e.code) ? -1 : 1);

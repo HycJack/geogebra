@@ -22,14 +22,13 @@ import static org.geogebra.common.properties.impl.objects.HatchingAngleProperty.
 
 import java.util.Objects;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.ChartStyleGeo;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.impl.AbstractRangeProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting the hatching angle
@@ -47,8 +46,9 @@ public final class ChartSegmentHatchingAngleProperty extends AbstractRangeProper
 	 * @param chartSegmentSelection the selection from which to read the selected bar/slice index
 	 * @throws NotApplicablePropertyException if the property is not applicable for the given element
 	 */
-	public ChartSegmentHatchingAngleProperty(Localization localization, GeoElement geoElement,
-			ChartSegmentSelection chartSegmentSelection) throws NotApplicablePropertyException {
+	public ChartSegmentHatchingAngleProperty(
+			Localization localization, GeoElement geoElement, ChartSegmentSelection chartSegmentSelection)
+			throws NotApplicablePropertyException {
 		super(localization, "Angle", 0, null, null);
 		if (!(geoElement instanceof ChartStyleGeo chartStyleGeo)) {
 			throw new NotApplicablePropertyException(geoElement);
@@ -59,15 +59,16 @@ public final class ChartSegmentHatchingAngleProperty extends AbstractRangeProper
 
 	@Override
 	protected void setValueSafe(Integer value) {
-		chartSegmentSelection.forEachSelectedSegment(chartStyleGeo.getIntervals(),
+		chartSegmentSelection.forEachSelectedSegment(
+				chartStyleGeo.getIntervals(),
 				index -> chartStyleGeo.getStyle().setBarHatchAngle(value, index));
 		((GeoElement) chartStyleGeo).updateVisualStyleRepaint(GProperty.HATCHING);
 	}
 
 	@Override
 	public Integer getValue() {
-		return chartSegmentSelection.getFirstValue(chartStyleGeo.getIntervals(),
-				this::getSegmentHatchingAngle);
+		return chartSegmentSelection.getFirstValue(
+				chartStyleGeo.getIntervals(), this::getSegmentHatchingAngle);
 	}
 
 	private int getSegmentHatchingAngle(int index) {
@@ -80,25 +81,32 @@ public final class ChartSegmentHatchingAngleProperty extends AbstractRangeProper
 
 	@Override
 	public boolean isAvailable() {
-		return  Boolean.TRUE.equals(chartSegmentSelection.getUniformValueOrNull(
-				chartStyleGeo.getIntervals(), index -> supportedHatchingAngleFillTypes.contains(
+		return Boolean.TRUE.equals(chartSegmentSelection.getUniformValueOrNull(
+				chartStyleGeo.getIntervals(),
+				index -> supportedHatchingAngleFillTypes.contains(
 						chartStyleGeo.getStyle().getBarFillType(index))));
 	}
 
 	@Override
 	public Integer getMax() {
-		return chartSegmentSelection.mapSelectedSegments(chartStyleGeo.getIntervals(),
-				index -> getMaxHatchingAngleValue(chartStyleGeo.getStyle().getBarFillType(index)))
+		return chartSegmentSelection
+				.mapSelectedSegments(
+						chartStyleGeo.getIntervals(),
+						index -> getMaxHatchingAngleValue(chartStyleGeo.getStyle().getBarFillType(index)))
 				.filter(Objects::nonNull)
-				.min(Integer::compareTo).orElse(null);
+				.min(Integer::compareTo)
+				.orElse(null);
 	}
 
 	@Override
-	public @CheckForNull Integer getStep() {
-		return chartSegmentSelection.mapSelectedSegments(chartStyleGeo.getIntervals(),
-				index -> getHatchingAngleStep(chartStyleGeo.getStyle().getBarFillType(index)))
+	public @Nullable Integer getStep() {
+		return chartSegmentSelection
+				.mapSelectedSegments(
+						chartStyleGeo.getIntervals(),
+						index -> getHatchingAngleStep(chartStyleGeo.getStyle().getBarFillType(index)))
 				.filter(Objects::nonNull)
-				.max(Integer::compareTo).orElse(null);
+				.max(Integer::compareTo)
+				.orElse(null);
 	}
 
 	@Override

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,7 +16,7 @@
 
 package org.geogebra.common.kernel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.algos.AlgoJoinPoints;
@@ -32,7 +32,7 @@ import org.geogebra.common.kernel.geos.GeoVector;
 import org.geogebra.common.kernel.kernelND.GeoConicND;
 import org.geogebra.common.kernel.statistics.AlgoFitLineX;
 import org.geogebra.common.kernel.statistics.AlgoFitLineY;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @implNote This partially overlaps and supersedes
@@ -41,12 +41,12 @@ import org.junit.Test;
  * @See <a href="https://docs.google.com/spreadsheets/d/1nL071WJP2qu-n1LafYGLoKbcrz486PTYd8q7KgnvGhA/edit?gid=1442218852#gid=1442218852">Equation form matrix</a>
  * @See <a href="https://geogebra-jira.atlassian.net/wiki/spaces/A/pages/836141057/Standalone+Graphing">Standalone Graphing Wiki</a>
  */
-public class EquationBehaviourTest extends BaseUnitTest {
+class EquationBehaviourTest extends BaseUnitTest {
 
 	// Standalone Graphing
 
 	@Test
-	public void testStandaloneGraphingLineEquationBehaviour() {
+	void testStandaloneGraphingLineEquationBehaviour() {
 		getApp().setGraphingConfig();
 
 		// Line created from equation
@@ -74,7 +74,7 @@ public class EquationBehaviourTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testStandaloneGraphingRayEquationBehaviour() {
+	void testStandaloneGraphingRayEquationBehaviour() {
 		getApp().setGraphingConfig();
 
 		// Ray created with Ray command from two points
@@ -94,23 +94,23 @@ public class EquationBehaviourTest extends BaseUnitTest {
 	// no test for Segment command in standalone Graphing (disabled)
 
 	@Test
-	public void testStandaloneGraphingConicEquationBehaviour() {
+	void testStandaloneGraphingConicEquationBehaviour() {
 		getApp().setGraphingConfig();
 
 		// Parabola created from equation
 		GeoConic algebraParabola = (GeoConic) getElementFactory().create("y=xx");
-		assertEquals(QuadraticEquationRepresentable.Form.USER,
-				algebraParabola.getEquationForm());
+		assertEquals(QuadraticEquationRepresentable.Form.USER, algebraParabola.getEquationForm());
 
 		// Parbola command disabled in standalone Graphing
 	}
 
 	@Test
-	public void testStandaloneGraphingLineEquationBehaviourWithCustomizedConstructionDefaults() {
+	void testStandaloneGraphingLineEquationBehaviourWithCustomizedConstructionDefaults() {
 		getApp().setGraphingConfig();
 
 		// change the equation form for lines in the construction defaults
-		GeoLine constructionDefaultsLine = (GeoLine) getConstruction().getConstructionDefaults()
+		GeoLine constructionDefaultsLine = (GeoLine) getConstruction()
+				.getConstructionDefaults()
 				.getDefaultGeo(ConstructionDefaults.DEFAULT_LINE);
 		constructionDefaultsLine.setEquationForm(LinearEquationRepresentable.Form.GENERAL);
 
@@ -129,13 +129,12 @@ public class EquationBehaviourTest extends BaseUnitTest {
 	// Unrestricted Graphing (Suite)
 
 	@Test
-	public void testUnrestrictedGraphingConicEquationBehaviour() {
+	void testUnrestrictedGraphingConicEquationBehaviour() {
 		getApp().setUnrestrictedGraphingConfig();
 
 		// Parabola created from equation
 		GeoConic algebraParabola = (GeoConic) getElementFactory().create("y=xx");
-		assertEquals(QuadraticEquationRepresentable.Form.USER,
-				algebraParabola.getEquationForm());
+		assertEquals(QuadraticEquationRepresentable.Form.USER, algebraParabola.getEquationForm());
 
 		// Parabola created from point and line
 		GeoPoint center = new GeoPoint(getConstruction(), 0, 1, 0);
@@ -144,8 +143,8 @@ public class EquationBehaviourTest extends BaseUnitTest {
 		AlgoJoinPoints algoJoinPoints = new AlgoJoinPoints(getConstruction(), a, b);
 		GeoLine line = algoJoinPoints.getLine();
 
-		AlgoParabolaPointLine algoParabola = new AlgoParabolaPointLine(getConstruction(),
-				"parabola", center, line);
+		AlgoParabolaPointLine algoParabola =
+				new AlgoParabolaPointLine(getConstruction(), "parabola", center, line);
 		GeoConicND parabola = algoParabola.getParabola();
 		assertEquals(QuadraticEquationRepresentable.Form.IMPLICIT, parabola.getEquationForm());
 	}
@@ -153,7 +152,7 @@ public class EquationBehaviourTest extends BaseUnitTest {
 	// Classic
 
 	@Test
-	public void testClassicLineEquationBehaviour() {
+	void testClassicLineEquationBehaviour() {
 		getApp().setDefaultConfig(); // default app config = Classic
 
 		GeoLine algebraLine = new GeoLine(getConstruction());
@@ -168,11 +167,12 @@ public class EquationBehaviourTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testClassicLineEquationBehaviourWithCustomizedConstructionDefaults() {
+	void testClassicLineEquationBehaviourWithCustomizedConstructionDefaults() {
 		getApp().setDefaultConfig();
 
 		// change the equation form for lines in the construction defaults
-		GeoLine constructionDefaultsLine = (GeoLine) getConstruction().getConstructionDefaults()
+		GeoLine constructionDefaultsLine = (GeoLine) getConstruction()
+				.getConstructionDefaults()
 				.getDefaultGeo(ConstructionDefaults.DEFAULT_LINE);
 		constructionDefaultsLine.setEquationForm(LinearEquationRepresentable.Form.GENERAL);
 

@@ -2,18 +2,18 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.properties.impl.objects;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -35,35 +35,38 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class FixObjectPropertyTests extends BaseAppTestSetup {
+class FixObjectPropertyTests extends BaseAppTestSetup {
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)", // Free point
-			"Point(Circle((0,0), 2))", // Point on circle
-			"PointIn(Circle((0,0), 2))" // Point in circle
-	})
-	public void testSuccessfulConstruction(String input) {
+	@ValueSource(
+			strings = {
+				"(1, 2)", // Free point
+				"Point(Circle((0,0), 2))", // Point on circle
+				"PointIn(Circle((0,0), 2))" // Point in circle
+			})
+	void testSuccessfulConstruction(String input) {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoElement geoElement = evaluateGeoElement(input);
 		assertDoesNotThrow(() -> new FixObjectProperty(getLocalization(), geoElement));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"{1, 2, 3}", // List
-			"Intersect(y=x,y=-x)", // Intersect Point
-			"Point(Circle((0,0), 2), 4)" // Point on path with parameter
-	})
-	public void testConstructingNotApplicableProperty(String input) {
+	@ValueSource(
+			strings = {
+				"{1, 2, 3}", // List
+				"Intersect(y=x,y=-x)", // Intersect Point
+				"Point(Circle((0,0), 2), 4)" // Point on path with parameter
+			})
+	void testConstructingNotApplicableProperty(String input) {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoElement geoElement = evaluateGeoElement(input);
-		assertThrows(NotApplicablePropertyException.class,
+		assertThrows(
+				NotApplicablePropertyException.class,
 				() -> new FixObjectProperty(getLocalization(), geoElement));
 	}
 
 	@Test
-	public void testUndoRedo() {
+	void testUndoRedo() {
 		setupApp(SuiteSubApp.GRAPHING);
 		getKernel().setUndoActive(true);
 		getKernel().initUndoInfo();
@@ -71,8 +74,7 @@ public class FixObjectPropertyTests extends BaseAppTestSetup {
 		getApp().storeUndoInfo();
 		BooleanProperty fixObjectProperty = new GeoElementPropertiesFactory()
 				.createIsFixedObjectProperty(getLocalization(), List.of(geoPoint));
-		fixObjectProperty.addValueObserver(
-				new UndoSavingPropertyObserver(getApp().getUndoManager()));
+		fixObjectProperty.addValueObserver(new UndoSavingPropertyObserver(getApp().getUndoManager()));
 
 		fixObjectProperty.setValue(true);
 		assertTrue(getKernel().lookupLabel("A").isLocked());

@@ -25,14 +25,26 @@ import org.geogebra.common.kernel.geos.GeoPoint;
 /**
  * Finds intersection points of two functions numerically (using the roots of
  * their difference)
- * 
+ *
  * @author Hans-Petter Ulven
  * @version 10.03.2011
  */
 public class AlgoIntersectFunctions extends AlgoRoots {
 
-	public AlgoIntersectFunctions(Construction cons, String[] labels,
-			GeoFunctionable f, GeoFunctionable g, GeoNumberValue left,
+	/**
+	 * @param cons construction
+	 * @param labels output labels
+	 * @param f first function
+	 * @param g second function
+	 * @param left left bound of the interval to search in
+	 * @param right right bound of the interval to search in
+	 */
+	public AlgoIntersectFunctions(
+			Construction cons,
+			String[] labels,
+			GeoFunctionable f,
+			GeoFunctionable g,
+			GeoNumberValue left,
 			GeoNumberValue right) {
 		super(cons, labels, f, g, left, right);
 	}
@@ -42,6 +54,9 @@ public class AlgoIntersectFunctions extends AlgoRoots {
 		return Commands.Intersect;
 	}
 
+	/**
+	 * @return intersection points
+	 */
 	public GeoPoint[] getIntersectionPoints() {
 		return super.getRootPoints();
 	}

@@ -2,18 +2,18 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.geos.symbolic.matrix;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -26,47 +26,43 @@ import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.geos.GeoSymbolic;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SymbolicMatrixTest extends BaseSymbolicTest {
+class SymbolicMatrixTest extends BaseSymbolicTest {
 
 	@Test
-	public void testCreationWithLabel() {
+	void testCreationWithLabel() {
 		GeoSymbolic matrix = add("m={{1,2},{3,4}}");
 		assertThat(matrix.getTwinGeo(), CoreMatchers.<GeoElementND>instanceOf(GeoList.class));
 	}
 
 	@Test
-	public void testMatrixDefinitionForIndependent() {
+	void testMatrixDefinitionForIndependent() {
 		GeoSymbolic matrix = add("m={{1,2},{3,4}}");
-		assertThat(
-				matrix.getDefinition(StringTemplate.editTemplate),
-				equalTo("{{1, 2}, {3, 4}}"));
+		assertThat(matrix.getDefinition(StringTemplate.editTemplate), equalTo("{{1, 2}, {3, 4}}"));
 		assertThat(
 				matrix.getDefinition(StringTemplate.latexTemplate),
 				equalTo("\\left(\\begin{array}{rr}1&2\\\\3&4\\\\ \\end{array}\\right)"));
 	}
 
 	@Test
-	public void testMatrixDefinitionForDependent() {
+	void testMatrixDefinitionForDependent() {
 		add("a = 1");
 		GeoSymbolic matrix = add("m={{a,2},{3,4}}");
-		assertThat(
-				matrix.getDefinition(StringTemplate.editTemplate),
-				equalTo("{{a, 2}, {3, 4}}"));
+		assertThat(matrix.getDefinition(StringTemplate.editTemplate), equalTo("{{a, 2}, {3, 4}}"));
 		assertThat(
 				matrix.toLaTeXString(false, StringTemplate.latexTemplate),
 				equalTo("\\left(\\begin{array}{rr}1&2\\\\3&4\\\\ \\end{array}\\right)"));
 	}
 
 	@Test
-	public void testIsMatrix() {
+	void testIsMatrix() {
 		GeoSymbolic matrix = add("m={{a,b},{c,d}}");
 		assertThat(matrix.isMatrix(), is(true));
 	}
 
 	@Test
-	public void testMatrixLatexStringForDependent() {
+	void testMatrixLatexStringForDependent() {
 		GeoSymbolic vector = add("m={{a,b},{c,d}}");
 		assertThat(
 				vector.toLaTeXString(false, StringTemplate.latexTemplate),
@@ -74,7 +70,7 @@ public class SymbolicMatrixTest extends BaseSymbolicTest {
 	}
 
 	@Test
-	public void testMatrixLatexStringForDependentWithTwin() {
+	void testMatrixLatexStringForDependentWithTwin() {
 		add("b=3");
 		GeoSymbolic vector = add("m={{b,b}}");
 		assertThat(
@@ -86,7 +82,7 @@ public class SymbolicMatrixTest extends BaseSymbolicTest {
 	}
 
 	@Test
-	public void testEigenvectorsAsSymbolic() {
+	void testEigenvectorsAsSymbolic() {
 		GeoSymbolic eigenvectors = add("e = Eigenvectors({{1,2},{3,4}})");
 		StringTemplate template = app.getConfig().getOutputStringTemplate();
 		assertThat(
@@ -96,7 +92,7 @@ public class SymbolicMatrixTest extends BaseSymbolicTest {
 	}
 
 	@Test
-	public void testEigenvectorsAsNonSymbolic() {
+	void testEigenvectorsAsNonSymbolic() {
 		GeoSymbolic eigenvectors = add("e = Eigenvectors({{1,2},{3,4}})");
 		eigenvectors.setSymbolicMode(false, false);
 		StringTemplate template = app.getConfig().getOutputStringTemplate();
@@ -107,39 +103,45 @@ public class SymbolicMatrixTest extends BaseSymbolicTest {
 	}
 
 	@Test
-	public void testIsMatrixNested() {
+	void testIsMatrixNested() {
 		GeoSymbolic geo = add("SVD({{1,0},{0,4}})");
 		assertThat(geo.isMatrix(), is(false));
-		assertThat(geo.toValueString(StringTemplate.latexTemplate),
+		assertThat(
+				geo.toValueString(StringTemplate.latexTemplate),
 				is("\\left\\{\\left(\\begin{array}{rr}1&0\\\\0&1\\\\ \\end{array}\\right),\\;"
 						+ "\\left(\\begin{array}{rr}1&0\\\\0&4\\\\ \\end{array}\\right),\\;"
-						+ "\\left(\\begin{array}{rr}1&0\\\\0&1\\\\ \\end{array}\\right)\\right\\}")
-		);
+						+ "\\left(\\begin{array}{rr}1&0\\\\0&1\\\\ \\end{array}\\right)\\right\\}"));
 		geo = add("Identity(2)");
 		assertThat(geo.isMatrix(), is(true));
-		assertThat(geo.toValueString(StringTemplate.latexTemplate),
+		assertThat(
+				geo.toValueString(StringTemplate.latexTemplate),
 				is("\\left(\\begin{array}{rr}1&0\\\\0&1\\\\ \\end{array}\\right)"));
 		geo = add("Identity(2)*g");
 		assertThat(geo.isMatrix(), is(true));
-		assertThat(geo.toValueString(StringTemplate.latexTemplate),
+		assertThat(
+				geo.toValueString(StringTemplate.latexTemplate),
 				is("\\left(\\begin{array}{rr}g&0\\\\0&g\\\\ \\end{array}\\right)"));
 		geo = add("{Identity(2)}");
 		assertThat(geo.isMatrix(), is(false));
-		assertThat(geo.toValueString(StringTemplate.latexTemplate),
-				is("\\left\\{\\left(\\begin{array}{rr}1&0\\\\0&1\\\\"
-						+ " \\end{array}\\right)\\right\\}"));
+		assertThat(
+				geo.toValueString(StringTemplate.latexTemplate),
+				is("\\left\\{\\left(\\begin{array}{rr}1&0\\\\0&1\\\\" + " \\end{array}\\right)\\right\\}"));
 	}
 
 	@Test
-	public void testIsMatrixNumeric() {
+	void testIsMatrixNumeric() {
 		GeoSymbolic matrixList = add("{{{1/3}}}");
 		matrixList.setSymbolicMode(false, false);
 		String input = matrixList.getLaTeXAlgebraDescription(false, StringTemplate.latexTemplate);
-		assertThat(input, is("l1\\, = \\,\\left\\{\\left(\\begin{array}{r}\\frac{1}{3}\\\\"
-				+ " \\end{array}\\right)\\right\\}"));
+		assertThat(
+				input,
+				is("l1\\, = \\,\\left\\{\\left(\\begin{array}{r}\\frac{1}{3}\\\\"
+						+ " \\end{array}\\right)\\right\\}"));
 		String output = matrixList.getLaTeXAlgebraDescription(true, StringTemplate.latexTemplate);
-		assertThat(output, is("l1\\, = \\,\\left\\{\\left(\\begin{array}{r}0.3333333333\\\\"
-				+ " \\end{array}\\right)\\right\\}"));
+		assertThat(
+				output,
+				is("l1\\, = \\,\\left\\{\\left(\\begin{array}{r}0.3333333333\\\\"
+						+ " \\end{array}\\right)\\right\\}"));
 		String plain = matrixList.toValueString(StringTemplate.defaultTemplate);
 		assertThat(plain, is("{{{0.3333333333}}}"));
 	}

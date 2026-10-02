@@ -27,7 +27,7 @@ import org.geogebra.web.html5.main.AppW;
 import org.gwtproject.event.logical.shared.CloseEvent;
 import org.gwtproject.event.logical.shared.CloseHandler;
 
-public class SpreadsheetStyleBarColorPopup extends GPopupPanel
+public final class SpreadsheetStyleBarColorPopup extends GPopupPanel
 		implements CloseHandler<GPopupPanel> {
 	private final IconButton anchorButton;
 	private ColorChooserPanel colorChooserPanel;
@@ -37,8 +37,8 @@ public class SpreadsheetStyleBarColorPopup extends GPopupPanel
 	 * @param appW {@link AppW}
 	 * @param anchorButton anchor button of popup
 	 */
-	public SpreadsheetStyleBarColorPopup(AppW appW, IconButton anchorButton,
-			Consumer<GColor> colorHandler) {
+	public SpreadsheetStyleBarColorPopup(
+			AppW appW, IconButton anchorButton, Consumer<GColor> colorHandler) {
 		super(true, appW.getAppletFrame(), appW);
 		this.anchorButton = anchorButton;
 		addStyleName("quickStyleBarPopup colorStyle");
@@ -47,9 +47,8 @@ public class SpreadsheetStyleBarColorPopup extends GPopupPanel
 	}
 
 	private void buildGui(Consumer<GColor> colorHandler) {
-		colorChooserPanel = new ColorChooserPanel((AppW) getApplication(),
-				GeoColorValues.values(),
-				color -> {
+		colorChooserPanel =
+				new ColorChooserPanel((AppW) getApplication(), GeoColorValues.values(), color -> {
 					colorHandler.accept(color);
 					hide();
 				});

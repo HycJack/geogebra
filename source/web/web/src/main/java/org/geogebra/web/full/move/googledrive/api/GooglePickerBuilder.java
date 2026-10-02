@@ -24,7 +24,7 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true, namespace = "google.picker", name = "PickerBuilder")
-public class GooglePickerBuilder {
+public final class GooglePickerBuilder {
 
 	public native GooglePickerBuilder addView(Object view);
 
@@ -36,7 +36,10 @@ public class GooglePickerBuilder {
 
 	@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 	public static class PickerCallbackParam {
-		@InjectJsInterop public String action;
-		@InjectJsInterop public JsArray<GoogleDriveDocument> docs;
+		@InjectJsInterop
+		public String action;
+
+		@InjectJsInterop
+		public JsArray<GoogleDriveDocument> docs;
 	}
 }

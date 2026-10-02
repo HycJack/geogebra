@@ -24,6 +24,7 @@ import org.geogebra.editor.share.tree.Node;
 import com.himamis.retex.renderer.share.Box;
 import com.himamis.retex.renderer.share.BoxConsumer;
 import com.himamis.retex.renderer.share.BoxPosition;
+import com.himamis.retex.renderer.share.ScriptsAtom;
 
 public class SelectionBoxConsumer implements BoxConsumer {
 
@@ -40,8 +41,7 @@ public class SelectionBoxConsumer implements BoxConsumer {
 	private double selectionHeight = Double.NEGATIVE_INFINITY;
 	private double selectionDepth = Double.NEGATIVE_INFINITY;
 
-	SelectionBoxConsumer(TeXBuilder texBuilder, Node selectionStart,
-			Node selectionEnd, Node input) {
+	SelectionBoxConsumer(TeXBuilder texBuilder, Node selectionStart, Node selectionEnd, Node input) {
 		this.texBuilder = texBuilder;
 		this.input = input;
 		selectionParent = selectionStart == null ? null : selectionStart.getParent();
@@ -53,16 +53,20 @@ public class SelectionBoxConsumer implements BoxConsumer {
 	public void handle(Box box, BoxPosition position) {
 		Node node = texBuilder.getNode(box.getAtom());
 		CursorBoxConsumer.highlightInput(box, node, input);
-		if (selectionParent == null
-				|| isBetween(node) || node != null && isBetween(node.getParent())) {
+		if (selectionParent == null || isBetween(node) || node != null && isBetween(node.getParent())) {
 			if (selectionBaseline == null) {
-				selectionBaseline = position.baseline;
+				selectionBaseline = position.baseline();
+			}
+			if (box.getAtom() instanceof ScriptsAtom) {
+				// for x^2 both x and 2 belong to the script atom, but we
+				// should only consider x if the character itself is selected
+				return;
 			}
 
-			selectionX1 = Math.min(selectionX1, position.x);
-			selectionX2 = Math.max(selectionX2, position.x + box.getWidth());
+			selectionX1 = Math.min(selectionX1, position.x());
+			selectionX2 = Math.max(selectionX2, position.x() + box.getWidth());
 
-			selectionHeight = Math.max(position.scale, Math.max(box.getHeight(), selectionHeight));
+			selectionHeight = Math.max(position.scale(), Math.max(box.getHeight(), selectionHeight));
 			selectionDepth = Math.max(box.getDepth(), selectionDepth);
 		}
 	}
@@ -83,8 +87,7 @@ public class SelectionBoxConsumer implements BoxConsumer {
 				selectionX1,
 				(selectionBaseline == null ? 0 : selectionBaseline) - selectionHeight,
 				selectionX2 - selectionX1,
-				(selectionHeight + selectionDepth) * 1.2
-		);
+				(selectionHeight + selectionDepth) * 1.2);
 		return rectangle2D;
 	}
 }

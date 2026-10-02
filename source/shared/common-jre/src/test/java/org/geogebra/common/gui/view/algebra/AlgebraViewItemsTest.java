@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -30,20 +30,20 @@ import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class AlgebraViewItemsTest extends BaseAppTestSetup {
+class AlgebraViewItemsTest extends BaseAppTestSetup {
 
 	private Construction construction;
 	private AlgebraViewItems items;
 
 	@BeforeEach
-	public void setup() {
+	void setup() {
 		setupApp(SuiteSubApp.GRAPHING);
 		construction = getApp().getKernel().getConstruction();
 		items = new AlgebraViewItems(getApp());
 	}
 
 	@Test
-	public void testAdd2Remove() {
+	void testAdd2Remove() {
 		GeoElement geo1 = new GeoBoolean(construction, false);
 		GeoElement geo2 = new GeoBoolean(construction, true);
 		items.onGeoAdded(geo1);
@@ -56,7 +56,7 @@ public class AlgebraViewItemsTest extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testAdd2Modify() {
+	void testAdd2Modify() {
 		GeoElement geo1 = new GeoBoolean(construction, false);
 		GeoElement geo2 = new GeoBoolean(construction, true);
 		items.onGeoAdded(geo1);
@@ -69,7 +69,7 @@ public class AlgebraViewItemsTest extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testAdd2ModifyRemove() {
+	void testAdd2ModifyRemove() {
 		GeoElement geo1 = new GeoBoolean(construction, false);
 		GeoElement geo2 = new GeoBoolean(construction, true);
 		items.onGeoAdded(geo1);
@@ -85,7 +85,7 @@ public class AlgebraViewItemsTest extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testAddModifyClear() {
+	void testAddModifyClear() {
 		GeoElement geo1 = new GeoBoolean(construction, false);
 		items.onGeoAdded(geo1);
 		assertTrue(items.getModifiedItemIds().isEmpty());
@@ -98,7 +98,7 @@ public class AlgebraViewItemsTest extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testIndexRenumbering() {
+	void testIndexRenumbering() {
 		GeoElement geo1 = new GeoBoolean(construction, false);
 		Integer id1 = items.onGeoAdded(geo1);
 		AlgebraViewItem item1 = items.getItemById(id1);

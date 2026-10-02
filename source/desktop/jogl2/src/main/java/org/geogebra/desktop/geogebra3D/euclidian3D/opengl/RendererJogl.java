@@ -1,3 +1,19 @@
+/*
+ * GeoGebra - Dynamic Mathematics for Everyone
+ * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
+ * https://www.geogebra.org
+ *
+ * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
+ * may be used under the EUPL 1.2 in compatible projects (see Article 5
+ * and the Appendix of EUPL 1.2 for details).
+ * You may obtain a copy of the licence at:
+ * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Note: The overall GeoGebra software package is free to use for
+ * non-commercial purposes only.
+ * See https://www.geogebra.org/license for full licensing details
+ */
+
 package org.geogebra.desktop.geogebra3D.euclidian3D.opengl;
 
 import java.nio.ByteBuffer;
@@ -16,15 +32,15 @@ import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.GLBuffers;
 
 public class RendererJogl {
-	
+
 	private GLAutoDrawable gLDrawable;
-	
-	static public final int GL_STREAM_DRAW = GL2ES2.GL_STREAM_DRAW;
-	
+
+	public static final int GL_STREAM_DRAW = GL2ES2.GL_STREAM_DRAW;
+
 	public GL getGL() {
 		return getGL2();
 	}
-	
+
 	public GL2 getGL2() {
 		if (gLDrawable.getGL() == null) {
 			return null;
@@ -37,28 +53,28 @@ public class RendererJogl {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return current GL (as GL2ES2)
 	 */
 	public com.jogamp.opengl.GL2ES2 getGL2ES2() {
 		return gLDrawable.getGL().getGL2ES2();
 	}
 
-	public final static IntBuffer newIntBuffer(int size) {
+	public static final IntBuffer newIntBuffer(int size) {
 		return GLBuffers.newDirectIntBuffer(size);
 	}
-	
-	public final static ByteBuffer newByteBuffer(int size) {
+
+	public static final ByteBuffer newByteBuffer(int size) {
 		return GLBuffers.newDirectByteBuffer(size);
 	}
 
-	public interface GLlocal extends GL2 { }
+	public interface GLlocal extends GL2 {}
 
-	public interface GL2ES2 extends com.jogamp.opengl.GL2ES2 { }
-	
+	public interface GL2ES2 extends com.jogamp.opengl.GL2ES2 {}
+
 	public static GLCapabilities caps = null;
 
-	final static public void initSingleton() {
+	public static final void initSingleton() {
 		try {
 			GLProfile.initSingleton();
 		} catch (Exception e) {
@@ -66,108 +82,110 @@ public class RendererJogl {
 		}
 	}
 
-	static private GLProfile profile;
+	private static GLProfile profile;
 
-	static private boolean isGL2ES2;
+	private static boolean isGL2ES2;
 
 	/**
 	 * set the default profile to current profile
-	 * 
+	 *
 	 * @return true if default profile supports shader language (GL2ES2)
 	 */
-	final static public boolean setDefaultProfile() {
+	public static final boolean setDefaultProfile() {
 		if (profile == null) {
 			profile = GLProfile.getDefault();
 			isGL2ES2 = profile.isGL2ES2();
 		}
-		
+
 		return isGL2ES2;
 	}
 
-	final static public void initCaps(boolean stereo) {
-		
+	public static final void initCaps(boolean stereo) {
+
 		if (caps != null) {
 			return;
 		}
-						
+
 		caps = new GLCapabilities(profile);
 
-		//caps.setAlphaBits(8);
+		// caps.setAlphaBits(8);
 
-		//anti-aliasing
+		// anti-aliasing
 		caps.setSampleBuffers(true);
 		caps.setNumSamples(4);
-		
-		//avoid flickering
+
+		// avoid flickering
 		caps.setDoubleBuffered(true);
-		//caps.setDoubleBuffered(false);
-		
+		// caps.setDoubleBuffered(false);
+
 		if (stereo) {
-			//add stereo
+			// add stereo
 			caps.setStereo(true);
 		}
-		
-		//stencil buffer is needed for hacked passive 3D
-		caps.setStencilBits(1);
 
+		// stencil buffer is needed for hacked passive 3D
+		caps.setStencilBits(1);
 	}
-	
-	final public static String[] getGLInfos(GLAutoDrawable drawable) {
-		
+
+	public static final String[] getGLInfos(GLAutoDrawable drawable) {
+
 		GL gl = drawable.getGL();
 
 		GLCapabilitiesImmutable c = drawable.getChosenGLCapabilities();
-		
-		String[] ret = { c + "", c.getDoubleBuffered() + "", c.getStereo() + "",
-				c.getStencilBits() + "", gl.getClass().getName(),
-				gl.glGetString(GL.GL_VENDOR), gl.glGetString(GL.GL_RENDERER),
-				gl.glGetString(GL.GL_VERSION) };
+
+		String[] ret = {
+			c + "",
+			c.getDoubleBuffered() + "",
+			c.getStereo() + "",
+			c.getStencilBits() + "",
+			gl.getClass().getName(),
+			gl.glGetString(GL.GL_VENDOR),
+			gl.glGetString(GL.GL_RENDERER),
+			gl.glGetString(GL.GL_VERSION)
+		};
 
 		return ret;
-		
 	}
 
-	static private boolean useCanvas;
-	
+	private static boolean useCanvas;
+
 	/**
-	 * 
+	 *
 	 * @param useCanvas0 says if we use Canvas or JPanel
 	 * @return 3D component
 	 */
-	static public Component3D createComponent3D(boolean useCanvas0) {
-		
+	public static Component3D createComponent3D(boolean useCanvas0) {
+
 		useCanvas = useCanvas0;
-		
+
 		if (useCanvas) {
 			return new ComponentGLCanvas();
 		}
 		return new ComponentGLJPanel();
-		
 	}
 
-	static public Animator createAnimator(Component3D canvas, int i) {
+	public static Animator createAnimator(Component3D canvas, int i) {
 
 		if (useCanvas) {
 			return new AnimatorCanvas((GLCanvas) canvas, i);
 		}
 		return new AnimatorJPanel((GLJPanel) canvas, i);
 	}
-	
+
 	/////////////////////////
 	// 3D Component
 
 	@SuppressWarnings("serial")
 	private static class ComponentGLJPanel extends GLJPanel implements Component3D {
-		
+
 		public ComponentGLJPanel() {
 			super(caps);
 		}
-		
 	}
-	
+
 	@SuppressWarnings("serial")
 	private static class ComponentGLCanvas extends GLCanvas implements Component3D {
-		
+
 		public ComponentGLCanvas() {
 			super(caps);
 		}
@@ -180,28 +198,24 @@ public class RendererJogl {
 				ex.printStackTrace();
 			}
 		}
-		
 	}
-	
+
 	/////////////////////////
 	// 3D Animator
 
 	private static class AnimatorJPanel extends FPSAnimator implements Animator {
-		
+
 		public AnimatorJPanel(GLJPanel canvas, int i) {
 			super(canvas, i);
 		}
-		
 	}
-	
+
 	private static class AnimatorCanvas extends FPSAnimator implements Animator {
-		
+
 		public AnimatorCanvas(GLCanvas canvas, int i) {
 			super(canvas, i);
 		}
-		
 	}
 
-	final public static String JOGL_VERSION = "JOGL2";
-	
+	public static final String JOGL_VERSION = "JOGL2";
 }

@@ -28,44 +28,54 @@ import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropert
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.Test;
 
-public class PieChartRadiusPropertyTests extends BaseAppTestSetup {
+class PieChartRadiusPropertyTests extends BaseAppTestSetup {
 
 	@Test
-	public void testNotApplicable() {
+	void testNotApplicable() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPieChart element = evaluateGeoElement("Element({PieChart({1, 2, 3})}, 1)");
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new PieChartRadiusProperty(getAlgebraProcessor(), getLocalization(), element));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new PieChartRadiusProperty(getAlgebraProcessor(), getLocalization(), element));
 	}
 
 	@Test
-	public void testChangingRadiusWithConstantValue() {
+	void testChangingRadiusWithConstantValue() {
 		setupApp(SuiteSubApp.GRAPHING);
-		PieChartRadiusProperty property = assertDoesNotThrow(
-				() -> new PieChartRadiusProperty(getAlgebraProcessor(), getLocalization(),
-						evaluateGeoElement("a = PieChart({1, 2, 3})")));
+		PieChartRadiusProperty property = assertDoesNotThrow(() -> new PieChartRadiusProperty(
+				getAlgebraProcessor(), getLocalization(), evaluateGeoElement("a = PieChart({1, 2, 3})")));
 		property.setValue("9");
-		assertEquals("PieChart({1, 2, 3}, (0, 0), 9)",
+		assertEquals(
+				"PieChart({1, 2, 3}, (0, 0), 9)",
 				lookup("a").getDefinition(StringTemplate.defaultTemplate));
-		assertEquals("9", assertDoesNotThrow(() -> new PieChartRadiusProperty(getAlgebraProcessor(),
-				getLocalization(), lookup("a"))).getValue());
+		assertEquals(
+				"9",
+				assertDoesNotThrow(() ->
+								new PieChartRadiusProperty(getAlgebraProcessor(), getLocalization(), lookup("a")))
+						.getValue());
 	}
 
 	@Test
-	public void testChangingRadiusWithDynamicValue() {
+	void testChangingRadiusWithDynamicValue() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoNumeric slider = evaluateGeoElement("a = Slider(1, 10, 1)");
 		slider.setValue(5);
 		slider.updateRepaint();
-		PieChartRadiusProperty pieChartRadiusProperty = assertDoesNotThrow(
-				() -> new PieChartRadiusProperty(getAlgebraProcessor(), getLocalization(),
+		PieChartRadiusProperty pieChartRadiusProperty =
+				assertDoesNotThrow(() -> new PieChartRadiusProperty(
+						getAlgebraProcessor(),
+						getLocalization(),
 						evaluateGeoElement("b = PieChart({1, 2, 3})")));
 
 		pieChartRadiusProperty.setNumberValue(slider);
-		assertEquals("PieChart({1, 2, 3}, (0, 0), a)",
+		assertEquals(
+				"PieChart({1, 2, 3}, (0, 0), a)",
 				lookup("b").getDefinition(StringTemplate.defaultTemplate));
-		assertEquals("a", assertDoesNotThrow(() -> new PieChartRadiusProperty(getAlgebraProcessor(),
-						getLocalization(), lookup("b"))).getValue());
+		assertEquals(
+				"a",
+				assertDoesNotThrow(() ->
+								new PieChartRadiusProperty(getAlgebraProcessor(), getLocalization(), lookup("b")))
+						.getValue());
 		assertEquals(5, ((GeoPieChart) lookup("b")).getRadius());
 
 		slider.setValue(8);

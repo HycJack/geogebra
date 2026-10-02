@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -110,25 +110,22 @@ public class GeoGebraServer {
 					} else if ("evalCommandCAS".equals(cmd)) {
 						results.put(api.evalCommandCAS(args, null));
 					} else if ("evalGeoGebraCAS".equals(cmd)) {
-						results.put(app.getKernel().evaluateGeoGebraCAS(args,
-								null, StringTemplate
-										.fullFigures(StringType.GEOGEBRA)));
+						results.put(app.getKernel()
+								.evaluateGeoGebraCAS(args, null, StringTemplate.fullFigures(StringType.GEOGEBRA)));
 					} else if ("expressionEvaluatesToZero".equals(cmd)) {
 
-						String answer = app.getKernel().evaluateGeoGebraCAS(
-								"Simplify[" + args + "]", null,
-								StringTemplate.defaultTemplate);
+						String answer = app.getKernel()
+								.evaluateGeoGebraCAS(
+										"Simplify[" + args + "]", null, StringTemplate.defaultTemplate);
 
 						results.put("0".equals(answer) ? "true" : "false");
 					}
 
 					i++;
-
 				}
 				result = results.toString();
 			} catch (Throwable e) {
-
-				e.printStackTrace();
+				Log.debug(e);
 				Log.debug(inputJSON);
 				writeError(t, e.getMessage());
 				return;
@@ -137,7 +134,6 @@ public class GeoGebraServer {
 			// StringBuilder result = new StringBuilder("[");
 
 			writeOutput(t, result);
-			
 		}
 	}
 
@@ -148,8 +144,9 @@ public class GeoGebraServer {
 	public static void writeOutput(HttpExchange httpExchange, String responseBody) {
 		String encoding = "UTF-8";
 		try {
-			httpExchange.getResponseHeaders().set("Content-type",
-						"application/json; charset=" + encoding);
+			httpExchange
+					.getResponseHeaders()
+					.set("Content-type", "application/json; charset=" + encoding);
 
 			// http://stackoverflow.com/questions/6828076/how-to-correctly-compute-the-length-of-a-string-in-java
 			httpExchange.sendResponseHeaders(200, responseBody.getBytes(encoding).length);
@@ -158,8 +155,7 @@ public class GeoGebraServer {
 			out.write(responseBody);
 			out.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.debug(e);
 		}
 	}
 
@@ -170,12 +166,11 @@ public class GeoGebraServer {
 	public static void writeError(HttpExchange httpExchange, String message) {
 		JSONObject error = new JSONObject();
 		try {
-			error.put("error", message + "");
+			error.put("error", message);
 		} catch (JSONException e) {
-			e.printStackTrace();
+			Log.debug(e);
 		}
 		Log.error("error = " + error);
 		writeOutput(httpExchange, error.toString());
 	}
-
 }

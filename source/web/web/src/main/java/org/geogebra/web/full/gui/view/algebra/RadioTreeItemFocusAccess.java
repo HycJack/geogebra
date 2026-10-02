@@ -18,8 +18,8 @@ package org.geogebra.web.full.gui.view.algebra;
 
 import org.geogebra.common.gui.view.algebra.AlgebraItem;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.web.full.gui.view.FocusablePartW;
 import org.geogebra.web.full.gui.view.algebra.compositefocus.AVItemFocusAccess;
-import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Widget;
 
 public class RadioTreeItemFocusAccess implements AVItemFocusAccess {
@@ -28,16 +28,6 @@ public class RadioTreeItemFocusAccess implements AVItemFocusAccess {
 
 	public RadioTreeItemFocusAccess(RadioTreeItem item) {
 		this.item = item;
-	}
-
-	@Override
-	public Widget canvas() {
-		return item.canvas;
-	}
-
-	@Override
-	public FlowPanel definitionValuePanel() {
-		return item.getDefinitionValuePanel();
 	}
 
 	@Override
@@ -67,7 +57,9 @@ public class RadioTreeItemFocusAccess implements AVItemFocusAccess {
 
 	@Override
 	public Widget inputRow() {
-		return item.hasCanvas() ? canvas() : definitionValuePanel();
+		return item.hasCanvas()
+				? (item.canvas.getParent() == item.content ? item.canvas : item.canvas.getParent())
+				: item.getDefinitionValuePanel();
 	}
 
 	@Override
@@ -96,5 +88,14 @@ public class RadioTreeItemFocusAccess implements AVItemFocusAccess {
 	 */
 	public void removeItemFocusStyle() {
 		item.removeStyleName("keyboardFocus");
+	}
+
+	/**
+	 * Remove the focusable style from top-level component.
+	 */
+	public void removeSingleFocusStyle() {
+		if (item.getDefinitionValuePanel() != null) {
+			item.getDefinitionValuePanel().removeStyleName(FocusablePartW.CLASS_NAME);
+		}
 	}
 }

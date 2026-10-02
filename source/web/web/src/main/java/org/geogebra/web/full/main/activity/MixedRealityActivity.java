@@ -23,7 +23,7 @@ import org.geogebra.web.full.gui.layout.panels.AlgebraDockPanelW;
 /**
  * Activity for restricted AV app in mixed reality
  */
-public class MixedRealityActivity extends BaseActivity {
+public final class MixedRealityActivity extends BaseActivity {
 
 	/**
 	 * New MR activity
@@ -36,5 +36,4 @@ public class MixedRealityActivity extends BaseActivity {
 	public DockPanelW createAVPanel() {
 		return new AlgebraDockPanelW(null, true);
 	}
-
 }

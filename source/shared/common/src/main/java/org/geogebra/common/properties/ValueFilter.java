@@ -25,11 +25,18 @@ import org.geogebra.common.restrictions.PropertyRestriction;
  */
 @FunctionalInterface
 public interface ValueFilter {
-    /**
-     * Evaluates whether the specified value is allowed by this filter.
-     *
-     * @param value the value to be evaluated
-     * @return {@code true} if the value is allowed, {@code false} otherwise
-     */
-    boolean isValueAllowed(Object value);
+	/** Observer for changes to a property's value filters. */
+	@FunctionalInterface
+	interface Observer {
+		/** Called when value filters have changed. */
+		void onValueFiltersChanged();
+	}
+
+	/**
+	 * Evaluates whether the specified value is allowed by this filter.
+	 *
+	 * @param value the value to be evaluated
+	 * @return {@code true} if the value is allowed, {@code false} otherwise
+	 */
+	boolean isValueAllowed(Object value);
 }

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -46,7 +46,7 @@ import org.geogebra.common.util.FileExtensions;
 import org.geogebra.common.util.debug.Log;
 import org.geogebra.desktop.main.AppD;
 
-abstract public class ExportFrame extends JFrame implements ExportSettings {
+public abstract class ExportFrame extends JFrame implements ExportSettings {
 	private static final long serialVersionUID = 1L;
 	private static final String TEXT_XUNIT = "textxunit";
 	private static final String TEXT_YUNIT = "textyunit";
@@ -74,7 +74,7 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 	protected JLabel labelXmax;
 	protected JLabel labelYmin;
 	protected JLabel labelYmax;
-	final String[] msg = { "10 pt", "11 pt", "12 pt" };
+	final String[] msg = {"10 pt", "11 pt", "12 pt"};
 	protected JComboBox comboFontSize;
 	protected JComboBox comboFormat;
 	protected JComboBox comboFill;
@@ -82,7 +82,7 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 	protected JLabel labelFill;
 
 	// added by Hosszu Henrietta, for Animated PDF
-	protected DefaultComboBoxModel comboModel;
+	protected DefaultComboBoxModel<GeoElement> comboModel;
 
 	// end changes
 	protected JPanel panel;
@@ -130,22 +130,14 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 		width = ggb.getXmax() - ggb.getXmin();
 		height = ggb.getYmax() - ggb.getYmin();
 		listenKey = new ListenKey();
-		textXUnit = new TextValue(this, String.valueOf(ggb.getXunit()), false,
-				ExportFrame.TEXT_XUNIT);
-		textYUnit = new TextValue(this, String.valueOf(ggb.getYunit()), false,
-				ExportFrame.TEXT_YUNIT);
-		textwidth = new TextValue(this, String.valueOf(width), false,
-				ExportFrame.TEXT_WIDTH);
-		textheight = new TextValue(this, String.valueOf(height), false,
-				ExportFrame.TEXT_HEIGHT);
-		textXmin = new TextValue(this, String.valueOf(ggb.getXmin()), true,
-				ExportFrame.TEXT_XMIN);
-		textXmax = new TextValue(this, String.valueOf(ggb.getxmax()), true,
-				TEXT_XMAX);
-		textYmin = new TextValue(this, String.valueOf(ggb.getymin()), true,
-				TEXT_YMIN);
-		textYmax = new TextValue(this, String.valueOf(ggb.getymax()), true,
-				TEXT_YMAX);
+		textXUnit = new TextValue(this, String.valueOf(ggb.getXunit()), false, ExportFrame.TEXT_XUNIT);
+		textYUnit = new TextValue(this, String.valueOf(ggb.getYunit()), false, ExportFrame.TEXT_YUNIT);
+		textwidth = new TextValue(this, String.valueOf(width), false, ExportFrame.TEXT_WIDTH);
+		textheight = new TextValue(this, String.valueOf(height), false, ExportFrame.TEXT_HEIGHT);
+		textXmin = new TextValue(this, String.valueOf(ggb.getXmin()), true, ExportFrame.TEXT_XMIN);
+		textXmax = new TextValue(this, String.valueOf(ggb.getxmax()), true, TEXT_XMAX);
+		textYmin = new TextValue(this, String.valueOf(ggb.getymin()), true, TEXT_YMIN);
+		textYmax = new TextValue(this, String.valueOf(ggb.getymax()), true, TEXT_YMAX);
 		textXUnit.addKeyListener(listenKey);
 		textYUnit.addKeyListener(listenKey);
 		textXmin.addKeyListener(listenKey);
@@ -189,29 +181,33 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 				jcbAsyCse5.setEnabled(false);
 			}
 		});
-		final String[] comboFillText = { loc.getMenu("None"),
-				loc.getMenu("OnlyOpaqueFills"), loc.getMenu("WithOpacityPen"),
-				loc.getMenu("ByLayering") };
+		final String[] comboFillText = {
+			loc.getMenu("None"),
+			loc.getMenu("OnlyOpaqueFills"),
+			loc.getMenu("WithOpacityPen"),
+			loc.getMenu("ByLayering")
+		};
 
-		comboFill = new JComboBox(comboFillText);
+		comboFill = new JComboBox<>(comboFillText);
 		labelFill = new JLabel(loc.getMenu("FillType") + ":");
 		// end changes
-		comboFontSize = new JComboBox(msg);
+		comboFontSize = new JComboBox<>(msg);
 		jcbPointSymbol.setSelected(true);
 		jcbGrayscale.setSelected(false);
 		// combo box with all sliders, added by Hoszu Henrietta
-		comboModel = new DefaultComboBoxModel();
-		TreeSet<GeoElement> sortedSet = app.getKernel().getConstruction()
-				.getGeoSetNameDescriptionOrder();
+		comboModel = new DefaultComboBoxModel<>();
+		TreeSet<GeoElement> sortedSet =
+				app.getKernel().getConstruction().getGeoSetNameDescriptionOrder();
 		Iterator<GeoElement> it = sortedSet.iterator();
 		while (it.hasNext()) {
 			GeoElement geo = it.next();
-			if (geo.isGeoNumeric() && ((GeoNumeric) geo).isIntervalMinActive()
+			if (geo.isGeoNumeric()
+					&& ((GeoNumeric) geo).isIntervalMinActive()
 					&& ((GeoNumeric) geo).isIntervalMaxActive()) {
 				comboModel.addElement(geo);
 			}
 		}
-		cbSliders = new JComboBox(comboModel);
+		cbSliders = new JComboBox<>(comboModel);
 		button.addActionListener(e -> {
 			ggb.setBeamer(isBeamer());
 			ggb.generateAllCode();
@@ -221,9 +217,9 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 		textarea = new JTextArea();
 		buttonSave = new JButton(loc.getMenu("SaveAs"));
 		buttonSave.addActionListener(e -> {
-			currentFile = app.getGuiManager().showSaveDialog(fileExtension,
-					currentFile, fileExtensionMsg + loc.getMenu("Files"),
-					true, false);
+			currentFile = app.getGuiManager()
+					.showSaveDialog(
+							fileExtension, currentFile, fileExtensionMsg + loc.getMenu("Files"), true, false);
 			if (currentFile == null) {
 				return;
 			}
@@ -231,8 +227,7 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 
 				FileOutputStream f = new FileOutputStream(currentFile);
 				BufferedOutputStream b = new BufferedOutputStream(f);
-				OutputStreamWriter osw = new OutputStreamWriter(b,
-						StandardCharsets.UTF_8);
+				OutputStreamWriter osw = new OutputStreamWriter(b, StandardCharsets.UTF_8);
 				StringBuilder sb = new StringBuilder(textarea.getText());
 				if (isLaTeX()) {
 					int id = sb.indexOf("\\usepackage{");
@@ -317,12 +312,12 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 	@Override
 	public int getFontSize() {
 		switch (comboFontSize.getSelectedIndex()) {
-		case 0:
-			return 10;
-		case 1:
-			return 11;
-		case 2:
-			return 12;
+			case 0:
+				return 10;
+			case 1:
+				return 11;
+			case 2:
+				return 12;
 		}
 		return 10;
 	}
@@ -393,28 +388,28 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 					double value = textXUnit.getValue();
 					ggb.setXunit(value);
 					textwidth.setValue(value * width);
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
 			} else if (cmd.equals(TEXT_YUNIT)) {
 				try {
 					double value = textYUnit.getValue();
 					ggb.setYunit(value);
 					textheight.setValue(value * height);
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
 			} else if (cmd.equals(TEXT_WIDTH)) {
 				try {
 					double value = textwidth.getValue() / width;
 					ggb.setXunit(value);
 					textXUnit.setValue(value);
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
 			} else if (cmd.equals(TEXT_HEIGHT)) {
 				try {
 					double value = textheight.getValue() / height;
 					ggb.setYunit(value);
 					textYUnit.setValue(value);
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
 			} else if (cmd.equals(TEXT_XMIN)) {
 				try {
@@ -435,7 +430,7 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 					}
 					textwidth.setValue(width * ggb.getXunit());
 					ggb.refreshSelectionRectangle();
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
 			} else if (cmd.equals(TEXT_XMAX)) {
 				try {
@@ -456,7 +451,7 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 					}
 					textwidth.setValue(width * ggb.getXunit());
 					ggb.refreshSelectionRectangle();
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
 			} else if (cmd.equals(TEXT_YMIN)) {
 				try {
@@ -478,7 +473,7 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 					}
 					textheight.setValue(height * ggb.getYunit());
 					ggb.refreshSelectionRectangle();
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
 			} else if (cmd.equals(TEXT_YMAX)) {
 				try {
@@ -499,11 +494,9 @@ abstract public class ExportFrame extends JFrame implements ExportSettings {
 					}
 					textheight.setValue(height * ggb.getYunit());
 					ggb.refreshSelectionRectangle();
-				} catch (NumberFormatException e1) {
+				} catch (NumberFormatException ignored) {
 				}
-
 			}
-
 		}
 	}
 

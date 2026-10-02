@@ -30,48 +30,53 @@ public class LayoutUtilW {
 	 * @return widgets merged in a row
 	 */
 	public static FlowPanel panelRow(IsWidget... widgets) {
+		return panelRow("panelRow", widgets);
+	}
+
+	/**
+	 * @param className class name of the resulting panel
+	 * @param widgets widgets
+	 * @return widgets merged in a row
+	 */
+	public static FlowPanel panelRow(String className, IsWidget... widgets) {
 		FlowPanel p = new FlowPanel();
 		for (IsWidget widget : widgets) {
 			p.add(widget);
 		}
-		p.setStyleName("panelRow");
-
+		p.setStyleName(className);
 		return p;
 	}
 
 	/**
 	 * Add widgets ito one row and add indentation CSS.
-	 * 
+	 *
 	 * @param widgets
 	 *            widgets
 	 * @return widgets merged in a row
 	 */
 	public static FlowPanel panelRowIndent(IsWidget... widgets) {
-		FlowPanel p = panelRow(widgets);
-		p.setStyleName("panelRowIndent");
-
-		return p;
+		return panelRow("panelRowIndent", widgets);
 	}
 
 	/**
-	 * Replaces widget old with w in p.
+	 * Replaces oldWidget with newWidget in parent.
 	 *
-	 * @param p
+	 * @param parent
 	 *            The FlowPanel replace within.
-	 * @param w
+	 * @param newWidget
 	 *            The new widget.
-	 * @param old
+	 * @param oldWidget
 	 *            The widget to be replaced.
-	 * @return true if the replace was successful.
+	 * @return true if the replacement was successful.
 	 */
-	public static boolean replace(FlowPanel p, IsWidget w, IsWidget old) {
-		int idx = p.getWidgetIndex(old);
-		if (w == null || idx == -1) {
+	public static boolean replace(FlowPanel parent, IsWidget newWidget, IsWidget oldWidget) {
+		int idx = parent.getWidgetIndex(oldWidget);
+		if (newWidget == null || idx == -1) {
 			return false;
 		}
 
-		p.remove(idx);
-		p.insert(w, idx);
+		parent.remove(idx);
+		parent.insert(newWidget, idx);
 
 		return true;
 	}
@@ -83,8 +88,7 @@ public class LayoutUtilW {
 	 *            yscale
 	 * @return smaller scale
 	 */
-	public static double getDeviceScale(double xscale, double yscale,
-			boolean allowUpscale) {
+	public static double getDeviceScale(double xscale, double yscale, boolean allowUpscale) {
 		if (xscale < 1 || yscale < 1 || !allowUpscale) {
 			return Math.min(1d, Math.min(xscale, yscale));
 		}

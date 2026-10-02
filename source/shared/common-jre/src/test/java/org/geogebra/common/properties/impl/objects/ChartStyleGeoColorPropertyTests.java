@@ -27,15 +27,14 @@ import org.geogebra.common.kernel.statistics.GeoPieChart;
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.Test;
 
-public class ChartStyleGeoColorPropertyTests extends BaseAppTestSetup {
+class ChartStyleGeoColorPropertyTests extends BaseAppTestSetup {
 	@Test
-	public void testSettingPieChartSliceColor() {
+	void testSettingPieChartSliceColor() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoPieChart pieChart = evaluateGeoElement("PieChart({1, 2})");
 		ChartSegmentSelection chartSegmentSelection = new ChartSegmentSelection();
-		ChartStyleGeoColorProperty chartStyleGeoColorProperty = assertDoesNotThrow(() ->
-				new ChartStyleGeoColorProperty(getLocalization(), pieChart,
-						chartSegmentSelection));
+		ChartStyleGeoColorProperty chartStyleGeoColorProperty = assertDoesNotThrow(
+				() -> new ChartStyleGeoColorProperty(getLocalization(), pieChart, chartSegmentSelection));
 
 		chartSegmentSelection.setIndex(2);
 		GColor secondSliceDefaultColor = chartStyleGeoColorProperty.getValue();
@@ -60,13 +59,12 @@ public class ChartStyleGeoColorPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testReadingColorValueWhenAllBarsMatch() {
+	void testReadingColorValueWhenAllBarsMatch() {
 		setupApp(SuiteSubApp.GRAPHING);
 		BarChartGeoNumeric barChart = evaluateGeoElement("BarChart({1, 2, 3}, {1, 1, 2})");
 		ChartSegmentSelection chartSegmentSelection = new ChartSegmentSelection();
-		ChartStyleGeoColorProperty chartStyleGeoColorProperty = assertDoesNotThrow(() ->
-				new ChartStyleGeoColorProperty(getLocalization(), barChart,
-						chartSegmentSelection));
+		ChartStyleGeoColorProperty chartStyleGeoColorProperty = assertDoesNotThrow(
+				() -> new ChartStyleGeoColorProperty(getLocalization(), barChart, chartSegmentSelection));
 
 		chartSegmentSelection.setIndex(0);
 		chartStyleGeoColorProperty.setValue(GColor.BLACK);
@@ -90,13 +88,12 @@ public class ChartStyleGeoColorPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testReadingColorValueWhenNotAllBarsMatch() {
+	void testReadingColorValueWhenNotAllBarsMatch() {
 		setupApp(SuiteSubApp.GRAPHING);
 		BarChartGeoNumeric barChart = evaluateGeoElement("BarChart({1, 2, 3}, {1, 1, 2})");
 		ChartSegmentSelection chartSegmentSelection = new ChartSegmentSelection();
-		ChartStyleGeoColorProperty chartStyleGeoColorProperty = assertDoesNotThrow(() ->
-				new ChartStyleGeoColorProperty(getLocalization(), barChart,
-						chartSegmentSelection));
+		ChartStyleGeoColorProperty chartStyleGeoColorProperty = assertDoesNotThrow(
+				() -> new ChartStyleGeoColorProperty(getLocalization(), barChart, chartSegmentSelection));
 
 		chartSegmentSelection.setIndex(1);
 		chartStyleGeoColorProperty.setValue(GColor.BLACK);

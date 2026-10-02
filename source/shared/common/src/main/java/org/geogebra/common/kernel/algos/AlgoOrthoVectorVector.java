@@ -45,7 +45,7 @@ public class AlgoOrthoVectorVector extends AlgoElement {
 			if (possStartPoint != null && possStartPoint.isLabelSet()) {
 				try {
 					n.setStartPoint(possStartPoint);
-				} catch (CircularDefinitionException e) {
+				} catch (CircularDefinitionException ignored) {
 					// vector just created, no cycle possible
 				}
 			}
@@ -94,11 +94,10 @@ public class AlgoOrthoVectorVector extends AlgoElement {
 	}
 
 	@Override
-	final public String toString(StringTemplate tpl) {
+	public final String toString(StringTemplate tpl) {
 		// Michael Borcherds 2008-03-30
 		// simplified to allow better Chinese translation
-		return getLoc().getPlainDefault("VectorPerpendicularToA",
-				"Vector perpendicular to %0", v.getLabel(tpl));
+		return getLoc()
+				.getPlainDefault("VectorPerpendicularToA", "Vector perpendicular to %0", v.getLabel(tpl));
 	}
-
 }

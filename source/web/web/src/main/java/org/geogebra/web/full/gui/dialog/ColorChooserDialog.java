@@ -24,20 +24,20 @@ import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.components.dialog.ComponentDialog;
 import org.geogebra.web.shared.components.dialog.DialogData;
 
-public class ColorChooserDialog extends ComponentDialog {
+public final class ColorChooserDialog extends ComponentDialog {
 	private ColorChooserW colorChooserW;
 	private GColor selectedColor;
 	private ColorChangeHandler handler;
 	private GColor originalColor;
-	
+
 	/**
 	 * @param app application
 	 * @param data dialog data
 	 * @param originalColor initial color
 	 * @param handler color handler
 	 */
-	public ColorChooserDialog(AppW app, DialogData data,
-			final GColor originalColor, final ColorChangeHandler handler) {
+	public ColorChooserDialog(
+			AppW app, DialogData data, final GColor originalColor, final ColorChangeHandler handler) {
 		super(app, data, false, true);
 		addStyleName("colorChooser");
 		this.handler = handler;
@@ -53,8 +53,12 @@ public class ColorChooserDialog extends ComponentDialog {
 	 * @param handler color handler
 	 * @param colorChooser color chooser panel
 	 */
-	public ColorChooserDialog(AppW app, DialogData data, final GColor originalColor,
-			final ColorChangeHandler handler, ColorChooserW colorChooser) {
+	public ColorChooserDialog(
+			AppW app,
+			DialogData data,
+			final GColor originalColor,
+			final ColorChangeHandler handler,
+			ColorChooserW colorChooser) {
 		super(app, data, false, true);
 		addStyleName("colorChooser");
 		this.handler = handler;
@@ -69,8 +73,6 @@ public class ColorChooserDialog extends ComponentDialog {
 	private void buildGUI() {
 		final Dimension colorIconSizeW = new Dimension(20, 20);
 		colorChooserW = new ColorChooserW(app, 400, 210, colorIconSizeW, 4);
-		colorChooserW.enableOpacity(false);
-		colorChooserW.enableBackgroundColorPanel(false);
 		colorChooserW.onCustomColor(originalColor);
 		setSelectedColor(originalColor);
 		setDialogContent(colorChooserW);
@@ -78,38 +80,7 @@ public class ColorChooserDialog extends ComponentDialog {
 
 	private void setHandlers() {
 		setOnPositiveAction(() -> handler.onColorChange(getSelectedColor()));
-		colorChooserW.addChangeHandler(new ColorChangeHandler() {
-			@Override
-			public void onForegroundSelected() {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void onColorChange(GColor color) {
-				setSelectedColor(color);
-			}
-
-			@Override
-			public void onClearBackground() {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void onBackgroundSelected() {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void onAlphaChange() {
-				// TODO Auto-generated method stub
-			}
-
-			@Override
-			public void onBarSelected() {
-				// TODO Auto-generated method stub
-			}
-		});
-
+		colorChooserW.addChangeHandler(this::setSelectedColor);
 	}
 
 	public GColor getSelectedColor() {

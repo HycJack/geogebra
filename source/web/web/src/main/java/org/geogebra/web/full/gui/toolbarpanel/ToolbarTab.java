@@ -33,8 +33,8 @@ import elemental2.dom.EventListener;
  * Base class for Toolbar Tabs.
  * @author Laszlo
  */
-public abstract class ToolbarTab extends ScrollPanel implements ShowableTab, SetLabels,
-		PaintToCanvas {
+public abstract class ToolbarTab extends ScrollPanel
+		implements ShowableTab, SetLabels, PaintToCanvas {
 
 	public static final int TAB_HEIGHT = 100;
 	public static final String TAB_HEIGHT_PCT = TAB_HEIGHT + "%";
@@ -45,8 +45,7 @@ public abstract class ToolbarTab extends ScrollPanel implements ShowableTab, Set
 		setAlwaysShowScrollBars(false);
 
 		EventListener onTransitionEnd = evt -> parent.setFadeTabs(false);
-		Dom.addEventListener(this.getElement(), "transitionend",
-				onTransitionEnd);
+		Dom.addEventListener(this.getElement(), "transitionend", onTransitionEnd);
 	}
 
 	@Override
@@ -79,6 +78,9 @@ public abstract class ToolbarTab extends ScrollPanel implements ShowableTab, Set
 	 */
 	protected abstract void onActive();
 
+	/**
+	 * @return whether this tab is currently active
+	 */
 	public boolean isActive() {
 		return getElement().hasClassName("tab");
 	}
@@ -96,8 +98,8 @@ public abstract class ToolbarTab extends ScrollPanel implements ShowableTab, Set
 	}
 
 	@Override
-	public void paintToCanvas(CanvasRenderingContext2D context2d,
-			ViewCounter counter, int left, int top) {
+	public void paintToCanvas(
+			CanvasRenderingContext2D context2d, ViewCounter counter, int left, int top) {
 		getElement().addClassName("ggbScreenshot");
 		Domvas.get().toImage(getElement(), (image) -> {
 			context2d.drawImage(image, left, top);

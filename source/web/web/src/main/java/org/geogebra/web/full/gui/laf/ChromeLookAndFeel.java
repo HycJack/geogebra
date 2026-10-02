@@ -18,6 +18,7 @@ package org.geogebra.web.full.gui.laf;
 
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.gwtutil.JsConsumer;
+import org.geogebra.gwtutil.JsObject;
 
 import elemental2.dom.DomGlobal;
 import elemental2.promise.Promise;
@@ -29,14 +30,19 @@ import jsinterop.base.JsPropertyMap;
  * LAF for offline chrome apps
  *
  */
-public class ChromeLookAndFeel extends GLookAndFeel {
+public final class ChromeLookAndFeel extends GLookAndFeel {
 
 	// https://developer.chrome.com/docs/extensions/reference/api/storage#type-StorageArea
 	@JsType(isNative = true)
 	private interface ChromeStorage {
-
+		/**
+		 * @param val properties to store
+		 */
 		void set(JsPropertyMap<String> val);
 
+		/**
+		 * @param callback receives stored properties
+		 */
 		void get(JsConsumer<JsPropertyMap<String>> callback);
 	}
 
@@ -75,17 +81,16 @@ public class ChromeLookAndFeel extends GLookAndFeel {
 
 	@Override
 	public Promise<String> loadLanguage() {
-		ChromeStorage local =  Js.uncheckedCast(getStorage());
+		ChromeStorage local = Js.uncheckedCast(getStorage());
 		if (local != null) {
-			return new Promise<>((resolve, reject) ->
-					local.get(props -> resolve.onInvoke(props.get("GeoGebraLangUI")))
-			);
+			return new Promise<>(
+					(resolve, reject) -> local.get(props -> resolve.onInvoke(props.get("GeoGebraLangUI"))));
 		}
 		return Promise.resolve((String) null);
 	}
 
 	private Object getStorage() {
-		return Js.asPropertyMap(DomGlobal.window).nestedGet("chrome.storage.local");
+		return JsObject.of(DomGlobal.window).nestedGet("chrome.storage.local");
 	}
 
 	@Override

@@ -20,20 +20,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.commands.EvalInfo;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.common.main.Localization;
 import org.geogebra.common.plugin.Operation;
+import org.jspecify.annotations.NonNull;
 
 /**
  *
  * @author Markus
  *
  */
-
 public interface ExpressionValue extends Iterable<ExpressionValue> {
 	/**
 	 * @return true if this is does not depend on any labeled or dependent geos
@@ -94,6 +93,29 @@ public interface ExpressionValue extends Iterable<ExpressionValue> {
 	 * @return whether this is instance of Variable
 	 */
 	boolean isVariable();
+
+	/**
+	 * Checks whether this is a {@link Command} with given (internal) name
+	 * or a leaf {@link ExpressionNode} wrapping such command.
+	 * <p>
+	 * Example: isTopLevelCommand("Midpoint") is true for these
+	 * </p>
+	 * <ul>
+	 *   <li>Midpoint(A,B)</li>
+	 *   <li>(Midpoint(A,B)) -- parsed as ExpressionNode wrapping a Command</li>
+	 * </ul>
+	 * but not these
+	 * <ul>
+	 *   <li>Midpoint(A,B)*2 -- parsed as non-leaf ExpressionNode</li>
+	 *   <li>{Midpoint(A,B)} -- parsed as MyList</li>
+	 * </ul>
+	 * @param commandName
+	 *            command name
+	 * @return whether the top-level part of this expression is a command with matching name
+	 */
+	default boolean isTopLevelCommand(@NonNull String commandName) {
+		return false;
+	}
 
 	/**
 	 * @return whether this is part of some expression node tree
@@ -215,7 +237,7 @@ public interface ExpressionValue extends Iterable<ExpressionValue> {
 	 * @return true if inspecting object returned true for at least one of the nodes
 	 */
 	default boolean any(Inspecting inspecting) {
-		for (ExpressionValue value: this) {
+		for (ExpressionValue value : this) {
 			if (inspecting.check(value)) {
 				return true;
 			}
@@ -343,7 +365,7 @@ public interface ExpressionValue extends Iterable<ExpressionValue> {
 	boolean isRecurringDecimal();
 
 	@Override
-	default @Nonnull Iterator<ExpressionValue> iterator() {
+	default @NonNull Iterator<ExpressionValue> iterator() {
 		return new ExpressionValueTreeIterator(this);
 	}
 
@@ -364,4 +386,9 @@ public interface ExpressionValue extends Iterable<ExpressionValue> {
 	default Integer getAngleDimension() {
 		return null;
 	}
+
+	/**
+	 * @return localization
+	 */
+	Localization getLocalization();
 }

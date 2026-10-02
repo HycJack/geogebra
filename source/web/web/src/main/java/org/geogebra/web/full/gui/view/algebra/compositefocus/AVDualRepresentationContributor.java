@@ -20,8 +20,6 @@ import static org.geogebra.web.full.gui.view.algebra.compositefocus.FocusPartAdd
 
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.gui.AccessibilityManagerInterface;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoElement;
@@ -29,6 +27,7 @@ import org.geogebra.web.full.gui.view.algebra.FocusableCompositeW;
 import org.geogebra.web.full.gui.view.algebra.RadioTreeItemFocusAccess;
 import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Contributes both definition and value parts to composite focus for items
@@ -54,28 +53,34 @@ public final class AVDualRepresentationContributor implements FocusContributor {
 	 *
 	 * @param contentProvider provides accessible text and role description
 	 */
-	public AVDualRepresentationContributor(@Nonnull AccessibleContentProvider contentProvider) {
+	public AVDualRepresentationContributor(@NonNull AccessibleContentProvider contentProvider) {
 		this.accessibleLabel = contentProvider.getContentSupplier();
 		this.roleDescription = contentProvider.getRoleDescription();
 	}
 
 	@Override
-	public void contribute(RadioTreeItemFocusAccess item, FocusableCompositeW focus,
-			AccessibilityManagerInterface am) {
+	public void contribute(
+			RadioTreeItemFocusAccess item, FocusableCompositeW focus, AccessibilityManagerInterface am) {
 		GeoElement geo = item.geo();
 		if (geo == null) {
 			return;
 		}
-		Widget definitionRow = addIfExists(focus, am, item.inputRow(), AV_INPUT_ROW_KEY,
-				accessibleLabel, item::removeItemFocusStyle);
+		Widget definitionRow = addIfExists(
+				focus, am, item.inputRow(), AV_INPUT_ROW_KEY, accessibleLabel, item::removeItemFocusStyle);
 		if (definitionRow != null) {
 			AriaHelper.setRole(definitionRow, "status");
 			AriaHelper.setRoleDescription(definitionRow, roleDescription);
 		}
 
 		if (item.hasTwoRows()) {
-			Widget valueRow = addIfExists(focus, am, item.outputRow(), AV_OUTPUT_ROW_KEY, () ->
-				geo.toValueString(StringTemplate.defaultTemplate), item::removeItemFocusStyle);
+			item.removeSingleFocusStyle();
+			Widget valueRow = addIfExists(
+					focus,
+					am,
+					item.outputRow(),
+					AV_OUTPUT_ROW_KEY,
+					() -> geo.toValueString(StringTemplate.defaultTemplate),
+					item::removeItemFocusStyle);
 			if (valueRow != null) {
 				AriaHelper.setRole(valueRow, "status");
 				AriaHelper.setRoleDescription(valueRow, "Value");

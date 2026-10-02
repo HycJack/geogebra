@@ -27,7 +27,7 @@ import org.geogebra.web.full.javax.swing.GCheckMarkPanel;
 import org.gwtproject.user.client.Command;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-public class LabelSettingsPanel extends FlowPanel implements SetLabels {
+public final class LabelSettingsPanel extends FlowPanel implements SetLabels {
 
 	private final FlagListPropertyListFacade<?> labelStyleProperty;
 	private final List<GCheckMarkLabel> checkmarks = new ArrayList<>();
@@ -44,18 +44,11 @@ public class LabelSettingsPanel extends FlowPanel implements SetLabels {
 
 	private void createDialog() {
 		Command nameValueCmd = this::applyCheckboxes;
-		for (String label: labelStyleProperty.getFlagNames()) {
+		for (String label : labelStyleProperty.getFlagNames()) {
 			checkmarks.add(new GCheckMarkLabel(label, true, nameValueCmd));
 		}
 		checkmarks.forEach(this::add);
 		updateUI();
-	}
-
-	/**
-	 * Submit the change
-	 */
-	protected void onEnter() {
-		applyCheckboxes();
 	}
 
 	@Override
@@ -70,8 +63,8 @@ public class LabelSettingsPanel extends FlowPanel implements SetLabels {
 	 * Apply settings to selected geo(s).
 	 */
 	void applyCheckboxes() {
-		List<Boolean> values = checkmarks.stream().map(GCheckMarkPanel::isChecked).collect(
-				Collectors.toList());
+		List<Boolean> values =
+				checkmarks.stream().map(GCheckMarkPanel::isChecked).collect(Collectors.toList());
 		labelStyleProperty.setValue(values);
 		updateUI();
 	}
@@ -82,5 +75,4 @@ public class LabelSettingsPanel extends FlowPanel implements SetLabels {
 			checkmarks.get(i).setChecked(labelStyle.get(i));
 		}
 	}
-
 }

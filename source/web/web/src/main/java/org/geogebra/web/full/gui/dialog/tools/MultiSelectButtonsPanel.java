@@ -23,26 +23,29 @@ import org.geogebra.web.resources.SVGResource;
 import org.gwtproject.user.client.ui.FlowPanel;
 
 class MultiSelectButtonsPanel extends FlowPanel {
-	public interface ButtonsListener {
+	interface ButtonsListener {
+		/**
+		 * @param up whether to move selection up
+		 */
+		void moveSelection(boolean up);
 
-		void moveSelection(boolean b);
-
+		/**
+		 * Delete selected item.
+		 */
 		void deleteSelection();
 	}
 
-	public MultiSelectButtonsPanel(ButtonsListener widgets) {
+	MultiSelectButtonsPanel(ButtonsListener widgets) {
 		addStyleName("toolListButtons");
 
-		addIconButton(MaterialDesignResources.INSTANCE.arrow_drop_up(),
-				w -> widgets.moveSelection(true));
-		addIconButton(MaterialDesignResources.INSTANCE.arrow_drop_down(),
-				w -> widgets.moveSelection(false));
-		addIconButton(MaterialDesignResources.INSTANCE.delete_black(),
-				w -> widgets.deleteSelection());
+		addIconButton(
+				MaterialDesignResources.INSTANCE.arrow_drop_up(), w -> widgets.moveSelection(true));
+		addIconButton(
+				MaterialDesignResources.INSTANCE.arrow_drop_down(), w -> widgets.moveSelection(false));
+		addIconButton(MaterialDesignResources.INSTANCE.delete_black(), w -> widgets.deleteSelection());
 	}
 
-	private void addIconButton(SVGResource img,
-			FastClickHandler clickHandler) {
+	private void addIconButton(SVGResource img, FastClickHandler clickHandler) {
 		StandardButton btn = new StandardButton(img, null, 24);
 		btn.addFastClickHandler(clickHandler);
 		btn.addStyleName("IconButton");

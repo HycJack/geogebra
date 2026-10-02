@@ -16,8 +16,8 @@
 
 package org.geogebra.common.euclidian;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -31,18 +31,17 @@ import java.util.stream.Collectors;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.util.StringUtil;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class EuclidianConstantsTest extends BaseUnitTest {
+class EuclidianConstantsTest extends BaseUnitTest {
 
-	private static Set<Integer> modes = new TreeSet<>();
+	private static final Set<Integer> modes = new TreeSet<>();
 
 	/** Collect all modes other than macros */
-	@BeforeClass
-	public static void collectModes() throws IllegalAccessException {
-		Field[] fields = EuclidianConstants.class
-			.getFields();
+	@BeforeAll
+	static void collectModes() throws IllegalAccessException {
+		Field[] fields = EuclidianConstants.class.getFields();
 
 		for (Field f : fields) {
 			if (f.getName().startsWith("MODE_") && !"MODE_MACRO".equals(f.getName())) {
@@ -52,15 +51,16 @@ public class EuclidianConstantsTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void allModesShouldHaveHelpPage() {
+	void allModesShouldHaveHelpPage() {
 		String pathname = "../../../../manual/en/modules/ROOT/pages/tools";
 		File manual = new File(pathname);
 		assumeTrue(manual.isDirectory());
 		StringBuilder missing = new StringBuilder();
 		List<String> files = Arrays.asList(Objects.requireNonNull(manual.list()));
-		for (int mode: modes) {
+		for (int mode : modes) {
 			String modeText = EuclidianConstants.getModeText(mode);
-			if (!StringUtil.empty(modeText) && !EuclidianConstants.isNotesTool(mode)
+			if (!StringUtil.empty(modeText)
+					&& !EuclidianConstants.isNotesTool(mode)
 					&& mode != EuclidianConstants.MODE_PROBABILITY_CALCULATOR
 					&& mode != EuclidianConstants.MODE_PHOTO_LIBRARY) {
 				String english = EuclidianConstants.getModeHelpPage(mode);
@@ -73,7 +73,7 @@ public class EuclidianConstantsTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void allModesShouldHaveHelp() {
+	void allModesShouldHaveHelp() {
 		String missing = modes.stream()
 				.filter(Predicate.not(EuclidianConstants::isNotesTool))
 				.map(EuclidianConstants::getHelpTransKey)
@@ -83,11 +83,11 @@ public class EuclidianConstantsTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void allModesShouldHaveName() {
-		String missing = modes.stream().map(EuclidianConstants::getModeText)
+	void allModesShouldHaveName() {
+		String missing = modes.stream()
+				.map(EuclidianConstants::getModeText)
 				.filter(Predicate.not(getApp().getLocalization()::hasMenu))
 				.collect(Collectors.joining(", "));
 		assertEquals("Graspable Math, PDF", missing);
 	}
-
 }

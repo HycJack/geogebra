@@ -16,9 +16,6 @@
 
 package org.geogebra.common.contextmenu;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.gui.view.algebra.AlgebraItem;
 import org.geogebra.common.gui.view.algebra.Suggestion;
 import org.geogebra.common.gui.view.algebra.SuggestionIntersectExtremum;
@@ -32,11 +29,12 @@ import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
 import org.geogebra.common.main.App;
-import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.common.plugin.EventType;
 import org.geogebra.common.properties.PropertyView;
 import org.geogebra.common.properties.PropertyViewFactory;
 import org.geogebra.common.scientific.LabelController;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Weak;
 
@@ -68,22 +66,13 @@ public final class AlgebraContextMenuActionHandler {
 		 * Adds the given formula to a new algebra view item for editing
 		 * @param formula the formula to add
 		 */
-		void addFormulaToAlgebraView(@Nonnull String formula);
-
-		/**
-		 * Displays the object settings view for legacy object properties.
-		 * @apiNote If the method was called, it was already verified
-		 * that {@link PreviewFeature#SETTINGS_VIEW} is disabled.
-		 */
-		void showOldObjectProperties();
+		void addFormulaToAlgebraView(@NonNull String formula);
 
 		/**
 		 * Displays the object settings view for the new object properties.
 		 * @param tabbedPageSelector the root {@link PropertyView} for the view to display
-		 * @apiNote If the method was called, it was already verified
-		 * that {@link PreviewFeature#SETTINGS_VIEW} is enabled.
 		 */
-		void showObjectProperties(@Nonnull PropertyView.TabbedPageSelector tabbedPageSelector);
+		void showObjectProperties(PropertyView.@NonNull TabbedPageSelector tabbedPageSelector);
 	}
 
 	/**
@@ -93,8 +82,11 @@ public final class AlgebraContextMenuActionHandler {
 	 * @param geoElement the element in the algebra view for which the context menu was open
 	 * @param delegate the delegate for the platform-specific operations
 	 */
-	public AlgebraContextMenuActionHandler(@Nonnull App app, @Nonnull TableValues tableValues,
-			@CheckForNull GeoElement geoElement, @Nonnull Delegate delegate) {
+	public AlgebraContextMenuActionHandler(
+			@NonNull App app,
+			@NonNull TableValues tableValues,
+			@Nullable GeoElement geoElement,
+			@NonNull Delegate delegate) {
 		this.app = app;
 		this.tableValues = tableValues;
 		this.geoElement = geoElement;
@@ -105,7 +97,7 @@ public final class AlgebraContextMenuActionHandler {
 	 * Perform the action for the selected context menu item.
 	 * @param selectedItem the selected context menu item
 	 */
-	public void handleSelectedItem(@Nonnull AlgebraContextMenuItem selectedItem) {
+	public void handleSelectedItem(@NonNull AlgebraContextMenuItem selectedItem) {
 		if (geoElement == null) {
 			if (selectedItem == AlgebraContextMenuItem.Delete) {
 				delegate.clearAlgebraInput();
@@ -152,10 +144,11 @@ public final class AlgebraContextMenuActionHandler {
 	private void showSettings() {
 		app.getSelectionManager().clearSelectedGeos();
 		app.getSelectionManager().addSelectedGeo(geoElement);
-		if (PreviewFeature.isAvailable(PreviewFeature.SETTINGS_VIEW)) {
-			delegate.showObjectProperties(PropertyViewFactory.propertyViewOfObjectSettings(app));
-		} else {
-			delegate.showOldObjectProperties();
+		PropertyView.TabbedPageSelector tabbedPageSelector =
+				PropertyViewFactory.propertyViewOfObjectSettings(
+						app, app.getSelectionManager().getSelectedGeos());
+		if (tabbedPageSelector != null) {
+			delegate.showObjectProperties(tabbedPageSelector);
 		}
 	}
 

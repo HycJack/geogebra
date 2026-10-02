@@ -22,7 +22,7 @@ import org.geogebra.common.kernel.arithmetic.Command;
 import org.geogebra.common.kernel.commands.CommandProcessor;
 import org.geogebra.common.kernel.commands.Commands;
 import org.geogebra.common.kernel.commands.EvalInfo;
-import org.geogebra.common.kernel.geos.CasEvaluableFunction;
+import org.geogebra.common.kernel.geos.AlgebraicExpression;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoFunctionable;
 import org.geogebra.common.kernel.geos.GeoText;
@@ -35,7 +35,7 @@ public class CmdSimplify extends CommandProcessor implements UsesCAS {
 
 	/**
 	 * Create new command processor
-	 * 
+	 *
 	 * @param kernel
 	 *            kernel
 	 */
@@ -44,34 +44,34 @@ public class CmdSimplify extends CommandProcessor implements UsesCAS {
 	}
 
 	@Override
-	final public GeoElement[] process(Command c, EvalInfo info) throws MyError {
+	public final GeoElement[] process(Command c, EvalInfo info) throws MyError {
 		int n = c.getArgumentNumber();
 		GeoElement[] arg;
 		arg = resArgs(c, info);
 		AlgoElement algo;
-		switch (n) {
-		case 1:
-			if (arg[0] instanceof CasEvaluableFunction) {
-				algo = new AlgoCasBaseSingleArgument(cons, c.getLabel(),
-						(CasEvaluableFunction) arg[0], Commands.Simplify, info);
+		if (n == 1) {
+			if (arg[0] instanceof AlgebraicExpression) {
+				algo = new AlgoCasBaseSingleArgument(
+						cons, c.getLabel(), (AlgebraicExpression) arg[0], Commands.Simplify, info);
 
 			} else if (arg[0] instanceof GeoFunctionable) {
-				algo = new AlgoCasBaseSingleArgument(cons, c.getLabel(),
+				algo = new AlgoCasBaseSingleArgument(
+						cons,
+						c.getLabel(),
 						((GeoFunctionable) arg[0]).getGeoFunction(),
-						Commands.Simplify, info);
+						Commands.Simplify,
+						info);
 
 			} else if (arg[0].isGeoText()) {
-				algo = new AlgoSimplifyText(cons, c.getLabel(),
-						(GeoText) arg[0]);
+				algo = new AlgoSimplifyText(cons, c.getLabel(), (GeoText) arg[0]);
 
 			} else {
 				throw argErr(c, arg[0]);
 			}
-			GeoElement[] ret = { algo.getOutput(0) };
+			GeoElement[] ret = {algo.getOutput(0)};
 			return ret;
-		// more than one argument
-		default:
-			throw argNumErr(c);
+			// more than one argument
 		}
+		throw argNumErr(c);
 	}
 }

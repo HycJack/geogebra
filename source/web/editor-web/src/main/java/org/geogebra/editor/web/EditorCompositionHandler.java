@@ -19,6 +19,7 @@ package org.geogebra.editor.web;
 import org.geogebra.editor.share.event.KeyEvent;
 import org.geogebra.editor.share.tree.Korean;
 import org.geogebra.editor.share.util.JavaKeyCodes;
+import org.geogebra.gwtutil.JsObject;
 import org.gwtproject.event.dom.client.KeyCodeEvent;
 import org.gwtproject.event.dom.client.KeyDownEvent;
 import org.gwtproject.event.dom.client.KeyDownHandler;
@@ -30,7 +31,7 @@ import jsinterop.base.JsPropertyMap;
 
 /**
  * Composition handler for math input
- * 
+ *
  * @author Zbynek
  */
 final class EditorCompositionHandler
@@ -72,16 +73,14 @@ final class EditorCompositionHandler
 		// so flatten the result and send just the last character
 		String data = Korean.flattenKorean(event.getData());
 		// ^: fix for swedish
-		if (!"^".equals(data) && data.length() > 0) {
+		if (!"^".equals(data) && !data.isEmpty()) {
 			char inputChar = data.charAt(data.length() - 1);
 			char lastChar = Korean.unmergeDoubleCharacterForEditor(inputChar);
-			if (Korean.isCompatibilityChar(lastChar)
-					|| Korean.isSingleKoreanChar(lastChar)) {
+			if (Korean.isCompatibilityChar(lastChar) || Korean.isSingleKoreanChar(lastChar)) {
 				editor.insertString("" + lastChar);
 			} else {
 				insertOnEnd = true;
 			}
-
 		}
 	}
 
@@ -89,23 +88,24 @@ final class EditorCompositionHandler
 	public void onCompositionEnd(CompositionEndEvent event) {
 		if (insertOnEnd) {
 			// inserted string should only depend on `compositionend`
-			// in Safari the data in `cmpositionupdate` is just Latin chars
+			// in Safari the data in `compositionupdate` is just Latin chars
 			editor.insertString(event.getData());
 			editor.getInternal().notifyAndUpdate(event.getData());
 		}
 	}
 
 	private <T> boolean composingBackspace(KeyCodeEvent<T> event) {
-		JsPropertyMap<Object> nativeEvent = Js.asPropertyMap(event.getNativeEvent());
+		JsPropertyMap<Object> nativeEvent = JsObject.of(event.getNativeEvent());
 		return Js.isTruthy(nativeEvent.get("isComposing"))
-			&& "Backspace".equals(nativeEvent.get("code"));
+				&& "Backspace".equals(nativeEvent.get("code"));
 	}
 
 	@Override
 	public void onKeyDown(KeyDownEvent event) {
 		if (composingBackspace(event)) {
-			editor.getKeyListener().onKeyPressed(new KeyEvent(JavaKeyCodes.VK_BACK_SPACE,
-					KeyEvent.KeyboardType.EXTERNAL));
+			editor
+					.getKeyListener()
+					.onKeyPressed(new KeyEvent(JavaKeyCodes.VK_BACK_SPACE, KeyEvent.KeyboardType.EXTERNAL));
 			backspace = true;
 		}
 	}

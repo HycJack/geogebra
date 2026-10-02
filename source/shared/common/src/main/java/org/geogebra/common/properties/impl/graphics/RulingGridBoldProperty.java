@@ -23,6 +23,10 @@ import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.properties.aliases.BooleanProperty;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
 
+/**
+ * {@code Property} responsible for applying bold style to the euclidian view's grid in Notes.
+ * @apiNote For other apps {@link GridBoldProperty} is used instead.
+ */
 public class RulingGridBoldProperty extends AbstractValuedProperty<Boolean>
 		implements BooleanProperty, SettingsDependentProperty {
 	private final EuclidianSettings euclidianSettings;
@@ -39,17 +43,12 @@ public class RulingGridBoldProperty extends AbstractValuedProperty<Boolean>
 
 	@Override
 	protected void doSetValue(Boolean value) {
-		if (euclidianSettings.getShowGrid()) {
-			euclidianSettings.setGridIsBold(value);
-		} else {
-			euclidianSettings.setRulerBold(value);
-		}
+		euclidianSettings.setRulerBold(value);
 	}
 
 	@Override
 	public Boolean getValue() {
-		return euclidianSettings.getShowGrid() ? euclidianSettings.getGridIsBold()
-				: euclidianSettings.isRulerBold();
+		return euclidianSettings.isRulerBold();
 	}
 
 	@Override
@@ -57,12 +56,11 @@ public class RulingGridBoldProperty extends AbstractValuedProperty<Boolean>
 		BackgroundType backgroundType = euclidianSettings.getBackgroundType();
 		return backgroundType == BackgroundType.RULER
 				|| backgroundType == BackgroundType.SQUARE_SMALL
-				|| backgroundType == BackgroundType.SQUARE_BIG
-				|| euclidianSettings.getShowGrid();
+				|| backgroundType == BackgroundType.SQUARE_BIG;
 	}
 
 	@Override
-	public AbstractSettings getSettings() {
+	public AbstractSettings<?> getSettings() {
 		return euclidianSettings;
 	}
 }

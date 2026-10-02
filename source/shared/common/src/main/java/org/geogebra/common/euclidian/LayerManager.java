@@ -48,8 +48,7 @@ public class LayerManager {
 		if (renaming) {
 			return;
 		}
-		if (geo instanceof GeoLocusStroke) {
-			GeoLocusStroke stroke = (GeoLocusStroke) geo;
+		if (geo instanceof GeoLocusStroke stroke) {
 			if (stroke.getSplitParentLabel() != null) {
 				drawingOrder.add(getInsertionIndex(stroke), geo);
 				return;
@@ -150,7 +149,8 @@ public class LayerManager {
 		}
 
 		// Add all elements in the same group as the geo in front
-		while (idx < drawingOrder.size() && drawingOrder.get(idx).hasGroup()
+		while (idx < drawingOrder.size()
+				&& drawingOrder.get(idx).hasGroup()
 				&& getGroupOf(idx - 1) == getGroupOf(idx)) {
 			resultingOrder.add(drawingOrder.get(idx));
 			idx++;
@@ -182,8 +182,8 @@ public class LayerManager {
 		drawingOrder = result;
 	}
 
-	private void insertRemainingGeos(ArrayList<GeoElement> result,
-									 List<GeoElement> selection, int index) {
+	private void insertRemainingGeos(
+			ArrayList<GeoElement> result, List<GeoElement> selection, int index) {
 		int idx = index;
 		while (idx >= 0) {
 			if (!selection.contains(drawingOrder.get(idx))) {
@@ -200,13 +200,11 @@ public class LayerManager {
 			idx--;
 		}
 		// Add all elements in the same group as the geo behind
-		while (idx >= 0 && drawingOrder.get(idx).hasGroup()
-				&& getGroupOf(idx + 1) == getGroupOf(idx)) {
+		while (idx >= 0 && drawingOrder.get(idx).hasGroup() && getGroupOf(idx + 1) == getGroupOf(idx)) {
 			result.add(0, drawingOrder.get(idx));
 			idx--;
 		}
 		return idx;
-
 	}
 
 	private int insertGeosBefore(List<GeoElement> selection, ArrayList<GeoElement> order) {
@@ -382,123 +380,118 @@ public class LayerManager {
 		int index = indexOf(geo);
 
 		switch (movement) {
-		case BACK: if (index + 1 >= lastIndex && index - 1 <= firstIndex) {
-			geo.setOrdering(orderingDepthMidpoint(index));
-		} else {
-			if (index == firstIndex) {
-				if (index != 0) { //first one in group but not in ordering list
+			case BACK:
+				if (index + 1 >= lastIndex && index - 1 <= firstIndex) {
 					geo.setOrdering(orderingDepthMidpoint(index));
-				} //else, first in group & order thing
-				else {
-					geo.setOrdering(drawingOrder.get(index + 1).getOrdering() - 1);
-				}
-			} else {
-				if (index == lastIndex) {
-					if (index != drawingOrder.size() - 1) { //last one in group but not in ordering
-						geo.setOrdering(orderingDepthMidpoint(index));
-					} //else, first in group & order thing
-					else {
-						geo.setOrdering(drawingOrder.get(index - 1).getOrdering() + 1);
-					}
-				}
-			}
-		}
-			break;
-		case FRONT:
-			if (index + 1 <= lastIndex && index - 1 >= firstIndex) {
-				geo.setOrdering(orderingDepthMidpoint(index));
-			} else {
-				if (index == lastIndex) {
-					if (index != drawingOrder.size() - 1) { //last one in group but not in ordering
-						geo.setOrdering(orderingDepthMidpoint(index));
-					} //else, last in group & order thing
-					else {
-						geo.setOrdering(drawingOrder.get(index - 1).getOrdering() + 1);
-					}
-				}  else {
+				} else {
 					if (index == firstIndex) {
-						if (index != 0) { //first one in group but not in ordering
+						if (index != 0) { // first one in group but not in ordering list
 							geo.setOrdering(orderingDepthMidpoint(index));
-						} //else, first in group & order thing
+						} // else, first in group & order thing
+						else {
+							geo.setOrdering(drawingOrder.get(index + 1).getOrdering() - 1);
+						}
+					} else if (index == lastIndex) {
+						if (index != drawingOrder.size() - 1) { // last one in group but not in ordering
+							geo.setOrdering(orderingDepthMidpoint(index));
+						} // else, first in group & order thing
+						else {
+							geo.setOrdering(drawingOrder.get(index - 1).getOrdering() + 1);
+						}
+					}
+				}
+				break;
+			case FRONT:
+				if (index + 1 <= lastIndex && index - 1 >= firstIndex) {
+					geo.setOrdering(orderingDepthMidpoint(index));
+				} else {
+					if (index == lastIndex) {
+						if (index != drawingOrder.size() - 1) { // last one in group but not in ordering
+							geo.setOrdering(orderingDepthMidpoint(index));
+						} // else, last in group & order thing
+						else {
+							geo.setOrdering(drawingOrder.get(index - 1).getOrdering() + 1);
+						}
+					} else if (index == firstIndex) {
+						if (index != 0) { // first one in group but not in ordering
+							geo.setOrdering(orderingDepthMidpoint(index));
+						} // else, first in group & order thing
 						else {
 							geo.setOrdering(drawingOrder.get(index - 1).getOrdering() - 1);
 						}
 					}
-				} //else depth stays the same (double check this)
-			}
-			break;
-		default:
-			break;
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
 	private void updateOrderingForSelection(List<GeoElement> selection, ObjectMovement movement) {
 
 		int selectionEnd = selection.stream().mapToInt(drawingOrder::indexOf).max().getAsInt();
-		int selectionStart = selection.stream().mapToInt(drawingOrder::indexOf).min().getAsInt();
+		int selectionStart =
+				selection.stream().mapToInt(drawingOrder::indexOf).min().getAsInt();
 
 		switch (movement) {
-		case BACKWARD:
+			case BACKWARD:
+				if (selectionStart == 0) {
+					if (selection.size() != drawingOrder.size()) {
+						for (int i = selectionEnd; i >= 0; i--) {
+							drawingOrder.get(i).setOrdering(drawingOrder.get(i + 1).getOrdering() - 1f);
+						}
+					}
+				} else {
+					// selection start is not the first in the list
+					if (selectionEnd == drawingOrder.size() - 1) {
+						// last one in selection is last in list
+						for (int i = selectionStart; i <= selectionEnd; i++) {
+							drawingOrder.get(i).setOrdering(drawingOrder.get(i - 1).getOrdering() + 1);
+						}
+					} else { // it's inbetween
+						double minOrdering = drawingOrder.get(selectionStart - 1).getOrdering();
+						double maxOrdering = drawingOrder.get(selectionEnd + 1).getOrdering();
+						double increment = (maxOrdering - minOrdering) / (selection.size() + 1);
 
-			if (selectionStart == 0) {
+						for (int i = selectionStart; i <= selectionEnd; i++) {
+							drawingOrder.get(i).setOrdering(drawingOrder.get(i - 1).getOrdering() + increment);
+						}
+					}
+				}
+				break;
+
+			case BACK:
 				if (selection.size() != drawingOrder.size()) {
 					for (int i = selectionEnd; i >= 0; i--) {
 						drawingOrder.get(i).setOrdering(drawingOrder.get(i + 1).getOrdering() - 1f);
 					}
 				}
-			} else {
-				//selection start is not the first in the list
-				if (selectionEnd == drawingOrder.size() - 1) {
-					//last one in selection is last in list
-					for (int i = selectionStart; i <= selectionEnd; i++) {
-						drawingOrder.get(i).setOrdering(drawingOrder.get(i - 1).getOrdering() + 1);
+				break;
+
+			case FRONT:
+			case FORWARD:
+				if (selectionEnd < drawingOrder.size() - 1) {
+					int previousIndex = selectionStart - 1;
+					if (previousIndex >= 0 && selectionEnd == drawingOrder.size() - 1) {
+						// the last thing in the list -> inc all by 1
+						for (GeoElement geo : selection) {
+							geo.setOrdering(drawingOrder.get(previousIndex).getOrdering() + 1);
+							previousIndex++;
+						}
+					} else { // they are somewhere inbetween
+						for (GeoElement geo : selection) {
+							geo.setOrdering(
+									orderingDepthMidpoint(drawingOrder.indexOf(geo) - 1, selectionEnd + 1));
+						}
 					}
-				} else { //it's inbetween
-					double minOrdering = drawingOrder.get(selectionStart - 1).getOrdering();
-					double maxOrdering = drawingOrder.get(selectionEnd + 1).getOrdering();
-					double increment = (maxOrdering - minOrdering) / (selection.size() + 1);
-
-					for (int i = selectionStart; i <= selectionEnd; i++) {
-						drawingOrder.get(i)
-								.setOrdering(drawingOrder.get(i - 1).getOrdering() + increment);
-					}
-				}
-			}
-			break;
-
-		case BACK:
-			if (selection.size() != drawingOrder.size()) {
-				for (int i = selectionEnd; i >= 0; i--) {
-					drawingOrder.get(i).setOrdering(drawingOrder.get(i + 1).getOrdering() - 1f);
-				}
-			}
-			break;
-
-		case FRONT:
-		case FORWARD:
-
-			if (selectionEnd < drawingOrder.size() - 1) {
-				int previousIndex = selectionStart - 1;
-				if (previousIndex >= 0 && selectionEnd ==  drawingOrder.size() - 1) {
-					//the last thing in the list -> inc all by 1
+				} else {
+					double newOrdering = drawingOrder.get(selectionStart - 1).getOrdering();
 					for (GeoElement geo : selection) {
-						geo.setOrdering(drawingOrder.get(previousIndex).getOrdering() + 1);
-						previousIndex++;
-					}
-				} else { //they are somewhere inbetween
-					for (GeoElement geo : selection) {
-						geo.setOrdering(orderingDepthMidpoint(
-								drawingOrder.indexOf(geo) - 1, selectionEnd + 1));
+						geo.setOrdering(newOrdering + 1);
+						newOrdering++;
 					}
 				}
-			} else {
-				double newOrdering = drawingOrder.get(selectionStart - 1).getOrdering();
-				for (GeoElement geo : selection) {
-					geo.setOrdering(newOrdering + 1);
-					newOrdering++;
-				}
-			}
-			break;
+				break;
 		}
 
 		selection.forEach(geoElement -> geoElement.updateVisualStyle(GProperty.LAYER));
@@ -509,8 +502,9 @@ public class LayerManager {
 	 * @return ordering
 	 */
 	public double orderingDepthMidpoint(int index) {
-		return (drawingOrder.get(index + 1).getOrdering() + drawingOrder.get(index - 1)
-				.getOrdering()) / 2;
+		return (drawingOrder.get(index + 1).getOrdering()
+						+ drawingOrder.get(index - 1).getOrdering())
+				/ 2;
 	}
 
 	/** midpoint between two FP values
@@ -519,8 +513,7 @@ public class LayerManager {
 	 * @return ordering
 	 */
 	public double orderingDepthMidpoint(int index, int endIndex) {
-		return (drawingOrder.get(index).getOrdering() + drawingOrder.get(endIndex)
-				.getOrdering()) / 2;
+		return (drawingOrder.get(index).getOrdering() + drawingOrder.get(endIndex).getOrdering()) / 2;
 	}
 
 	private int indexOf(GeoElement geo) {
@@ -546,7 +539,7 @@ public class LayerManager {
 	private int getInsertionIndex(GeoElement geo) {
 		int insertionIndex = Collections.binarySearch(drawingOrder, geo, Group.orderComparator);
 		if (insertionIndex < 0) {
-			insertionIndex = - insertionIndex - 1; // Convert to the actual insertion point
+			insertionIndex = -insertionIndex - 1; // Convert to the actual insertion point
 		}
 		return insertionIndex;
 	}
@@ -584,6 +577,9 @@ public class LayerManager {
 		sortByOrder(drawingOrder);
 	}
 
+	/**
+	 * @param renaming whether element rename is running
+	 */
 	public void setRenameRunning(boolean renaming) {
 		this.renaming = renaming;
 	}
@@ -593,8 +589,8 @@ public class LayerManager {
 	 */
 	public String getOrder() {
 		StringBuilder sb = new StringBuilder();
-		for (GeoElement geo: drawingOrder) {
-			if (sb.length() != 0) {
+		for (GeoElement geo : drawingOrder) {
+			if (!sb.isEmpty()) {
 				sb.append(",");
 			}
 			sb.append(geo.getLabelSimple());
@@ -610,8 +606,7 @@ public class LayerManager {
 		drawingOrder.remove(newGeo);
 		newGeo.setOrdering(ordering);
 		drawingOrder.add(getInsertionIndex(newGeo), newGeo);
-		newGeo.getKernel().getApplication()
-					.getActiveEuclidianView().invalidateDrawableList();
+		newGeo.getKernel().getApplication().getActiveEuclidianView().invalidateDrawableList();
 	}
 
 	public ArrayList<GeoElement> getTargetGeos() {
@@ -627,5 +622,17 @@ public class LayerManager {
 	public void updateDrawingListAndUI(GeoElement updatedGeo, double ordering) {
 		drawingOrder.get(drawingOrder.indexOf(updatedGeo)).setOrdering(ordering);
 		updatedGeo.updateVisualStyle(GProperty.LAYER);
+	}
+
+	/**
+	 * @param anchor anchor element
+	 * @return difference in ordering between this and next element, fall back to 1.0
+	 */
+	public double getDeltaToNext(GeoElement anchor) {
+		int index = drawingOrder.indexOf(anchor);
+		if (index >= 0 && index + 1 < drawingOrder.size()) {
+			return drawingOrder.get(index + 1).getOrdering() - anchor.getOrdering();
+		}
+		return 1.0;
 	}
 }

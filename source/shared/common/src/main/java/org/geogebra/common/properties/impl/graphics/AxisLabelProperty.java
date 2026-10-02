@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -23,14 +23,12 @@ import static org.geogebra.common.gui.dialog.options.model.AxisModel.AXIS_Z;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
-import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This property controls the label on an axis.
@@ -48,8 +46,8 @@ public class AxisLabelProperty extends AbstractValuedProperty<String>
 	 * @param label the name of the axis
 	 * @param axis the axis for label
 	 */
-	public AxisLabelProperty(Localization localization,
-			EuclidianSettings euclidianSettings, String label, int axis) {
+	public AxisLabelProperty(
+			Localization localization, EuclidianSettings euclidianSettings, String label, int axis) {
 		super(localization, label);
 		this.euclidianSettings = euclidianSettings;
 		this.axis = axis;
@@ -61,16 +59,16 @@ public class AxisLabelProperty extends AbstractValuedProperty<String>
 		labels.add("");
 		String defaultLabel;
 		switch (axis) {
-		case AXIS_X:
-			defaultLabel = "x";
-			break;
-		case AXIS_Y:
-		default:
-			defaultLabel = "y";
-			break;
-		case AXIS_Z:
-			defaultLabel = "z";
-			break;
+			case AXIS_X:
+				defaultLabel = "x";
+				break;
+			case AXIS_Y:
+			default:
+				defaultLabel = "y";
+				break;
+			case AXIS_Z:
+				defaultLabel = "z";
+				break;
 		}
 		labels.add(defaultLabel);
 		GeoElement.addAddAllGreekLowerCaseNoPi(labels);
@@ -92,20 +90,7 @@ public class AxisLabelProperty extends AbstractValuedProperty<String>
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
+	public @Nullable String validateValue(String value) {
 		return null;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		if (PreviewFeature.isAvailable(PreviewFeature.SETTINGS_VIEW)) {
-			return true;
-		}
-		String[] labels = euclidianSettings.getAxesLabels();
-		boolean enabled = false;
-		for (int i = 0; i < euclidianSettings.getDimension(); i++) {
-			enabled |= labels[i] != null;
-		}
-		return enabled;
 	}
 }

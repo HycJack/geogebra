@@ -21,14 +21,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.geos.ChartStyleGeo;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.statistics.GeoPieChart;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.impl.AbstractNamedEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.NonNull;
 
 /**
  * {@code Property} responsible for selecting a bar or a slice for a bar chart or pie chart
@@ -44,8 +43,8 @@ public class ChartSegmentSelectionProperty extends AbstractNamedEnumeratedProper
 	 * @param geoElement the element to create the property for
 	 * @throws NotApplicablePropertyException if the property is not applicable for the given element
 	 */
-	public ChartSegmentSelectionProperty(Localization localization, GeoElement geoElement,
-			ChartSegmentSelection chartSegmentSelection)
+	public ChartSegmentSelectionProperty(
+			Localization localization, GeoElement geoElement, ChartSegmentSelection chartSegmentSelection)
 			throws NotApplicablePropertyException {
 		super(localization, "Selection");
 		if (!(geoElement instanceof ChartStyleGeo)) {
@@ -56,7 +55,7 @@ public class ChartSegmentSelectionProperty extends AbstractNamedEnumeratedProper
 	}
 
 	@Override
-	public @Nonnull List<Integer> getValues() {
+	public @NonNull List<Integer> getValues() {
 		int numberOfIntervals = ((ChartStyleGeo) geoElement).getIntervals();
 		return IntStream.range(0, numberOfIntervals + 1).boxed().collect(Collectors.toList());
 	}
@@ -67,10 +66,11 @@ public class ChartSegmentSelectionProperty extends AbstractNamedEnumeratedProper
 		String firstValueTransKey = geoElement instanceof GeoPieChart ? "AllSlices" : "AllBars";
 		String valueTransKey = geoElement instanceof GeoPieChart ? "SliceA" : "BarA";
 		return Stream.concat(
-				Stream.of(getLocalization().getMenu(firstValueTransKey)),
-				IntStream.rangeClosed(1, numberOfIntervals).mapToObj(index ->
-						getLocalization().getPlain(valueTransKey, String.valueOf(index)))
-		).toArray(String[]::new);
+						Stream.of(getLocalization().getMenu(firstValueTransKey)),
+						IntStream.rangeClosed(1, numberOfIntervals)
+								.mapToObj(
+										index -> getLocalization().getPlain(valueTransKey, String.valueOf(index))))
+				.toArray(String[]::new);
 	}
 
 	@Override

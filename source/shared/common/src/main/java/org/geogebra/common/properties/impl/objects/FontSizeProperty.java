@@ -21,11 +21,8 @@ import static java.util.Map.entry;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
-import org.geogebra.common.kernel.geos.HasTextFormatter;
 import org.geogebra.common.kernel.geos.TextProperties;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.impl.AbstractNamedEnumeratedProperty;
@@ -33,12 +30,14 @@ import org.geogebra.common.properties.impl.objects.FontSizeProperty.FontSize;
 import org.geogebra.common.properties.impl.objects.delegate.FontStyleDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.GeoElementDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.NonNull;
 
 /**
  * {@code Property} responsible for setting the font size of texts.
  */
 public class FontSizeProperty extends AbstractNamedEnumeratedProperty<FontSize>
 		implements GeoElementDependentProperty {
+
 	/**
 	 * Possible values for font sizes.
 	 */
@@ -64,7 +63,7 @@ public class FontSizeProperty extends AbstractNamedEnumeratedProperty<FontSize>
 		 * @param multiplier the font size multiplier to match
 		 * @return the matching {@code FontSize}
 		 */
-		public static @Nonnull FontSize withFontSizeMultiplier(double multiplier) {
+		public static @NonNull FontSize withFontSizeMultiplier(double multiplier) {
 			// If the multiplier is below the minimum value, use the smallest font size
 			if (multiplier <= EXTRA_SMALL.multiplier) {
 				return EXTRA_SMALL;
@@ -75,8 +74,9 @@ public class FontSizeProperty extends AbstractNamedEnumeratedProperty<FontSize>
 				// Find the two neighboring font sizes between which this multiplier falls
 				if (multiplier <= currentFontSize.multiplier) {
 					// Return the nearest neighbouring font size
-					return (previousFontSize.multiplier + currentFontSize.multiplier) / 2.0
-							< multiplier ? currentFontSize : previousFontSize;
+					return (previousFontSize.multiplier + currentFontSize.multiplier) / 2.0 < multiplier
+							? currentFontSize
+							: previousFontSize;
 				}
 			}
 			// If the multiplier is above the maximum value, use the largest font size
@@ -86,7 +86,7 @@ public class FontSizeProperty extends AbstractNamedEnumeratedProperty<FontSize>
 		/**
 		 * @return the translation key associated with this font size
 		 */
-		public @Nonnull String getTranslationKey() {
+		public @NonNull String getTranslationKey() {
 			return translationKey;
 		}
 
@@ -121,8 +121,6 @@ public class FontSizeProperty extends AbstractNamedEnumeratedProperty<FontSize>
 		if (element instanceof TextProperties textProperties
 				&& textProperties.getFontSizeMultiplier() != fontSize.multiplier) {
 			textProperties.setFontSizeMultiplier(fontSize.multiplier);
-		} else if (element instanceof HasTextFormatter hasTextFormatter) {
-			hasTextFormatter.format("size", fontSize.multiplier * getBaseFontSize());
 		}
 		element.updateVisualStyleRepaint(GProperty.FONT);
 	}
@@ -130,10 +128,7 @@ public class FontSizeProperty extends AbstractNamedEnumeratedProperty<FontSize>
 	@Override
 	public FontSize getValue() {
 		GeoElement element = delegate.getElement();
-		if (element instanceof HasTextFormatter hasTextFormatter) {
-			double multiplier = hasTextFormatter.getFormat("size", 0d) / getBaseFontSize();
-			return FontSize.withFontSizeMultiplier(multiplier);
-		} else if (element instanceof TextProperties textStyle) {
+		if (element instanceof TextProperties textStyle) {
 			return FontSize.withFontSizeMultiplier(textStyle.getFontSizeMultiplier());
 		}
 		return null;
@@ -142,10 +137,5 @@ public class FontSizeProperty extends AbstractNamedEnumeratedProperty<FontSize>
 	@Override
 	public GeoElement getGeoElement() {
 		return delegate.getElement();
-	}
-
-	private double getBaseFontSize() {
-		// dependency on getApp will be removed when inline text size is switched to absolute
-		return delegate.getElement().getApp().getFontSize();
 	}
 }

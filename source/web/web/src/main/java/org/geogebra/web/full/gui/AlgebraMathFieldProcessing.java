@@ -21,7 +21,7 @@ import org.geogebra.common.gui.inputfield.HasLastItem;
 import org.geogebra.web.editor.MathFieldProcessing;
 import org.geogebra.web.full.gui.view.algebra.RadioTreeItem;
 
-public class AlgebraMathFieldProcessing extends MathFieldProcessing {
+public final class AlgebraMathFieldProcessing extends MathFieldProcessing {
 
 	private final RadioTreeItem avInput;
 	private final AnsProvider ansProvider;
@@ -43,11 +43,18 @@ public class AlgebraMathFieldProcessing extends MathFieldProcessing {
 		}
 		boolean isInputInTextMode = mf.getInternal().getInputController().getPlainTextMode();
 		String currentInput = mf.getText();
-		String ans =
-				isInputInTextMode
-						? ansProvider.getAnsForTextInput(avInput.getGeo(), currentInput)
-						: ansProvider.getAns(avInput.getGeo(), currentInput);
+		String ans = isInputInTextMode
+				? ansProvider.getAnsForTextInput(avInput.getGeo(), currentInput)
+				: ansProvider.getAns(avInput.getGeo(), currentInput);
 		mf.insertString(ans);
+	}
+
+	@Override
+	public void setFocus(boolean focus) {
+		if (focus) {
+			avInput.ensureFocusable();
+		}
+		mf.setFocus(focus);
 	}
 
 	@Override

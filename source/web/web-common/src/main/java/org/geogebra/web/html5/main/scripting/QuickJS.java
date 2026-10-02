@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.geogebra.common.util.InjectJsInterop;
 import org.geogebra.common.util.debug.Log;
+import org.geogebra.gwtutil.JsObject;
 
 import elemental2.core.Function;
 import elemental2.core.JsArray;
@@ -38,7 +39,7 @@ public class QuickJS {
 
 	@JsOverlay
 	static QuickJS get() {
-		return Js.uncheckedCast(Js.asPropertyMap(DomGlobal.window).get("QJS"));
+		return Js.uncheckedCast(JsObject.of(DomGlobal.window).get("QJS"));
 	}
 
 	native Promise<Object> getQuickJS();
@@ -48,6 +49,7 @@ public class QuickJS {
 
 		@InjectJsInterop
 		public QuickJSHandle global;
+
 		public Function callFunction;
 
 		@JsProperty
@@ -95,7 +97,7 @@ public class QuickJS {
 	@JsType(isNative = true, namespace = JsPackage.GLOBAL)
 	static class ContextFactory {
 
-		public native QuickJSContext newContext();
+		native QuickJSContext newContext();
 	}
 
 	@JsType(isNative = true, namespace = JsPackage.GLOBAL)
@@ -108,7 +110,7 @@ public class QuickJS {
 	// in the same file as MethodWrapper class so that JsInterop with varargs works correctly
 	@JsOverlay
 	static Promise<Object> afterLibraryLoaded(Object exportedApi, SandboxConverter converter) {
-		final JsPropertyMap<Object> bundle = Js.asPropertyMap(exportedApi);
+		final JsPropertyMap<Object> bundle = JsObject.of(exportedApi);
 		return QuickJS.get().getQuickJS().then(factory -> {
 			QuickJSContext vm = Js.<QuickJS.ContextFactory>uncheckedCast(factory).newContext();
 			QuickJSHandle ggbApplet = vm.newObject();
@@ -116,13 +118,12 @@ public class QuickJS {
 			vm.setProp(vm.global, "window", vm.global);
 			vm.setProp(vm.global, "console", console);
 			vm.setProp(vm.global, "ggbApplet", ggbApplet);
-			JsPropertyMap<?> methods = Js.asPropertyMap(exportedApi);
-			methods.forEach(method ->
-					addWrappedMethod(ggbApplet, method, bundle, method, vm, converter));
-			JsPropertyMap<Object> consoleBundle = Js.asPropertyMap(DomGlobal.console);
-			Arrays.asList("error", "info", "log", "warn").forEach(method ->
-				addWrappedMethod(console, method, consoleBundle, method, vm, converter)
-			);
+			JsPropertyMap<?> methods = JsObject.of(exportedApi);
+			methods.forEach(method -> addWrappedMethod(ggbApplet, method, bundle, method, vm, converter));
+			JsPropertyMap<Object> consoleBundle = JsObject.of(DomGlobal.console);
+			Arrays.asList("error", "info", "log", "warn")
+					.forEach(
+							method -> addWrappedMethod(console, method, consoleBundle, method, vm, converter));
 			vm.setProp(vm.global, "open", vm.newFunction("", getWindowOpen(converter, vm)));
 			addWrappedMethod(vm.global, "alert", bundle, "showTooltip", vm, converter);
 			return Promise.resolve(vm);
@@ -132,8 +133,8 @@ public class QuickJS {
 	@JsOverlay
 	private static MethodWrapper getWindowOpen(SandboxConverter converter, QuickJSContext vm) {
 		return (sandboxArgs) -> {
-			Object url = sandboxArgs.length > 0 ? converter.fromSandboxObject(sandboxArgs[0], vm)
-					: Js.undefined();
+			Object url =
+					sandboxArgs.length > 0 ? converter.fromSandboxObject(sandboxArgs[0], vm) : Js.undefined();
 			if (url instanceof String && ((String) url).startsWith("https://")) {
 				DomGlobal.window.open((String) url);
 				// do not return the new window handle
@@ -145,9 +146,13 @@ public class QuickJS {
 	}
 
 	@JsOverlay
-	private static void addWrappedMethod(QuickJSHandle sanboxed, String method,
-			JsPropertyMap<Object> bundle, String bundleMethod,
-			QuickJSContext vm, SandboxConverter converter) {
+	private static void addWrappedMethod(
+			QuickJSHandle sanboxed,
+			String method,
+			JsPropertyMap<Object> bundle,
+			String bundleMethod,
+			QuickJSContext vm,
+			SandboxConverter converter) {
 		Function methodFn = (Function) bundle.get(bundleMethod);
 		MethodWrapper methodWrapper = (sandboxArgs) -> {
 			JsArray<Object> realArgs = new JsArray<>();
@@ -162,6 +167,10 @@ public class QuickJS {
 
 	@JsFunction
 	interface MethodWrapper {
+		/**
+		 * @param arguments sandboxed arguments
+		 * @return sandboxed result
+		 */
 		Object call(Object... arguments);
 	}
 }

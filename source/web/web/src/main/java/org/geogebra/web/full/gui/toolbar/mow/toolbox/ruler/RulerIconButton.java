@@ -22,7 +22,7 @@ import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.ToolIconButton;
 import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.main.AppW;
 
-public class RulerIconButton extends ToolIconButton {
+public final class RulerIconButton extends ToolIconButton {
 	private final EuclidianController ec;
 	private RulerPopup rulerPopup;
 	private final AppW appW;
@@ -35,11 +35,12 @@ public class RulerIconButton extends ToolIconButton {
 	 * @param dataTitle - title
 	 * @param dataTest - ui test id
 	 */
-	public RulerIconButton(AppW appW, IconSpec icon, String ariaLabel, String dataTitle,
-			String dataTest) {
+	public RulerIconButton(
+			AppW appW, IconSpec icon, String ariaLabel, String dataTitle, String dataTest) {
 		super(appW, icon, ariaLabel, dataTitle, dataTest, null);
 		this.appW = appW;
 		ec = appW.getActiveEuclidianView().getEuclidianController();
+		ec.addMeasurementToolListener(mode -> setActive(mode > 0));
 		addFastClickHandler((event) -> {
 			appW.closePopups();
 			setActive(!isActive());
@@ -49,7 +50,7 @@ public class RulerIconButton extends ToolIconButton {
 			} else {
 				showRulerTypePopup();
 			}
-			handleRuler();
+			handleRuler(isActive());
 		});
 	}
 
@@ -65,10 +66,11 @@ public class RulerIconButton extends ToolIconButton {
 	}
 
 	/**
-	 * set active ruler, or remove it in switch ruler off
+	 * Set active ruler, or remove it in switch ruler off.
+	 * @param active whether to activate the ruler.
 	 */
-	public void handleRuler() {
-		if (isActive()) {
+	public void handleRuler(boolean active) {
+		if (active) {
 			appW.setMode(rulerPopup.getActiveRulerType());
 		} else {
 			removeTool();

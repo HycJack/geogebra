@@ -33,8 +33,7 @@ import org.geogebra.common.kernel.matrix.Coords;
  *
  * @author mathieu
  */
-public class AlgoAngleLinePlane extends AlgoAngle
-		implements DrawInformationAlgo {
+public class AlgoAngleLinePlane extends AlgoAngle implements DrawInformationAlgo {
 
 	private GeoLineND g; // input
 	private GeoPlane3D p; // input
@@ -48,7 +47,7 @@ public class AlgoAngleLinePlane extends AlgoAngle
 
 	/**
 	 * Creates new unlabeled angle between line and plane
-	 * 
+	 *
 	 * @param cons
 	 *            construction
 	 * @param g
@@ -65,11 +64,10 @@ public class AlgoAngleLinePlane extends AlgoAngle
 
 		// compute angle
 		compute();
-
 	}
 
 	@Override
-	final protected GeoAngle newGeoAngle(Construction cons1) {
+	protected final GeoAngle newGeoAngle(Construction cons1) {
 		GeoAngle ret = new GeoAngle3D(cons1);
 		ret.setDrawableNoSlider();
 		return ret;
@@ -79,11 +77,14 @@ public class AlgoAngleLinePlane extends AlgoAngle
 		super(((GeoElement) g).getConstruction(), false);
 		this.g = g;
 		this.p = p;
+
+		initCoords();
+		computeAngleAndUpdateCoordinates();
 	}
 
 	/**
 	 * Creates new labeled angle between line and plane
-	 * 
+	 *
 	 * @param cons
 	 *            construction
 	 * @param label
@@ -93,9 +94,7 @@ public class AlgoAngleLinePlane extends AlgoAngle
 	 * @param p
 	 *            plane
 	 */
-
-	public AlgoAngleLinePlane(Construction cons, String label, GeoLineND g,
-			GeoPlane3D p) {
+	public AlgoAngleLinePlane(Construction cons, String label, GeoLineND g, GeoPlane3D p) {
 		this(cons, g, p);
 		angle.setLabel(label);
 	}
@@ -118,7 +117,7 @@ public class AlgoAngleLinePlane extends AlgoAngle
 
 	/**
 	 * Returns the resulting angle
-	 * 
+	 *
 	 * @return resulting angle
 	 */
 	public GeoAngle getAngle() {
@@ -126,12 +125,10 @@ public class AlgoAngleLinePlane extends AlgoAngle
 	}
 
 	@Override
-	final public String toString(StringTemplate tpl) {
+	public final String toString(StringTemplate tpl) {
 		// Michael Borcherds 2008-03-30
 		// simplified to allow better Chinese translation
-		return getLoc().getPlain("AngleBetweenAB", g.getLabel(tpl),
-				p.getLabel(tpl));
-
+		return getLoc().getPlain("AngleBetweenAB", g.getLabel(tpl), p.getLabel(tpl));
 	}
 
 	@Override
@@ -144,7 +141,10 @@ public class AlgoAngleLinePlane extends AlgoAngle
 
 	@Override
 	public final void compute() {
+		getAngle().setValue(computeAngleAndUpdateCoordinates());
+	}
 
+	private double computeAngleAndUpdateCoordinates() {
 		// line origin and direction
 		Coords o2 = g.getStartInhomCoords();
 		v2 = g.getDirectionInD3();
@@ -155,20 +155,17 @@ public class AlgoAngleLinePlane extends AlgoAngle
 		// project line origin on the plane
 		o2.projectPlaneThruV(pMat, v2, o);
 		if (!o.isDefined()) { // line parallel to plane
-			getAngle().setValue(0);
-			return;
+			return 0;
 		}
 
 		// project line direction on the plane
 		Coords vx = pMat.getVx();
 		Coords vy = pMat.getVy();
-		v1.setAdd3(v1.setMul3(vx, v2.dotproduct(vx)),
-				tmpCoords.setMul3(vy, v2.dotproduct(vy)));
+		v1.setAdd3(v1.setMul3(vx, v2.dotproduct(vx)), tmpCoords.setMul3(vy, v2.dotproduct(vy)));
 		if (v1.isZero()) { // line orthogonal to plane
-			getAngle().setValue(Math.PI / 2);
 			v1.set3(vx);
 			vn.setMul3(vy, -1);
-			return;
+			return Math.PI / 2;
 		}
 
 		v1.calcNorm();
@@ -178,19 +175,17 @@ public class AlgoAngleLinePlane extends AlgoAngle
 
 		double c = v1.dotproduct(v2) / (l1 * l2); // cosinus of the angle
 
-		getAngle().setValue(AlgoAnglePoints3D.acos(c));
-
 		vn.setCrossProduct4(v2, v1);
 		vn.normalize();
 
+		return AlgoAnglePoints3D.acos(c);
 	}
 
 	@Override
-	public boolean updateDrawInfo(double[] m, double[] firstVec,
-			DrawAngle drawable) {
+	public boolean updateDrawInfo(double[] m, double[] firstVec, DrawAngle drawable) {
 
 		if (drawable == null) { // TODO : this is a pgf / asymptote / pstricks
-								// call
+			// call
 			return false;
 		}
 
@@ -229,7 +224,6 @@ public class AlgoAngleLinePlane extends AlgoAngle
 
 	@Override
 	public boolean getCoordsInD3(Coords[] drawCoords) {
-
 		if (!o.isDefined()) {
 			return false;
 		}
@@ -240,5 +234,4 @@ public class AlgoAngleLinePlane extends AlgoAngle
 
 		return true;
 	}
-
 }

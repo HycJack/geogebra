@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -41,10 +41,8 @@ import io.sf.carte.echosvg.bridge.UserAgentAdapter;
 import io.sf.carte.echosvg.gvt.GraphicsNode;
 
 public class JSVGModel implements SVGModel {
-	public static final int MAX_TRIES = 2;
 	SVGDocument doc;
 	String content;
-	private int tries = 0;
 	GraphicsNode node;
 	private int width;
 	private int height;
@@ -60,13 +58,6 @@ public class JSVGModel implements SVGModel {
 
 	public JSVGModel(SVGDocument doc) {
 		this.doc = doc;
-	}
-
-	/**
-	 * Notify about next attempt to load.
-	 */
-	public void nextTry() {
-		tries++;
 	}
 
 	public void setDoc(SVGDocument doc) {
@@ -112,8 +103,7 @@ public class JSVGModel implements SVGModel {
 	}
 
 	private void checkLinks(Node root) {
-		if ("link".equals(root.getLocalName())
-				&& root.getAttributes().getNamedItem("href") != null) {
+		if ("link".equals(root.getLocalName()) && root.getAttributes().getNamedItem("href") != null) {
 			throw new InvalidLinkException();
 		}
 		Node child = root.getFirstChild();
@@ -152,10 +142,12 @@ public class JSVGModel implements SVGModel {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof JSVGModel)) return false;
-		JSVGModel jsvgModel = (JSVGModel) o;
-		return  width == jsvgModel.width && height == jsvgModel.height
+		if (this == o) {
+			return true;
+		}
+		return (o instanceof JSVGModel jsvgModel)
+				&& width == jsvgModel.width
+				&& height == jsvgModel.height
 				&& Objects.equals(content, jsvgModel.content);
 	}
 

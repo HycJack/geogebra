@@ -16,9 +16,7 @@
 
 package org.geogebra.common.gui.view.probcalculator;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
 import org.geogebra.common.io.XMLStringBuilder;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.StringTemplate;
@@ -39,6 +37,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * @author gabor
  */
+@HasNativeSubclass
 public abstract class StatisticsCalculator {
 	/** statistics data and settings */
 	protected final StatisticsCollection sc;
@@ -48,23 +47,15 @@ public abstract class StatisticsCalculator {
 	protected StatisticsCalculatorHTML statHTML;
 	/** kernel */
 	protected Kernel kernel;
-	/** width of input fields */
-	final static protected int fieldWidth = 6;
 	/** SD field */
 	protected TextObject fldSigma;
 	/** null hypothesis */
 	protected TextObject fldNullHyp;
 	/** confidence level */
 	protected TextObject fldConfLevel;
+
 	protected TextObject[] fldSampleStat1;
 	protected TextObject[] fldSampleStat2;
-
-	// =========================================
-	// Procedures
-	// =========================================
-
-	protected HashMap<String, Procedure> mapNameToProcedure;
-	protected HashMap<Procedure, String> mapProcedureToName;
 
 	// =========================================
 	// Misc
@@ -91,7 +82,8 @@ public abstract class StatisticsCalculator {
 	 * @param app
 	 *            application
 	 */
-	@SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
+	@SuppressFBWarnings(
+			value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
 			justification = "false positive, used in web and desktop")
 	public StatisticsCalculator(App app) {
 		this.loc = app.getLocalization();
@@ -102,13 +94,16 @@ public abstract class StatisticsCalculator {
 		statHTML = new StatisticsCalculatorHTML(app, this, sc);
 	}
 
+	/**
+	 * @return the currently selected statistical procedure (test or interval)
+	 */
 	public Procedure getSelectedProcedure() {
 		return sc.getSelectedProcedure();
 	}
 
 	/**
 	 * Formats a number string using local format settings.
-	 * 
+	 *
 	 * @param x
 	 *            number
 	 * @return formatted number
@@ -117,23 +112,17 @@ public abstract class StatisticsCalculator {
 		StringTemplate highPrecision;
 
 		if (kernel.useSignificantFigures) {
-			highPrecision = StringTemplate.printFigures(StringType.GEOGEBRA,
-					kernel.getPrintFigures(), false);
+			highPrecision =
+					StringTemplate.printFigures(StringType.GEOGEBRA, kernel.getPrintFigures(), false);
 		} else {
 			// override the default decimal place if < 4
-			int d = kernel.getPrintDecimals() < 4 ? 4
-					: kernel.getPrintDecimals();
-			highPrecision = StringTemplate.printDecimals(StringType.GEOGEBRA, d,
-					false);
+			int d = kernel.getPrintDecimals() < 4 ? 4 : kernel.getPrintDecimals();
+			highPrecision = StringTemplate.printDecimals(StringType.GEOGEBRA, d, false);
 		}
 		// get the formatted string
 		String result = kernel.format(x, highPrecision);
 
 		return result;
-	}
-
-	public HashMap<Procedure, String> getMapProcedureToName() {
-		return mapProcedureToName;
 	}
 
 	public StatisticsCalculatorProcessor getStatProcessor() {
@@ -155,7 +144,7 @@ public abstract class StatisticsCalculator {
 
 	/**
 	 * Recompute the results
-	 * 
+	 *
 	 * @param userInitiated
 	 *            whether it was triggered by enter
 	 */
@@ -173,9 +162,8 @@ public abstract class StatisticsCalculator {
 	/**
 	 * Update collection from GUI
 	 */
-	final protected void updateStatisticCollection(boolean userInitiated) {
-		ErrorHandler errorHandler = userInitiated ? app.getDefaultErrorHandler()
-				: ErrorHelper.silent();
+	protected final void updateStatisticCollection(boolean userInitiated) {
+		ErrorHandler errorHandler = userInitiated ? app.getDefaultErrorHandler() : ErrorHelper.silent();
 		try {
 			sc.level = parseStringData(fldConfLevel.getText(), errorHandler);
 			sc.sd = parseStringData(fldSigma.getText(), errorHandler);
@@ -184,12 +172,10 @@ public abstract class StatisticsCalculator {
 			sc.setTail(getSelectedTail());
 
 			for (int i = 0; i < s1.length; i++) {
-				s1[i] = parseStringData(fldSampleStat1[i].getText(),
-						errorHandler);
+				s1[i] = parseStringData(fldSampleStat1[i].getText(), errorHandler);
 			}
 			for (int i = 0; i < s2.length; i++) {
-				s2[i] = parseStringData(fldSampleStat2[i].getText(),
-						errorHandler);
+				s2[i] = parseStringData(fldSampleStat2[i].getText(), errorHandler);
 			}
 
 			updateCollectionProcedure();
@@ -200,10 +186,9 @@ public abstract class StatisticsCalculator {
 		} catch (NumberFormatException e) {
 			Log.debug(e);
 		}
-
 	}
 
-	final protected void setSampleFieldText() {
+	protected final void setSampleFieldText() {
 		for (int i = 0; i < 3; i++) {
 			removeActionListener(fldSampleStat1[i]);
 			removeActionListener(fldSampleStat2[i]);
@@ -212,43 +197,40 @@ public abstract class StatisticsCalculator {
 		}
 
 		switch (sc.getSelectedProcedure()) {
-		default:
-			// do nothing
-			break;
-		case ZMEAN_TEST:
-		case ZMEAN_CI:
-		case TMEAN_TEST:
-		case TMEAN_CI:
-			fldSampleStat1[0].setText(format(sc.mean));
-			fldSampleStat1[1].setText(format(sc.sd));
-			fldSampleStat1[2].setText(format(sc.n));
-			break;
-
-		case ZMEAN2_TEST:
-		case ZMEAN2_CI:
-		case TMEAN2_TEST:
-		case TMEAN2_CI:
-			fldSampleStat1[0].setText(format(sc.mean));
-			fldSampleStat1[1].setText(format(sc.sd));
-			fldSampleStat1[2].setText(format(sc.n));
-			fldSampleStat2[0].setText(format(sc.mean2));
-			fldSampleStat2[1].setText(format(sc.sd2));
-			fldSampleStat2[2].setText(format(sc.n2));
-			break;
-
-		case ZPROP_TEST:
-		case ZPROP_CI:
-			fldSampleStat1[0].setText(format(sc.count));
-			fldSampleStat1[1].setText(format(sc.n));
-			break;
-
-		case ZPROP2_TEST:
-		case ZPROP2_CI:
-			fldSampleStat1[0].setText(format(sc.count));
-			fldSampleStat1[1].setText(format(sc.n));
-			fldSampleStat2[0].setText(format(sc.count2));
-			fldSampleStat2[1].setText(format(sc.n2));
-			break;
+			default:
+				// do nothing
+				break;
+			case ZMEAN_TEST:
+			case ZMEAN_CI:
+			case TMEAN_TEST:
+			case TMEAN_CI:
+				setFieldText(fldSampleStat1[0], format(sc.mean));
+				setFieldText(fldSampleStat1[1], format(sc.sd));
+				setFieldText(fldSampleStat1[2], format(sc.n));
+				break;
+			case ZMEAN2_TEST:
+			case ZMEAN2_CI:
+			case TMEAN2_TEST:
+			case TMEAN2_CI:
+				setFieldText(fldSampleStat1[0], format(sc.mean));
+				setFieldText(fldSampleStat1[1], format(sc.sd));
+				setFieldText(fldSampleStat1[2], format(sc.n));
+				setFieldText(fldSampleStat2[0], format(sc.mean2));
+				setFieldText(fldSampleStat2[1], format(sc.sd2));
+				setFieldText(fldSampleStat2[2], format(sc.n2));
+				break;
+			case ZPROP_TEST:
+			case ZPROP_CI:
+				setFieldText(fldSampleStat1[0], format(sc.count));
+				setFieldText(fldSampleStat1[1], format(sc.n));
+				break;
+			case ZPROP2_TEST:
+			case ZPROP2_CI:
+				setFieldText(fldSampleStat1[0], format(sc.count));
+				setFieldText(fldSampleStat1[1], format(sc.n));
+				setFieldText(fldSampleStat2[0], format(sc.count2));
+				setFieldText(fldSampleStat2[1], format(sc.n2));
+				break;
 		}
 
 		for (int i = 0; i < 3; i++) {
@@ -257,13 +239,19 @@ public abstract class StatisticsCalculator {
 		}
 
 		fldConfLevel.setText(format(sc.level));
-		fldNullHyp.setText(format(sc.nullHyp));
+		setFieldText(fldNullHyp, format(sc.nullHyp));
 		updateTailCheckboxes(sc.getTail());
+	}
+
+	private void setFieldText(TextObject field, String text) {
+		if (!text.equals("?")) {
+			field.setText(text);
+		}
 	}
 
 	protected abstract void updateTailCheckboxes(String tail);
 
-	final protected boolean forceZeroHypothesis() {
+	protected final boolean forceZeroHypothesis() {
 		return sc.getSelectedProcedure() == Procedure.ZPROP2_TEST
 				|| sc.getSelectedProcedure() == Procedure.ZPROP2_CI
 				|| sc.getSelectedProcedure() == Procedure.ZMEAN2_TEST
@@ -289,7 +277,7 @@ public abstract class StatisticsCalculator {
 	/**
 	 * @return tail value
 	 */
-	abstract protected String getSelectedTail();
+	protected abstract String getSelectedTail();
 
 	/**
 	 * Prevent auto scrolling
@@ -301,53 +289,6 @@ public abstract class StatisticsCalculator {
 	 *            result text
 	 */
 	protected abstract void updateResultText(String string);
-
-	/**
-	 * Initialize string - procedure mappings
-	 */
-	protected void combolabelsPreprocess() {
-		if (mapNameToProcedure == null) {
-			mapNameToProcedure = new HashMap<>();
-		}
-		if (mapProcedureToName == null) {
-			mapProcedureToName = new HashMap<>();
-		}
-
-		mapNameToProcedure.clear();
-		mapProcedureToName.clear();
-
-		mapNameToProcedure.put(loc.getMenu("ZMeanTest"), Procedure.ZMEAN_TEST);
-		mapNameToProcedure.put(loc.getMenu("ZMeanTest"), Procedure.ZMEAN_TEST);
-		mapNameToProcedure.put(loc.getMenu("TMeanTest"), Procedure.TMEAN_TEST);
-		mapNameToProcedure.put(loc.getMenu("ZMeanInterval"),
-				Procedure.ZMEAN_CI);
-		mapNameToProcedure.put(loc.getMenu("TMeanInterval"),
-				Procedure.TMEAN_CI);
-		mapNameToProcedure.put(loc.getMenu("ZTestDifferenceOfMeans"),
-				Procedure.ZMEAN2_TEST);
-		mapNameToProcedure.put(loc.getMenu("TTestDifferenceOfMeans"),
-				Procedure.TMEAN2_TEST);
-		mapNameToProcedure.put(loc.getMenu("ZEstimateDifferenceOfMeans"),
-				Procedure.ZMEAN2_CI);
-		mapNameToProcedure.put(loc.getMenu("TEstimateDifferenceOfMeans"),
-				Procedure.TMEAN2_CI);
-		mapNameToProcedure.put(loc.getMenu("ZProportionTest"),
-				Procedure.ZPROP_TEST);
-		mapNameToProcedure.put(loc.getMenu("ZProportionInterval"),
-				Procedure.ZPROP_CI);
-		mapNameToProcedure.put(loc.getMenu("ZTestDifferenceOfProportions"),
-				Procedure.ZPROP2_TEST);
-		mapNameToProcedure.put(loc.getMenu("ZEstimateDifferenceOfProportions"),
-				Procedure.ZPROP2_CI);
-		mapNameToProcedure.put(loc.getMenu("GoodnessOfFitTest"),
-				Procedure.GOF_TEST);
-		mapNameToProcedure.put(loc.getMenu("ChiSquaredTest"),
-				Procedure.CHISQ_TEST);
-
-		for (Entry<String, Procedure> entry : mapNameToProcedure.entrySet()) {
-			this.mapProcedureToName.put(entry.getValue(), entry.getKey());
-		}
-	}
 
 	protected void setLabelStrings() {
 		strMean = loc.getMenu("Mean");
@@ -363,52 +304,51 @@ public abstract class StatisticsCalculator {
 
 	protected void updateCollectionProcedure() {
 		switch (sc.getSelectedProcedure()) {
+			default:
+				// do nothing
+				break;
+			case ZMEAN_TEST:
+			case ZMEAN_CI:
+			case TMEAN_TEST:
+			case TMEAN_CI:
+				sc.mean = s1[0];
+				sc.sd = s1[1];
+				sc.n = s1[2];
+				break;
 
-		default:
-			// do nothing
-			break;
-		case ZMEAN_TEST:
-		case ZMEAN_CI:
-		case TMEAN_TEST:
-		case TMEAN_CI:
-			sc.mean = s1[0];
-			sc.sd = s1[1];
-			sc.n = s1[2];
-			break;
+			case ZMEAN2_TEST:
+			case ZMEAN2_CI:
+			case TMEAN2_TEST:
+			case TMEAN2_CI:
+				sc.mean = s1[0];
+				sc.sd = s1[1];
+				sc.n = s1[2];
+				sc.mean2 = s2[0];
+				sc.sd2 = s2[1];
+				sc.n2 = s2[2];
 
-		case ZMEAN2_TEST:
-		case ZMEAN2_CI:
-		case TMEAN2_TEST:
-		case TMEAN2_CI:
-			sc.mean = s1[0];
-			sc.sd = s1[1];
-			sc.n = s1[2];
-			sc.mean2 = s2[0];
-			sc.sd2 = s2[1];
-			sc.n2 = s2[2];
+				// force the null hypothesis to zero
+				// TODO: allow non-zero values
+				sc.nullHyp = 0;
+				break;
 
-			// force the null hypothesis to zero
-			// TODO: allow non-zero values
-			sc.nullHyp = 0;
-			break;
+			case ZPROP_TEST:
+			case ZPROP_CI:
+				sc.count = s1[0];
+				sc.n = s1[1];
+				break;
 
-		case ZPROP_TEST:
-		case ZPROP_CI:
-			sc.count = s1[0];
-			sc.n = s1[1];
-			break;
+			case ZPROP2_TEST:
+			case ZPROP2_CI:
+				sc.count = s1[0];
+				sc.n = s1[1];
+				sc.count2 = s2[0];
+				sc.n2 = s2[1];
 
-		case ZPROP2_TEST:
-		case ZPROP2_CI:
-			sc.count = s1[0];
-			sc.n = s1[1];
-			sc.count2 = s2[0];
-			sc.n2 = s2[1];
-
-			// force the null hypothesis to zero
-			// TODO: allow non-zero values
-			sc.nullHyp = 0;
-			break;
+				// force the null hypothesis to zero
+				// TODO: allow non-zero values
+				sc.nullHyp = 0;
+				break;
 		}
 
 		sc.validate();
@@ -450,8 +390,7 @@ public abstract class StatisticsCalculator {
 
 			// allow input such as sqrt(2)
 			NumberValue nv;
-			nv = kernel.getAlgebraProcessor()
-					.evaluateToNumeric(inputText, handler);
+			nv = kernel.getAlgebraProcessor().evaluateToNumeric(inputText, handler);
 			return nv == null ? Double.NaN : nv.getDouble();
 
 		} catch (NumberFormatException e) {

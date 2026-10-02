@@ -18,8 +18,6 @@ package org.geogebra.common.kernel.kernelND;
 
 import java.util.Arrays;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.QuadraticEquationRepresentable;
@@ -34,11 +32,12 @@ import org.geogebra.common.kernel.geos.Traceable;
 import org.geogebra.common.kernel.matrix.CoordMatrix;
 import org.geogebra.common.kernel.matrix.Coords;
 import org.geogebra.common.util.DoubleUtil;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Abstract class describing quadrics in n-dimension space. Extended by
  * GeoConic, GeoQuadric3D
- * 
+ *
  * @author Mathieu
  *
  */
@@ -56,7 +55,7 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * flat matrix
-	 * 
+	 *
 	 * @see org.geogebra.common.kernel.geos.GeoConic Also see GeoQuadric3D in
 	 *      Desktop
 	 */
@@ -87,7 +86,7 @@ public abstract class GeoQuadricND extends GeoElement
 	protected Coords[] eigenvecND;
 
 	/** variable string */
-	private static final char[] VAR_STRING = { 'x', 'y', 'z' };
+	private static final char[] VAR_STRING = {'x', 'y', 'z'};
 
 	/** eigenvalues */
 	protected double[] eigenval;
@@ -104,7 +103,7 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * default constructor
-	 * 
+	 *
 	 * @param c
 	 *            construction
 	 * @param dimension
@@ -125,7 +124,7 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * default constructor
-	 * 
+	 *
 	 * @param c
 	 *            construction
 	 * @param dimension
@@ -162,7 +161,7 @@ public abstract class GeoQuadricND extends GeoElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return flat matrix
 	 */
 	public double[] getFlatMatrix() {
@@ -173,7 +172,8 @@ public abstract class GeoQuadricND extends GeoElement
 	public void set(GeoElementND geo) {
 		GeoQuadricND quadric = (GeoQuadricND) geo;
 		if (quadric.hasChangeableParent3D()) {
-			setChangeableParent(quadric.changeableParent.getNumber(),
+			setChangeableParent(
+					quadric.changeableParent.getNumber(),
 					quadric.changeableParent.getDirector().toGeoElement(),
 					quadric.changeableParent.getConverter(),
 					quadric.changeableParent.getSurface());
@@ -182,7 +182,7 @@ public abstract class GeoQuadricND extends GeoElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param i
 	 *            index
 	 * @return i-th eigenvector
@@ -236,7 +236,7 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * sets the matrix values from the symmetric matrix m
-	 * 
+	 *
 	 * @param m
 	 *            matrix
 	 */
@@ -260,17 +260,17 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * set the center and radius (as segment) of the N-sphere
-	 * 
+	 *
 	 * @param M
 	 *            center
 	 * @param segment
 	 *            radius
 	 */
-	abstract public void setSphereND(GeoPointND M, GeoSegmentND segment);
+	public abstract void setSphereND(GeoPointND M, GeoSegmentND segment);
 
 	/**
 	 * makes this quadric a sphere with midpoint M and radius r
-	 * 
+	 *
 	 * @param M
 	 *            center
 	 * @param r
@@ -283,7 +283,7 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * makes this quadric a sphere with midpoint M and radius r
-	 * 
+	 *
 	 * @param M
 	 *            center
 	 * @param rad
@@ -310,7 +310,7 @@ public abstract class GeoQuadricND extends GeoElement
 	 * @param P
 	 *            point on sphere
 	 */
-	abstract public void setSphereND(GeoPointND M, GeoPointND P);
+	public abstract void setSphereND(GeoPointND M, GeoPointND P);
 
 	/**
 	 * @param M
@@ -358,7 +358,7 @@ public abstract class GeoQuadricND extends GeoElement
 				linearEccentricity = 0.0d;
 				eccentricity = 0.0d;
 				// set first eigenvector and eigenvectors
-				setFirstEigenvector(new double[] { 1, 0 });
+				setFirstEigenvector(new double[] {1, 0});
 				findEigenvectors();
 			}
 		} else if (DoubleUtil.isZero(r)) { // radius == 0
@@ -388,7 +388,7 @@ public abstract class GeoQuadricND extends GeoElement
 	/**
 	 * mark as defined
 	 */
-	final public void setDefined() {
+	public final void setDefined() {
 		defined = true;
 	}
 
@@ -454,7 +454,7 @@ public abstract class GeoQuadricND extends GeoElement
 	/**
 	 * @return quadric type
 	 */
-	final public int getType() {
+	public final int getType() {
 		return type;
 	}
 
@@ -462,7 +462,7 @@ public abstract class GeoQuadricND extends GeoElement
 	 * @param type
 	 *            quadric type
 	 */
-	final public void setType(int type) {
+	public final void setType(int type) {
 		this.type = type;
 	}
 
@@ -493,18 +493,17 @@ public abstract class GeoQuadricND extends GeoElement
 	 *            string template
 	 * @return value string as string builder
 	 */
-	abstract protected StringBuilder buildValueString(StringTemplate tpl);
+	protected abstract StringBuilder buildValueString(StringTemplate tpl);
 
 	/**
 	 * Appends value string of this (if this isa sphere) to given builder
-	 * 
+	 *
 	 * @param sbToValueString
 	 *            string builder
 	 * @param tpl
 	 *            string template
 	 */
-	protected void buildSphereNDString(StringBuilder sbToValueString,
-			StringTemplate tpl) {
+	protected void buildSphereNDString(StringBuilder sbToValueString, StringTemplate tpl) {
 		String squared = tpl.squared();
 
 		String rsquared = kernel.format(getHalfAxis(0) * getHalfAxis(0), tpl);
@@ -517,8 +516,7 @@ public abstract class GeoQuadricND extends GeoElement
 				sbToValueString.append("(");
 				sbToValueString.append(VAR_STRING[i]);
 				sbToValueString.append(" ");
-				kernel.formatSigned(-getMidpoint().get(i + 1), sbToValueString,
-						tpl);
+				kernel.formatSigned(-getMidpoint().get(i + 1), sbToValueString, tpl);
 				sbToValueString.append(")");
 				sbToValueString.append(squared);
 			}
@@ -529,8 +527,7 @@ public abstract class GeoQuadricND extends GeoElement
 			}
 		}
 
-		sbToValueString
-				.append(rsquared);
+		sbToValueString.append(rsquared);
 	}
 
 	/**
@@ -552,7 +549,7 @@ public abstract class GeoQuadricND extends GeoElement
 	/**
 	 * Update to become single point
 	 */
-	abstract protected void singlePoint();
+	protected abstract void singlePoint();
 
 	/**
 	 * Update affine transform
@@ -573,15 +570,18 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * sets the changeable parent
-	 * 
+	 *
 	 * @param number
 	 *            number
 	 * @param direction
 	 *            direction
 	 * @param solidQuadric solid quadric (cone/cylinder) that this is a side of
 	 */
-	final public void setChangeableParent(GeoNumeric number,
-			GeoElement direction, CoordConverter converter, GeoElementND solidQuadric) {
+	public final void setChangeableParent(
+			GeoNumeric number,
+			GeoElement direction,
+			CoordConverter converter,
+			GeoElementND solidQuadric) {
 		changeableParent = new ChangeableParent(number, direction, converter, solidQuadric);
 	}
 
@@ -596,7 +596,7 @@ public abstract class GeoQuadricND extends GeoElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return dimension (2 for conic, 3 for quadric)
 	 */
 	public int getDimension() {
@@ -641,7 +641,7 @@ public abstract class GeoQuadricND extends GeoElement
 
 	/**
 	 * Returns whether specific equation representation is possible.
-	 * 
+	 *
 	 * @return true iff specific equation representation is possible.
 	 */
 	@Override
@@ -669,7 +669,7 @@ public abstract class GeoQuadricND extends GeoElement
 	/**
 	 * Returns whether explicit parabola equation representation (y = a x\u00b2 +
 	 * b x + c) is possible.
-	 * 
+	 *
 	 * @return true iff explicit equation is possible
 	 */
 	@Override
@@ -680,7 +680,7 @@ public abstract class GeoQuadricND extends GeoElement
 	/**
 	 * Returns whether vertex form of parabola equation representation (y = a
 	 * (x-h)\u00b2 + k) is possible.
-	 * 
+	 *
 	 * @return true if vertex form equation is possible
 	 */
 	@Override
@@ -691,7 +691,7 @@ public abstract class GeoQuadricND extends GeoElement
 	/**
 	 * Returns whether conic form of parabola equation representation ( 4p(y - k)
 	 * = (x - h)^2 is possible.
-	 * 
+	 *
 	 * @return true if conic form equation is possible
 	 */
 	@Override
@@ -700,12 +700,12 @@ public abstract class GeoQuadricND extends GeoElement
 	}
 
 	@Override
-	public @CheckForNull Form getEquationForm() {
+	public @Nullable Form getEquationForm() {
 		return equationForm;
 	}
 
 	@Override // EquationQuadric
-	public void setEquationForm(@CheckForNull Form equationForm) {
+	public void setEquationForm(@Nullable Form equationForm) {
 		if (equationForm != null) {
 			this.equationForm = equationForm;
 		}
@@ -751,8 +751,7 @@ public abstract class GeoQuadricND extends GeoElement
 
 	@Override
 	public boolean isLaTeXDrawableGeo() {
-		return getEquationForm() == QuadraticEquationRepresentable.Form.USER
-				&& getDefinition() != null;
+		return getEquationForm() == QuadraticEquationRepresentable.Form.USER && getDefinition() != null;
 	}
 
 	@Override
@@ -761,5 +760,4 @@ public abstract class GeoQuadricND extends GeoElement
 			equationForm = ((QuadraticEquationRepresentable) other).getEquationForm();
 		}
 	}
-
 }

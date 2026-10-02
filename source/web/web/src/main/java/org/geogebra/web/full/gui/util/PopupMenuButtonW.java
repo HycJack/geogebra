@@ -18,8 +18,6 @@ package org.geogebra.web.full.gui.util;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.event.PointerEventType;
 import org.geogebra.common.gui.util.SelectionTable;
 import org.geogebra.common.kernel.geos.GeoElement;
@@ -38,18 +36,19 @@ import org.gwtproject.event.logical.shared.CloseEvent;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Table popup for selecting properties of objects
  *
  */
-public class PopupMenuButtonW extends StandardButton
-		implements SliderInputHandler {
+public class PopupMenuButtonW extends StandardButton implements SliderInputHandler {
 	protected AppW app;
 	/**
 	 * Icons / texts in the table
 	 */
 	protected ImageOrText[] data;
+
 	private ButtonPopupMenu myPopup;
 	private PopupMenuHandler popupHandler;
 	private Slider mySlider;
@@ -58,6 +57,7 @@ public class PopupMenuButtonW extends StandardButton
 	private final boolean hasTable;
 	/** flag to determine if the popup should persist after a mouse click */
 	private boolean keepVisible = true;
+
 	private boolean isIniting = true;
 	private ImageOrText fixedIcon;
 	private boolean isFixedIcon = false;
@@ -67,6 +67,7 @@ public class PopupMenuButtonW extends StandardButton
 	 * panel for slider
 	 */
 	protected FlowPanel sliderPanel;
+
 	private static ButtonPopupMenu currentPopup = null;
 
 	/**
@@ -81,8 +82,8 @@ public class PopupMenuButtonW extends StandardButton
 	 * @param mode
 	 *            {@link SelectionTableW}
 	 */
-	public PopupMenuButtonW(AppW app, ImageOrText[] data, Integer rows,
-			Integer columns, SelectionTable mode) {
+	public PopupMenuButtonW(
+			AppW app, ImageOrText[] data, Integer rows, Integer columns, SelectionTable mode) {
 		this(app, data, rows, columns, mode, true, false);
 	}
 
@@ -102,8 +103,13 @@ public class PopupMenuButtonW extends StandardButton
 	 * @param hasSlider
 	 *            whether popup has slider
 	 */
-	public PopupMenuButtonW(AppW app, ImageOrText[] data, Integer rows,
-			Integer columns, SelectionTable mode, final boolean hasTable,
+	public PopupMenuButtonW(
+			AppW app,
+			ImageOrText[] data,
+			Integer rows,
+			Integer columns,
+			SelectionTable mode,
+			final boolean hasTable,
 			boolean hasSlider) {
 		super(24);
 		this.app = app;
@@ -165,8 +171,7 @@ public class PopupMenuButtonW extends StandardButton
 			@Override
 			public void hide() {
 				super.hide();
-				if (currentPopup != null
-						&& currentPopup.equals(this)) {
+				if (currentPopup != null && currentPopup.equals(this)) {
 					currentPopup = null;
 				}
 			}
@@ -204,8 +209,8 @@ public class PopupMenuButtonW extends StandardButton
 	 * @param mode
 	 *            selection mode
 	 */
-	private void createSelectionTable(ImageOrText[] newData, Integer rows,
-			Integer columns, SelectionTable mode) {
+	private void createSelectionTable(
+			ImageOrText[] newData, Integer rows, Integer columns, SelectionTable mode) {
 		this.data = newData;
 
 		myTable = new SelectionTableW(newData, rows, columns, mode);
@@ -284,7 +289,7 @@ public class PopupMenuButtonW extends StandardButton
 	/**
 	 * @return {@link ImageOrText}
 	 */
-	public @CheckForNull ImageOrText getButtonIcon() {
+	public @Nullable ImageOrText getButtonIcon() {
 		int selectedIndex = getSelectedIndex();
 		return selectedIndex < 0 ? null : data[selectedIndex];
 	}
@@ -412,7 +417,7 @@ public class PopupMenuButtonW extends StandardButton
 
 	/**
 	 * Sets the value next to the slider.
-	 * 
+	 *
 	 * @param text
 	 *            the value string.
 	 */
@@ -421,7 +426,7 @@ public class PopupMenuButtonW extends StandardButton
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The postix string after the value of the slider.
 	 */
 	protected String getSliderPostfix() {
@@ -482,7 +487,7 @@ public class PopupMenuButtonW extends StandardButton
 
 	/**
 	 * explicitly sets who should receive the change events
-	 * 
+	 *
 	 * @param handler
 	 *            change handler
 	 */

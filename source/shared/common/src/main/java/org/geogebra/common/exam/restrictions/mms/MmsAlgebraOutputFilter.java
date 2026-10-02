@@ -18,8 +18,6 @@ package org.geogebra.common.exam.restrictions.mms;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.exam.restrictions.AngleConversionFilter;
 import org.geogebra.common.exam.restrictions.PercentageOutputFilter;
 import org.geogebra.common.gui.view.algebra.filter.AlgebraOutputFilter;
@@ -31,51 +29,54 @@ import org.geogebra.common.kernel.commands.Commands;
 import org.geogebra.common.kernel.geos.BarChartGeoNumeric;
 import org.geogebra.common.kernel.geos.GeoSymbolic;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
+import org.jspecify.annotations.Nullable;
 
 public final class MmsAlgebraOutputFilter implements AlgebraOutputFilter {
 
-    private final AngleConversionFilter angleConversionFilter = new AngleConversionFilter();
-    private final PercentageOutputFilter percentageOutputFilter = new PercentageOutputFilter();
-    private final List<Commands> FUNCTION_COMMANDS =
-            List.of(Commands.Integral,
-                    Commands.IntegralSymbolic, Commands.Derivative,
-                    Commands.Expand, Commands.LeftSide, Commands.RightSide);
+	private final AngleConversionFilter angleConversionFilter = new AngleConversionFilter();
+	private final PercentageOutputFilter percentageOutputFilter = new PercentageOutputFilter();
+	private final List<Commands> FUNCTION_COMMANDS = List.of(
+			Commands.Integral,
+			Commands.IntegralSymbolic,
+			Commands.Derivative,
+			Commands.Expand,
+			Commands.LeftSide,
+			Commands.RightSide);
 
-    @Override
-    public boolean isAllowed(GeoElementND element) {
-        if (element == null) {
-            return false;
-        }
-        if (!isOutputAllowed(element)) {
-            return false;
-        }
-        if (!angleConversionFilter.isAllowed(element)) {
-            return false;
-        }
-        if (!percentageOutputFilter.isAllowed(element)) {
-            return false;
-        }
-        return true;
-    }
+	@Override
+	public boolean isAllowed(GeoElementND element) {
+		if (element == null) {
+			return false;
+		}
+		if (!isOutputAllowed(element)) {
+			return false;
+		}
+		if (!angleConversionFilter.isAllowed(element)) {
+			return false;
+		}
+		if (!percentageOutputFilter.isAllowed(element)) {
+			return false;
+		}
+		return true;
+	}
 
-    private boolean isOutputAllowed(@CheckForNull GeoElementND element) {
-        if (element == null) {
-            return false;
-        }
-        GeoElementND unwrapped = element.unwrapSymbolic();
-        if (unwrapped instanceof BarChartGeoNumeric) {
-            return false;
-        }
-        if (unwrapped instanceof FunctionalNVar) {
-            return element instanceof GeoSymbolic
-                    && isFunctionProducingCommand(element.getDefinition());
-        }
-        return true;
-    }
+	private boolean isOutputAllowed(@Nullable GeoElementND element) {
+		if (element == null) {
+			return false;
+		}
+		GeoElementND unwrapped = element.unwrapSymbolic();
+		if (unwrapped instanceof BarChartGeoNumeric) {
+			return false;
+		}
+		if (unwrapped instanceof FunctionalNVar) {
+			return element instanceof GeoSymbolic && isFunctionProducingCommand(element.getDefinition());
+		}
+		return true;
+	}
 
-    private boolean isFunctionProducingCommand(ExpressionNode definition) {
-        ExpressionValue def = definition.unwrap();
-        return def instanceof Command && FUNCTION_COMMANDS.stream()
-                .anyMatch(cmd -> cmd.name().equals(((Command) def).getName()));
-    }
+	private boolean isFunctionProducingCommand(ExpressionNode definition) {
+		ExpressionValue def = definition.unwrap();
+		return def instanceof Command
+				&& FUNCTION_COMMANDS.stream().anyMatch(cmd -> cmd.name().equals(((Command) def).getName()));
+	}
 }

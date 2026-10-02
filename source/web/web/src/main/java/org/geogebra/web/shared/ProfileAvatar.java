@@ -17,6 +17,7 @@
 package org.geogebra.web.shared;
 
 import org.geogebra.common.move.ggtapi.models.GeoGebraTubeUser;
+import org.geogebra.common.util.debug.AccessibilityAnalytics;
 import org.geogebra.web.full.css.MaterialDesignResources;
 import org.geogebra.web.full.gui.menubar.MainMenu;
 import org.geogebra.web.full.javax.swing.GPopupMenuW;
@@ -33,15 +34,15 @@ import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Image;
 import org.gwtproject.user.client.ui.Label;
 
-public class ProfileAvatar extends FlowPanel {
-	protected AppW app;
-	protected LocalizationW loc;
-	protected GPopupMenuW profilePanel;
+public final class ProfileAvatar extends FlowPanel {
+	private final AppW app;
+	private final LocalizationW loc;
+	private GPopupMenuW profilePanel;
 	private Image avatar;
 	private Image profileImage;
 	private Label userName;
-	protected String profileLink;
-	private String editProfileHref = "https://accounts.geogebra.org/";
+	private String profileLink;
+	private static final String editProfileHref = "https://accounts.geogebra.org/";
 	private AriaMenuItem profileItem;
 	private AriaMenuItem settingsItem;
 	private AriaMenuItem signOutItem;
@@ -57,10 +58,12 @@ public class ProfileAvatar extends FlowPanel {
 		buildGui();
 
 		buildPopup(app);
-		addDomHandler(event -> {
-			togglePopup();
-			event.stopPropagation();
-		}, ClickEvent.getType());
+		addDomHandler(
+				event -> {
+					togglePopup();
+					event.stopPropagation();
+				},
+				ClickEvent.getType());
 	}
 
 	private void buildGui() {
@@ -104,31 +107,47 @@ public class ProfileAvatar extends FlowPanel {
 	}
 
 	private void addProfileItem() {
-		profileItem =
-				MainMenu.getMenuBarItem(MaterialDesignResources.INSTANCE.person_black(),
-						loc.getMenu("ProfilePanel.Profile"),
-				(Command) () -> Browser.openWindow(profileLink));
+		profileItem = MainMenu.getMenuBarItem(
+				MaterialDesignResources.INSTANCE.person_black(),
+				loc.getMenu("ProfilePanel.Profile"),
+				(Command) this::openProfile);
 		profilePanel.addItem(profileItem);
 	}
 
 	private void addSettingsItem() {
-		settingsItem =
-				MainMenu.getMenuBarItem(MaterialDesignResources.INSTANCE.settings_border(),
-						loc.getMenu("ProfilePanel.Settings"),
-				(Command) () -> Browser.openWindow(editProfileHref));
+		settingsItem = MainMenu.getMenuBarItem(
+				MaterialDesignResources.INSTANCE.settings_border(),
+				loc.getMenu("ProfilePanel.Settings"),
+				(Command) this::openAccountSettings);
 		profilePanel.addItem(settingsItem);
 	}
 
 	private void addSignOutItem() {
-		signOutItem =
-				MainMenu.getMenuBarItem(MaterialDesignResources.INSTANCE.signout_black(),
-						loc.getMenu("SignOut"),
-				(Command) () -> {
-			app.getLoginOperation().showLogoutUI();
-			app.getLoginOperation().performLogOut();
-			togglePopup();
-		});
+		signOutItem = MainMenu.getMenuBarItem(
+				MaterialDesignResources.INSTANCE.signout_black(), loc.getMenu("SignOut"), (Command)
+						this::signOut);
 		profilePanel.addItem(signOutItem);
+	}
+
+	private void openProfile() {
+		registerProfileAction(AccessibilityAnalytics.Value.PROFILE);
+		Browser.openWindow(profileLink);
+	}
+
+	private void openAccountSettings() {
+		registerProfileAction(AccessibilityAnalytics.Value.ACCOUNT_SETTINGS);
+		Browser.openWindow(editProfileHref);
+	}
+
+	private void signOut() {
+		registerProfileAction(AccessibilityAnalytics.Value.SIGN_OUT);
+		app.getLoginOperation().showLogoutUI();
+		app.getLoginOperation().performLogOut();
+		togglePopup();
+	}
+
+	private void registerProfileAction(String action) {
+		AccessibilityAnalytics.logProfileAction(action);
 	}
 
 	/**
@@ -142,8 +161,7 @@ public class ProfileAvatar extends FlowPanel {
 			avatar.setUrl(user.getImageURL());
 			profileImage.setUrl(user.getImageURL());
 		} else {
-			avatar.setUrl(
-					SharedResources.INSTANCE.icon_help_black().getSafeUri().asString());
+			avatar.setUrl(SharedResources.INSTANCE.icon_help_black().getSafeUri().asString());
 			profileImage.setUrl(
 					SharedResources.INSTANCE.icon_help_black().getSafeUri().asString());
 		}
@@ -156,20 +174,22 @@ public class ProfileAvatar extends FlowPanel {
 		if (profilePanel.getPopupPanel().isShowing()) {
 			profilePanel.hide();
 		} else {
+			registerProfileClicked();
 			profilePanel.getPopupPanel().showRelativeTo(this);
 		}
 		Dom.toggleClass(this, "selected", profilePanel.getPopupPanel().isShowing());
+	}
+
+	private void registerProfileClicked() {
+		AccessibilityAnalytics.logProfileClicked();
 	}
 
 	/**
 	 * update popup language
 	 */
 	public void setLabels() {
-		profileItem.setTextContent(
-						loc.getMenu("ProfilePanel.Profile"));
-		settingsItem.setTextContent(
-				loc.getMenu("ProfilePanel.Settings"));
-		signOutItem.setTextContent(
-				loc.getMenu("SignOut"));
+		profileItem.setTextContent(loc.getMenu("ProfilePanel.Profile"));
+		settingsItem.setTextContent(loc.getMenu("ProfilePanel.Settings"));
+		signOutItem.setTextContent(loc.getMenu("SignOut"));
 	}
 }

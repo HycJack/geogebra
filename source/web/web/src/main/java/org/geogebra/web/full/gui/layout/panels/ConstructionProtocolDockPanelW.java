@@ -23,7 +23,7 @@ import org.geogebra.web.full.main.AppWFull;
 import org.gwtproject.resources.client.ResourcePrototype;
 import org.gwtproject.user.client.ui.Panel;
 
-public class ConstructionProtocolDockPanelW extends NavigableDockPanelW {
+public final class ConstructionProtocolDockPanelW extends NavigableDockPanelW {
 
 	/**
 	 * @param app
@@ -37,14 +37,14 @@ public class ConstructionProtocolDockPanelW extends NavigableDockPanelW {
 	}
 
 	@Override
-    public ResourcePrototype getIcon() {
+	public ResourcePrototype getIcon() {
 		return getResources().menu_icon_construction_protocol();
 	}
 
 	@Override
 	protected Panel getViewPanel() {
-		return ((ConstructionProtocolViewW) app.getGuiManager()
-				.getConstructionProtocolView()).getOuterScrollPanel();
+		return ((ConstructionProtocolViewW) app.getGuiManager().getConstructionProtocolView())
+				.getOuterScrollPanel();
 	}
 
 	@Override

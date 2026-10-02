@@ -16,19 +16,31 @@
 
 package org.geogebra.common.kernel.interval.operators;
 
-import static org.geogebra.common.kernel.interval.IntervalConstants.one;
-import static org.geogebra.common.kernel.interval.IntervalConstants.undefined;
-import static org.geogebra.common.kernel.interval.IntervalConstants.zero;
+import static org.geogebra.common.kernel.interval.IntervalSet.empty;
+import static org.geogebra.common.kernel.interval.IntervalSet.overflow;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.connected;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.connectedInterval;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.fromLegacy;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.isExactSingleton;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.isPositive;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.isZero;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.leftRayFromInverted;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.rightRayFromInverted;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.toLegacy;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.whole;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.zero;
+import static org.geogebra.common.kernel.interval.operators.RMath.hasOverflow;
 import static org.geogebra.common.kernel.interval.operators.RMath.powHigh;
 import static org.geogebra.common.kernel.interval.operators.RMath.powLow;
 
 import org.geogebra.common.kernel.interval.Interval;
 import org.geogebra.common.kernel.interval.IntervalConstants;
+import org.geogebra.common.kernel.interval.IntervalSet;
+import org.geogebra.common.kernel.interval.IntervalSetOps;
 import org.geogebra.common.util.DoubleUtil;
 
 /**
  * Implements algebra functions in interval
- *
  *  fmod, pow, sqrt, nthRoot
  *
  * @author laszlo
@@ -50,28 +62,42 @@ public class IntervalAlgebra {
 	 * @param other argument.
 	 * @return this as result
 	 */
-	void fmod(Interval interval, Interval other) {
-		if (interval.isUndefined() || other.isUndefined()) {
-			interval.setUndefined();
-			return;
+	Interval fmod(Interval interval, Interval other) {
+		return toLegacy(fmodSet(fromLegacy(interval), fromLegacy(other)));
+	}
+
+	IntervalSet fmodSet(IntervalSet set1, IntervalSet set2) {
+		if (set1.isEmpty() || set2.isEmpty()) {
+			return empty();
 		}
 
-		if (interval.isUndefined()) {
-			interval.setWhole();
-			return;
+		if (set1.isOverflow() || set2.isOverflow()) {
+			return overflow();
 		}
 
-		double yb = interval.getLow() < 0 ? other.getLow() : other.getHigh();
-		double n = interval.getLow() / yb;
+		if (!set2.isConnected() || IntervalSetOps.hasZero(set2)) {
+			return empty();
+		}
+
+		Interval interval2 = connectedInterval(set2);
+		if (set1.isWhole() || set1.isInverted()) {
+			double maxAbsDivisor = Math.max(Math.abs(interval2.getLow()), Math.abs(interval2.getHigh()));
+			return connected(-maxAbsDivisor, maxAbsDivisor);
+		}
+
+		Interval interval1 = connectedInterval(set1);
+		double yb = interval1.getLow() < 0 ? interval2.getLow() : interval2.getHigh();
+		double n = interval1.getLow() / yb;
 		if (n < 0) {
 			n = Math.ceil(n);
 		} else {
 			n = Math.floor(n);
 		}
 
-		Interval multiplicand = new Interval(other);
 		// x mod y = x - n * y
-		interval.subtract(evaluator.multiply(multiplicand, new Interval(n)));
+		Interval multiplied = evaluator.multiply(connectedInterval(set2), new Interval(n));
+		return connected(
+				interval1.getLow() - multiplied.getHigh(), interval1.getHigh() - multiplied.getLow());
 	}
 
 	/**
@@ -80,54 +106,141 @@ public class IntervalAlgebra {
 	 * @return power of the interval
 	 */
 	Interval pow(Interval interval, double power) {
-		if (interval.isUndefined() || DoubleUtil.isEqual(power, 1)) {
-			return new Interval(interval);
+		return toLegacy(powSet(fromLegacy(interval), power));
+	}
+
+	IntervalSet powSet(IntervalSet set, IntervalSet power) {
+		if (set.isEmpty() || power.isEmpty()) {
+			return empty();
+		}
+
+		if (set.isOverflow() || power.isOverflow()) {
+			return overflow();
+		}
+
+		if (isZero(set) && isZero(power)) {
+			return IntervalSetOps.one();
+		}
+
+		if (isZero(set, 0) && isNonSingletonConnected(power)) {
+			return powerOfZeroBaseWithConnectedExponent(power);
+		}
+
+		if (power.isInverted()) {
+			IntervalSet left = leftRayFromInverted(power);
+			IntervalSet right = rightRayFromInverted(power);
+			return evaluator.unionInvertedSet(evaluator.powSet(set, left), evaluator.powSet(set, right));
+		}
+
+		if (power.isConnected() && connectedInterval(power).isExactSingleton()) {
+			if (isZero(set)) {
+				return connectedInterval(power).getHigh() >= 0 ? zero() : empty();
+			}
+			if (!isZero(power, 0)) {
+				return powSet(set, connectedInterval(power).getLow());
+			}
+		}
+
+		return powOfSingleton(set, power);
+	}
+
+	private boolean isNonSingletonConnected(IntervalSet set) {
+		return set.isConnected() && !connectedInterval(set).isSingleton();
+	}
+
+	IntervalSet powSet(IntervalSet set, double power) {
+		if (set.isOverflow()) {
+			return overflow();
+		}
+
+		if (set.isEmpty() || DoubleUtil.isEqual(power, 1)) {
+			return set;
 		}
 
 		if (DoubleUtil.isEqual(power, -1)) {
-			return evaluator.multiplicativeInverse(interval);
+			return evaluator.multiplicativeInverseSet(set);
 		}
 
-		if (interval.isInverted()) {
+		long reciprocal = positiveOddReciprocal(power);
+		if (reciprocal > 0) {
+			return evaluator.nthRootSet(set, connected(reciprocal, reciprocal));
+		}
 
-			return evaluator.unionInvertedResults(evaluator.pow(interval.extractLow(), power),
-					evaluator.pow(interval.extractHigh(), power));
+		if (set.isInverted()) {
+			IntervalSet left = leftRayFromInverted(set);
+			IntervalSet right = rightRayFromInverted(set);
+			IntervalSet leftPow = evaluator.powSet(left, power);
+			IntervalSet rightPow = evaluator.powSet(right, power);
+			if (power > 0 && DoubleUtil.isInteger(power) && Math.round(power) % 2 == 0) {
+				return evaluator.unionSet(leftPow, rightPow);
+			}
+			if (power > 0
+					&& DoubleUtil.isInteger(power)
+					&& Math.round(power) % 2 != 0
+					&& leftPow.isConnected()
+					&& rightPow.isConnected()) {
+				Interval leftInterval = connectedInterval(leftPow);
+				Interval rightInterval = connectedInterval(rightPow);
+				return IntervalSet.inverted(leftInterval.getHigh(), rightInterval.getLow());
+			}
+			return evaluator.unionInvertedSet(leftPow, rightPow);
 		}
 
 		if (power == 0) {
-			return powerOfZero(interval);
+			return powerOfZeroSet(set);
 		} else if (power < 0) {
-			Interval divide = evaluator.divide(one(),
-					evaluator.pow(new Interval(interval), -power));
-			return new Interval(divide);
+			return evaluator.divideSet(IntervalSetOps.one(), evaluator.powSet(set, -power));
 		}
 
 		if (!DoubleUtil.isInteger(power) || !isCloseToInteger(power)) {
-			if (interval.isOne()) {
-				return interval;
+			if (IntervalSetOps.isOne(set)) {
+				return set;
 			}
-			return powerOfDouble(interval, power);
+			return powerOfDoubleSet(set, power);
 		}
 
-		return powOfInteger(interval, Math.round(power));
+		return legacyIntegerPowerFallback(set, Math.round(power));
+	}
+
+	private long positiveOddReciprocal(double power) {
+		double reciprocal = 1 / power;
+		long rounded = Math.round(reciprocal);
+		return power > 0 && DoubleUtil.isInteger(reciprocal) && rounded % 2 != 0 ? rounded : -1;
 	}
 
 	private boolean isCloseToInteger(double power) {
 		return DoubleUtil.isEqual(power, Math.round(power), IntervalConstants.PRECISION * 2);
 	}
 
-	private Interval powerOfDouble(Interval interval, double power) {
-		Interval other = new Interval(power);
-		if (interval.isInverted()) {
-			Interval lnPower2 = lnPower(interval.extractHigh(), other);
-			return evaluator.exp(new Interval(lnPower2));
-		} else {
-			return evaluator.exp(lnPower(interval, other));
+	private IntervalSet legacyIntegerPowerFallback(IntervalSet set, long power) {
+		// Integer powers still rely on the legacy numeric kernel for compatibility.
+		if (set.isOverflow()) {
+			return overflow();
 		}
+		Interval interval = toLegacy(set);
+		Interval result = powOfInteger(interval, power);
+		return hasGeneratedPowerOverflow(interval, result) ? overflow() : fromLegacy(result);
 	}
 
-	private Interval lnPower(Interval interval, Interval other) {
-		return evaluator.multiply(evaluator.log(interval), other);
+	private boolean hasGeneratedPowerOverflow(Interval source, Interval result) {
+		return (hasOverflow(result.getLow()) || hasOverflow(result.getHigh()))
+				&& Double.isFinite(source.getLow())
+				&& Double.isFinite(source.getHigh());
+	}
+
+	private IntervalSet powerOfDoubleSet(IntervalSet set, double power) {
+		return evaluator.expSet(
+				lnPower(positiveDomainForFractionalPower(set), connected(power, power)));
+	}
+
+	private IntervalSet positiveDomainForFractionalPower(IntervalSet set) {
+		// Non-integer double powers are evaluated via exp(power * log(x)),
+		// so only the positive-domain contribution is admissible here.
+		return set.isInverted() ? rightRayFromInverted(set) : set;
+	}
+
+	private IntervalSet lnPower(IntervalSet set1, IntervalSet set2) {
+		return evaluator.multiplySet(evaluator.logSet(set1), set2);
 	}
 
 	private Interval powOfInteger(Interval interval, long power) {
@@ -145,81 +258,103 @@ public class IntervalAlgebra {
 		} else if (interval.getLow() < 0) {
 			// [negative, positive]
 			if ((power & 1) == 1) {
-				return new Interval(-powLow(-interval.getLow(), power),
-						powHigh(interval.getHigh(), power));
+				return new Interval(-powLow(-interval.getLow(), power), powHigh(interval.getHigh(), power));
 			} else {
 				// even power means that any negative number will be zero (min value = 0)
 				// and the max value will be the max of x.lo^power, x.hi^power
-				return new Interval(0,
-						powHigh(Math.max(-interval.getLow(), interval.getHigh()), power));
+				return new Interval(0, powHigh(Math.max(-interval.getLow(), interval.getHigh()), power));
 			}
 		}
 
 		// [positive, positive]
-		return new Interval(powLow(interval.getLow(), power),
-					powHigh(interval.getHigh(), power));
-
+		if (interval.isSingleton()) {
+			return new Interval(Math.pow(interval.getLow(), power));
+		}
+		return new Interval(powLow(interval.getLow(), power), powHigh(interval.getHigh(), power));
 	}
 
-	private Interval powerOfZero(Interval interval) {
-		if (interval.getLow() == 0 && interval.getHigh() == 0) {
+	private IntervalSet powerOfZeroSet(IntervalSet set) {
+		if (isZero(set, 0)) {
 			// 0^0
-			return undefined();
+			return empty();
 		}
 
-		return one();
+		return IntervalSetOps.one();
+	}
+
+	private IntervalSet powerOfZeroBaseWithConnectedExponent(IntervalSet power) {
+		return connectedInterval(power).isPositive() ? IntervalSetOps.zero() : empty();
 	}
 
 	/**
 	 * Power of an interval where power is also an interval
 	 * that must be a singleton, ie [n, n]
 	 * @param base power base
-	 * @param exponent interval power.
+	 * @param power interval power.
 	 * @return this as result.
 	 */
-	Interval pow(Interval base, Interval exponent) {
-		if (exponent.isZero()) {
+	IntervalSet powOfSingleton(IntervalSet base, IntervalSet power) {
+		if (base.isOverflow()) {
+			return overflow();
+		}
+
+		if (isZero(power)) {
 			// x^0 should be 1 for x around 0, 0^x should be 0 for small x
-			return base.isZero() && base.isExactSingleton() && !exponent.isExactSingleton()
-					? undefined() : one();
+			return isZero(base) && isExactSingleton(base) && !isExactSingleton(power)
+					? IntervalSetOps.empty()
+					: connected(1, 1);
 		}
 
-		if (base.isZeroWithDelta(IntervalConstants.PRECISION / 2)) {
-			return exponent.isPositive() ? zero() : undefined();
+		if (isZero(base, IntervalConstants.PRECISION / 2)) {
+			return isPositive(power) ? connected(0, 0) : empty();
 		}
 
-		if (!exponent.isSingleton()) {
-			return powerOfInterval(base, exponent);
+		if (!isExactSingleton(power)) {
+			return powerOfInterval(base, power);
 		}
 
-		return pow(base, exponent.getLow());
+		return powSet(base, connectedInterval(power).getLow());
 	}
 
-	private Interval powerOfInterval(Interval interval, Interval other) {
-		if (interval.isUndefined() || other.isUndefined()) {
-			return undefined();
+	private IntervalSet powerOfInterval(IntervalSet baseSet, IntervalSet powerSet) {
+		if (baseSet.isEmpty() || powerSet.isEmpty()) {
+			return empty();
 		}
 
-		if (other.isInverted()) {
-			Interval extractedLow = pow(interval, other.extractLow());
-			Interval extractedHigh = pow(interval, other.extractHigh());
-			if (extractedHigh.isUndefined()) {
-				return undefined();
+		if (baseSet.isWhole() || powerSet.isWhole()) {
+			return whole();
+		}
+
+		if (baseSet.isOverflow() || powerSet.isOverflow()) {
+			return overflow();
+		}
+
+		if (powerSet.isInverted()) {
+			IntervalSet extractedLow = powOfSingleton(baseSet, leftRayFromInverted(powerSet));
+			IntervalSet extractedHigh = powOfSingleton(baseSet, rightRayFromInverted(powerSet));
+			if (extractedHigh.isEmpty()) {
+				return empty();
 			}
-			return evaluator.unionInvertedResults(extractedLow, extractedHigh);
+			return evaluator.unionInvertedSet(extractedLow, extractedHigh);
 		}
 
-		double low = powLow(interval.getLow(), other.getLow());
-		double high = powHigh(interval.getHigh(), other.getHigh());
+		Interval base = connectedInterval(baseSet);
+		Interval power = connectedInterval(powerSet);
 
-		if (Double.isNaN(low) || Double.isNaN(high)) {
-			return undefined();
+		double low = powLow(base.getLow(), power.getLow());
+		double high = powHigh(base.getHigh(), power.getHigh());
+
+		double value1 = base.getHigh();
+		double value3 = base.getLow();
+		if (IntervalSetOps.hasGeneratedOverflow(low, value3, power.getLow())
+				|| IntervalSetOps.hasGeneratedOverflow(high, value1, power.getHigh())) {
+			return overflow();
 		}
 
-		if (interval.getLow() > - 1 && interval.getHigh() < 1) {
-			return new Interval(high, low);
+		if (high < low) {
+			return connected(high, low);
 		}
 
-		return new Interval(low, high);
+		return connected(low, high);
 	}
 }

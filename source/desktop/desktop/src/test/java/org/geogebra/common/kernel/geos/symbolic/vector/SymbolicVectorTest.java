@@ -2,18 +2,18 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel.geos.symbolic.vector;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -28,24 +28,24 @@ import org.geogebra.common.kernel.geos.GeoSymbolic;
 import org.geogebra.common.kernel.geos.GeoVector;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SymbolicVectorTest extends BaseSymbolicTest {
+class SymbolicVectorTest extends BaseSymbolicTest {
 
 	@Test
-	public void testDotProduct() {
+	void testDotProduct() {
 		t("Dot[Vector[(1,2)],Vector[(3,4)]]", "11");
 		t("Dot[Vector[(p,q)],Vector[(r,s)]]", "p * r + q * s");
 	}
 
 	@Test
-	public void testCrossProduct() {
+	void testCrossProduct() {
 		t("Cross[Vector[(1,2)],Vector[(3,4)]]", "-2");
 		t("Cross[Vector[(p,q)], Vector[(r,s)]]", "p * s - q * r");
 	}
 
 	@Test
-	public void testVectors() {
+	void testVectors() {
 		// these should give Vector not point
 		t("u=(1,2)", "(1, 2)");
 		t("u=(1,2,3)", "(1, 2, 3)");
@@ -60,8 +60,7 @@ public class SymbolicVectorTest extends BaseSymbolicTest {
 		t("UnitVector((1,2))", "(1 / 5 * sqrt(5), 2 / 5 * sqrt(5))");
 		t("UnitVector((p,q))", "(p / sqrt(p^(2) + q^(2)), q / sqrt(p^(2) + q^(2)))");
 		t("UnitPerpendicularVector((1,2))", "(-2 / sqrt(5), 1 / sqrt(5))");
-		t("UnitPerpendicularVector((p,q))",
-				"((-q) / sqrt(p^(2) + q^(2)), p / sqrt(p^(2) + q^(2)))");
+		t("UnitPerpendicularVector((p,q))", "((-q) / sqrt(p^(2) + q^(2)), p / sqrt(p^(2) + q^(2)))");
 		t("PerpendicularVector((1,2))", "(-2, 1)");
 		t("PerpendicularVector((p,q))", "(-q, p)");
 		t("Dot((p,q),(r,s))", "p * r + q * s");
@@ -69,42 +68,38 @@ public class SymbolicVectorTest extends BaseSymbolicTest {
 	}
 
 	@Test
-	public void testCreationWithLabel() {
+	void testCreationWithLabel() {
 		GeoSymbolic vector = add("v=(1,1)");
 		assertThat(vector.getTwinGeo(), CoreMatchers.<GeoElementND>instanceOf(GeoVector.class));
 	}
 
 	@Test
-	public void testVectorDefinitionForIndependent() {
+	void testVectorDefinitionForIndependent() {
 		GeoSymbolic vector = add("v = (1, 2)");
-		assertThat(
-				vector.getDefinition(StringTemplate.editorTemplate),
-				equalTo("$vector(1,2)"));
+		assertThat(vector.getDefinition(StringTemplate.editorTemplate), equalTo("$vector(1,2)"));
 		assertThat(
 				vector.getDefinition(StringTemplate.latexTemplate),
 				equalTo("\\left( \\begin{align}1 \\\\ 2 \\end{align} \\right)"));
 	}
 
 	@Test
-	public void testVectorDefinitionForDependent() {
+	void testVectorDefinitionForDependent() {
 		add("a = 1");
 		GeoSymbolic vector = add("v = (a, 2)");
-		assertThat(
-				vector.getDefinition(StringTemplate.editorTemplate),
-				equalTo("$vector(a,2)"));
+		assertThat(vector.getDefinition(StringTemplate.editorTemplate), equalTo("$vector(a,2)"));
 		assertThat(
 				vector.getDefinition(StringTemplate.latexTemplate),
 				equalTo("\\left( \\begin{align}a \\\\ 2 \\end{align} \\right)"));
 	}
 
 	@Test
-	public void testIsGeoVector() {
+	void testIsGeoVector() {
 		GeoSymbolic vector = add("v = (a, 2)");
 		assertThat(vector.isGeoVector(), is(true));
 	}
 
 	@Test
-	public void testVectorLatexStringForDependent() {
+	void testVectorLatexStringForDependent() {
 		GeoSymbolic vector = add("v = (a, 2)");
 		assertThat(
 				vector.toLaTeXString(false, StringTemplate.latexTemplate),
@@ -112,7 +107,7 @@ public class SymbolicVectorTest extends BaseSymbolicTest {
 	}
 
 	@Test
-	public void testIsCasVectorAfterRedefinition() {
+	void testIsCasVectorAfterRedefinition() {
 		GeoSymbolic vector = add("v = (1, 2)");
 		vector.getTwinGeo();
 		vector = add("v = (2, 1)");
@@ -123,7 +118,7 @@ public class SymbolicVectorTest extends BaseSymbolicTest {
 	}
 
 	@Test
-	public void testAdditionAndRedefinition() {
+	void testAdditionAndRedefinition() {
 		add("u = (1, 2)");
 		add("v = (2, 1)");
 		GeoSymbolic sum = add("sum = u + v");

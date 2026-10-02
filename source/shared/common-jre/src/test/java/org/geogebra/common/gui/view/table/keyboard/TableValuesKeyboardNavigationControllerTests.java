@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,12 +16,12 @@
 
 package org.geogebra.common.gui.view.table.keyboard;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.geogebra.common.BaseUnitTest;
+import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.gui.dialog.handler.DefineFunctionHandler;
 import org.geogebra.common.gui.view.table.ScientificDataTableController;
 import org.geogebra.common.gui.view.table.TableValuesListener;
@@ -31,23 +31,26 @@ import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.geos.GeoFunction;
 import org.geogebra.common.kernel.geos.LabelManager;
 import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
-import org.junit.Test;
+import org.geogebra.common.util.debug.Log;
+import org.geogebra.test.BaseAppTestSetup;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
+class TableValuesKeyboardNavigationControllerTests extends BaseAppTestSetup
 		implements TableValuesKeyboardNavigationControllerDelegate, TableValuesListener {
 
 	private TableValuesView tableValuesView;
 	private TableValuesKeyboardNavigationController keyboardController;
 	private CellIndex focusedCell;
+	private boolean focusedCellEditable;
 	private String cellContent;
 	private boolean didReportInvalidCellContent;
 	private boolean didReportModelChanged;
 	private boolean traceEvents = false;
 
-	@Override
-	public void setup() {
-		super.setup();
-
+	@BeforeEach
+	void setup() {
+		setupApp(SuiteSubApp.GRAPHING);
 		Kernel kernel = getKernel();
 		tableValuesView = new TableValuesView(kernel);
 		tableValuesView.getTableValuesModel().registerListener(this);
@@ -56,6 +59,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		keyboardController = new TableValuesKeyboardNavigationController(tableValuesView, this);
 
 		focusedCell = null;
+		focusedCellEditable = false;
 		cellContent = "";
 		didReportInvalidCellContent = false;
 		didReportModelChanged = false;
@@ -64,7 +68,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 
 	private void trace(String msg) {
 		if (traceEvents) {
-			System.out.println(msg);
+			Log.debug(msg);
 		}
 	}
 
@@ -83,14 +87,16 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		if (focusedCell == null) {
 			return null;
 		}
-		return tableValuesView.getTableValuesModel()
-				.getCellAt(focusedCell.row, focusedCell.column).getInput();
+		return tableValuesView
+				.getTableValuesModel()
+				.getCellAt(focusedCell.row, focusedCell.column)
+				.getInput();
 	}
 
 	// Not an actual test - this is just a testbed to run a certain sequence of modifications,
 	// and see which listener events are created from it.
 	@Test
-	public void testTableValuesListenerEvents() {
+	void testTableValuesListenerEvents() {
 		traceEvents = true;
 
 		// select (0, 0)
@@ -126,7 +132,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	// - editing allowed, adding columns allowed
 
 	@Test
-	public void testEmptyTable_EnterDataInValuesList() {
+	void testEmptyTable_EnterDataInValuesList() {
 		assertTrue(tableValuesView.isEmpty());
 
 		// select (0, 0) - editing placeholder row
@@ -167,7 +173,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_SelectPlaceholderColumn() {
+	void testEmptyTable_SelectPlaceholderColumn() {
 		assertTrue(tableValuesView.isEmpty());
 
 		// select (0, 1) - editing placeholder column
@@ -178,7 +184,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_EnterDataInPlaceholderColumn() {
+	void testEmptyTable_EnterDataInPlaceholderColumn() {
 		// select (0, 1) - editing placeholder column
 		keyboardController.select(0, 1);
 		assertEquals(new CellIndex(0, 1), focusedCell);
@@ -205,7 +211,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_DeleteCellInPlaceholderColumn() {
+	void testEmptyTable_DeleteCellInPlaceholderColumn() {
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
@@ -250,7 +256,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_DeleteLastColumnArrowLeft() {
+	void testEmptyTable_DeleteLastColumnArrowLeft() {
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
@@ -295,7 +301,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_DeleteLastColumnArrowRight() {
+	void testEmptyTable_DeleteLastColumnArrowRight() {
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
@@ -340,7 +346,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_DeleteLastRow() {
+	void testEmptyTable_DeleteLastRow() {
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
@@ -386,7 +392,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_ArrowRightTapArrowRight() {
+	void testEmptyTable_ArrowRightTapArrowRight() {
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
@@ -411,7 +417,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_PlaceholderRowCreatedOnTapSelect() {
+	void testEmptyTable_PlaceholderRowCreatedOnTapSelect() {
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
@@ -437,7 +443,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_PlaceholderColumnCreatedOnTapSelect() {
+	void testEmptyTable_PlaceholderColumnCreatedOnTapSelect() {
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
@@ -453,7 +459,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_EnterInvalidDataInPlaceholderColumn() {
+	void testEmptyTable_EnterInvalidDataInPlaceholderColumn() {
 		// select (0, 1) - editing placeholder column
 		keyboardController.select(0, 1);
 		assertEquals(new CellIndex(0, 1), focusedCell);
@@ -471,7 +477,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testEmptyTable_Deselect() {
+	void testEmptyTable_Deselect() {
 		keyboardController.select(0, 0);
 		assertEquals(new CellIndex(0, 0), focusedCell);
 
@@ -484,14 +490,14 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	// - editing allowed, adding columns allowed
 
 	@Test
-	public void testValuesList() throws Exception {
+	void testValuesList() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 		assertEquals(3, keyboardController.getNavigableRowsCount());
 		assertEquals(2, keyboardController.getNavigableColumnsCount());
 	}
 
 	@Test
-	public void testValuesList_ArrowDownInEmptyPlaceholderRow() throws Exception {
+	void testValuesList_ArrowDownInEmptyPlaceholderRow() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 		didReportModelChanged = false;
 
@@ -524,7 +530,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowDownInNonEmptyPlaceholderRow() throws Exception {
+	void testValuesList_ArrowDownInNonEmptyPlaceholderRow() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -556,7 +562,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowUpInEmptyPlaceholderRow() throws Exception {
+	void testValuesList_ArrowUpInEmptyPlaceholderRow() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -589,7 +595,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowUpInNonEmptyPlaceholderRow() throws Exception {
+	void testValuesList_ArrowUpInNonEmptyPlaceholderRow() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -622,7 +628,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowRightInEmptyPlaceholderColumn() throws Exception {
+	void testValuesList_ArrowRightInEmptyPlaceholderColumn() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -647,7 +653,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowRightInNonEmptyPlaceholderColumn() throws Exception {
+	void testValuesList_ArrowRightInNonEmptyPlaceholderColumn() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -672,7 +678,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowLeftInFirstColumn() throws Exception {
+	void testValuesList_ArrowLeftInFirstColumn() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -688,7 +694,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowLeftInEmptyPlaceholderColumn() throws Exception {
+	void testValuesList_ArrowLeftInEmptyPlaceholderColumn() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -714,7 +720,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testValuesList_ArrowLeftInNonEmptyPlaceholderColumn() throws Exception {
+	void testValuesList_ArrowLeftInNonEmptyPlaceholderColumn() throws Exception {
 		tableValuesView.setValues(0, 1, 1);
 
 		// select (0, 0)
@@ -745,7 +751,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	// - editing allowed, adding columns allowed
 
 	@Test
-	public void testFunctionColumn() throws Exception {
+	void testFunctionColumn() throws Exception {
 		tableValuesView.setValues(-2, 2, 1);
 		addFunction("f", "x");
 		assertEquals(6, keyboardController.getNavigableRowsCount());
@@ -753,7 +759,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testFunctionColumn_ArrowDownInEmptyPlaceholderColumn() throws Exception {
+	void testFunctionColumn_ArrowDownInEmptyPlaceholderColumn() throws Exception {
 		tableValuesView.setValues(-2, 2, 1);
 		addFunction("f", "x");
 
@@ -761,9 +767,14 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		keyboardController.select(0, 0);
 		assertEquals(new CellIndex(0, 0), focusedCell);
 
-		// arrow right
-		// -> skip f(x) column, editing placeholder column
+		// arrow right -> focus f(x) without editing
 		cellContent = getFocusedCellContent();
+		focusedCell = null;
+		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
+		assertEquals(new CellIndex(0, 1), focusedCell);
+		assertFalse(focusedCellEditable);
+
+		// arrow right -> editing placeholder column
 		focusedCell = null;
 		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
 		assertTrue(keyboardController.isEditingPlaceholderColumn());
@@ -778,18 +789,23 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		assertEquals(new CellIndex(1, 2), focusedCell);
 		assertEquals(2, tableValuesView.getTableValuesModel().getColumnCount());
 
-		// arrow left
-		// -> back in x column, no new data
+		// arrow left -> focus f(x) without editing
 		cellContent = "";
 		focusedCell = null;
 		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_LEFT);
 		assertFalse(keyboardController.isEditingPlaceholderColumn());
+		assertEquals(new CellIndex(1, 1), focusedCell);
+		assertFalse(focusedCellEditable);
+
+		// arrow left -> back in x column, no new data
+		focusedCell = null;
+		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_LEFT);
 		assertEquals(new CellIndex(1, 0), focusedCell);
 		assertEquals(2, tableValuesView.getTableValuesModel().getColumnCount());
 	}
 
 	@Test
-	public void testFunctionColumn_ArrowDownInNonEmptyPlaceholderColumn() throws Exception {
+	void testFunctionColumn_ArrowDownInNonEmptyPlaceholderColumn() throws Exception {
 		tableValuesView.setValues(-2, 2, 1);
 		addFunction("f", "x");
 
@@ -797,9 +813,14 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		keyboardController.select(0, 0);
 		assertEquals(new CellIndex(0, 0), focusedCell);
 
-		// arrow right
-		// -> skip f(x) column, editing placeholder column
+		// arrow right -> focus f(x) without editing
 		cellContent = getFocusedCellContent();
+		focusedCell = null;
+		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
+		assertEquals(new CellIndex(0, 1), focusedCell);
+		assertFalse(focusedCellEditable);
+
+		// arrow right -> editing placeholder column
 		focusedCell = null;
 		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
 		assertTrue(keyboardController.isEditingPlaceholderColumn());
@@ -815,13 +836,31 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		assertEquals(new CellIndex(1, 2), focusedCell);
 	}
 
+	@Test
+	void testFunctionColumn_ArrowDownStopsAtLastDataRow() throws Exception {
+		tableValuesView.setValues(-2, 2, 1);
+		addFunction("f", "x");
+		keyboardController.select(0, 0);
+		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
+
+		for (int row = 1; row < tableValuesView.getTableValuesModel().getRowCount(); row++) {
+			keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_DOWN);
+		}
+		assertEquals(new CellIndex(4, 1), focusedCell);
+
+		focusedCell = null;
+		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_DOWN);
+		assertEquals(4, keyboardController.getSelectedRow());
+		assertNull(focusedCell);
+	}
+
 	// Scenario 3 (SciCalc):
 	// - x ("values") column,
 	// - f(x), g(x) columns,
 	// - editing allowed, adding columns not allowed
 
 	@Test
-	public void testSciCalc() {
+	void testSciCalc() {
 		ScientificDataTableController scientificDataTableController =
 				new ScientificDataTableController(getKernel());
 		scientificDataTableController.setup(tableValuesView);
@@ -831,7 +870,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Test
-	public void testSciCalc_ArrowRight() {
+	void testSciCalc_ArrowRight() {
 		ScientificDataTableController scientificDataTableController =
 				new ScientificDataTableController(getKernel());
 		scientificDataTableController.setup(tableValuesView);
@@ -840,16 +879,16 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		// select (0, 0)
 		keyboardController.select(0, 0);
 
-		// arrow right
-		// -> selection should not change
+		// arrow right -> first function column
 		cellContent = getFocusedCellContent();
 		focusedCell = null;
 		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
-		assertEquals(new CellIndex(0, 0), focusedCell);
+		assertEquals(new CellIndex(0, 1), focusedCell);
+		assertFalse(focusedCellEditable);
 	}
 
 	@Test
-	public void testSciCalc_ArrowDown() {
+	void testSciCalc_ArrowDown() {
 		ScientificDataTableController scientificDataTableController =
 				new ScientificDataTableController(getKernel());
 		scientificDataTableController.setup(tableValuesView);
@@ -891,7 +930,7 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	// - editing not allowed
 
 	@Test
-	public void testNonEditableValuesList() throws Exception {
+	void testNonEditableValuesList() throws Exception {
 		keyboardController.setReadonly(true);
 		tableValuesView.setValues(0, 3, 1);
 
@@ -899,12 +938,17 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		assertEquals(4, keyboardController.getNavigableRowsCount());
 
 		keyboardController.select(0, 0);
-		assertNull(focusedCell);
+		assertEquals(new CellIndex(0, 0), focusedCell);
+		assertFalse(focusedCellEditable);
+
+		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_DOWN);
+		assertEquals(new CellIndex(1, 0), focusedCell);
+		assertFalse(focusedCellEditable);
 	}
 
 	// see https://geogebra-jira.atlassian.net/browse/APPS-5585?focusedCommentId=211833
 	@Test
-	public void testMoveIntoFunctionColumn() throws Exception {
+	void testMoveIntoFunctionColumn() throws Exception {
 		traceEvents = true;
 		// select (0, 1), insert "1" into (placeholder) cell, press RETURN
 		keyboardController.select(0, 1);
@@ -926,13 +970,14 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		assertTrue(tableValuesView.getEvaluatable(1) instanceof GeoFunction);
 		assertFalse(keyboardController.isColumnEditable(1));
 
-		// since column 1 is now non-editable, there should be no focused cell
-		assertNull(focusedCell);
+		// column 1 is now non-editable, but remains focused for navigation
+		assertEquals(new CellIndex(1, 1), focusedCell);
+		assertFalse(focusedCellEditable);
 	}
 
 	// https://geogebra-jira.atlassian.net/browse/APPS-5585?focusedCommentId=212824
 	@Test
-	public void testDeleteColumn() throws Exception {
+	void testDeleteColumn() throws Exception {
 		traceEvents = true;
 
 		// y1: select (0, 1), insert "2" into (placeholder) cell, press RETURN
@@ -954,7 +999,12 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 		cellContent = "";
 		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
 
-		// y2 (now at column 2) should be selected
+		// f(x) (now at column 1) should be selected first
+		assertEquals(new CellIndex(0, 1), focusedCell);
+		assertFalse(focusedCellEditable);
+
+		// next arrow right selects y2 (now at column 2)
+		keyboardController.keyPressed(TableValuesKeyboardNavigationController.Key.ARROW_RIGHT);
 		assertEquals(new CellIndex(0, 2), focusedCell);
 	}
 
@@ -963,11 +1013,13 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	@Override
 	public void focusCell(int row, int column) {
 		focusedCell = row >= 0 && column >= 0 ? new CellIndex(row, column) : null;
+		focusedCellEditable = keyboardController.isColumnEditable(column);
 	}
 
 	@Override
 	public void refocusCell(int row, int column) {
 		focusedCell = row >= 0 && column >= 0 ? new CellIndex(row, column) : null;
+		focusedCellEditable = keyboardController.isColumnEditable(column);
 	}
 
 	@Override
@@ -988,15 +1040,13 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	//  TableValuesListener
 
 	@Override
-	public void notifyColumnRemoved(TableValuesModel model, GeoEvaluatable evaluatable,
-			int column) {
+	public void notifyColumnRemoved(TableValuesModel model, GeoEvaluatable evaluatable, int column) {
 		trace("notifyColumnRemoved(" + column + ")");
 		didReportModelChanged = true;
 	}
 
 	@Override
-	public void notifyColumnChanged(TableValuesModel model, GeoEvaluatable evaluatable,
-			int column) {
+	public void notifyColumnChanged(TableValuesModel model, GeoEvaluatable evaluatable, int column) {
 		trace("notifyColumnChanged(" + column + ")");
 		didReportModelChanged = true;
 	}
@@ -1008,15 +1058,15 @@ public class TableValuesKeyboardNavigationControllerTests extends BaseUnitTest
 	}
 
 	@Override
-	public void notifyColumnHeaderChanged(TableValuesModel model, GeoEvaluatable evaluatable,
-			int column) {
+	public void notifyColumnHeaderChanged(
+			TableValuesModel model, GeoEvaluatable evaluatable, int column) {
 		trace("notifyColumnHeaderChanged(" + column + ")");
 		didReportModelChanged = true;
 	}
 
 	@Override
-	public void notifyCellChanged(TableValuesModel model, GeoEvaluatable evaluatable, int column,
-			int row) {
+	public void notifyCellChanged(
+			TableValuesModel model, GeoEvaluatable evaluatable, int column, int row) {
 		trace("notifyCellChanged(" + row + ", " + column + ")");
 		didReportModelChanged = true;
 	}

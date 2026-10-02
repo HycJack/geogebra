@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -35,7 +35,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.CheckForNull;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -56,7 +55,6 @@ import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoElementSpreadsheet;
 import org.geogebra.common.main.App;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.SettingListener;
 import org.geogebra.common.main.settings.SpreadsheetSettings;
 import org.geogebra.common.spreadsheet.core.SpreadsheetCoords;
@@ -69,9 +67,15 @@ import org.geogebra.desktop.gui.view.Gridable;
 import org.geogebra.desktop.main.AppD;
 import org.geogebra.desktop.main.SpreadsheetTableModelD;
 import org.geogebra.desktop.util.GuiResourcesD;
+import org.jspecify.annotations.Nullable;
 
-public class SpreadsheetViewD implements SpreadsheetViewInterface,
-		ComponentListener, FocusListener, Gridable, SettingListener, SetLabels {
+public class SpreadsheetViewD
+		implements SpreadsheetViewInterface,
+				ComponentListener,
+				FocusListener,
+				Gridable,
+				SettingListener<SpreadsheetSettings>,
+				SetLabels {
 
 	// ggb fields
 	protected AppD app;
@@ -106,8 +110,10 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	SpreadsheetToolbarManager toolbarManager;
 	private FormulaBar formulaBar;
 	private JPanel spreadsheetPanel;
+	private boolean scrollToShow = false;
+	boolean allowSettingUpdate = true;
 
-	/******************************************************
+	/**
 	 * Construct spreadsheet view.
 	 */
 	public SpreadsheetViewD(AppD app) {
@@ -130,7 +136,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		SpreadsheetViewDnD.get(app, this);
 
 		settingsChanged(settings());
-
 	}
 
 	private void createGUI() {
@@ -148,7 +153,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		spreadsheetWrapper.add(spreadsheetPanel, BorderLayout.CENTER);
 
 		spreadsheetWrapper.setBorder(BorderFactory.createEmptyBorder());
-
 	}
 
 	private void buildSpreadsheet() {
@@ -161,9 +165,8 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		rowHeader = new SpreadsheetRowHeaderD(app, table);
 
 		// Set column width
-		table.headerRenderer
-				.setPreferredSize(new Dimension(table.preferredColumnWidth,
-						SpreadsheetSettings.TABLE_CELL_HEIGHT));
+		table.headerRenderer.setPreferredSize(
+				new Dimension(table.preferredColumnWidth, SpreadsheetSettings.TABLE_CELL_HEIGHT));
 
 		// Put the table and the row header into a scroll plane
 		// The scrollPane is named as spreadsheet
@@ -176,23 +179,19 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		tableHeader = table.getTableHeader();
 
 		// Create and set the scrollpane corners
-		spreadsheet.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER,
-				newUpperLeftCorner());
-		spreadsheet.setCorner(ScrollPaneConstants.LOWER_LEFT_CORNER,
-				new Corner());
-		spreadsheet.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER,
-				new Corner());
+		spreadsheet.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER, newUpperLeftCorner());
+		spreadsheet.setCorner(ScrollPaneConstants.LOWER_LEFT_CORNER, new Corner());
+		spreadsheet.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, new Corner());
 
 		// Add a resize listener to the table so it can auto-enlarge if needed
 		table.addComponentListener(this);
-
 	}
 
 	// ===============================================================
 	// Corners
 	// ===============================================================
 
-	private static class Corner extends JComponent {
+	private static final class Corner extends JComponent {
 		private static final long serialVersionUID = -4426785169061557674L;
 
 		@Override
@@ -208,8 +207,7 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		Corner upperLeftCorner = new Corner(); // use FlowLayout
 
 		upperLeftCorner.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(0, 0, 1, 1,
-						MyTableD.HEADER_GRID_COLOR),
+				BorderFactory.createMatteBorder(0, 0, 1, 1, MyTableD.HEADER_GRID_COLOR),
 				BorderFactory.createEmptyBorder(0, 5, 0, 0)));
 
 		upperLeftCorner.addMouseListener(new MouseAdapter() {
@@ -220,17 +218,14 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		});
 
 		// add trace dialog button
-		btnTraceDialog = new JButton(
-				app.getScaledIcon(GuiResourcesD.SPREADSHEETTRACE_BUTTON));
+		btnTraceDialog = new JButton(app.getScaledIcon(GuiResourcesD.SPREADSHEETTRACE_BUTTON));
 		btnTraceDialog.setBorderPainted(false);
 		btnTraceDialog.setPreferredSize(new Dimension(18, 18));
 		btnTraceDialog.setContentAreaFilled(false);
 		// invisible button unless a trace is set
 		btnTraceDialog.setVisible(false);
-		btnTraceDialog.setToolTipText(
-				app.getLocalization().getMenuTooltip("TraceToSpreadsheet"));
-		btnTraceDialog.addActionListener(
-				e -> showTraceDialog(null, table.getFirstSelection()));
+		btnTraceDialog.setToolTipText(app.getLocalization().getMenuTooltip("TraceToSpreadsheet"));
+		btnTraceDialog.addActionListener(e -> showTraceDialog(null, table.getFirstSelection()));
 
 		upperLeftCorner.setLayout(new BorderLayout());
 		upperLeftCorner.add(btnTraceDialog, BorderLayout.WEST);
@@ -270,6 +265,9 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		spreadsheet.getRowHeader().revalidate();
 	}
 
+	/**
+	 * @return the column header viewport
+	 */
 	public JViewport getColumnHeader() {
 		return spreadsheet.getColumnHeader();
 	}
@@ -326,10 +324,8 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 
 		// autoscroll to new cell's location
 		if (scrollToShow) {
-			table.scrollRectToVisible(
-					table.getCellRect(location.row, location.column, true));
+			table.scrollRectToVisible(table.getCellRect(location.row, location.column, true));
 		}
-
 	}
 
 	@Override
@@ -345,13 +341,13 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		SpreadsheetCoords location = geo.getSpreadsheetCoords();
 
 		switch (geo.getGeoClassType()) {
-		default:
-			// do nothing
-			break;
-		case BOOLEAN:
-		case BUTTON:
-		case LIST:
-			table.oneClickEditMap.remove(location);
+			default:
+				// do nothing
+				break;
+			case BOOLEAN:
+			case BUTTON:
+			case LIST:
+				table.oneClickEditMap.remove(location);
 		}
 	}
 
@@ -366,7 +362,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		if (isTraceDialogVisible()) {
 			traceDialog.updateTraceDialog();
 		}
-
 	}
 
 	@Override
@@ -389,7 +384,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		setDefaultSelection();
 		table.oneClickEditMap.clear();
 		tableModel.clearView();
-
 	}
 
 	/** Respond to changes in mode sent by GUI manager */
@@ -402,7 +396,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		// String command = kernel.getModeText(mode); // e.g. "Derivative"
 
 		toolbarManager.handleModeChange(mode);
-
 	}
 
 	/**
@@ -425,7 +418,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 
 		// clear the formats and call settingsChanged
 		settings().setCellFormat(null);
-
 	}
 
 	/** Resets spreadsheet after undo/redo call. */
@@ -471,7 +463,7 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	}
 
 	@Override
-	final public void updateVisualStyle(GeoElement geo, GProperty prop) {
+	public final void updateVisualStyle(GeoElement geo, GProperty prop) {
 		update(geo);
 	}
 
@@ -484,8 +476,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	public boolean isShowing() {
 		return spreadsheetWrapper.isShowing();
 	}
-
-	private boolean scrollToShow = false;
 
 	public void setScrollToShow(boolean scrollToShow) {
 		this.scrollToShow = scrollToShow;
@@ -503,8 +493,7 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 			// Build the formula bar
 			formulaBar = new FormulaBar(app, this);
 			formulaBar.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createMatteBorder(0, 0, 1, 0,
-							SystemColor.controlShadow),
+					BorderFactory.createMatteBorder(0, 0, 1, 0, SystemColor.controlShadow),
 					BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 		}
 		return formulaBar;
@@ -533,6 +522,9 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		traceDialog.setVisible(true);
 	}
 
+	/**
+	 * @return whether the trace dialog is currently visible
+	 */
 	public boolean isTraceDialogVisible() {
 		return traceDialog != null && traceDialog.isVisible();
 	}
@@ -542,7 +534,7 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	 * @param anchorRow initial row
 	 * @return trace selection range
 	 */
-	public @CheckForNull TabularRange getTraceSelectionRange(int anchorColumn, int anchorRow) {
+	public @Nullable TabularRange getTraceSelectionRange(int anchorColumn, int anchorRow) {
 		if (traceDialog == null) {
 			return null;
 		}
@@ -581,8 +573,7 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		if (formulaBar != null) {
 			formulaBar.setLabels();
 		}
-		btnTraceDialog.setToolTipText(
-				app.getLocalization().getMenuTooltip("TraceToSpreadsheet"));
+		btnTraceDialog.setToolTipText(app.getLocalization().getMenuTooltip("TraceToSpreadsheet"));
 	}
 
 	/**
@@ -594,14 +585,13 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		MyTextFieldD dummy = new MyTextFieldD(app);
 		dummy.setFont(font);
 		dummy.setText("9999"); // for row header width
-		int h = dummy.getPreferredSize().height;
 		int w = dummy.getPreferredSize().width;
 		rowHeader.setFixedCellWidth(w);
 
 		// TODO: column widths are not set from here
 		// need to revise updateColumnWidths() to do this correctly
 		dummy.setText("MMMMMMMMMM"); // for column width
-		h = dummy.getPreferredSize().height;
+		int h = dummy.getPreferredSize().height;
 		w = dummy.getPreferredSize().width;
 		settings().setPreferredRowHeightNoFire(h);
 		table.setPreferredColumnWidth(w);
@@ -634,13 +624,10 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 			size = 12; // minimum size
 		}
 		double multiplier = size / 12.0;
-		table.setPreferredColumnWidth(
-				(int) (SpreadsheetSettings.TABLE_CELL_WIDTH * multiplier));
+		table.setPreferredColumnWidth((int) (SpreadsheetSettings.TABLE_CELL_WIDTH * multiplier));
 		for (int i = 0; i < table.getColumnCount(); ++i) {
-			table.getColumnModel().getColumn(i)
-					.setPreferredWidth(table.preferredColumnWidth());
+			table.getColumnModel().getColumn(i).setPreferredWidth(table.preferredColumnWidth());
 		}
-
 	}
 
 	private void setColumnWidthsFromSettings() {
@@ -648,19 +635,16 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		Map<Integer, Double> widthMap = settings().getColumnWidths();
 		for (int i = 0; i < table.getColumnCount(); ++i) {
 			if (widthMap.containsKey(i)) {
-				table.getColumnModel().getColumn(i)
-						.setPreferredWidth((int) Math.round(widthMap.get(i)));
+				table.getColumnModel().getColumn(i).setPreferredWidth((int) Math.round(widthMap.get(i)));
 			} else {
-				table.getColumnModel().getColumn(i)
-						.setPreferredWidth(table.preferredColumnWidth());
+				table.getColumnModel().getColumn(i).setPreferredWidth(table.preferredColumnWidth());
 			}
 		}
 	}
 
 	private void setRowHeightsFromSettings() {
 		Map<Integer, Double> heightMap = app.getSettings().getSpreadsheet().getRowHeights();
-		table.setRowHeight(
-				app.getSettings().getSpreadsheet().preferredRowHeight());
+		table.setRowHeight(app.getSettings().getSpreadsheet().preferredRowHeight());
 		if (!heightMap.isEmpty()) {
 			for (Entry<Integer, Double> entry : heightMap.entrySet()) {
 				Integer r = entry.getKey();
@@ -701,20 +685,16 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 
 		if (table.getWidth() < spreadsheet.getWidth()) {
 
-			int newColumns = (spreadsheet.getWidth() - table.getWidth())
-					/ table.preferredColumnWidth();
+			int newColumns = (spreadsheet.getWidth() - table.getWidth()) / table.preferredColumnWidth();
 			table.removeComponentListener(this);
 			tableModel.setColumnCount(table.getColumnCount() + newColumns);
 			table.addComponentListener(this);
-
 		}
 		if (table.getHeight() < spreadsheet.getHeight()) {
-			int newRows = (spreadsheet.getHeight() - table.getHeight())
-					/ table.getRowHeight();
+			int newRows = (spreadsheet.getHeight() - table.getHeight()) / table.getRowHeight();
 			table.removeComponentListener(this);
 			tableModel.setRowCount(table.getRowCount() + newRows);
 			table.addComponentListener(this);
-
 		}
 
 		// if table has grown after resizing all rows or columns, then select
@@ -759,12 +739,12 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	public boolean loadSpreadsheetFromURL(File f) {
 		boolean succ = false;
 
-		URL url = null;
+		URL url;
 		try {
 			url = f.toURI().toURL();
 			succ = loadSpreadsheetFromURL(url);
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			Log.debug(ex);
 		}
 
 		return succ;
@@ -806,21 +786,17 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 
 	private void setShowVScrollBar(boolean showVScrollBar) {
 		if (showVScrollBar) {
-			spreadsheet.setVerticalScrollBarPolicy(
-					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+			spreadsheet.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		} else {
-			spreadsheet.setVerticalScrollBarPolicy(
-					ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+			spreadsheet.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 		}
 	}
 
 	private void setShowHScrollBar(boolean showHScrollBar) {
 		if (showHScrollBar) {
-			spreadsheet.setHorizontalScrollBarPolicy(
-					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			spreadsheet.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		} else {
-			spreadsheet.setHorizontalScrollBarPolicy(
-					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			spreadsheet.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		}
 	}
 
@@ -834,6 +810,9 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		getSpreadsheetStyleBar().updateStyleBar();
 	}
 
+	/**
+	 * @return whether tooltips are allowed
+	 */
 	public boolean getAllowToolTips() {
 		return settings().allowToolTips();
 	}
@@ -853,14 +832,23 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		getSpreadsheetStyleBar().updateStyleBar();
 	}
 
+	/**
+	 * @return whether the formula bar is shown
+	 */
 	public boolean getShowFormulaBar() {
 		return settings().showFormulaBar();
 	}
 
+	/**
+	 * @return whether the style bar is visible, or there is no style bar at all
+	 */
 	public boolean isVisibleStyleBar() {
 		return styleBar == null || styleBar.isVisible();
 	}
 
+	/**
+	 * @return whether column selection mode is enabled
+	 */
 	public boolean isColumnSelect() {
 		return settings().isColumnSelect();
 	}
@@ -878,8 +866,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	public void setEqualsRequired(boolean isEqualsRequired) {
 		table.setEqualsRequired(isEqualsRequired);
 	}
-
-	boolean allowSettingUpdate = true;
 
 	@Override
 	public void updateCellFormat(String cellFormat) {
@@ -936,32 +922,30 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	}
 
 	@Override
-	public void settingsChanged(AbstractSettings settings0) {
+	public void settingsChanged(SpreadsheetSettings settings0) {
 
 		allowSettingUpdate = false;
 
 		// layout
-		setShowColumnHeader(settings().showColumnHeader());
-		setShowRowHeader(settings().showRowHeader());
-		setShowVScrollBar(settings().showVScrollBar());
-		setShowHScrollBar(settings().showHScrollBar());
-		setShowGrid(settings().showGrid());
-		setShowFormulaBar(settings().showFormulaBar());
-		setEqualsRequired(settings().equalsRequired());
-		setEnableAutoComplete(settings().isEnableAutoComplete());
+		setShowColumnHeader(settings0.showColumnHeader());
+		setShowRowHeader(settings0.showRowHeader());
+		setShowVScrollBar(settings0.showVScrollBar());
+		setShowHScrollBar(settings0.showHScrollBar());
+		setShowGrid(settings0.showGrid());
+		setShowFormulaBar(settings0.showFormulaBar());
+		setEqualsRequired(settings0.equalsRequired());
+		setEnableAutoComplete(settings0.isEnableAutoComplete());
 
 		// row height and column widths
 		setColumnWidthsFromSettings();
 		setRowHeightsFromSettings();
 
 		// cell format
-		getSpreadsheetTable().getCellFormatHandler()
-				.processXMLString(settings().cellFormat());
+		getSpreadsheetTable().getCellFormatHandler().processXMLString(settings0.cellFormat());
 		spreadsheetWrapper.repaint();
 		table.repaint();
 		// preferredSize
-		spreadsheetWrapper.setPreferredSize(
-				GDimensionD.getAWTDimension(settings().preferredSize()));
+		spreadsheetWrapper.setPreferredSize(GDimensionD.getAWTDimension(settings0.preferredSize()));
 
 		// initial position
 		// TODO not working yet ...
@@ -971,7 +955,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		// settings.selectedCell().y);
 
 		allowSettingUpdate = true;
-
 	}
 
 	// ================================================
@@ -981,10 +964,10 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	protected boolean hasViewFocus() {
 		boolean hasFocus = false;
 		try {
-			if (((LayoutD) app.getGuiManager().getLayout()).getDockManager()
-					.getFocusedPanel() != null) {
+			if (((LayoutD) app.getGuiManager().getLayout()).getDockManager().getFocusedPanel() != null) {
 				hasFocus = ((LayoutD) app.getGuiManager().getLayout())
-						.getDockManager().getFocusedPanel()
+						.getDockManager()
+						.getFocusedPanel()
 						.isAncestorOf(spreadsheetWrapper);
 			}
 		} catch (Exception e) {
@@ -1007,11 +990,10 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		if (table == null) {
 			return false;
 		}
-		return table.hasFocus() || rowHeader.hasFocus()
-				|| (table.getTableHeader() != null
-						&& table.getTableHeader().hasFocus())
-				|| spreadsheet.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER)
-						.hasFocus()
+		return table.hasFocus()
+				|| rowHeader.hasFocus()
+				|| (table.getTableHeader() != null && table.getTableHeader().hasFocus())
+				|| spreadsheet.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).hasFocus()
 				|| (formulaBar != null && formulaBar.hasFocus());
 	}
 
@@ -1023,7 +1005,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	@Override
 	public void focusLost(FocusEvent arg0) {
 		getSpreadsheetTable().repaint();
-
 	}
 
 	@Override
@@ -1060,9 +1041,9 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	@Override
 	public Component[][] getPrintComponents() {
 		return new Component[][] {
-				{ spreadsheet.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER),
-						spreadsheet.getColumnHeader() },
-				{ spreadsheet.getRowHeader(), table } };
+			{spreadsheet.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER), spreadsheet.getColumnHeader()},
+			{spreadsheet.getRowHeader(), table}
+		};
 	}
 
 	public JComponent getViewContainer() {

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,8 +16,8 @@
 
 package org.geogebra.common.kernel.parser.function;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,45 +27,45 @@ import org.geogebra.common.jre.headless.LocalizationCommon;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.test.LocalizationCommonUTF;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ParserFunctionsFactoryTest {
+class ParserFunctionsFactoryTest {
 	private final LocalizationCommon loc = new LocalizationCommonUTF(3);
 
 	@Test
-	public void testGraphingParserFunctions() {
-		ParserFunctions functions = ParserFunctionsFactory
-				.createGraphingParserFunctionsFactory().createParserFunctions();
+	void testGraphingParserFunctions() {
+		ParserFunctions functions =
+				ParserFunctionsFactory.createGraphingParserFunctionsFactory().createParserFunctions();
 		assertEquals(Operation.SIN, functions.get("sin", 1));
 		assertNull(functions.get("alt", 1));
 		assertNull(functions.get("arg", 1));
 	}
 
 	@Test
-	public void testDefaultParserFunctions() {
-		ParserFunctions functions = ParserFunctionsFactory
-				.createParserFunctionsFactory().createParserFunctions();
+	void testDefaultParserFunctions() {
+		ParserFunctions functions =
+				ParserFunctionsFactory.createParserFunctionsFactory().createParserFunctions();
 		assertEquals(Operation.SIN, functions.get("sin", 1));
 		assertEquals(Operation.ALT, functions.get("alt", 1));
 		assertEquals(Operation.ARG, functions.get("arg", 1));
 	}
 
 	@Test
-	public void suggestionsShouldBeUnique() {
-		ParserFunctions functions = ParserFunctionsFactory
-				.createParserFunctionsFactory().createParserFunctions();
+	void suggestionsShouldBeUnique() {
+		ParserFunctions functions =
+				ParserFunctionsFactory.createParserFunctionsFactory().createParserFunctions();
 		functions.updateLocale(new LocalizationCommonUTF(3));
 		List<String> suggestions = functions.getCompletions("nroot");
 		assertEquals(1, suggestions.size());
 		suggestions = functions.getCompletions("tan");
-		assertEquals(2, suggestions.size()); //tan, tanh
+		assertEquals(2, suggestions.size()); // tan, tanh
 	}
 
 	@Test
 	@Issue("APPS-2635")
-	public void suggestionsShouldShowLocalAndDefault() {
-		ParserFunctions functions = ParserFunctionsFactory
-				.createParserFunctionsFactory().createParserFunctions();
+	void suggestionsShouldShowLocalAndDefault() {
+		ParserFunctions functions =
+				ParserFunctionsFactory.createParserFunctionsFactory().createParserFunctions();
 		setLanguage(functions, new Locale("es"));
 		List<String> suggestions = functions.getCompletions("sen");
 		assertEquals(suggestions, Arrays.asList("sen( <x> )", "senh( <x> )"));
@@ -82,18 +82,18 @@ public class ParserFunctionsFactoryTest {
 
 	@Test
 	@Issue("APPS-6979")
-	public void suggestionsShouldNotShowLocalAndDefault() {
-		ParserFunctions functions = ParserFunctionsFactory
-				.createParserFunctionsFactory().createParserFunctions();
+	void suggestionsShouldNotShowLocalAndDefault() {
+		ParserFunctions functions =
+				ParserFunctionsFactory.createParserFunctionsFactory().createParserFunctions();
 		setLanguage(functions, new Locale("de"));
 		List<String> suggestions = functions.getCompletions("asin");
 		assertEquals(Arrays.asList("asin( <x> )", "asing( <x> )", "asinh( <x> )"), suggestions);
 	}
 
 	@Test
-	public void testParserFunctionsForSpanish() {
-		ParserFunctions functions = ParserFunctionsFactory
-				.createParserFunctionsFactory().createParserFunctions();
+	void testParserFunctionsForSpanish() {
+		ParserFunctions functions =
+				ParserFunctionsFactory.createParserFunctionsFactory().createParserFunctions();
 		setLanguage(functions, new Locale("es"));
 		assertEquals(Operation.SIN, functions.get("sen", 1));
 		assertEquals(Operation.ARCSIN, functions.get("arcsen", 1));

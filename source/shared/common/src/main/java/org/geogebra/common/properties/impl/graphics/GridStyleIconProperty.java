@@ -18,29 +18,30 @@ package org.geogebra.common.properties.impl.graphics;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.main.Localization;
+import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.properties.IconsEnumeratedProperty;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This property controls the style of the grid.
  */
 public class GridStyleIconProperty extends AbstractEnumeratedProperty<Integer>
-		implements IconsEnumeratedProperty<Integer> {
+		implements IconsEnumeratedProperty<Integer>, SettingsDependentProperty {
 
 	private EuclidianSettings euclidianSettings;
 
-	private PropertyResource[] icons = new PropertyResource[]{
-			PropertyResource.ICON_CARTESIAN_MINOR, PropertyResource.ICON_CARTESIAN,
-			PropertyResource.ICON_POLAR, PropertyResource.ICON_ISOMETRIC,
-			PropertyResource.ICON_DOTS};
+	private PropertyResource[] icons = new PropertyResource[] {
+		PropertyResource.ICON_CARTESIAN_MINOR, PropertyResource.ICON_CARTESIAN,
+		PropertyResource.ICON_POLAR, PropertyResource.ICON_ISOMETRIC,
+		PropertyResource.ICON_DOTS
+	};
 	private static final String[] rawLabels = {
-			"Grid.MajorAndMinor", "Grid.Major", "Polar", "Isometric", "Dots"
+		"Grid.MajorAndMinor", "Grid.Major", "Polar", "Isometric", "Dots"
 	};
 
 	/**
@@ -51,8 +52,11 @@ public class GridStyleIconProperty extends AbstractEnumeratedProperty<Integer>
 	public GridStyleIconProperty(Localization localization, EuclidianSettings euclidianSettings) {
 		super(localization, "GridType");
 		this.euclidianSettings = euclidianSettings;
-		setValues(List.of(EuclidianView.GRID_CARTESIAN_WITH_SUBGRID, EuclidianView.GRID_CARTESIAN,
-				EuclidianView.GRID_POLAR, EuclidianView.GRID_ISOMETRIC,
+		setValues(List.of(
+				EuclidianView.GRID_CARTESIAN_WITH_SUBGRID,
+				EuclidianView.GRID_CARTESIAN,
+				EuclidianView.GRID_POLAR,
+				EuclidianView.GRID_ISOMETRIC,
 				EuclidianView.GRID_DOTS));
 	}
 
@@ -77,7 +81,12 @@ public class GridStyleIconProperty extends AbstractEnumeratedProperty<Integer>
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return rawLabels;
+	}
+
+	@Override
+	public AbstractSettings<?> getSettings() {
+		return euclidianSettings;
 	}
 }

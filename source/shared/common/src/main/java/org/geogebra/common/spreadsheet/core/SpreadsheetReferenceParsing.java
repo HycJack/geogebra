@@ -18,33 +18,32 @@ package org.geogebra.common.spreadsheet.core;
 
 import java.util.Locale;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.regexp.shared.MatchResult;
 import org.geogebra.regexp.shared.RegExp;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Methods for parsing spreadsheet cell references.
  *
  * @apiNote All indices are 0-based.
  * @implNote This duplicates some code from GeoElementSpreadsheet, which we don't want to reuse
- * here (or refactor at this point).
+ * here (or refactor at this point) because it sits outside the {@code spreadsheet.core} package.
  */
-final class SpreadsheetReferenceParsing {
+public final class SpreadsheetReferenceParsing {
 
 	/** match A1, ABG1, $A$123 but not A0, A000, A0001 etc */
-	private static final RegExp CELL_REFERENCE_REGEX = RegExp
-			.compile("(?<![A-Za-z0-9\\$])(\\$?)([A-Z]+)(\\$?)([1-9][0-9]*)\\b");
+	private static final RegExp CELL_REFERENCE_REGEX =
+			RegExp.compile("(?<![A-Za-z0-9\\$])(\\$?)([A-Z]+)(\\$?)([1-9][0-9]*)\\b");
 
 	/** regex capture group with "$" or "" for column */
-	private final static int CAPTURE_GROUP_COLUMN_DOLLAR = 1;
+	private static final int CAPTURE_GROUP_COLUMN_DOLLAR = 1;
 	/** regex capture group for column name */
-	private final static int CAPTURE_GROUP_COLUMN = 2;
+	private static final int CAPTURE_GROUP_COLUMN = 2;
 	/** regex capture group with "$" or "" for row */
-	private final static int CAPTURE_GROUP_ROW_DOLLAR = 3;
+	private static final int CAPTURE_GROUP_ROW_DOLLAR = 3;
 	/** regex capture group for row number */
-	private final static int CAPTURE_GROUP_ROW = 4;
+	private static final int CAPTURE_GROUP_ROW = 4;
 
 	/**
 	 * Parse a cell or cell range reference.
@@ -52,11 +51,11 @@ final class SpreadsheetReferenceParsing {
 	 * @return A {@code TabularRange} representing the cell (e.g., "A1") or range (e.g., "A1:A10")
 	 * reference input string, or {@code null} if candidate is not a valid cell or range reference.
 	 */
-	static @CheckForNull SpreadsheetReference parseReference(@Nonnull String candidate) {
+	public static @Nullable SpreadsheetReference parseReference(@NonNull String candidate) {
 		if (candidate.isBlank()) { // this includes empty strings
 			return null;
 		}
-		String[] parts = candidate.split(":");
+		String[] parts = candidate.split(":", -1);
 		if (parts.length > 2 || parts.length < 1) {
 			return null; // must be "A1" or "A1:A10"
 		}
@@ -71,8 +70,8 @@ final class SpreadsheetReferenceParsing {
 	 * (if toReference is non-null and a valid cell reference). Returns {@code null} if
 	 * {@code fromReference} or {@code toReference} are invalid strings.
 	 */
-	private static @CheckForNull SpreadsheetReference parseCellReferences(
-			@Nonnull String fromReference, @CheckForNull String toReference) {
+	private static @Nullable SpreadsheetReference parseCellReferences(
+			@NonNull String fromReference, @Nullable String toReference) {
 		SpreadsheetCellReference fromCell = parseCellReference(fromReference);
 		if (fromCell == null) {
 			return null; // invalid reference
@@ -90,8 +89,8 @@ final class SpreadsheetReferenceParsing {
 	 * @return A {@link SpreadsheetReference} representing the cell reference, or null if
 	 * {@code cellReference} is an invalid input.
 	 */
-	private static @CheckForNull SpreadsheetCellReference parseCellReference(
-			@CheckForNull String cellReference) {
+	private static @Nullable SpreadsheetCellReference parseCellReference(
+			@Nullable String cellReference) {
 		if (cellReference == null || cellReference.isEmpty()) {
 			return null;
 		}
@@ -108,8 +107,8 @@ final class SpreadsheetReferenceParsing {
 		boolean rowIsAbsolute = "$".equals(match.getGroup(CAPTURE_GROUP_ROW_DOLLAR));
 		try {
 			int rowNumber = Integer.parseInt(match.getGroup(CAPTURE_GROUP_ROW));
-			return new SpreadsheetCellReference(rowNumber - 1, rowIsAbsolute,
-					columnIndex, columnIsAbsolute);
+			return new SpreadsheetCellReference(
+					rowNumber - 1, rowIsAbsolute, columnIndex, columnIsAbsolute);
 		} catch (NumberFormatException e) {
 			return null;
 		}
@@ -120,7 +119,7 @@ final class SpreadsheetReferenceParsing {
 	 * @param columnName A spreadsheet column name, e.g. AAB
 	 * @return The column index (0-based), or -1 if {@code columnName} is not a valid column name.
 	 */
-	private static int columnIndexFromName(@Nonnull String columnName) {
+	private static int columnIndexFromName(@NonNull String columnName) {
 		String name = columnName.trim().toUpperCase(Locale.ROOT);
 		if (name.length() >= 7) {
 			return -1; // 26^7 = 8.031.810.176, this would already overflow a 32bit int

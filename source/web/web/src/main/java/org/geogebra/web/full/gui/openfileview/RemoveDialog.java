@@ -25,7 +25,7 @@ import org.gwtproject.user.client.ui.Label;
 /**
  * Confirmation dialog for removing cards.
  */
-public class RemoveDialog extends ComponentDialog {
+public final class RemoveDialog extends ComponentDialog {
 	private MaterialCardI card;
 
 	/**
@@ -46,8 +46,7 @@ public class RemoveDialog extends ComponentDialog {
 
 	private void buildContent() {
 		Label confirmDelete = BaseWidgetFactory.INSTANCE.newSecondaryText(
-				app.getLocalization().getPlain("ConfirmDeleteA",
-						card.getCardTitle()), "message");
+				app.getLocalization().getPlain("ConfirmDeleteA", card.getCardTitle()), "message");
 		addDialogContent(confirmDelete);
 	}
 }

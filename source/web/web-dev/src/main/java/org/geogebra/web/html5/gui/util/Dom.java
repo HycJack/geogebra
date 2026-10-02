@@ -16,8 +16,6 @@
 
 package org.geogebra.web.html5.gui.util;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.util.debug.Log;
 import org.gwtproject.dom.client.Element;
 import org.gwtproject.dom.client.EventTarget;
@@ -26,6 +24,7 @@ import org.gwtproject.dom.client.Style;
 import org.gwtproject.user.client.DOM;
 import org.gwtproject.user.client.ui.UIObject;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
 
 import elemental2.dom.CSSStyleDeclaration;
 import elemental2.dom.DomGlobal;
@@ -48,8 +47,7 @@ public final class Dom {
 	 *            class name
 	 * @return NodeList of elements found by className
 	 */
-	public static HTMLCollection<elemental2.dom.Element> getElementsByClassName(
-			String className) {
+	public static HTMLCollection<elemental2.dom.Element> getElementsByClassName(String className) {
 		return DomGlobal.document.getElementsByClassName(className);
 	}
 
@@ -69,8 +67,7 @@ public final class Dom {
 	 *            selector
 	 * @return first Element found by selector className
 	 */
-	public static Element querySelectorForElement(Object elem,
-			String selector) {
+	public static Element querySelectorForElement(Object elem, String selector) {
 		elemental2.dom.Element parent = Js.uncheckedCast(elem);
 		return Js.uncheckedCast(parent.querySelector(selector));
 	}
@@ -83,14 +80,13 @@ public final class Dom {
 	 * @param val
 	 *            property value
 	 */
-	public static void setImportant(Style style, String property,
-			String val) {
+	public static void setImportant(Style style, String property, String val) {
 		CSSStyleDeclaration css = Js.uncheckedCast(style);
 		css.setProperty(property, val, "important");
 	}
 
 	/**
-	 * 
+	 *
 	 * @param event
 	 *            a native event
 	 * @param element
@@ -113,7 +109,7 @@ public final class Dom {
 	 * @param add
 	 *            whether to add or remove
 	 */
-	public static void toggleClass(@Nonnull UIObject ui, String className, boolean add) {
+	public static void toggleClass(@NonNull UIObject ui, String className, boolean add) {
 		if (add) {
 			ui.getElement().addClassName(className);
 		} else {
@@ -131,8 +127,7 @@ public final class Dom {
 	 * @param add
 	 *            whether to add or remove
 	 */
-	public static void toggleClass(UIObject ui, String classTrue,
-			String classFalse, boolean add) {
+	public static void toggleClass(UIObject ui, String classTrue, String classFalse, boolean add) {
 		toggleClass(ui.getElement(), classTrue, classFalse, add);
 	}
 
@@ -146,8 +141,7 @@ public final class Dom {
 	 * @param add
 	 *            whether to add or remove
 	 */
-	public static void toggleClass(Element elem, String classTrue,
-			String classFalse, boolean add) {
+	public static void toggleClass(Element elem, String classTrue, String classFalse, boolean add) {
 		if (add) {
 			elem.addClassName(classTrue);
 			elem.removeClassName(classFalse);
@@ -182,8 +176,7 @@ public final class Dom {
 	 */
 	public static int getPxProperty(Element element, String width) {
 		try {
-			return Integer.parseInt(element.getStyle().getProperty(width)
-					.replace("px", ""));
+			return Integer.parseInt(element.getStyle().getProperty(width).replace("px", ""));
 		} catch (RuntimeException ex) {
 			Log.warn(ex.getMessage());
 		}

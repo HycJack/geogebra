@@ -27,13 +27,13 @@ import org.geogebra.gwtutil.ScriptLoadCallback;
 import jsinterop.base.JsPropertyMap;
 
 /**
- * 
+ *
  * Loader for Graspable Math
  *
  */
-public class GMLoader {
+public final class GMLoader {
 	static final GMLoader INSTANCE = new GMLoader();
-	private Map<Integer, GraspableEmbedElement> loadQueue = new HashMap<>();
+	private final Map<Integer, GraspableEmbedElement> loadQueue = new HashMap<>();
 	private boolean loadingStarted;
 
 	/**
@@ -48,37 +48,36 @@ public class GMLoader {
 			return;
 		}
 		loadingStarted = true;
-		JavaScriptInjector.loadJS("https://graspablemath.com/shared/libs/gmath/gm-inject.js",
-				new ScriptLoadCallback() {
+		JavaScriptInjector.loadJS(
+				"https://graspablemath.com/shared/libs/gmath/gm-inject.js", new ScriptLoadCallback() {
 
-			@Override
-			public void onLoad() {
-				loadLatest();
-			}
+					@Override
+					public void onLoad() {
+						loadLatest();
+					}
 
-			@Override
-			public void onError() {
-				Log.warn("Could not load Graspable Math API");
-			}
+					@Override
+					public void onError() {
+						Log.warn("Could not load Graspable Math API");
+					}
 
-			@Override
-			public void cancel() {
-				// no need to cancel
-			}
-		});
+					@Override
+					public void cancel() {
+						// no need to cancel
+					}
+				});
 	}
 
-	protected void loadLatest() {
-		NativeGMLoader.loadGM(this::loadFromQueue,
-				JsPropertyMap.of("version", "latest", "build", "ggb"));
+	private void loadLatest() {
+		NativeGMLoader.loadGM(
+				this::loadFromQueue, JsPropertyMap.of("version", "latest", "build", "ggb"));
 	}
 
 	/**
 	 * Load all elements in the queue
 	 */
-	protected void loadFromQueue() {
-		for (Entry<Integer, GraspableEmbedElement> entry : loadQueue
-				.entrySet()) {
+	private void loadFromQueue() {
+		for (Entry<Integer, GraspableEmbedElement> entry : loadQueue.entrySet()) {
 			entry.getValue().initCanvas(entry.getKey());
 		}
 		loadQueue.clear();

@@ -38,8 +38,7 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  * Small screen tool menu
  */
-public class ModeToggleMenuP extends ModeToggleMenuW
-		implements MouseMoveHandler {
+public final class ModeToggleMenuP extends ModeToggleMenuW implements MouseMoveHandler {
 
 	private FlowPanel submenuPanel;
 	private StandardButton back;
@@ -57,8 +56,7 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 	 * @param order
 	 *            order in toolbar
 	 */
-	public ModeToggleMenuP(AppW appl, Vector<Integer> menu1, ToolBarW tb,
-			int order) {
+	public ModeToggleMenuP(AppW appl, Vector<Integer> menu1, ToolBarW tb, int order) {
 		super(appl, menu1, tb, order);
 	}
 
@@ -74,8 +72,8 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 	 * @param submenuPanel
 	 *            submenu
 	 */
-	public ModeToggleMenuP(AppW appl, Vector<Integer> menu1, ToolBarW tb,
-			int order, FlowPanel submenuPanel) {
+	public ModeToggleMenuP(
+			AppW appl, Vector<Integer> menu1, ToolBarW tb, int order, FlowPanel submenuPanel) {
 		super(appl, menu1, tb, order);
 		this.submenuPanel = submenuPanel;
 	}
@@ -121,15 +119,9 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 
 		for (int k = 0; k < menu.size(); k++) {
 			final int addMode = menu.get(k);
-			if (addMode < 0) { // TODO
-				// // separator within menu:
-				// tm.addSeparator();
-			} else { // standard case: add mode
-				// check mode
-				if (!"".equals(app.getToolName(addMode))) {
-					ListItem subLi = submenu.addItem(addMode);
-					addDomHandlers(subLi);
-				}
+			if (addMode >= 0 && !"".equals(app.getToolName(addMode))) {
+				ListItem subLi = submenu.addItem(addMode);
+				addDomHandlers(subLi);
 			}
 		}
 	}
@@ -182,11 +174,6 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 
 	@Override
 	public void onTouchStart(TouchStartEvent event) {
-		if (toolbar.isVisible()) {
-			startPosition = toolbar.getAbsoluteLeft();
-		} else {
-			startPosition = submenuPanel.getAbsoluteLeft();
-		}
 		if (event.getSource() == tbutton) {
 			tbutton.addStyleName("touched");
 		}
@@ -195,9 +182,6 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 			startPosition = toolbar.getAbsoluteLeft();
 		} else {
 			startPosition = submenuPanel.getAbsoluteLeft();
-		}
-		if (event.getSource() == tbutton) {
-			tbutton.addStyleName("touched");
 		}
 	}
 
@@ -218,8 +202,7 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 	@Override
 	public void onEnd(DomEvent<?> event) {
 
-		int mode = Integer
-				.parseInt(event.getRelativeElement().getAttribute("mode"));
+		int mode = Integer.parseInt(event.getRelativeElement().getAttribute("mode"));
 		if (mode < 999 || mode > 2000) {
 			app.hideKeyboard();
 		}
@@ -247,13 +230,11 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 		event.preventDefault();
 		startPosition = event.getClientX();
 		if (toolbar.isVisible()) {
-			toolbar.setStartPositions(startPosition,
-					((ScrollPanel) toolbar.getParent())
-							.getHorizontalScrollPosition());
+			toolbar.setStartPositions(
+					startPosition, ((ScrollPanel) toolbar.getParent()).getHorizontalScrollPosition());
 		} else {
-			toolbar.setStartPositions(startPosition,
-					((ScrollPanel) submenuPanel.getParent())
-							.getHorizontalScrollPosition());
+			toolbar.setStartPositions(
+					startPosition, ((ScrollPanel) submenuPanel.getParent()).getHorizontalScrollPosition());
 		}
 		toolbar.setMouseDown(true);
 	}
@@ -272,5 +253,4 @@ public class ModeToggleMenuP extends ModeToggleMenuW
 	public void onMouseMove(MouseMoveEvent event) {
 		toolbar.setPosition(event.getClientX());
 	}
-
 }

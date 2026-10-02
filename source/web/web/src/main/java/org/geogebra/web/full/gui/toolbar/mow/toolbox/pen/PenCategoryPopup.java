@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.main.GeoGebraColorConstants;
-import org.geogebra.common.main.settings.AbstractSettings;
+import org.geogebra.common.main.settings.PenToolsSettings;
 import org.geogebra.common.main.settings.SettingListener;
 import org.geogebra.web.full.gui.toolbar.mow.popupcomponents.ColorChooserPanel;
 import org.geogebra.web.full.gui.toolbar.mow.popupcomponents.PenColorValues;
@@ -33,7 +33,8 @@ import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.CategoryPopup;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.components.PenHighlighterEraserSlider;
 
-public class PenCategoryPopup extends CategoryPopup implements SettingListener {
+public final class PenCategoryPopup extends CategoryPopup
+		implements SettingListener<PenToolsSettings> {
 	private final PenCategoryController controller;
 	private ColorChooserPanel colorChooser;
 	private PenHighlighterEraserSlider sliderComponent;
@@ -44,8 +45,7 @@ public class PenCategoryPopup extends CategoryPopup implements SettingListener {
 	 * @param tools - list of tools
 	 * @param updateParentCallback - callback to update anchor
 	 */
-	public PenCategoryPopup(AppW app, List<Integer> tools,
-			Consumer<Integer> updateParentCallback) {
+	public PenCategoryPopup(AppW app, List<Integer> tools, Consumer<Integer> updateParentCallback) {
 		super(app, tools, updateParentCallback, true);
 
 		controller = new PenCategoryController(app, this);
@@ -91,7 +91,7 @@ public class PenCategoryPopup extends CategoryPopup implements SettingListener {
 	}
 
 	@Override
-	public void settingsChanged(AbstractSettings settings) {
+	public void settingsChanged(PenToolsSettings settings) {
 		controller.getPen().updateMode();
 	}
 }

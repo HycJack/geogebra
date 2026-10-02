@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.inline.InlineTableController;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
@@ -30,17 +28,20 @@ import org.geogebra.common.properties.IconsEnumeratedProperty;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 public class TextRotationProperty extends AbstractEnumeratedProperty<TextRotation>
 		implements IconsEnumeratedProperty<TextRotation> {
 
 	private static final PropertyResource[] icons = {
-			PropertyResource.ICON_TEXT_ROTATION_NONE, PropertyResource.ICON_TEXT_ROTATION_UP,
-			PropertyResource.ICON_TEXT_ROTATION_DOWN
+		PropertyResource.ICON_TEXT_ROTATION_NONE,
+		PropertyResource.ICON_TEXT_ROTATION_UP,
+		PropertyResource.ICON_TEXT_ROTATION_DOWN
 	};
 	private final GeoInlineTable geoElement;
-	private static final String[] rawLabels = {"ContextMenu.rotateNone", "ContextMenu.rotateUp",
-		"ContextMenu.rotateDown"};
+	private static final String[] rawLabels = {
+		"ContextMenu.rotateNone", "ContextMenu.rotateUp", "ContextMenu.rotateDown"
+	};
 
 	/**
 	 * Constructs an AbstractEnumeratedProperty.
@@ -63,15 +64,16 @@ public class TextRotationProperty extends AbstractEnumeratedProperty<TextRotatio
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return rawLabels;
 	}
 
 	@Override
 	protected void doSetValue(TextRotation value) {
 		InlineTableController formatter = (InlineTableController) geoElement.getFormatter();
-		if (getLocalization() != null && formatter != null
-				&& !value.equals(TextRotation.fromString(formatter.getRotation()))) {
+		if (getLocalization() != null
+				&& formatter != null
+				&& value != TextRotation.fromString(formatter.getRotation())) {
 			formatter.setRotation(value.toString());
 		}
 		geoElement.updateVisualStyle(GProperty.COMBINED);

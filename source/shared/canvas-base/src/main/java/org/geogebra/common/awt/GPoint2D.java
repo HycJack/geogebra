@@ -21,10 +21,15 @@ public class GPoint2D {
 	public double x;
 	public double y;
 
+	/**
+	 * @param x x-coordinate
+	 * @param y y-coordinate
+	 */
 	public GPoint2D(double x, double y) {
 		setLocation(x, y);
 	}
 
+	/** Creates point (0,0). */
 	public GPoint2D() {
 		setLocation(0, 0);
 	}
@@ -93,8 +98,7 @@ public class GPoint2D {
 	 *            y-coord of second point
 	 * @return squared distance
 	 */
-	public static double distanceSq(double x1, double y1, double x2,
-			double y2) {
+	public static double distanceSq(double x1, double y1, double x2, double y2) {
 		double d_x = x2 - x1;
 		double d_y = y2 - y1;
 		return d_x * d_x + d_y * d_y;

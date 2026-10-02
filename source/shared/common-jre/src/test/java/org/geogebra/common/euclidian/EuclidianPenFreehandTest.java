@@ -16,77 +16,85 @@
 
 package org.geogebra.common.euclidian;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.geogebra.common.awt.GPoint;
+import org.geogebra.common.awt.GPoint2D;
+import org.geogebra.common.euclidian.event.PointerEventType;
 import org.geogebra.common.plugin.GeoClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class EuclidianPenFreehandTest extends BaseEuclidianControllerTest {
+class EuclidianPenFreehandTest extends BaseEuclidianControllerTest {
 
-	@Test
-	public void freehandPenShouldRecognizeSegment() {
-		EuclidianPenFreehand freehandPen
-				= new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
-
-		freehandPen.addPointPenMode(new GPoint(10, 10));
-		freehandPen.addPointPenMode(new GPoint(15, 15));
-		freehandPen.addPointPenMode(new GPoint(20, 20));
-
-		assertEquals(GeoClass.SEGMENT,
-				freehandPen.checkExpectedShape().getGeoClassType());
+	@BeforeEach
+	void setUp() {
+		setUpController();
 	}
 
 	@Test
-	public void restrictedFreehandPenShouldRecognizeFunction() {
-		EuclidianPenFreehand freehandPen
-				= new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
+	void freehandPenShouldRecognizeSegment() {
+		EuclidianPenFreehand freehandPen =
+				new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
+
+		freehandPen.addPointPenMode(new GPoint2D(10, 10));
+		freehandPen.addPointPenMode(new GPoint2D(15, 15));
+		freehandPen.addPointPenMode(new GPoint2D(20, 20));
+
+		assertEquals(
+				GeoClass.SEGMENT, freehandPen.checkExpectedShape(PointerEventType.MOUSE).getGeoClassType());
+	}
+
+	@Test
+	void restrictedFreehandPenShouldRecognizeFunction() {
+		EuclidianPenFreehand freehandPen =
+				new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
 
 		freehandPen.setExpected(EuclidianPenFreehand.ShapeType.function);
 
-		freehandPen.addPointPenMode(new GPoint(10, 10));
-		freehandPen.addPointPenMode(new GPoint(15, 15));
-		freehandPen.addPointPenMode(new GPoint(20, 20));
+		freehandPen.addPointPenMode(new GPoint2D(10, 10));
+		freehandPen.addPointPenMode(new GPoint2D(15, 15));
+		freehandPen.addPointPenMode(new GPoint2D(20, 20));
 
-		assertEquals(GeoClass.FUNCTION,
-				freehandPen.checkExpectedShape().getGeoClassType());
+		assertEquals(
+				GeoClass.FUNCTION,
+				freehandPen.checkExpectedShape(PointerEventType.MOUSE).getGeoClassType());
 	}
 
 	@Test
-	public void freehandPenShouldRecognizeConic() {
-		EuclidianPenFreehand freehandPen
-				= new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
+	void freehandPenShouldRecognizeConic() {
+		EuclidianPenFreehand freehandPen =
+				new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
 
-		freehandPen.addPointPenMode(new GPoint(0, 10));
-		freehandPen.addPointPenMode(new GPoint(7, 7));
-		freehandPen.addPointPenMode(new GPoint(10, 0));
-		freehandPen.addPointPenMode(new GPoint(7, -7));
-		freehandPen.addPointPenMode(new GPoint(0, -10));
-		freehandPen.addPointPenMode(new GPoint(-7, -7));
-		freehandPen.addPointPenMode(new GPoint(-10, 0));
-		freehandPen.addPointPenMode(new GPoint(-7, 7));
+		freehandPen.addPointPenMode(new GPoint2D(0, 10));
+		freehandPen.addPointPenMode(new GPoint2D(7, 7));
+		freehandPen.addPointPenMode(new GPoint2D(10, 0));
+		freehandPen.addPointPenMode(new GPoint2D(7, -7));
+		freehandPen.addPointPenMode(new GPoint2D(0, -10));
+		freehandPen.addPointPenMode(new GPoint2D(-7, -7));
+		freehandPen.addPointPenMode(new GPoint2D(-10, 0));
+		freehandPen.addPointPenMode(new GPoint2D(-7, 7));
 
-		assertEquals(GeoClass.CONIC,
-				freehandPen.checkExpectedShape().getGeoClassType());
+		assertEquals(
+				GeoClass.CONIC, freehandPen.checkExpectedShape(PointerEventType.MOUSE).getGeoClassType());
 	}
 
 	@Test
-	public void restrictedFreehandPenShouldFailRecognizingConic() {
-		EuclidianPenFreehand freehandPen
-				= new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
+	void restrictedFreehandPenShouldFailRecognizingConic() {
+		EuclidianPenFreehand freehandPen =
+				new EuclidianPenFreehand(getApp(), getApp().getActiveEuclidianView());
 
 		freehandPen.setExpected(EuclidianPenFreehand.ShapeType.function);
 
-		freehandPen.addPointPenMode(new GPoint(0, 10));
-		freehandPen.addPointPenMode(new GPoint(7, 7));
-		freehandPen.addPointPenMode(new GPoint(10, 0));
-		freehandPen.addPointPenMode(new GPoint(7, -7));
-		freehandPen.addPointPenMode(new GPoint(0, -10));
-		freehandPen.addPointPenMode(new GPoint(-7, -7));
-		freehandPen.addPointPenMode(new GPoint(-10, 0));
-		freehandPen.addPointPenMode(new GPoint(-7, 7));
+		freehandPen.addPointPenMode(new GPoint2D(0, 10));
+		freehandPen.addPointPenMode(new GPoint2D(7, 7));
+		freehandPen.addPointPenMode(new GPoint2D(10, 0));
+		freehandPen.addPointPenMode(new GPoint2D(7, -7));
+		freehandPen.addPointPenMode(new GPoint2D(0, -10));
+		freehandPen.addPointPenMode(new GPoint2D(-7, -7));
+		freehandPen.addPointPenMode(new GPoint2D(-10, 0));
+		freehandPen.addPointPenMode(new GPoint2D(-7, 7));
 
-		assertNull(freehandPen.checkExpectedShape());
+		assertNull(freehandPen.checkExpectedShape(PointerEventType.MOUSE));
 	}
 }

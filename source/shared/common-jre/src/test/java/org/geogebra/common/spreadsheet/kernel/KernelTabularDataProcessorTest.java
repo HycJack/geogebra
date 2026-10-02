@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,29 +16,29 @@
 
 package org.geogebra.common.spreadsheet.kernel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Objects;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class KernelTabularDataProcessorTest extends BaseUnitTest {
+class KernelTabularDataProcessorTest extends BaseUnitTest {
 
 	private KernelTabularDataProcessor processor;
 	private KernelTabularDataAdapter adapter;
-	private GeoElementND geo1;
-	private GeoElementND geo2;
-	private GeoElementND geo3;
-	private GeoElementND geo4;
-	private GeoElementND bottomRight;
+	private GeoElement geo1;
+	private GeoElement geo2;
+	private GeoElement geo3;
+	private GeoElement geo4;
+	private GeoElement bottomRight;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		adapter = new KernelTabularDataAdapter(getApp());
 		getKernel().attach(adapter);
 		geo1 = add("1");
@@ -55,7 +55,7 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInsertRowAtBeginning() {
+	void testInsertRowAtBeginning() {
 		processor.insertRowAt(0);
 		cellShouldBeEmpty(0, 0);
 		cellShouldBeEmpty(0, 1);
@@ -70,19 +70,18 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 		assertNull(adapter.contentAt(row, column));
 	}
 
-	private void contentShouldBe(int row, int column, GeoElementND expectedContent,
-			String expectedLabel) {
+	private void contentShouldBe(
+			int row, int column, GeoElementND expectedContent, String expectedLabel) {
 		GeoElement actualContent = adapter.contentAt(row, column);
 		assertEquals(expectedContent, actualContent);
 
 		if (expectedContent != null) {
-			assertEquals(expectedLabel,
-					Objects.requireNonNull(actualContent).getLabelSimple());
+			assertEquals(expectedLabel, Objects.requireNonNull(actualContent).getLabelSimple());
 		}
 	}
 
 	@Test
-	public void testInsertRowAtMiddle() {
+	void testInsertRowAtMiddle() {
 		processor.insertRowAt(1);
 		contentShouldBe(0, 0, geo1, "A1");
 		contentShouldBe(0, 1, geo2, "B1");
@@ -93,7 +92,7 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInsertRowAtEnd() {
+	void testInsertRowAtEnd() {
 		processor.insertRowAt(2);
 		contentShouldBe(0, 0, geo1, "A1");
 		contentShouldBe(0, 1, geo2, "B1");
@@ -104,14 +103,14 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testDeleteFirstRow() {
+	void testDeleteFirstRow() {
 		adapter.deleteRowAt(0);
 		contentShouldBe(0, 0, geo3, "A1");
 		contentShouldBe(0, 1, geo4, "B1");
 	}
 
 	@Test
-	public void testDeleteSecondRow() {
+	void testDeleteSecondRow() {
 		adapter.deleteRowAt(1);
 		contentShouldBe(0, 0, geo1, "A1");
 		contentShouldBe(0, 1, geo2, "B1");
@@ -120,7 +119,7 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInsertColumnAtBeginning() {
+	void testInsertColumnAtBeginning() {
 		processor.insertColumnAt(0);
 		cellShouldBeEmpty(0, 0);
 		cellShouldBeEmpty(1, 0);
@@ -132,7 +131,7 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInsertColumnAtMiddle() {
+	void testInsertColumnAtMiddle() {
 		processor.insertColumnAt(1);
 		contentShouldBe(0, 0, geo1, "A1");
 		contentShouldBe(0, 2, geo2, "C1");
@@ -143,7 +142,7 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInsertColumnAtEnd() {
+	void testInsertColumnAtEnd() {
 		processor.insertColumnAt(2);
 		contentShouldBe(0, 0, geo1, "A1");
 		contentShouldBe(0, 1, geo2, "B1");
@@ -154,14 +153,14 @@ public class KernelTabularDataProcessorTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testDeleteFirstColumn() {
+	void testDeleteFirstColumn() {
 		processor.deleteColumnAt(0);
 		contentShouldBe(0, 0, geo2, "A1");
 		contentShouldBe(1, 0, geo4, "A2");
 	}
 
 	@Test
-	public void testDeleteSecondColumn() {
+	void testDeleteSecondColumn() {
 		processor.deleteColumnAt(1);
 		contentShouldBe(0, 0, geo1, "A1");
 		contentShouldBe(1, 0, geo3, "A2");

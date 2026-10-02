@@ -2,32 +2,33 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.media;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.util.AsyncOperation;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MediaURLParserTest {
-	protected static final String MEBIS_REGEX = "https://mediathek.mebis.bayern.de/\\?doc=provideVideo&identifier=[BYWS\\-0-9]+&type=video(&)?(#t=[0-9,]+)?";
+class MediaURLParserTest {
+	protected static final String MEBIS_REGEX =
+			"https://mediathek.mebis.bayern.de/\\?doc=provideVideo&identifier=[BYWS\\-0-9]+&type=video(&)?(#t=[0-9,]+)?";
 	private static AsyncOperation<VideoURL> INVALID = obj -> assertFalse(obj.isValid());
 
 	private static AsyncOperation<VideoURL> validYT(final String id) {
@@ -42,41 +43,35 @@ public class MediaURLParserTest {
 		return valid(MediaFormat.VIDEO_MEBIS, null);
 	}
 
-	private static AsyncOperation<VideoURL> valid(final MediaFormat fmt,
-			final String id) {
+	private static AsyncOperation<VideoURL> valid(final MediaFormat fmt, final String id) {
 		return obj -> {
 			assertTrue(obj.isValid());
 			assertEquals(fmt, obj.getFormat());
 			if (fmt == MediaFormat.VIDEO_YOUTUBE) {
-				assertEquals(id,
-					MediaURLParser.getYouTubeId(obj.getUrl()));
+				assertEquals(id, MediaURLParser.getYouTubeId(obj.getUrl()));
 			}
 			if (fmt == MediaFormat.VIDEO_MEBIS) {
-				assertThat(obj.getUrl(),
-						new TypeSafeMatcher<String>() {
+				assertThat(obj.getUrl(), new TypeSafeMatcher<>() {
 
-							@Override
-							public void describeTo(
-									Description description) {
-								description.appendText("Valid Mebis URL");
-							}
+					@Override
+					public void describeTo(Description description) {
+						description.appendText("Valid Mebis URL");
+					}
 
-							@Override
-							public boolean matchesSafely(String item) {
-								return item.matches(MEBIS_REGEX);
-							}
-						});
+					@Override
+					protected boolean matchesSafely(String item) {
+						return item.matches(MEBIS_REGEX);
+					}
+				});
 			}
 		};
 	}
 
 	@Test
-	public void checkYoutubeUrls() {
-		checkVideo("https://youtu.be/bdRUiXUrYIs",
-				validYT("bdRUiXUrYIs"));
+	void checkYoutubeUrls() {
+		checkVideo("https://youtu.be/bdRUiXUrYIs", validYT("bdRUiXUrYIs"));
 		checkVideo(
-				"https://www.youtube.com/watch?v=bdRUiXUrYIs&feature=youtu.be",
-				validYT("bdRUiXUrYIs"));
+				"https://www.youtube.com/watch?v=bdRUiXUrYIs&feature=youtu.be", validYT("bdRUiXUrYIs"));
 		checkVideo(
 				"https://www.youtube.com/watch?spam&v=bdRUiXUrYIs&feature=youtu.be&spam",
 				validYT("bdRUiXUrYIs"));
@@ -86,9 +81,8 @@ public class MediaURLParserTest {
 	}
 
 	@Test
-	public void checkMp4Urls() {
-		checkVideo("https://www.w3schools.com/htmL/mov_bbb.mp4",
-				validMP4());
+	void checkMp4Urls() {
+		checkVideo("https://www.w3schools.com/htmL/mov_bbb.mp4", validMP4());
 		checkVideo("file.mp4", validMP4());
 		checkVideo("file.mp5", INVALID);
 		checkVideo("https://example.com/file.mp4", validMP4());
@@ -96,7 +90,7 @@ public class MediaURLParserTest {
 	}
 
 	@Test
-	public void checkMebisUrls() {
+	void checkMebisUrls() {
 		checkVideo(
 				"https://mediathek.mebis.bayern.de/?doc=embeddedObject&id=BWS-04985070&type=video&start=178&title=Wetter",
 				validMebis());
@@ -104,11 +98,9 @@ public class MediaURLParserTest {
 				"https://mediathek.mebis.bayern.de/?doc=provideVideo&identifier=BWS-04985070&type=video&start=0&title=Wetter&file=default.mp4",
 				validMebis());
 		checkVideo(
-				"https://mediathek.mebis.bayern.de/?doc=record&identifier=BWS-04985070",
-				validMebis());
+				"https://mediathek.mebis.bayern.de/?doc=record&identifier=BWS-04985070", validMebis());
 		checkVideo(
-				"https://mediathek.mebis.bayern.de/?doc=record&identifier=BY-04985070",
-				validMebis());
+				"https://mediathek.mebis.bayern.de/?doc=record&identifier=BY-04985070", validMebis());
 		checkVideo(
 				"https://mediathek.mebis.bayern.de/?doc=provideVideo&identifier=BY-00072140&type=video&#t=60,120",
 				validMebis());
@@ -126,25 +118,24 @@ public class MediaURLParserTest {
 		checkVideo(
 				"https://mediathek.bayern.de/?doc=provideVideo&identifier=BY-00072140&type=video&#t=60,120",
 				INVALID);
-		checkVideo(
-				"https://mediathek.mebis.bayern.de/?identifier=BY-00072140",
-				INVALID);
-		checkVideo("https://mediathek.mebis.bayern.de/?&&f&",
-				INVALID);
+		checkVideo("https://mediathek.mebis.bayern.de/?identifier=BY-00072140", INVALID);
+		checkVideo("https://mediathek.mebis.bayern.de/?&&f&", INVALID);
 	}
 
 	@Test
-	public void testEmbeddableUrls() {
-		assertEquals("https://en.wikipedia.org/wiki/%2B", // this actually exists
+	void testEmbeddableUrls() {
+		assertEquals(
+				"https://en.wikipedia.org/wiki/%2B", // this actually exists
 				MediaURLParser.toEmbeddableUrl("https://en.wikipedia.org/wiki/+"));
-		assertEquals("https://www.bavarikon.de/object/bav:foo?lang=de&mebisembedding=true",
+		assertEquals(
+				"https://www.bavarikon.de/object/bav:foo?lang=de&mebisembedding=true",
 				MediaURLParser.toEmbeddableUrl("https://www.bavarikon.de/object/bav:foo?lang=de"));
-		assertEquals("https://www.bavarikon.de/object/bav:foo?mebisembedding=true",
+		assertEquals(
+				"https://www.bavarikon.de/object/bav:foo?mebisembedding=true",
 				MediaURLParser.toEmbeddableUrl("https://www.bavarikon.de/object/bav:foo"));
 	}
 
-	private static void checkVideo(String url,
-			AsyncOperation<VideoURL> callback) {
+	private static void checkVideo(String url, AsyncOperation<VideoURL> callback) {
 		callback.callback(MediaURLParser.checkVideo(url));
 	}
 }

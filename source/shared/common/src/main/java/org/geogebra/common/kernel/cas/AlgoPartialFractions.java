@@ -41,9 +41,12 @@ public class AlgoPartialFractions extends AlgoCasBase {
 	 * @param info
 	 *            evaluation flags
 	 */
-	public AlgoPartialFractions(Construction cons, String label,
-			CasEvaluableFunction f, EvalInfo info) {
-		super(cons, label, f, Commands.PartialFractions, info);
+	public AlgoPartialFractions(
+			Construction cons, String label, CasEvaluableFunction f, EvalInfo info) {
+		super(cons, f, Commands.PartialFractions, info);
+		setInputOutput(); // for AlgoElement
+		compute();
+		g.toGeoElement().setLabel(label);
 	}
 
 	@Override
@@ -63,5 +66,4 @@ public class AlgoPartialFractions extends AlgoCasBase {
 
 		g.setUsingCasCommand(sbAE.toString(), f, false, arbconst);
 	}
-
 }

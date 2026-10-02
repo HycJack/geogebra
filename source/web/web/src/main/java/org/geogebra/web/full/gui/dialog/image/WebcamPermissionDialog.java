@@ -27,15 +27,14 @@ import org.gwtproject.user.client.ui.Label;
 /**
  * dialog to ask user for webcam permission and show error messages
  */
-public class WebcamPermissionDialog extends ComponentDialog {
+public final class WebcamPermissionDialog extends ComponentDialog {
 
 	/**
 	 * @param app application
 	 * @param data dialog transkeys
 	 * @param msgTranskey message displayed in the dialog
 	 */
-	public WebcamPermissionDialog(AppW app, DialogData data,
-			String msgTranskey) {
+	public WebcamPermissionDialog(AppW app, DialogData data, String msgTranskey) {
 		super(app, data, false, false);
 		addStyleName("mowPermissionDialog");
 		String localizedMsg = app.getLocalization().getMenu(msgTranskey);
@@ -43,9 +42,12 @@ public class WebcamPermissionDialog extends ComponentDialog {
 			addStyleName("narrowDialog");
 		}
 		buildContent(localizedMsg);
-		setOnPositiveAction(() -> app.getGuiManager().setMode(app.isWhiteboardActive()
-				? EuclidianConstants.MODE_SELECT_MOW : EuclidianConstants.MODE_MOVE,
-				ModeSetter.TOOLBAR));
+		setOnPositiveAction(() -> app.getGuiManager()
+				.setMode(
+						app.isWhiteboardActive()
+								? EuclidianConstants.MODE_SELECT_MOW
+								: EuclidianConstants.MODE_MOVE,
+						ModeSetter.TOOLBAR));
 	}
 
 	private void buildContent(String localizedMsg) {

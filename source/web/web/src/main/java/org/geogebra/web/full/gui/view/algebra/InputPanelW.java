@@ -21,12 +21,10 @@ import org.geogebra.web.html5.gui.inputfield.AutoCompleteTextFieldW;
 import org.gwtproject.event.dom.client.KeyUpHandler;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-import elemental2.dom.EventListener;
-
 /**
  * Creates an InputPanel for GeoGebraWeb
  */
-public class InputPanelW extends FlowPanel {
+public final class InputPanelW extends FlowPanel {
 
 	private final AutoCompleteTextFieldW textComponent;
 
@@ -48,8 +46,7 @@ public class InputPanelW extends FlowPanel {
 		enableGGBKeyboard(app, false, textComponent);
 	}
 
-	public InputPanelW(String initText, App app,
-			boolean showSymbolPopupIcon) {
+	public InputPanelW(String initText, App app, boolean showSymbolPopupIcon) {
 		this(initText, app, -1, showSymbolPopupIcon);
 	}
 
@@ -63,8 +60,7 @@ public class InputPanelW extends FlowPanel {
 	 * @param showSymbolPopupIcon
 	 *            whether to show symbol icon
 	 */
-	public InputPanelW(String initText, App app, int columns,
-			boolean showSymbolPopupIcon) {
+	public InputPanelW(String initText, App app, int columns, boolean showSymbolPopupIcon) {
 		// set up the text component:
 		textComponent = new AutoCompleteTextFieldW(columns, app);
 		textComponent.prepareShowSymbolButton(showSymbolPopupIcon);
@@ -76,8 +72,7 @@ public class InputPanelW extends FlowPanel {
 		enableGGBKeyboard(app, showSymbolPopupIcon, textComponent);
 	}
 
-	private void enableGGBKeyboard(App app, boolean showKeyboardButton,
-			AutoCompleteTextFieldW atf) {
+	private void enableGGBKeyboard(App app, boolean showKeyboardButton, AutoCompleteTextFieldW atf) {
 		if (!app.isWhiteboardActive()) {
 			atf.prepareShowSymbolButton(showKeyboardButton);
 			atf.enableGGBKeyboard();
@@ -89,14 +84,6 @@ public class InputPanelW extends FlowPanel {
 	 */
 	public AutoCompleteTextFieldW getTextComponent() {
 		return textComponent;
-	}
-
-	/**
-	 * sets focus into textfield and selects the content
-	 */
-	public void setFocusAndSelectAll() {
-		getTextComponent().setFocus(true);
-		getTextComponent().selectAll();
 	}
 
 	/**
@@ -114,14 +101,6 @@ public class InputPanelW extends FlowPanel {
 		getTextComponent().addKeyUpHandler(keyUpHandler);
 	}
 
-	/**
-	 * Adds a ChangeHandler to the text component
-	 * @param listener EventListener
-	 */
-	public void addTextComponentInputListener(EventListener listener) {
-		getTextComponent().addInputListener(listener);
-	}
-
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
@@ -129,7 +108,7 @@ public class InputPanelW extends FlowPanel {
 			textComponent.setVisible(visible);
 		}
 	}
-	
+
 	/**
 	 * Sets the input field enabled/disabled
 	 * @param b true iff input field should be enabled
@@ -137,7 +116,7 @@ public class InputPanelW extends FlowPanel {
 	public void setEnabled(boolean b) {
 		textComponent.setEditable(b);
 	}
-	
+
 	/**
 	 * @param app
 	 *            application

@@ -25,15 +25,15 @@ import org.gwtproject.canvas.client.Canvas;
 
 /**
  * (dummy) renderer for 3D view, for browsers that don't support webGL
- * 
+ *
  * @author mathieu
  *
  */
-public class RendererWnoWebGL extends RendererWithImplW {
+public final class RendererWnoWebGL extends RendererWithImplW {
 
 	/**
 	 * constructor
-	 * 
+	 *
 	 * @param view
 	 *            3D view
 	 */
@@ -93,5 +93,4 @@ public class RendererWnoWebGL extends RendererWithImplW {
 	public void createDummyTexture() {
 		// no webGL context here...
 	}
-
 }

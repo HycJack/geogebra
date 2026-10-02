@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -23,12 +23,12 @@ import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.awt.GDimension;
 import org.geogebra.common.kernel.geos.GeoText;
 import org.geogebra.ggbjdk.java.awt.geom.Dimension;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AlgoTableTextTest extends BaseUnitTest {
+class AlgoTableTextTest extends BaseUnitTest {
 
 	@Test
-	public void shouldUpdateOnStyleChange() {
+	void shouldUpdateOnStyleChange() {
 		add("a=1");
 		add("SetColor(a,1,0,0)");
 		GeoText table = add("TableText({{a}})");
@@ -40,7 +40,7 @@ public class AlgoTableTextTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void shouldAcceptIndividualLists() {
+	void shouldAcceptIndividualLists() {
 		assertThat(addTable("TableText({1,2})"), equalTo(new Dimension(2, 1)));
 		assertThat(addTable("TableText({{1},{2},\"c\"})"), equalTo(new Dimension(1, 2)));
 		assertThat(addTable("TableText({1,2,\"c\"})"), equalTo(new Dimension(3, 1)));
@@ -49,7 +49,7 @@ public class AlgoTableTextTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void shouldAllowInitiallyEmptyList() {
+	void shouldAllowInitiallyEmptyList() {
 		add("l={}");
 		GeoText table = add("TableText(l)");
 		GeoText tableVert = add("TableText(l,\"v\")");
@@ -64,7 +64,7 @@ public class AlgoTableTextTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void shouldAllowInitiallyEmptyListOfText() {
+	void shouldAllowInitiallyEmptyListOfText() {
 		add("l={}");
 		GeoText table = add("TableText(l)");
 		add("SetValue(l,1,\"c\")");
@@ -75,5 +75,4 @@ public class AlgoTableTextTest extends BaseUnitTest {
 	private GDimension addTable(String s) {
 		return ((AlgoTableText) add(s).getParentAlgorithm()).getSize();
 	}
-
 }

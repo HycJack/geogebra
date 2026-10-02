@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -39,6 +39,7 @@ import org.geogebra.web.full.gui.layout.panels.AnimatingPanel;
 import org.geogebra.web.full.main.AppWFull;
 import org.geogebra.web.full.main.BrowserDevice.FileOpenButton;
 import org.geogebra.web.html5.Browser;
+import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.gui.view.button.StandardButton;
 import org.geogebra.web.html5.util.HttpRequestW;
 import org.geogebra.web.shared.components.infoError.InfoErrorData;
@@ -59,14 +60,14 @@ import jsinterop.base.Js;
 /**
  * View for browsing materials
  */
-public class OpenFileViewMebis extends HeaderFileView
+public final class OpenFileViewMebis extends HeaderFileView
 		implements OpenFileListener, EventRenderable {
 
 	private final FileViewCommon common;
 	/**
 	 * application
 	 */
-	protected AppWFull app;
+	private final AppWFull app;
 
 	private FlowPanel buttonPanel;
 	private StandardButton downloadAllFiles;
@@ -111,7 +112,7 @@ public class OpenFileViewMebis extends HeaderFileView
 	/**
 	 * adds content if available, notification otherwise
 	 */
-	protected void addContent() {
+	private void addContent() {
 		common.clearContents();
 		if (materialListEmpty) {
 			common.showEmptyListNotification(getInfoErrorData());
@@ -128,29 +129,25 @@ public class OpenFileViewMebis extends HeaderFileView
 	}
 
 	private InfoErrorData getInfoErrorData() {
-		return new InfoErrorData("emptyMaterialList.caption.mow",
-				"emptyMaterialList.info.mow");
+		return new InfoErrorData("emptyMaterialList.caption.mow", "emptyMaterialList.info.mow");
 	}
 
 	private void initButtonPanel() {
 		buttonPanel = new FlowPanel();
-		downloadAllFiles = new StandardButton(MaterialDesignResources.INSTANCE.downloadMenu(),
-				ExportStatus.DOWNLOAD_ALL, 18);
+		downloadAllFiles = new StandardButton(
+				MaterialDesignResources.INSTANCE.downloadMenu(), ExportStatus.DOWNLOAD_ALL, 18);
 		downloadAllFiles.addFastClickHandler(source -> {
-				downloadAllFiles.setEnabled(false);
-				getExportStatus.cancel();
-				startExport();
-			});
+			downloadAllFiles.setEnabled(false);
+			getExportStatus.cancel();
+			startExport();
+		});
 
-		newFileBtn = new StandardButton(
-				MaterialDesignResources.INSTANCE.file_plus(),
-				localize("New.Mebis"), 18);
+		newFileBtn =
+				new StandardButton(MaterialDesignResources.INSTANCE.file_plus(), localize("New.Mebis"), 18);
 		newFileBtn.addFastClickHandler(source -> newFile());
 
 		openFileBtn.setImageAndText(
-				MaterialDesignResources.INSTANCE.mow_pdf_open_folder()
-						.getSafeUri().asString(),
-				localize("mow.offlineMyFiles"));
+				MaterialDesignResources.INSTANCE.mow_pdf_open_folder(), localize("mow.offlineMyFiles"));
 		openFileBtn.setAcceptedFileType(".ggs");
 
 		buttonPanel.add(downloadAllFiles);
@@ -163,8 +160,7 @@ public class OpenFileViewMebis extends HeaderFileView
 		sortDropDown = new ListBox();
 		sortDropDown.setMultipleSelect(false);
 		sortDropDown.addItem(localize("SortBy"));
-		sortDropDown.getElement().getFirstChildElement()
-				.setAttribute("disabled", "disabled");
+		sortDropDown.getElement().getFirstChildElement().setAttribute("disabled", "disabled");
 		for (ResourceOrdering value : map) {
 			sortDropDown.addItem(localize(labelFor(value)));
 		}
@@ -174,20 +170,20 @@ public class OpenFileViewMebis extends HeaderFileView
 
 	private static String labelFor(ResourceOrdering order2) {
 		switch (order2) {
-		case created:
-			return "sort_date_created";
-		case modified:
-			return "sort_last_modified";
-		default:
-		case title:
-			return "sort_title";
+			case created:
+				return "sort_date_created";
+			case modified:
+				return "sort_last_modified";
+			default:
+			case title:
+				return "sort_title";
 		}
 	}
 
 	/**
 	 * Reload materials sorted by another property.
 	 */
-	protected void updateOrder() {
+	private void updateOrder() {
 		order = map[sortDropDown.getSelectedIndex() - 1];
 		loadAllMaterials(0);
 	}
@@ -199,7 +195,7 @@ public class OpenFileViewMebis extends HeaderFileView
 	/**
 	 * start a new file
 	 */
-	protected void newFile() {
+	private void newFile() {
 		AsyncOperation<Boolean> newConstruction = active -> app.tryLoadTemplatesOnFileNew();
 		app.getAppletParameters().setAttribute("perspective", "");
 		app.getSaveController().showDialogIfNeeded(newConstruction, false);
@@ -209,7 +205,6 @@ public class OpenFileViewMebis extends HeaderFileView
 	private void setExtendedButtonStyle() {
 		newFileBtn.setStyleName("extendedFAB");
 		newFileBtn.addStyleName("FABteal");
-		newFileBtn.addStyleName("buttonMargin24");
 		openFileBtn.setStyleName("extendedFAB");
 		openFileBtn.addStyleName("FABwhite");
 		buttonPanel.setStyleName("fileViewButtonPanel");
@@ -217,11 +212,8 @@ public class OpenFileViewMebis extends HeaderFileView
 	}
 
 	private void setSmallButtonStyle() {
-		downloadAllFiles.setStyleName("containedButton");
-		newFileBtn.setStyleName("containedButton");
-		newFileBtn.addStyleName("buttonMargin16");
-		openFileBtn.setStyleName("containedButton");
-		openFileBtn.addStyleName("buttonMargin16");
+		downloadAllFiles.setStyleName("materialTonalButton");
+		newFileBtn.setStyleName("materialTonalButton");
 		buttonPanel.setStyleName("fileViewButtonPanel");
 	}
 
@@ -245,9 +237,9 @@ public class OpenFileViewMebis extends HeaderFileView
 		}
 		LogInOperation loginOperation = app.getLoginOperation();
 		if (loginOperation.isLoggedIn()) {
-			loginOperation.getResourcesAPI()
-					.getUsersAndSharedMaterials(this.allMaterialsCB,
-							order, offset);
+			loginOperation
+					.getResourcesAPI()
+					.getUsersAndSharedMaterials(this.allMaterialsCB, order, offset);
 		}
 	}
 
@@ -267,11 +259,8 @@ public class OpenFileViewMebis extends HeaderFileView
 	@Override
 	public void setLabels() {
 		newFileBtn.setText(localize("New.Mebis"));
-		openFileBtn
-				.setImageAndText(
-						MaterialDesignResources.INSTANCE.mow_pdf_open_folder()
-								.getSafeUri().asString(),
-						localize("mow.offlineMyFiles"));
+		openFileBtn.setImageAndText(
+				MaterialDesignResources.INSTANCE.mow_pdf_open_folder(), localize("mow.offlineMyFiles"));
 		if (sortDropDown != null) {
 			sortDropDown.setItemText(0, localize("SortBy"));
 			for (int i = 0; i < map.length; i++) {
@@ -293,7 +282,9 @@ public class OpenFileViewMebis extends HeaderFileView
 			Widget widget = common.materialAt(idx);
 			if (widget instanceof MaterialCard
 					&& isBeforeOrSame(material, ((MaterialCard) widget).getMaterial())) {
-				if (((MaterialCard) widget).getMaterial().getSharingKeySafe()
+				if (((MaterialCard) widget)
+						.getMaterial()
+						.getSharingKeySafe()
 						.equals(material.getSharingKeySafe())) {
 					// don't add the same material twice
 					return;
@@ -307,14 +298,14 @@ public class OpenFileViewMebis extends HeaderFileView
 
 	private boolean isBeforeOrSame(Material material, Material material2) {
 		switch (order) {
-		case title:
-			return material.getTitle().compareTo(material2.getTitle()) <= 0;
-		case created:
-			return material.getDateCreated() >= material2.getDateCreated();
-		case modified:
-			return material.getTimestamp() >= material2.getTimestamp();
-		default:
-			return false;
+			case title:
+				return material.getTitle().compareTo(material2.getTitle()) <= 0;
+			case created:
+				return material.getDateCreated() >= material2.getDateCreated();
+			case modified:
+				return material.getTimestamp() >= material2.getTimestamp();
+			default:
+				return false;
 		}
 	}
 
@@ -327,8 +318,7 @@ public class OpenFileViewMebis extends HeaderFileView
 	private void setConstructionTitleAsMaterial() {
 		Material activeMaterial = app.getActiveMaterial();
 		if (activeMaterial != null) {
-			app.getKernel().getConstruction().setTitle(
-					activeMaterial.getTitle());
+			app.getKernel().getConstruction().setTitle(activeMaterial.getTitle());
 		}
 	}
 
@@ -336,8 +326,7 @@ public class OpenFileViewMebis extends HeaderFileView
 		return new MaterialCallback() {
 
 			@Override
-			public void onLoaded(final List<Material> parseResponse,
-					Pagination meta) {
+			public void onLoaded(final List<Material> parseResponse, Pagination meta) {
 				clearLoadingMoreFilesButton();
 				addUsersMaterials(parseResponse);
 				addContent();
@@ -348,11 +337,11 @@ public class OpenFileViewMebis extends HeaderFileView
 
 	/**
 	 * Adds the given {@link Material materials}.
-	 * 
+	 *
 	 * @param matList
 	 *            List of materials
 	 */
-	protected void addUsersMaterials(final List<Material> matList) {
+	private void addUsersMaterials(final List<Material> matList) {
 		materialListEmpty = matList.isEmpty();
 		for (Material material : matList) {
 			addMaterial(material);
@@ -382,8 +371,11 @@ public class OpenFileViewMebis extends HeaderFileView
 			Label loadMoreFilesText = new Label();
 			loadMoreFilesText.setStyleName("loadMoreFilesLabel");
 			loadMoreFilesText.setText(app.getLocalization()
-					.getPlainDefault("ShowXofYfiles.Mebis", "Showing %0 of %1 files",
-							String.valueOf(meta.to), String.valueOf(meta.total)));
+					.getPlainDefault(
+							"ShowXofYfiles.Mebis",
+							"Showing %0 of %1 files",
+							String.valueOf(meta.to),
+							String.valueOf(meta.total)));
 			loadMoreFilesPanel.add(loadMoreFilesText);
 			addLoadMoreFilesButton(meta.to);
 			loadMoreFilesPanel.setStyleName("loadMoreFilesPanel");
@@ -392,7 +384,8 @@ public class OpenFileViewMebis extends HeaderFileView
 	}
 
 	private void addLoadMoreFilesButton(int materialCount) {
-		StandardButton loadMoreFilesButton = new StandardButton(localize("loadMore.Mebis"));
+		StandardButton loadMoreFilesButton =
+				BaseWidgetFactory.INSTANCE.newFilledButton(localize("loadMore.Mebis"));
 		loadMoreFilesButton.addFastClickHandler(source -> {
 			loadMoreFilesButton.setText(null);
 			loadMoreFilesButton.addStyleName("spinner-button");
@@ -403,7 +396,6 @@ public class OpenFileViewMebis extends HeaderFileView
 			DOM.appendChild(loadMoreFilesButton.getElement(), loading.getElement());
 			loadAllMaterials(materialCount);
 		});
-		loadMoreFilesButton.setStyleName("dialogContainedButton");
 		loadMoreFilesPanel.add(loadMoreFilesButton);
 	}
 
@@ -414,7 +406,7 @@ public class OpenFileViewMebis extends HeaderFileView
 	}
 
 	// EXPORT STATUS
-	protected void startExport() {
+	private void startExport() {
 		app.getLoginOperation().getResourcesAPI().startExport(new AjaxCallback() {
 			@Override
 			public void onSuccess(String response) {
@@ -431,22 +423,22 @@ public class OpenFileViewMebis extends HeaderFileView
 	private void updateExportStatusPanel(ExportStatus status) {
 		FlowPanel statusPanel = null;
 		switch (status) {
-		case NOT_STARTED:
-			stopStatusRequestEnableDownload();
-			break;
-		case PENDING:
-		case IN_PROGRESS:
-			downloadAllFiles.setEnabled(false);
-			statusPanel = ExportStatusPanelBuilder.getPendingInProgressPanel();
-			break;
-		case AVAILABLE:
-			stopStatusRequestEnableDownload();
-			statusPanel = ExportStatusPanelBuilder.getAvailablePanel(this::downloadExportedFiles);
-			break;
-		case ERROR:
-			stopStatusRequestEnableDownload();
-			statusPanel = ExportStatusPanelBuilder.getErrorPanel();
-			break;
+			case NOT_STARTED:
+				stopStatusRequestEnableDownload();
+				break;
+			case PENDING:
+			case IN_PROGRESS:
+				downloadAllFiles.setEnabled(false);
+				statusPanel = ExportStatusPanelBuilder.getPendingInProgressPanel();
+				break;
+			case AVAILABLE:
+				stopStatusRequestEnableDownload();
+				statusPanel = ExportStatusPanelBuilder.getAvailablePanel(this::downloadExportedFiles);
+				break;
+			case ERROR:
+				stopStatusRequestEnableDownload();
+				statusPanel = ExportStatusPanelBuilder.getErrorPanel();
+				break;
 		}
 
 		updateStatusAndDownloadDirectly(status);
@@ -454,8 +446,7 @@ public class OpenFileViewMebis extends HeaderFileView
 	}
 
 	private void updateStatusAndDownloadDirectly(ExportStatus newStatus) {
-		if ((lastExportStatus == ExportStatus.IN_PROGRESS
-				|| lastExportStatus == ExportStatus.PENDING)
+		if ((lastExportStatus == ExportStatus.IN_PROGRESS || lastExportStatus == ExportStatus.PENDING)
 				&& newStatus == ExportStatus.AVAILABLE
 				&& viewIsOpen()) {
 			downloadExportedFiles();
@@ -472,11 +463,11 @@ public class OpenFileViewMebis extends HeaderFileView
 		HttpRequestW request = new HttpRequestW();
 		request.setAuth(model.getLoginToken());
 		request.setContentTypeJson();
-		String endpoint = app.getLoginOperation().getResourcesAPI().getUrl()
-				+ "/materials/export/download";
+		String endpoint =
+				app.getLoginOperation().getResourcesAPI().getUrl() + "/materials/export/download";
 		request.setResponseType("blob");
-		model.refreshToken(request, () -> request.sendRequest("GET",
-				endpoint, null, this::downloadFiles, Log::error));
+		model.refreshToken(
+				request, () -> request.sendRequest("GET", endpoint, null, this::downloadFiles, Log::error));
 	}
 
 	private void stopStatusRequestEnableDownload() {
@@ -489,25 +480,23 @@ public class OpenFileViewMebis extends HeaderFileView
 			getExportStatus = new Timer() {
 				@Override
 				public void run() {
-					app.getLoginOperation().getResourcesAPI().getExportStatus(
-							new AjaxCallback() {
-								@Override
-								public void onSuccess(String response) {
-									try {
-										JSONObject jsonObject = new JSONObject(response);
-										ExportStatus status = ExportStatus.getStatus(jsonObject
-												.getString("status"));
-										updateExportStatusPanel(status);
-									} catch (JSONException e) {
-										Log.debug("Cannot parse export response");
-									}
-								}
+					app.getLoginOperation().getResourcesAPI().getExportStatus(new AjaxCallback() {
+						@Override
+						public void onSuccess(String response) {
+							try {
+								JSONObject jsonObject = new JSONObject(response);
+								ExportStatus status = ExportStatus.getStatus(jsonObject.getString("status"));
+								updateExportStatusPanel(status);
+							} catch (JSONException e) {
+								Log.debug("Cannot parse export response");
+							}
+						}
 
-								@Override
-								public void onError(String error) {
-									Log.debug("Cannot call for export status: " + error);
-								}
-							});
+						@Override
+						public void onError(String error) {
+							Log.debug("Cannot call for export status: " + error);
+						}
+					});
 				}
 			};
 		}

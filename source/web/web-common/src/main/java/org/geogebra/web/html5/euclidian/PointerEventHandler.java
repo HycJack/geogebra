@@ -17,25 +17,26 @@
 package org.geogebra.web.html5.euclidian;
 
 import java.util.Locale;
+import java.util.Objects;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
+import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.common.euclidian.EuclidianConstants;
 import org.geogebra.common.euclidian.event.PointerEventType;
+import org.geogebra.gwtutil.NavigatorUtil;
 import org.geogebra.web.html5.event.HasOffsets;
 import org.geogebra.web.html5.event.PointerEvent;
 import org.geogebra.web.html5.util.CopyPasteW;
 import org.geogebra.web.html5.util.GlobalHandlerRegistry;
 import org.gwtproject.dom.client.Element;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import elemental2.dom.DomGlobal;
-import elemental2.dom.EventListener;
 import jsinterop.base.Js;
 
 /**
  * Handles pointer events in Euclidian view
- * 
+ *
  * @author Zbynek
  *
  */
@@ -43,25 +44,28 @@ public class PointerEventHandler {
 
 	private final IsEuclidianController tc;
 	private static Element pointerCapture;
-	private HasOffsets off;
+	private final HasOffsets off;
 
-	private @CheckForNull PointerState first;
-	private @CheckForNull PointerState second;
-	private @CheckForNull PointerState third;
+	private @Nullable PointerState first;
+	private @Nullable PointerState second;
+	private @Nullable PointerState third;
 	private double lastOutId;
+	private @Nullable GPoint2D lastOutCoords;
 
 	/**
 	 * Mutable representation of pointer events
 	 */
-	private class PointerState {
-		public double x;
-		public double y;
-		public double id;
+	private final class PointerState {
+		private double x;
+		private double y;
+		private final double id;
+		private final String type;
 
-		public PointerState(elemental2.dom.PointerEvent e) {
+		private PointerState(elemental2.dom.PointerEvent e) {
 			id = e.pointerId;
 			x = e.offsetX / off.getZoomLevel();
 			y = e.offsetY / off.getZoomLevel();
+			type = e.pointerType;
 		}
 	}
 
@@ -71,18 +75,22 @@ public class PointerEventHandler {
 	 * @param off
 	 *            offset provider
 	 */
-	public PointerEventHandler(IsEuclidianController tc, @Nonnull HasOffsets off) {
+	public PointerEventHandler(IsEuclidianController tc, @NonNull HasOffsets off) {
 		this.tc = tc;
 		this.off = off;
 	}
 
 	private void twoPointersDown(PointerState pointer1, PointerState pointer2) {
 		tc.getLongTouchManager().cancelTimer();
-		tc.twoTouchStart(pointer1.x, pointer1.y, pointer2.x, pointer2.y);
+		if (Objects.equals(pointer1.type, pointer2.type)) {
+			tc.twoTouchStart(pointer1.x, pointer1.y, pointer2.x, pointer2.y);
+		}
 	}
 
 	private void twoPointersMove(PointerState pointer1, PointerState pointer2) {
-		this.tc.twoTouchMove(pointer1.x, pointer1.y, pointer2.x, pointer2.y);
+		if (Objects.equals(pointer1.type, pointer2.type)) {
+			this.tc.twoTouchMove(pointer1.x, pointer1.y, pointer2.x, pointer2.y);
+		}
 	}
 
 	private void singleDown(PointerEvent e) {
@@ -102,15 +110,14 @@ public class PointerEventHandler {
 		tc.onPointerEventEnd(e);
 	}
 
-	private void setPointerType(String type, boolean pointerDown) {
+	private void setPointerType(elemental2.dom.PointerEvent event, boolean pointerDown) {
 		tc.getOffsets().calculateEnvironment();
-		tc.setDefaultEventType(types(type), pointerDown);
+		tc.setDefaultEventType(getType(event), pointerDown);
 	}
 
 	private void startLongTouch(PointerState touchState) {
 		if (tc.getMode() == EuclidianConstants.MODE_MOVE) {
-			tc.getLongTouchManager().scheduleTimer(tc, (int) touchState.x,
-					(int) touchState.y);
+			tc.getLongTouchManager().scheduleTimer(tc, (int) touchState.x, (int) touchState.y);
 		}
 	}
 
@@ -142,8 +149,7 @@ public class PointerEventHandler {
 				first.x = e.offsetX / off.getZoomLevel();
 				first.y = e.offsetY / off.getZoomLevel();
 			}
-		} else if (match(first, e) || match(second, e)
-				|| "mouse".equals(e.pointerType)) {
+		} else if (match(first, e) || match(second, e) || "mouse".equals(e.pointerType)) {
 			this.tc.onPointerEventMove(convertEvent(e));
 		}
 		if (!"INPUT".equals(Js.<elemental2.dom.Element>uncheckedCast(e.target).tagName)) {
@@ -156,10 +162,15 @@ public class PointerEventHandler {
 	 * If type is "pen", move can only happen if the pen is touching the surface.
 	 * In case we lost all pointers and we're getting pen movement,
 	 * we assume that the last "pointerout" event was a glitch (happens on iPad).
+	 * On Windows we can have hovering pen events => do not start a stroke
 	 */
 	private boolean isPenStrokeInterrupted(elemental2.dom.PointerEvent event) {
-		return first == null && second == null && third == null
-				&& lastOutId == event.pointerId && "pen".equals(event.pointerType);
+		return first == null
+				&& second == null
+				&& third == null
+				&& NavigatorUtil.isiOS()
+				&& lastOutId == event.pointerId
+				&& "pen".equals(event.pointerType);
 	}
 
 	private boolean match(PointerState pointerState, elemental2.dom.PointerEvent event) {
@@ -171,6 +182,7 @@ public class PointerEventHandler {
 			reset();
 			return;
 		}
+		lastOutCoords = null;
 		setCapture(element);
 		// APPS-5639 In mobile Safari copy only works from pointerup: collect now & run later
 		CopyPasteW.startCollectingCopyCalls();
@@ -186,7 +198,7 @@ public class PointerEventHandler {
 		if (!"mouse".equals(e.pointerType)) {
 			e.preventDefault();
 		}
-		setPointerType(e.pointerType, true);
+		setPointerType(e, true);
 		if (first != null && second != null) {
 			twoPointersDown(first, second);
 		} else {
@@ -198,16 +210,24 @@ public class PointerEventHandler {
 	}
 
 	private PointerEvent convertEvent(elemental2.dom.PointerEvent e) {
-		PointerEvent ex = new PointerEvent(e.offsetX / off.getZoomLevel(),
-				e.offsetY / off.getZoomLevel(), types(e.pointerType), off);
+		PointerEvent ex = new PointerEvent(
+				e.offsetX / off.getZoomLevel(), e.offsetY / off.getZoomLevel(), getType(e), off);
 		adjust(ex, e);
 		return ex;
 	}
 
-	private void onPointerUp(elemental2.dom.PointerEvent event, Element element) {
+	private PointerEvent convertWithCoords(elemental2.dom.PointerEvent e, GPoint2D coords) {
+		PointerEvent ex = new PointerEvent(
+				coords.x / off.getZoomLevel(), coords.y / off.getZoomLevel(), getType(e), off);
+		adjust(ex, e);
+		return ex;
+	}
+
+	private void onPointerUp(elemental2.dom.PointerEvent event, Element element, boolean isLocal) {
 		if (pointerCapture != element) {
 			return;
 		}
+		event.stopPropagation();
 		resetPointer(event);
 		if (second == null && first == null) {
 			setCapture(null);
@@ -215,15 +235,20 @@ public class PointerEventHandler {
 		if (match(third, event)) {
 			return;
 		}
-		singleUp(convertEvent(event));
-		setPointerType(event.pointerType, false);
+		if (isLocal) {
+			singleUp(convertEvent(event));
+		} else if (lastOutCoords != null) {
+			singleUp(convertWithCoords(event, lastOutCoords));
+		}
+		setPointerType(event, false);
 		CopyPasteW.stopCollectingCopyCalls();
 	}
 
 	private void onPointerOut(elemental2.dom.PointerEvent event) {
 		lastOutId = event.pointerId;
+		lastOutCoords = new GPoint2D(event.offsetX, event.offsetY);
 		resetPointer(event);
-		setPointerType(event.pointerType, false);
+		setPointerType(event, false);
 	}
 
 	private void resetPointer(elemental2.dom.PointerEvent event) {
@@ -245,20 +270,27 @@ public class PointerEventHandler {
 	public void attachTo(Element element, GlobalHandlerRegistry globalHandlers) {
 		reset();
 		// treat as global to avoid memory leak
-		globalHandlers.addEventListener(element, "pointermove",
-				evt -> onPointerMove(Js.uncheckedCast(evt), element));
+		globalHandlers.addEventListener(
+				element, "pointermove", evt -> onPointerMove(Js.uncheckedCast(evt), element));
 
-		globalHandlers.addEventListener(element, "pointerdown",
-				evt -> onPointerDown(Js.uncheckedCast(evt), element));
+		globalHandlers.addEventListener(
+				element, "pointerdown", evt -> onPointerDown(Js.uncheckedCast(evt), element));
 
-		globalHandlers.addEventListener(element, "pointerout",
-				evt -> onPointerOut(Js.uncheckedCast(evt)));
+		globalHandlers.addEventListener(
+				element, "pointerout", evt -> onPointerOut(Js.uncheckedCast(evt)));
 
-		globalHandlers.addEventListener(element, "pointercanel",
-				evt -> onPointerOut(Js.uncheckedCast(evt)));
+		globalHandlers.addEventListener(element, "pointercancel", evt -> {
+			onPointerOut(Js.uncheckedCast(evt));
+			tc.onPointerCancel();
+		});
 
-		EventListener clickOutsideHandler = evt -> onPointerUp(Js.uncheckedCast(evt), element);
-		globalHandlers.addEventListener(DomGlobal.window, "pointerup", clickOutsideHandler);
+		// if pointer was released in the applet, process event coordinates like "pointerdown"
+		globalHandlers.addEventListener(
+				element, "pointerup", evt -> onPointerUp(Js.uncheckedCast(evt), element, true));
+		// if pointer was released outside, use coordinates of the last pointer leaving the applet
+		// stopPropagation makes sure only one "pointerup" handler runs
+		globalHandlers.addEventListener(
+				DomGlobal.window, "pointerup", evt -> onPointerUp(Js.uncheckedCast(evt), element, false));
 	}
 
 	/**
@@ -266,20 +298,23 @@ public class PointerEventHandler {
 	 * @param view graphics view
 	 */
 	public static void startCapture(EuclidianViewW view) {
-		setCapture(view.getAbsolutePanel().getElement());
+		setCapture(view.getPointerTarget());
 	}
 
 	private static void setCapture(Element element) {
 		pointerCapture = element;
 	}
 
-	private PointerEventType types(String s) {
+	/**
+	 * @param event pointer event
+	 * @return event type
+	 */
+	public static PointerEventType getType(elemental2.dom.PointerEvent event) {
 		try {
-			return PointerEventType.valueOf(s.toUpperCase(Locale.US));
-		} catch (Exception e) {
+			return PointerEventType.valueOf(event.pointerType.toUpperCase(Locale.US));
+		} catch (Exception ignored) {
 			// no logging: too noisy
 		}
 		return PointerEventType.MOUSE;
 	}
-
 }

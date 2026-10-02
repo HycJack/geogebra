@@ -43,8 +43,8 @@ import org.gwtproject.user.client.ui.ScrollPanel;
  *
  * @author gabor
  */
-public class ToolBarW extends FlowPanel
- implements ClickHandler, ToolBarInterface, MouseOutHandler {
+public final class ToolBarW extends FlowPanel
+		implements ClickHandler, ToolBarInterface, MouseOutHandler {
 
 	private AppW app;
 	private int mode;
@@ -64,7 +64,7 @@ public class ToolBarW extends FlowPanel
 
 	/**
 	 * Constructor for responsive toolbar
-	 * 
+	 *
 	 * @param tb
 	 *            toolbar panel
 	 * @param submenuPanel
@@ -82,7 +82,7 @@ public class ToolBarW extends FlowPanel
 
 	/**
 	 * Initialization of the ToolBar object
-	 * 
+	 *
 	 * @param app1
 	 *            application
 	 */
@@ -113,16 +113,16 @@ public class ToolBarW extends FlowPanel
 		add(menuList);
 
 		setMode(app.getMode(), ModeSetter.TOOLBAR);
-		
+
 		setVisible(true);
 		tb.onResize();
-		
+
 		// update();
 	}
 
 	/**
 	 * Rebuild the toolbar.
-	 * 
+	 *
 	 * TODO: this function is just a temporary hack! Don't regenate the toolbar.
 	 */
 	public void update() {
@@ -135,17 +135,17 @@ public class ToolBarW extends FlowPanel
 		this.add(menuList);
 	}
 
-	protected ArrayList<ModeToggleMenuW> getModeToggleMenus() {
+	ArrayList<ModeToggleMenuW> getModeToggleMenus() {
 		return modeToggleMenus;
 	}
 
 	/**
 	 * Sets toolbar mode. This will change the selected toolbar icon.
-	 * 
+	 *
 	 * @param newMode
 	 *            see EuclidianConstants for mode numbers
-	 * 
-	 * 
+	 *
+	 *
 	 * @return actual mode number selected (might be different if it's not
 	 *         available)
 	 */
@@ -168,10 +168,9 @@ public class ToolBarW extends FlowPanel
 					break;
 				}
 			}
-			
+
 			if (!success && tmpMode != getFirstMode()) {
 				tmpMode = setMode(getFirstMode(), m);
-
 			}
 
 			this.mode = tmpMode;
@@ -179,13 +178,6 @@ public class ToolBarW extends FlowPanel
 		}
 
 		return tmpMode;
-	}
-
-	/**
-	 * @return currently selected mode
-	 */
-	public int getSelectedMode() {
-		return mode;
 	}
 
 	/**
@@ -208,7 +200,7 @@ public class ToolBarW extends FlowPanel
 	 * string looks like "0 , 1 2 | 3 4 5 || 7 8 9" where the int values are
 	 * mode numbers, "," adds a separator within a menu, "|" starts a new menu
 	 * and "||" adds a separator before starting a new menu.
-	 * 
+	 *
 	 */
 	private void addCustomModesToToolbar(UnorderedList mainUl) {
 		Vector<ToolbarItem> toolbarVec = getToolbarVec();
@@ -230,7 +222,7 @@ public class ToolBarW extends FlowPanel
 		}
 	}
 
-	protected ModeToggleMenuW createModeToggleMenu(AppW appw, Vector<Integer> menu, int order) {
+	private ModeToggleMenuW createModeToggleMenu(AppW appw, Vector<Integer> menu, int order) {
 		// toolbarVecSize is i.e. 12 for AV, 14 for 3D
 		if (maxButtons < getToolbarVecSize() || (maxButtons < 11 && getToolbarVecSize() < 11)) {
 			mobileToolbar = true;
@@ -239,24 +231,25 @@ public class ToolBarW extends FlowPanel
 		mobileToolbar = false;
 		return new ModeToggleMenuW(appw, menu, this, order);
 	}
-	
-	protected Vector<ToolbarItem> getToolbarVec() {
+
+	private Vector<ToolbarItem> getToolbarVec() {
 		Vector<ToolbarItem> toolbarVec;
 		try {
 
-			toolbarVec = ToolBar.parseToolbarString(
-					app.getGuiManager().getToolbarDefinition());
+			toolbarVec = ToolBar.parseToolbarString(app.getGuiManager().getToolbarDefinition());
 
 		} catch (Exception e) {
 
-			Log.debug("invalid toolbar string: "
-					+ app.getGuiManager().getToolbarDefinition());
+			Log.debug("invalid toolbar string: " + app.getGuiManager().getToolbarDefinition());
 
 			toolbarVec = ToolBar.parseToolbarString(getDefaultToolbarString());
 		}
 		return toolbarVec;
 	}
 
+	/**
+	 * @return the number of items in the toolbar definition
+	 */
 	public int getToolbarVecSize() {
 		return this.getToolbarVec().size();
 	}
@@ -332,7 +325,7 @@ public class ToolBarW extends FlowPanel
 
 	/**
 	 * Focus given submenu. Index is considered mod size.
-	 * 
+	 *
 	 * @param index
 	 *            index of submenu; may be negative
 	 */
@@ -359,7 +352,7 @@ public class ToolBarW extends FlowPanel
 
 	/**
 	 * Update number of buttons that fit in a single row.
-	 * 
+	 *
 	 * @param max
 	 *            max number of buttons
 	 */
@@ -373,7 +366,6 @@ public class ToolBarW extends FlowPanel
 				this.maxButtons = max;
 				closeAllSubmenu();
 				buildGui();
-
 			}
 		}
 		// make sure gui is only rebuilt when necessary (when state changes
@@ -383,7 +375,6 @@ public class ToolBarW extends FlowPanel
 			this.maxButtons = max;
 			closeAllSubmenu();
 			buildGui();
-
 		}
 	}
 
@@ -402,7 +393,7 @@ public class ToolBarW extends FlowPanel
 
 	/**
 	 * Scroll to given position.
-	 * 
+	 *
 	 * @param positionX
 	 *            x offset
 	 */
@@ -423,6 +414,9 @@ public class ToolBarW extends FlowPanel
 		setMouseDown(false);
 	}
 
+	/**
+	 * @param down whether mouse is pressed
+	 */
 	public void setMouseDown(boolean down) {
 		isMouseDown = down;
 	}
@@ -437,5 +431,4 @@ public class ToolBarW extends FlowPanel
 		mousePosition = mouse;
 		toolbarPosition = tb;
 	}
-
 }

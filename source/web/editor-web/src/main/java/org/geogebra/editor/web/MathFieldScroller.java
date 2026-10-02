@@ -26,10 +26,14 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  * Class to handle scrolling of the mathfield container.
  */
-public class MathFieldScroller {
+public final class MathFieldScroller {
+
+	private MathFieldScroller() {
+		// utility class
+	}
 
 	/**
-	 * Scrolls content horizontally,  based on the cursor position
+	 * Scrolls content horizontally, based on the cursor position.
 	 */
 	public static void scrollHorizontallyToCursor(Widget parent, int rightMargin, int cursorX) {
 		Element parentElement = parent.getElement();
@@ -53,8 +57,7 @@ public class MathFieldScroller {
 		int height = parent.getOffsetHeight();
 		int scrollTop = parentElement.getScrollTop() + margin;
 		int position = cursorY < SCROLL_THRESHOLD ? 0 : cursorY;
-		if (position < scrollTop
-				|| position > scrollTop + height - SCROLL_THRESHOLD) {
+		if (position < scrollTop || position > scrollTop + height - SCROLL_THRESHOLD) {
 			parentElement.setScrollTop(position);
 		}
 	}

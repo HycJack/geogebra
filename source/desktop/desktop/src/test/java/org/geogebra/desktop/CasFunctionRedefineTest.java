@@ -2,22 +2,22 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.desktop;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.cas.BaseCASIntegrationTest;
 import org.geogebra.common.kernel.StringTemplate;
@@ -28,46 +28,41 @@ import org.geogebra.common.kernel.geos.GeoDummyVariable;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.desktop.headless.AppDNoGui;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @Issue("APPS-5656")
-public class CasFunctionRedefineTest extends BaseCASIntegrationTest {
+class CasFunctionRedefineTest extends BaseCASIntegrationTest {
 
 	private AlgebraProcessor ap;
 	private AppDNoGui app;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		app = getApp();
 		ap = app.getKernel().getAlgebraProcessor();
 	}
 
 	@Test
-	public void handleCoordsShouldBeNaNForDummyVariable() {
+	void handleCoordsShouldBeNaNForDummyVariable() {
 		ExpressionNodeEvaluator evaluator =
 				new ExpressionNodeEvaluator(kernel.getLocalization(), kernel);
 		GeoDummyVariable t = new GeoDummyVariable(kernel.getConstruction(), "t");
-		assertTrue("x(t) should be NaN", Double.isNaN(evaluator.handleXcoord(t,
-				Operation.XCOORD)));
-		assertTrue("y(t) should be NaN", Double.isNaN(evaluator.handleYcoord(t,
-				Operation.YCOORD)));
-		assertTrue("z(t) should be NaN",
-				Double.isNaN(evaluator.handleZcoord(t)));
+		assertTrue(Double.isNaN(evaluator.handleXcoord(t, Operation.XCOORD)), "x(t) should be NaN");
+		assertTrue(Double.isNaN(evaluator.handleYcoord(t, Operation.YCOORD)), "y(t) should be NaN");
+		assertTrue(Double.isNaN(evaluator.handleZcoord(t)), "z(t) should be NaN");
 	}
 
 	@Test
-	public void testCellUpdate() {
+	void testCellUpdate() {
 		GeoCasCell cell1 = cellFromInput("f(a, b) := a b");
 		cellFromInput("g(a, b) := a + b");
 		GeoCasCell cell3 = cellFromInput("Flatten({$1, $2})");
-		assertEquals("{a b, a + b}",
-				cell3.getOutput(StringTemplate.defaultTemplate));
+		assertEquals("{a b, a + b}", cell3.getOutput(StringTemplate.defaultTemplate));
 
 		updateCellInput(cell1, "f(a, b) := a / b");
 
-		assertEquals("{a / b, a + b}",
-				cell3.getOutput(StringTemplate.defaultTemplate));
+		assertEquals("{a / b, a + b}", cell3.getOutput(StringTemplate.defaultTemplate));
 	}
 
 	private void updateCellInput(GeoCasCell cell1, String inValue) {
@@ -83,7 +78,7 @@ public class CasFunctionRedefineTest extends BaseCASIntegrationTest {
 
 	@Test
 	@Issue("APPS-5838")
-	public void solveButtonBroken() {
+	void solveButtonBroken() {
 		cellFromInput("f(x) := 2x - 123");
 		cellFromInput("f(x) = 5");
 		GeoCasCell solve = cellFromInput("Solve($2)");

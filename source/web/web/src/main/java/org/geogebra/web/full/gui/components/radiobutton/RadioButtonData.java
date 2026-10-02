@@ -16,7 +16,7 @@
 
 package org.geogebra.web.full.gui.components.radiobutton;
 
-public class RadioButtonData<T> {
+public final class RadioButtonData<T> {
 	private String label;
 	private boolean disabled;
 	private T value;
@@ -26,8 +26,7 @@ public class RadioButtonData<T> {
 	 * @param label - label
 	 * @param disabled - whether is disabled
 	 */
-	public RadioButtonData(String label, boolean disabled,
-			T value) {
+	public RadioButtonData(String label, boolean disabled, T value) {
 		this.label = label;
 		this.disabled = disabled;
 		this.value = value;

@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -21,48 +21,25 @@ import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.cas.UsesCAS;
 import org.geogebra.common.kernel.commands.Commands;
 import org.geogebra.common.kernel.commands.EvalInfo;
-import org.geogebra.common.kernel.geos.CasEvaluableFunction;
+import org.geogebra.common.kernel.geos.AlgebraicExpression;
 import org.geogebra.common.kernel.geos.GeoElement;
 
 /**
  * Base class for algorithms using the CAS.
- * 
+ *
  * @author Markus Hohenwarter
  */
 public abstract class AlgoCasBase extends AlgoElement implements UsesCAS {
 	/** Input function */
-	protected CasEvaluableFunction f;
+	protected AlgebraicExpression f;
 	/** Output function */
-	protected CasEvaluableFunction g;
-	private Commands cmd;
+	protected AlgebraicExpression g;
 
-	/**
-	 * Creates CAS algo and sets input, output and label. Do not use if
-	 * compute() or setInputOutput() are overridden.
-	 * 
-	 * @param cons
-	 *            construction
-	 * @param label
-	 *            label for output
-	 * @param f
-	 *            input function
-	 * @param cmd
-	 *            command name
-	 * @param info
-	 *            evaluation flags
-	 */
-	protected AlgoCasBase(Construction cons, String label,
-			CasEvaluableFunction f, Commands cmd, EvalInfo info) {
-		this(cons, f, cmd, info);
-
-		setInputOutput(); // for AlgoElement
-		compute();
-		g.toGeoElement().setLabel(label);
-	}
+	private final Commands cmd;
 
 	/**
 	 * Creates CAS algo, doesn't set any input, output or label
-	 * 
+	 *
 	 * @param cons
 	 *            construction
 	 * @param f
@@ -72,13 +49,12 @@ public abstract class AlgoCasBase extends AlgoElement implements UsesCAS {
 	 * @param info
 	 *            evaluation flags
 	 */
-	protected AlgoCasBase(Construction cons, CasEvaluableFunction f,
-			Commands cmd, EvalInfo info) {
+	protected AlgoCasBase(Construction cons, AlgebraicExpression f, Commands cmd, EvalInfo info) {
 		super(cons);
 		f.updateCASEvalMap(info.getCASMap());
 		this.f = f;
 		this.cmd = cmd;
-		g = (CasEvaluableFunction) f.toGeoElement().copyInternal(cons);
+		g = (AlgebraicExpression) f.toGeoElement().copyInternal(cons);
 	}
 
 	@Override
@@ -116,7 +92,7 @@ public abstract class AlgoCasBase extends AlgoElement implements UsesCAS {
 	/**
 	 * Build a GeoGebraCAS command, send it to CAS and use the output to update
 	 * result of this algo.
-	 * 
+	 *
 	 * @param tpl
 	 *            template for serialization of the command
 	 */

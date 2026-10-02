@@ -29,7 +29,7 @@ import org.geogebra.web.shared.components.dialog.DialogData;
 /**
  * Dialog for rotation around a point
  */
-public class InputDialogRotatePointW extends InputDialogRotateW {
+public final class InputDialogRotatePointW extends InputDialogRotateW {
 
 	private GeoPointND[] points;
 
@@ -49,19 +49,29 @@ public class InputDialogRotatePointW extends InputDialogRotateW {
 	 * @param ec
 	 *            controller
 	 */
-	public InputDialogRotatePointW(AppW app, DialogData data,
-			InputHandler handler, GeoPolygon[] polys, GeoPointND[] points,
-			GeoElement[] selGeos, EuclidianController ec) {
+	public InputDialogRotatePointW(
+			AppW app,
+			DialogData data,
+			InputHandler handler,
+			GeoPolygon[] polys,
+			GeoPointND[] points,
+			GeoElement[] selGeos,
+			EuclidianController ec) {
 		super(app, data, handler, polys, selGeos, ec);
 		this.points = points;
 	}
 
 	@Override
 	protected void processInput(AsyncOperation<String> callback) {
-		DialogManager.rotateObject(app, getInputText(),
-				isClockWise(), polys,
-				new DialogManager.CreateGeoForRotatePoint(points[0]), selGeos,
-				ec, this,
+		DialogManager.rotateObject(
+				app,
+				getInputText(),
+				isClockWise(),
+				polys,
+				new DialogManager.CreateGeoForRotatePoint(points[0]),
+				selGeos,
+				ec,
+				this,
 				callback);
 	}
 }

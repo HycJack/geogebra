@@ -48,8 +48,8 @@ import jsinterop.base.Js;
 /**
  * Page Control Panel for navigating through multiple pages
  */
-public class PageListPanel
-		extends PersistablePanel implements SetLabels, CardListInterface, UndoInfoStoredListener {
+public final class PageListPanel extends PersistablePanel
+		implements SetLabels, CardListInterface, UndoInfoStoredListener {
 
 	public static final int PAGE_OVERVIEW_WIDTH = 240;
 	private final AppWFull app;
@@ -69,8 +69,8 @@ public class PageListPanel
 	public PageListPanel(AppWFull app) {
 		this.app = app;
 		this.frame = app.getAppletFrame();
-		this.dockPanel = (EuclidianDockPanelW) app.getGuiManager().getLayout()
-				.getDockManager().getPanel(App.VIEW_EUCLIDIAN);
+		this.dockPanel = (EuclidianDockPanelW)
+				app.getGuiManager().getLayout().getDockManager().getPanel(App.VIEW_EUCLIDIAN);
 		pageController = new PageListController(app, this);
 		app.setPageController(pageController);
 		app.getUndoManager().addUndoInfoStoredListener(this);
@@ -103,9 +103,13 @@ public class PageListPanel
 	}
 
 	private void addPlusButton() {
-		plusButton = new StandardButton(app.getGeneralIconResource()
-				.getImageResource(GeneralIcon.PLUS).withFill(GColor.WHITE.toString()),
-				null, 24, 24);
+		plusButton = new StandardButton(
+				app.getGeneralIconResource()
+						.getImageResource(GeneralIcon.PLUS)
+						.withFill(GColor.WHITE.toString()),
+				null,
+				24,
+				24);
 		plusButton.setStyleName("mowFloatingButton");
 		plusButton.addStyleName("floatingActionButton");
 		plusButton.addStyleName("mowPlusButton");
@@ -143,14 +147,12 @@ public class PageListPanel
 	 * @param doShow
 	 *            - true if plus button should be visible, false otherwise
 	 */
-	protected void showPlusButton(boolean doShow) {
+	private void showPlusButton(boolean doShow) {
 		if (plusButton == null) {
 			return;
 		}
-		plusButton.addStyleName(
-				doShow ? "showMowFloatingButton" : "hideMowFloatingButton");
-		plusButton.removeStyleName(
-				doShow ? "hideMowFloatingButton" : "showMowFloatingButton");
+		plusButton.addStyleName(doShow ? "showMowFloatingButton" : "hideMowFloatingButton");
+		plusButton.removeStyleName(doShow ? "hideMowFloatingButton" : "showMowFloatingButton");
 	}
 
 	@Override
@@ -171,7 +173,7 @@ public class PageListPanel
 
 	/**
 	 * closes the page control panel
-	 * 
+	 *
 	 * @return true if successful.
 	 */
 	public boolean close() {
@@ -188,19 +190,19 @@ public class PageListPanel
 	/**
 	 * handles close actions after animation
 	 */
-	protected void onClose() {
+	private void onClose() {
 		setVisible(false);
 	}
 
 	/**
 	 * creates a new preview card
-	 * 
+	 *
 	 * @param selected
 	 *            true if added card should be linked to selected page, false otherwise
-	 * 
+	 *
 	 * @return index of new slide
 	 */
-	protected int addNewPreviewCard(boolean selected, String id) {
+	private int addNewPreviewCard(boolean selected, String id) {
 		int index = pageController.getSlideCount();
 		PagePreviewCard card = pageController.addNewPreviewCard(index, new GgbFile(id));
 		if (selected) {
@@ -216,7 +218,7 @@ public class PageListPanel
 	 * @param id generated ID for next slide
 	 * @return index of new slide
 	 */
-	protected int addNewPreviewCardAt(int index, String id) {
+	private int addNewPreviewCardAt(int index, String id) {
 		PagePreviewCard newCard = pageController.addNewPreviewCard(index, new GgbFile(id));
 		addPreviewCard(newCard);
 		pageController.updatePreviewImage();
@@ -233,7 +235,7 @@ public class PageListPanel
 		if (isTouch) {
 			card.removeStyleName("desktop");
 		}
-		
+
 		if (pageIndex < pageController.getSlideCount()) {
 			contentPanel.insert(card, pageIndex);
 		} else {
@@ -245,10 +247,10 @@ public class PageListPanel
 
 	/**
 	 * remove preview card and associated slide
-	 * 
+	 *
 	 * @param index
 	 *            index of page to be removed
-	 * 
+	 *
 	 */
 	public void removePage(int index) {
 		// invalid index
@@ -264,7 +266,7 @@ public class PageListPanel
 
 	/**
 	 * update index and titles above index
-	 * 
+	 *
 	 * @param index
 	 *            of card that should be updated
 	 */
@@ -295,7 +297,7 @@ public class PageListPanel
 
 	/**
 	 * Duplicates page at given index.
-	 * 
+	 *
 	 * @param src
 	 *            to duplicate page at.
 	 */
@@ -347,10 +349,14 @@ public class PageListPanel
 	@Override
 	public void updateContentPanelHeight() {
 		int count = pageController.getCardCount();
-		contentPanel.getElement().getStyle().setProperty("minHeight",
-				PagePreviewCard.computeTop(count) + "px");
-		contentPanel.getElement().getStyle().setProperty("maxHeight",
-				PagePreviewCard.computeTop(count) + "px");
+		contentPanel
+				.getElement()
+				.getStyle()
+				.setProperty("minHeight", PagePreviewCard.computeTop(count) + "px");
+		contentPanel
+				.getElement()
+				.getStyle()
+				.setProperty("maxHeight", PagePreviewCard.computeTop(count) + "px");
 	}
 
 	@Override
@@ -385,6 +391,4 @@ public class PageListPanel
 			indicator.setVisible(false);
 		}
 	}
-
 }
-

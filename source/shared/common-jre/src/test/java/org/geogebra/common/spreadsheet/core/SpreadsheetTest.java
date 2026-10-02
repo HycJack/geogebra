@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -23,10 +23,10 @@ import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import org.geogebra.common.BaseUnitTest;
 import org.geogebra.common.awt.GColor;
+import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.common.main.settings.SpreadsheetSettings;
@@ -44,26 +45,26 @@ import org.geogebra.common.spreadsheet.style.SpreadsheetStyling;
 import org.geogebra.common.util.MouseCursor;
 import org.geogebra.common.util.shape.Rectangle;
 import org.geogebra.test.annotation.Issue;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class SpreadsheetTest extends BaseUnitTest {
+class SpreadsheetTest extends BaseUnitTest {
 
-	private Spreadsheet spreadsheet;
-	private TabularData<?> tabularData;
+	private Spreadsheet<String> spreadsheet;
+	private TabularData<String> tabularData;
+	private Spreadsheet<GeoElement> kernelBackedSpreadsheet;
+	private KernelTabularDataAdapter kernelTabularData;
 	private TableLayout layout;
 	private UndoProvider undoProvider;
 	private SpreadsheetDelegate delegate;
 
-	@Before
-	public void setupSpreadsheet() {
+	@BeforeEach
+	void setupSpreadsheet() {
 		tabularData = new TestTabularData();
-        undoProvider = mock();
-		spreadsheet = new Spreadsheet(tabularData,
-				new TestCellRenderableFactory(),
-				null,
-                undoProvider);
+		undoProvider = mock();
+		spreadsheet =
+				new Spreadsheet<>(tabularData, new TestCellRenderableFactory(), null, undoProvider);
 		spreadsheet.setHeightForRows(20, 0, 5);
 		spreadsheet.setWidthForColumns(40, 0, 5);
 		layout = spreadsheet.getController().getLayout();
@@ -73,13 +74,25 @@ public class SpreadsheetTest extends BaseUnitTest {
 		spreadsheet.setSpreadsheetDelegate(delegate);
 	}
 
+	private void setupKernelBackedSpreadsheet() {
+		tabularData = null;
+		spreadsheet = null;
+
+		kernelTabularData = new KernelTabularDataAdapter(getApp());
+		getKernel().attach(kernelTabularData);
+
+		kernelBackedSpreadsheet =
+				new Spreadsheet<>(kernelTabularData, new TestCellRenderableFactory(), null, undoProvider);
+		kernelBackedSpreadsheet.setSpreadsheetDelegate(delegate);
+	}
+
 	private void resetViewport() {
 		Rectangle viewport = new Rectangle(0, 100, 0, 120);
 		spreadsheet.setViewport(viewport);
 	}
 
 	@Test
-	public void testTextDataRendering() {
+	void testTextDataRendering() {
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		tabularData.setContent(0, 0, "foo");
 		tabularData.setContent(0, 1, "bar");
@@ -88,7 +101,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testSingleColumnResize() {
+	void testSingleColumnResize() {
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		spreadsheet.setViewport(new Rectangle(0, 120, 0, 100));
 		spreadsheet.draw(graphics);
@@ -104,7 +117,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testMultiColumnResize() {
+	void testMultiColumnResize() {
 		spreadsheet.setViewport(new Rectangle(0, 140, 0, 100));
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		spreadsheet.draw(graphics);
@@ -124,7 +137,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testSingleRowResize() {
+	void testSingleRowResize() {
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		spreadsheet.draw(graphics);
 		// initially we have 5 rows
@@ -139,7 +152,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testNoHeaderRowResize() {
+	void testNoHeaderRowResize() {
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		spreadsheet.draw(graphics);
 		// initially we have 5 rows
@@ -155,7 +168,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testRowNumbersAfterResize() {
+	void testRowNumbersAfterResize() {
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		// jump to a small viewport below the current screen
 		spreadsheet.setViewport(new Rectangle(0, 140, 400, 500));
@@ -164,12 +177,11 @@ public class SpreadsheetTest extends BaseUnitTest {
 		// paint the whole area
 		spreadsheet.setViewport(new Rectangle(0, 140, 0, 500));
 		spreadsheet.draw(graphics);
-		assertEquals("A,B,C,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16",
-				graphics.toString());
+		assertEquals("A,B,C,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16", graphics.toString());
 	}
 
 	@Test
-	public void testMultiRowResize() {
+	void testMultiRowResize() {
 		spreadsheet.setHeightForRows(20, 0, 5);
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		spreadsheet.draw(graphics);
@@ -190,7 +202,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testHeaderResize() {
+	void testHeaderResize() {
 		StringCapturingGraphics graphics = new StringCapturingGraphics();
 		spreadsheet.draw(graphics);
 		assertThat(graphics.toString(), endsWith(",5"));
@@ -202,20 +214,18 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void spreadsheetShouldRepaintAfterUpdatingSlider() {
-		tabularData = new KernelTabularDataAdapter(getApp());
-		tabularData.addChangeListener(spreadsheet);
-		getKernel().attach((KernelTabularDataAdapter) tabularData);
+	void spreadsheetShouldRepaintAfterUpdatingSlider() {
+		setupKernelBackedSpreadsheet();
 
 		GeoNumeric slider = add("a = 3");
-		tabularData.setContent(0, 0, slider);
+		kernelTabularData.setContent(0, 0, slider);
 		Mockito.verify(delegate, Mockito.times(2)).notifyRepaintNeeded();
 		slider.update();
 		Mockito.verify(delegate, Mockito.times(3)).notifyRepaintNeeded();
 	}
 
 	@Test
-	public void testSelectionChangeShouldTriggerRepaint() {
+	void testSelectionChangeShouldTriggerRepaint() {
 		Mockito.verify(delegate, Mockito.times(0)).notifyRepaintNeeded();
 		simulateCellMouseClick(spreadsheet.getController(), 0, 0, 1);
 		Mockito.verify(delegate, Mockito.times(1)).notifyRepaintNeeded();
@@ -228,26 +238,26 @@ public class SpreadsheetTest extends BaseUnitTest {
 	// Style bar
 
 	@Test
-	public void testStyleBarInitialState() {
+	void testStyleBarInitialState() {
 		assertFalse(spreadsheet.getStyleBarModel().getState().isEnabled);
 	}
 
 	@Test
-	public void testStyleBarWithSingleCellSelected() {
+	void testStyleBarWithSingleCellSelected() {
 		spreadsheet.selectCell(0, 0, false, false);
 		assertTrue(spreadsheet.getStyleBarModel().getState().isEnabled);
 	}
 
 	@Test
-	public void testStyleBarDefaults() {
+	void testStyleBarDefaults() {
 		spreadsheet.selectCell(0, 0, false, false);
-		assertEquals(GeoGebraColorConstants.NEUTRAL_900,
-				spreadsheet.getStyleBarModel().getState().textColor);
+		assertEquals(
+				GeoGebraColorConstants.NEUTRAL_900, spreadsheet.getStyleBarModel().getState().textColor);
 		assertEquals(GColor.WHITE, spreadsheet.getStyleBarModel().getState().backgroundColor);
 	}
 
 	@Test
-	public void testStyleBarWithRangeSelected() {
+	void testStyleBarWithRangeSelected() {
 		SpreadsheetStyleBarModel styleBarModel = spreadsheet.getStyleBarModel();
 		spreadsheet.selectCell(0, 0, false, false);
 		styleBarModel.setBold(true);
@@ -257,7 +267,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testStyleBarChangeNotifications() {
+	void testStyleBarChangeNotifications() {
 		SpreadsheetStyleBarModel styleBarModel = spreadsheet.getStyleBarModel();
 		spreadsheet.selectCell(0, 0, false, false);
 		// start listening for change notifications
@@ -272,14 +282,14 @@ public class SpreadsheetTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-6534")
-	public void testSelectionChangeShouldNotCreateUndoPoint() {
+	void testSelectionChangeShouldNotCreateUndoPoint() {
 		assertNotNull(spreadsheet.getStyleBarModel());
 		simulateCellMouseClick(spreadsheet.getController(), 0, 0, 1);
 		verifyNoInteractions(undoProvider);
 	}
 
 	@Test
-	public void testStyleChangesShouldCreateUndoPoints() {
+	void testStyleChangesShouldCreateUndoPoints() {
 		SpreadsheetStyleBarModel styleBarModel = spreadsheet.getStyleBarModel();
 		simulateCellMouseClick(spreadsheet.getController(), 0, 0, 1);
 		styleBarModel.setItalic(true);
@@ -295,7 +305,7 @@ public class SpreadsheetTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPSS-6803")
-	public void deleteShouldUpdateStyleForXML() {
+	void deleteShouldUpdateStyleForXML() {
 		SpreadsheetSettings settings = new SpreadsheetSettings();
 		SpreadsheetStyleBarModel styleBarModel = spreadsheet.getStyleBarModel();
 		spreadsheet.cellFormatXmlChanged.addListener(settings::setCellFormatXml);
@@ -305,6 +315,15 @@ public class SpreadsheetTest extends BaseUnitTest {
 		simulateCellMouseClick(spreadsheet.getController(), 1, 0, 1);
 		spreadsheet.getController().deleteRowAt(1);
 		assertEquals("0,2,f,2", settings.getCellFormatXml());
+	}
+
+	@Test
+	@Issue("APPS-7608")
+	void overwritingEmptyCellShouldBecomeNonEmpty() {
+		add("A1");
+		add("FillColumn(1,{9})");
+		GeoElement element = lookup("A1");
+		assertFalse(element.isEmptySpreadsheetCell());
 	}
 
 	// Helpers

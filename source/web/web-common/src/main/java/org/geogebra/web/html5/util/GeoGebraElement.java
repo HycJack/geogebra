@@ -21,6 +21,7 @@ import java.util.Date;
 
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.util.StringUtil;
+import org.geogebra.gwtutil.JsObject;
 import org.geogebra.regexp.shared.MatchResult;
 import org.geogebra.regexp.shared.RegExp;
 import org.geogebra.web.html5.Browser;
@@ -64,8 +65,8 @@ public final class GeoGebraElement {
 	 *         {@value GeoGebraConstants#GGM_CLASS_NAME})
 	 */
 	public static ArrayList<GeoGebraElement> getGeoGebraMobileTags() {
-		HTMLCollection<elemental2.dom.Element> nodes = Dom
-				.getElementsByClassName(GeoGebraConstants.GGM_CLASS_NAME);
+		HTMLCollection<elemental2.dom.Element> nodes =
+				Dom.getElementsByClassName(GeoGebraConstants.GGM_CLASS_NAME);
 		ArrayList<GeoGebraElement> articleNodes = new ArrayList<>();
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Element el = Js.uncheckedCast(nodes.getAt(i));
@@ -90,7 +91,7 @@ public final class GeoGebraElement {
 		if (paramID.equals(el.getId())) {
 			return;
 		}
-		if (paramID.length() > 0) {
+		if (!paramID.isEmpty()) {
 			int suffix = 0;
 			while (DOM.getElementById(paramID) != null) {
 				paramID = params.getDataParamId() + suffix;
@@ -139,20 +140,19 @@ public final class GeoGebraElement {
 	 */
 	public boolean isRTL() {
 		return "rtl".equals(getComputedStyle(el).direction);
-    }
+	}
 
-	private double envScale(Element element, String type,
-			boolean deep) {
-        double sx = 1;
-        double sy = 1;
+	private double envScale(Element element, String type, boolean deep) {
+		double sx = 1;
+		double sy = 1;
 
-        Element current = element;
-        do {
-            RegExp matrixRegex = RegExp.compile("matrix\\((-?\\d*\\.?\\d+),\\s*(-?\\d*\\.?\\d+),"
+		Element current = element;
+		do {
+			RegExp matrixRegex = RegExp.compile("matrix\\((-?\\d*\\.?\\d+),\\s*(-?\\d*\\.?\\d+),"
 					+ "\\s*(-?\\d*\\.?\\d+),\\s*(-?\\d*\\.?\\d+),"
 					+ "\\s*(-?\\d*\\.?\\d+),\\s*(-?\\d*\\.?\\d+)\\)");
 
-            CSSStyleDeclaration style = getComputedStyle(current);
+			CSSStyleDeclaration style = getComputedStyle(current);
 
 			String transform = style.transform;
 			MatchResult matches = matrixRegex.exec(transform);
@@ -161,24 +161,25 @@ public final class GeoGebraElement {
 				sx *= length(matches, 1, 2);
 				sy *= length(matches, 3, 4);
 			} else if (transform.indexOf("scale") == 0) {
-				double mul = Double.parseDouble(transform.substring(transform
-					.indexOf("(") + 1, transform.indexOf(")")));
+				double mul = Double.parseDouble(
+						transform.substring(transform.indexOf("(") + 1, transform.indexOf(")")));
 				sx *= mul;
 				sy *= mul;
 			}
 
-			if (!StringUtil.empty((String) Js.asPropertyMap(style).get("zoom"))
+			Object zoomProp = JsObject.of(style).get("zoom");
+			if (!StringUtil.empty((String) zoomProp)
 					&& current != Document.get().getBody().getParentElement()) {
-				double zoom = Double.parseDouble((String) Js.asPropertyMap(style).get("zoom"));
+				double zoom = Double.parseDouble((String) zoomProp);
 				sx *= zoom;
 				sy *= zoom;
 			}
 
-            current = current.getParentElement();
-        } while (deep && current != null);
+			current = current.getParentElement();
+		} while (deep && current != null);
 
-        return "x".equals(type) ? sx : sy;
-    }
+		return "x".equals(type) ? sx : sy;
+	}
 
 	private static double length(MatchResult matches, int id1, int id2) {
 		double a = Double.parseDouble(matches.getGroup(id1));
@@ -244,6 +245,9 @@ public final class GeoGebraElement {
 		el.setAttribute("data-scaley", "" + envScale("y"));
 	}
 
+	/**
+	 * @return element ID
+	 */
 	public String getId() {
 		return el.getId();
 	}
@@ -252,10 +256,16 @@ public final class GeoGebraElement {
 		return el;
 	}
 
+	/**
+	 * @return parent DOM element
+	 */
 	public Element getParentElement() {
 		return el.getParentElement();
 	}
 
+	/**
+	 * @return CSS style
+	 */
 	public Style getStyle() {
 		return el.getStyle();
 	}

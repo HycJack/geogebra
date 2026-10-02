@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -19,10 +19,10 @@ package org.geogebra.common.kernel.arithmetic;
 import static org.geogebra.test.commands.AlgebraTestHelper.shouldFail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.AppCommonFactory;
 import org.geogebra.common.BaseUnitTest;
@@ -39,18 +39,18 @@ import org.geogebra.editor.share.util.Unicode;
 import org.geogebra.test.TestStringUtil;
 import org.geogebra.test.annotation.Issue;
 import org.geogebra.test.commands.AlgebraTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ArithmeticTest extends BaseUnitTest {
+class ArithmeticTest extends BaseUnitTest {
 
 	@Override
 	public AppCommon createAppCommon() {
 		return AppCommonFactory.create3D();
 	}
 
-	@Before
-	public void clean() {
+	@BeforeEach
+	void clean() {
 		getApp().getSettings().getCasSettings().setEnabled(true);
 		getApp().getKernel().clearConstruction(true);
 	}
@@ -60,18 +60,17 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	private void t(String input, String expected, StringTemplate tpl) {
-		AlgebraTestHelper.checkSyntaxSingle(input, new String[] { expected },
-				getApp().getKernel().getAlgebraProcessor(), tpl);
+		AlgebraTestHelper.checkSyntaxSingle(
+				input, new String[] {expected}, getApp().getKernel().getAlgebraProcessor(), tpl);
 	}
 
 	@Test
-	public void listArithmetic() {
+	void listArithmetic() {
 		t("{1,2,3}*2", "{2, 4, 6}");
 		t("{1,2,3}+3", "{4, 5, 6}");
 		t("list1:={1,2,3}", "{1, 2, 3}");
 		t("listF:={x, 2 * x,3 * x+1}", "{x, (2 * x), (3 * x) + 1}");
-		t("matrix1:={{1, 2, 3}, {2, 4, 6}, {3, 6, 9}}",
-				"{{1, 2, 3}, {2, 4, 6}, {3, 6, 9}}");
+		t("matrix1:={{1, 2, 3}, {2, 4, 6}, {3, 6, 9}}", "{{1, 2, 3}, {2, 4, 6}, {3, 6, 9}}");
 		t("aa:=1", "1");
 		t("matrix2:={{aa}}", "{{1}}");
 		// app.getKernel().lookupLabel("matrix2").setFixed(true);
@@ -97,12 +96,12 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void logSyntaxTest() {
+	void logSyntaxTest() {
 		t("log_{2}2/(2)", "0.5");
 	}
 
 	@Test
-	public void infinity() {
+	void infinity() {
 		t("0^inf", "0");
 		t("1^inf", "NaN");
 		t("1^(-inf)", "NaN");
@@ -167,7 +166,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testRounding() {
+	void testRounding() {
 		final int angleUnit = getKernel().getAngleUnit();
 
 		getKernel().setAngleUnit(Kernel.ANGLE_RADIANT);
@@ -191,7 +190,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testRoundingDegree() {
+	void testRoundingDegree() {
 		t("round(2.425,2)", "2.43");
 		t("round(-2.425,2)", "-2.43");
 		t("round(2.425deg,2)", "2.43*" + Unicode.DEGREE_STRING);
@@ -201,7 +200,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void functionArithmetic() {
+	void functionArithmetic() {
 		t("f(x)=x^2", "x^(2)");
 		t("g1:f+f", "x^(2) + x^(2)");
 		t("g2:f+x", "x^(2) + x");
@@ -221,47 +220,48 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void tuples() {
+	void tuples() {
 		t("(1..2,1..2)", "{(1, 1), (2, 2)}");
 		t("(1,1..5)", "{(1, 1), (1, 2), (1, 3), (1, 4), (1, 5)}");
-		t("(1,1..5,6..2)",
-				"{(1, 1, 6), (1, 2, 5), (1, 3, 4), (1, 4, 3), (1, 5, 2)}");
-		t("(1;(1..5)*2pi/5)",
-				TestStringUtil.unicode(
-						"{(1; 72deg), (1; 144deg), (1; 216deg), (1; 288deg), (1; 0deg)}"),
+		t("(1,1..5,6..2)", "{(1, 1, 6), (1, 2, 5), (1, 3, 4), (1, 4, 3), (1, 5, 2)}");
+		t(
+				"(1;(1..5)*2pi/5)",
+				TestStringUtil.unicode("{(1; 72deg), (1; 144deg), (1; 216deg), (1; 288deg), (1; 0deg)}"),
 				StringTemplate.editTemplate);
 	}
 
 	@Test
 	@Issue("APPS-6696")
-	public void tupleOfMatrixEntries() {
+	void tupleOfMatrixEntries() {
 		add("m1={{7}}");
 		t("(m1(1,1),m1(1,1))", "(7, 7)");
 	}
 
 	@Test
-	public void invalidTuples() {
+	void invalidTuples() {
 		shouldFail("((1,2),3)", "Please check", getApp());
 		shouldFail("(0,(1,2,3))", "Please check", getApp());
 		shouldFail("((1,2),(3,4,5))", "Please check", getApp());
 	}
 
 	@Test
-	public void equationListTest() {
-		t("x+y=1..5",
-				"{x + y = 1, x + y = 2, x + y = 3, x + y = 4, x + y = 5}");
-		t("x^2+y^2=1..5",
-				TestStringUtil.unicode(
-						"{x^2 + y^2 = 1," + " x^2 + y^2 = 2, x^2 + y^2 = 3,"
-								+ " x^2 + y^2 = 4, x^2 + y^2 = 5}"),
+	void equationListTest() {
+		t("x+y=1..5", "{x + y = 1, x + y = 2, x + y = 3, x + y = 4, x + y = 5}");
+		t(
+				"x^2+y^2=1..5",
+				TestStringUtil.unicode("{x^2 + y^2 = 1," + " x^2 + y^2 = 2, x^2 + y^2 = 3,"
+						+ " x^2 + y^2 = 4, x^2 + y^2 = 5}"),
 				StringTemplate.editTemplate);
-		t("f(r)=(r,sin(r)*(1..5))",
+		t(
+				"f(r)=(r,sin(r)*(1..5))",
 				"{(r, (sin(r) * 1)), (r, (sin(r) * 2)), (r, (sin(r) * 3)),"
 						+ " (r, (sin(r) * 4)), (r, (sin(r) * 5))}");
-		t("f(r)=(r+(1..5),sin(r)*(1..5))",
+		t(
+				"f(r)=(r+(1..5),sin(r)*(1..5))",
 				"{(r + 1, (sin(r) * 1)), (r + 2, (sin(r) * 2)), (r + 3, (sin(r) * 3)),"
 						+ " (r + 4, (sin(r) * 4)), (r + 5, (sin(r) * 5))}");
-		t("f(r)=((1..5)*r,sin(r)+1)",
+		t(
+				"f(r)=((1..5)*r,sin(r)+1)",
 				"{((1 * r), sin(r) + 1), ((2 * r), sin(r) + 1), ((3 * r), sin(r) + 1),"
 						+ " ((4 * r), sin(r) + 1), ((5 * r), sin(r) + 1)}");
 		t("1..2={sin(x),x}", "{1 = sin(x), 2 = x}");
@@ -270,49 +270,48 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void equationListShouldUseColonInDefinition() {
+	void equationListShouldUseColonInDefinition() {
 		GeoElement eqnList = add("1..1={x}");
 		assertEquals("eq1: 1" + Unicode.ELLIPSIS + "1={x}", eqnList.getDefinitionForEditor());
 	}
 
 	@Test
-	public void functionsList() {
+	void functionsList() {
 		t("(1..2)+x*(1..2)", "{1 + (x * 1), 2 + (x * 2)}");
 		t("x+y+(1..3)", "{x + y + 1, x + y + 2, x + y + 3}");
 		t("list1=(-2..2)", "{-2, -1, 0, 1, 2}");
-		t("(list1*t,(1-t)*(1-list1))",
+		t(
+				"(list1*t,(1-t)*(1-list1))",
 				"{((-2 * t), ((1 - t) * 3)), ((-1 * t), ((1 - t) * 2)), ((0 * t), "
 						+ "((1 - t) * 1)), ((1 * t), ((1 - t) * 0)), ((2 * t), ((1 - t) * (-1)))}");
 	}
 
 	@Test
-	public void functionsMatrix() {
+	void functionsMatrix() {
 		shouldFail("{{1}}*x", "Invalid function", getApp());
 	}
 
 	@Test
-	public void xcoordAsFunction() {
+	void xcoordAsFunction() {
 		t("x((1,2))", "1");
 	}
 
 	@Test
-	public void absFunction() {
+	void absFunction() {
 		AlgebraTestHelper.enableCAS(getApp(), false);
 		t("f:abs(x+2)", "abs(x + 2)");
-		assertTrue(((GeoFunction) lookup("f"))
-				.isPolynomialFunction(true));
-		assertFalse(((GeoFunction) lookup("f"))
-				.isPolynomialFunction(false));
+		assertTrue(((GeoFunction) lookup("f")).isPolynomialFunction(true));
+		assertFalse(((GeoFunction) lookup("f")).isPolynomialFunction(false));
 	}
 
 	@Test
-	public void xcoordAsMultiplication() {
+	void xcoordAsMultiplication() {
 		t("x(x+1)", "(x * (x + 1))");
 		t("x(x+1)^2", "(x * (x + 1)^(2))");
 	}
 
 	@Test
-	public void derivativeShouldBeHiddenWithNoCas() {
+	void derivativeShouldBeHiddenWithNoCas() {
 		getApp().getSettings().getCasSettings().setEnabled(false);
 		t("f(x)=x", "x");
 		t("f'", "NDerivative[f]");
@@ -320,28 +319,31 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void crossProductMissingBracketsTest() {
+	void crossProductMissingBracketsTest() {
 		t("A = (1, 2)", "(1, 2)");
 		t("B = (2, 3)", "(2, 3)");
 		t("C = (6, 3)", "(6, 3)");
 		t("D = (0, 4)", "(0, 4)");
 		t("E = Cross(A - B, C - D)", "7");
-		assertEquals("(A - B) " + Unicode.VECTOR_PRODUCT + " (C - D)",
+		assertEquals(
+				"(A - B) " + Unicode.VECTOR_PRODUCT + " (C - D)",
 				lookup("E").getDefinition(StringTemplate.defaultTemplate));
 
 		t("F = Cross(A, B)^2", "1");
-		assertEquals("(A " + Unicode.VECTOR_PRODUCT + " B)" + Unicode.SUPERSCRIPT_2,
+		assertEquals(
+				"(A " + Unicode.VECTOR_PRODUCT + " B)" + Unicode.SUPERSCRIPT_2,
 				lookup("F").getDefinition(StringTemplate.defaultTemplate));
 
 		t("G = (1, 2, 3)", "(1, 2, 3)");
 		t("H = (2, 3, 4)", "(2, 3, 4)");
 		t("I = Cross(G, H)^2", "6");
-		assertEquals("(G " + Unicode.VECTOR_PRODUCT + " H)" + Unicode.SUPERSCRIPT_2,
+		assertEquals(
+				"(G " + Unicode.VECTOR_PRODUCT + " H)" + Unicode.SUPERSCRIPT_2,
 				lookup("I").getDefinition(StringTemplate.defaultTemplate));
 	}
 
 	@Test
-	public void dotProduct() {
+	void dotProduct() {
 		t("Dot((1,2),(3,4))", "11");
 		t("Dot({1,2},{3,4})", "11");
 		t("Dot({1,2,3,4},{1,1,1,1})", "10");
@@ -349,14 +351,13 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void dotSerialization() {
+	void dotSerialization() {
 		GeoElement product = add("Dot({1,2},{3,4})");
-		assertEquals("Dot({1, 2}, {3, 4})",
-				product.getDefinition(StringTemplate.defaultTemplate));
+		assertEquals("Dot({1, 2}, {3, 4})", product.getDefinition(StringTemplate.defaultTemplate));
 	}
 
 	@Test
-	public void absFunctionBugFix() {
+	void absFunctionBugFix() {
 		getApp().getSettings().getCasSettings().setEnabled(true);
 		GeoImplicit eq1 = add("eq1:abs(x-3) = -2");
 		eq1.setToImplicit();
@@ -367,7 +368,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void evaluationOfUndefinedFunctionShouldBeUndefined() {
+	void evaluationOfUndefinedFunctionShouldBeUndefined() {
 		t("f=Element({x y}, 2)", "?");
 		t("f(1, 1)", "NaN");
 		t("f((1, 1))", "NaN");
@@ -377,7 +378,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void sumOfUndefinedFunctionsShouldBeUndefined() {
+	void sumOfUndefinedFunctionsShouldBeUndefined() {
 		t("l={x}", "{x}");
 		t("l={}", "{}");
 		t("f(x):=Element(l,3)", "?");
@@ -388,7 +389,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void elementOfShouldBeRay() {
+	void elementOfShouldBeRay() {
 		add("l1={Ray((0,0),(1,1)),Ray((1,2),(2,4))}");
 		add("a=Slider(1,2,1)");
 		GeoLine el = add("r=l1(a)");
@@ -399,19 +400,17 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void functionCopyShouldBeDependent() {
+	void functionCopyShouldBeDependent() {
 		t("f:x", "x");
 		t("g(x)=f", "x");
-		assertEquals("f(x)",
-				lookup("g").getDefinition(StringTemplate.defaultTemplate));
+		assertEquals("f(x)", lookup("g").getDefinition(StringTemplate.defaultTemplate));
 		t("ff(x,y)=x+y", "x + y");
 		t("gg(a,b)=ff", "a + b");
-		assertEquals("ff(a, b)",
-				lookup("gg").getDefinition(StringTemplate.defaultTemplate));
+		assertEquals("ff(a, b)", lookup("gg").getDefinition(StringTemplate.defaultTemplate));
 	}
 
 	@Test
-	public void inequalityShouldNotHaveExtraBrackets() {
+	void inequalityShouldNotHaveExtraBrackets() {
 		t("r:4 < x < 5", "4 < x < 5");
 		t("a = 1", "1");
 		t("b = 2", "2");
@@ -422,31 +421,25 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void complexPowers() {
-		t("real((1+i)^(0..8))",
-				"{1, 1, 0, -2, -4, -4, 0, 8, 16}", StringTemplate.editTemplate);
-		t("imaginary((1+i)^(0..8))",
-				"{0, 1, 2, 2, 0, -4, -8, -8, 0}", StringTemplate.editTemplate);
+	void complexPowers() {
+		t("real((1+i)^(0..8))", "{1, 1, 0, -2, -4, -4, 0, 8, 16}", StringTemplate.editTemplate);
+		t("imaginary((1+i)^(0..8))", "{0, 1, 2, 2, 0, -4, -8, -8, 0}", StringTemplate.editTemplate);
 	}
 
 	@Test
-	public void complexTrigonometry() {
-		t("tan(atan(1+0.5i))", "1 + 0.5" + Unicode.IMAGINARY,
-				StringTemplate.editTemplate);
-		t("sin(asin(1+0.5i))", "1 + 0.5" + Unicode.IMAGINARY,
-				StringTemplate.editTemplate);
-		t("cos(acos(1+0.5i))", "1 + 0.5" + Unicode.IMAGINARY,
-				StringTemplate.editTemplate);
+	void complexTrigonometry() {
+		t("tan(atan(1+0.5i))", "1 + 0.5" + Unicode.IMAGINARY, StringTemplate.editTemplate);
+		t("sin(asin(1+0.5i))", "1 + 0.5" + Unicode.IMAGINARY, StringTemplate.editTemplate);
+		t("cos(acos(1+0.5i))", "1 + 0.5" + Unicode.IMAGINARY, StringTemplate.editTemplate);
 	}
 
 	@Test
-	public void complexExpIntegral() {
-		t("expIntegral(1+2i)", "1.04217 + 3.7015" + Unicode.IMAGINARY,
-				StringTemplate.editTemplate);
+	void complexExpIntegral() {
+		t("expIntegral(1+2i)", "1.04217 + 3.7015" + Unicode.IMAGINARY, StringTemplate.editTemplate);
 	}
 
 	@Test
-	public void complexAddition() {
+	void complexAddition() {
 		t("i-2i", "-" + Unicode.IMAGINARY);
 		t("-2i+3i", String.valueOf(Unicode.IMAGINARY));
 		t("i-3i", "-2" + Unicode.IMAGINARY);
@@ -456,13 +449,27 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
+	void complexRoots() {
+		t("sqrt(-25)+i", "6" + Unicode.IMAGINARY);
+		t("nroot(-64,4)+i", "2 + 3" + Unicode.IMAGINARY, StringTemplate.editTemplate);
+	}
+
+	@Test
+	void complexInverseTrig() {
+		t("asin(2)+i", "1.5708 - 0.31696" + Unicode.IMAGINARY, StringTemplate.editTemplate);
+		t("asind(2)+i", "1.5708 - 0.31696" + Unicode.IMAGINARY, StringTemplate.editTemplate);
+		t("acos(2)+i", "2.31696" + Unicode.IMAGINARY, StringTemplate.editTemplate);
+		t("acosd(2)+i", "2.31696" + Unicode.IMAGINARY, StringTemplate.editTemplate);
+	}
+
+	@Test
 	@Issue("APPS-6846")
-	public void inverseTrig() {
+	void inverseTrig() {
 		t("sin^-1(.5)", "30*" + Unicode.DEGREE_STRING);
 	}
 
 	@Test
-	public void powerWithNegativeFractionAsExponent() {
+	void powerWithNegativeFractionAsExponent() {
 		t("(-8)^(-(1/3))", "-0.5");
 		t("-8^(-1/3)", "-0.5");
 		t("-8^(-2/3)", "-0.25");
@@ -470,12 +477,12 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testAVShortIf() {
+	void testAVShortIf() {
 		t("3,5>x", "If[5 > x, 3]");
 	}
 
 	@Test
-	public void testSetDifference() {
+	void testSetDifference() {
 		t("{{1,2},{3}} \\ {{1,2}}", "{{3}}");
 		t("{{1,13-11},{3}} \\ {{1,7-5}}", "{{3}}");
 		t("{(1,2),(3,4)} \\ {(1,2)}", "{(3, 4)}");
@@ -483,15 +490,16 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void setDifferenceShouldWorkWithLabeledAndUnlabeled() {
-		t("m1={{\"a\",\"b\"},{\"c\",\"d\"},{\"a\",\"b\"}}",
+	void setDifferenceShouldWorkWithLabeledAndUnlabeled() {
+		t(
+				"m1={{\"a\",\"b\"},{\"c\",\"d\"},{\"a\",\"b\"}}",
 				"{{\"a\", \"b\"}, {\"c\", \"d\"}, {\"a\", \"b\"}}");
 		t("l1={\"a\",\"b\"}", "{\"a\", \"b\"}");
 		t("m1 \\ {l1}", "{{\"c\", \"d\"}}");
 	}
 
 	@Test
-	public void testEqualityCheck() {
+	void testEqualityCheck() {
 		// in common-jre this will only work correctly for polynomials
 		add("f(x)=x^3");
 		add("g(x)=-x^3");
@@ -502,7 +510,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testEqualityFunctionLine() {
+	void testEqualityFunctionLine() {
 		add("f(x)=3x+2");
 		add("g(x)=1");
 		add("ff:y=3x+2");
@@ -514,7 +522,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testEqualityOfIneqs() {
+	void testEqualityOfIneqs() {
 		assertAreEqual("x>1", "2x>2", true);
 		assertAreEqual("x>1", "2x<2", false);
 		assertAreEqual("x>1", "x>=1", false);
@@ -524,7 +532,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testEqualityOfIneqsNVar() {
+	void testEqualityOfIneqsNVar() {
 		assertAreEqual("x > y", "2y < 2x", true);
 		assertAreEqual("x > y", "2y <= 2x", false);
 		assertAreEqual("x > y", "2y > 2x", false);
@@ -535,78 +543,78 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void emptySetsShouldBeEqual() {
+	void emptySetsShouldBeEqual() {
 		assertAreEqual("0x + 0y > 0", "0x + 0y > 1", true);
 		assertAreEqual("x^2 + y^2 <= -1", "x^2 + y^2 < -2", true);
 	}
 
 	@Test
-	public void emptyAndFullSetsShouldDiffer() {
+	void emptyAndFullSetsShouldDiffer() {
 		assertAreEqual("0x + 0y > 0", "0x + 0y < 1", false);
 		assertAreEqual("0x + 0y >= 1", "0x + 0y < 1", false);
 		assertAreEqual("x^2 + y^2 <= -1", "x^2 + y^2 > -1", false);
 	}
 
 	@Test
-	public void fullSetsShouldBeEqual() {
+	void fullSetsShouldBeEqual() {
 		assertAreEqual("0x + 0y >= 0", "0x + 0y < 1", true);
 		assertAreEqual("0x + 0y >= 0", "0x + 0y <= 0", true);
 		assertAreEqual("x^2 + y^2 >= -1", "x^2 + y^2 > -2", true);
 	}
 
 	@Test
-	public void testEqualityOfIneqsUndefined() {
+	void testEqualityOfIneqsUndefined() {
 		assertAreEqual("x > y", "x^3 > y^3", "?");
 		// needs CAS
 		assertAreEqual("y > sin(x)", "y > sin(x + 2pi)", "?");
 	}
 
 	@Test
-	public void undefinedComparisonShouldReturnFalse() {
+	void undefinedComparisonShouldReturnFalse() {
 		t("a = 1", "1");
 		t("? < 1", "false");
 		t("? < a", "false");
 	}
 
 	@Test
-	public void undefinedComparisonInFunctionShouldBeUndefined() {
+	void undefinedComparisonInFunctionShouldBeUndefined() {
 		t("f(x) = If(x/abs(x)<0,1,2)", "If[x / abs(x) < 0, 1, 2]");
 		t("f(0)", "NaN");
 	}
 
 	@Test
-	public void sufficientPrecisionForMultiplication() {
+	void sufficientPrecisionForMultiplication() {
 		t("3 * 325.94", "977.82", StringTemplate.maxDecimals);
 		t("325.94 * 3", "977.82", StringTemplate.maxDecimals);
 	}
 
 	@Test
-	public void sufficientPrecisionForDivision() {
+	void sufficientPrecisionForDivision() {
 		t("490/0.035", "14000", StringTemplate.maxDecimals);
 		t("0.49/0.035", "14", StringTemplate.maxDecimals);
 	}
 
 	@Test
 	@Issue("APPS-5546")
-	public void sufficientPrecisionForAddition() {
+	void sufficientPrecisionForAddition() {
 		t("1295.1+42.37", "1337.47", StringTemplate.maxDecimals);
 		t("200 (1+((0.08)/(525600)))^(525600)", "216.657412215920838", StringTemplate.maxDecimals);
 	}
 
 	@Test
 	@Issue("APPS-5546")
-	public void sufficientPrecisionForSubtraction() {
+	void sufficientPrecisionForSubtraction() {
 		t("1295.1-42.37", "1252.73", StringTemplate.maxDecimals);
 	}
 
 	@Test
 	@Issue("APPS-5546")
-	public void sufficientPrecisionForPower() {
+	void sufficientPrecisionForPower() {
 		t("123456789.12^2-123456789^2-2*123456789*0.12", "0.0144", StringTemplate.maxDecimals);
 	}
 
 	@Test
-	public void numberAndBoolOperations() {
+	void numberAndBoolOperations() {
 		t("5 * true", "5");
 		t("true * 5", "5");
 		t("5 + true", "6");
@@ -618,7 +626,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testImpreciseForDivisionIncludingSlider() {
+	void testImpreciseForDivisionIncludingSlider() {
 		GeoNumeric a = add("a = 1");
 		a.setAVSliderOrCheckboxVisible(true);
 		a.initAlgebraSlider();
@@ -631,7 +639,7 @@ public class ArithmeticTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-7262")
-	public void testFloorPrecision() {
+	void testFloorPrecision() {
 		add("A1=3.15");
 		add("A2=floor(A1)");
 		add("B1=A1-A2");
@@ -640,13 +648,12 @@ public class ArithmeticTest extends BaseUnitTest {
 		add("A2=3");
 		assertEquals("1.5", lookup("B2").toValueString(StringTemplate.maxDecimals));
 		add("A2=floor(A1)");
-		assertEquals("1.5", lookup("B2")
-				.toValueString(StringTemplate.maxDecimals));
+		assertEquals("1.5", lookup("B2").toValueString(StringTemplate.maxDecimals));
 	}
 
 	@Test
 	@Issue("APPS-7262")
-	public void testMultiplicationPrecision() {
+	void testMultiplicationPrecision() {
 		add("A1=3.15");
 		add("A4=3");
 		add("B4=A1-A4");
@@ -657,27 +664,26 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void sufficientPrecisionForRepeatedMultiplication() {
+	void sufficientPrecisionForRepeatedMultiplication() {
 		t("a=1000/999", "1.001", StringTemplate.editTemplate);
 		t("a" + "*a".repeat(999), "2.71964221644285", StringTemplate.maxDecimals);
 	}
 
 	@Test
-	public void testPolarCoords() {
+	void testPolarCoords() {
 		add("a=1");
 		t("(1,1)+(a;pi)", "(0, 1)", StringTemplate.editTemplate);
-		t("(2;a*pi)+(0,0)", "(2; 180" + Unicode.DEGREE_STRING + ")",
-				StringTemplate.editTemplate);
+		t("(2;a*pi)+(0,0)", "(2; 180" + Unicode.DEGREE_STRING + ")", StringTemplate.editTemplate);
 	}
 
 	@Test
-	public void expandBracketsForImplicitCurve() {
+	void expandBracketsForImplicitCurve() {
 		add("s(x,y)=x+y");
 		t("s^3.2+3=0", "(x + y)^(3.2) + 3 = 0");
 	}
 
 	@Test
-	public void testMixedNumbers() {
+	void testMixedNumbers() {
 		t("2 " + Unicode.INVISIBLE_PLUS + "3 / 4 * 3", "8.25");
 		t("2 * 2" + Unicode.INVISIBLE_PLUS + "3 / 4", "5.5");
 		t("2 + 2" + Unicode.INVISIBLE_PLUS + "4 / 5", "4.8");
@@ -686,7 +692,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testRecurringDecimals() {
+	void testRecurringDecimals() {
 		t("1.23" + Unicode.OVERLINE + "4" + Unicode.OVERLINE, "1.2343434343434343");
 		t("1.3" + Unicode.OVERLINE + " / 0.5", "2.6666666666666665");
 		t("1.0" + Unicode.OVERLINE, "1");
@@ -695,7 +701,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testMultipleMinus() {
+	void testMultipleMinus() {
 		t("--2", "2");
 		t("-(-2)", "2");
 		t("--3--4", "7");
@@ -706,12 +712,12 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testMinusZero() {
+	void testMinusZero() {
 		t("x-0", "x - 0");
 	}
 
 	@Test
-	public void testFactorial() {
+	void testFactorial() {
 		t("0!", "1");
 		t("6!", "720");
 		t("?!", "NaN");
@@ -721,7 +727,7 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testGamma() {
+	void testGamma() {
 		t("gamma(5)", "24", StringTemplate.editTemplate);
 		t("gamma(-5)", "NaN");
 		t("gamma(-1/2)+2*sqrt(pi)", "0");
@@ -729,66 +735,65 @@ public class ArithmeticTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testInvalidImplicitCurve() {
+	void testInvalidImplicitCurve() {
 		t("x^3+y^3+z^3=1", "?");
 	}
 
 	@Test
-	public void multiplicationByScriptShouldNotCrash() {
+	void multiplicationByScriptShouldNotCrash() {
 		GeoElement text = add("\"prefix\"*SlowPlot(x)");
-		assertThat(text.toValueString(StringTemplate.latexTemplate),
-				equalTo("prefixSlowPlot(x)"));
-		assertThat(text.getDefinition(StringTemplate.defaultTemplate),
-				equalTo("\"prefix\" SlowPlot(x)"));
+		assertThat(text.toValueString(StringTemplate.latexTemplate), equalTo("prefixSlowPlot(x)"));
+		assertThat(
+				text.getDefinition(StringTemplate.defaultTemplate), equalTo("\"prefix\" SlowPlot(x)"));
 	}
 
 	@Test
-	public void xorShouldFail() {
+	void xorShouldFail() {
 		shouldFail("1" + Unicode.XOR + "2", "1 " + Unicode.XOR + " 2", getApp());
 	}
 
 	@Test
 	@Issue("APPS-5572")
-	public void dollarOpsShouldKeepLabel() {
+	void dollarOpsShouldKeepLabel() {
 		add("A1=7");
 		GeoElement nextRow = add("A2=A$1");
 		assertEquals("A2", nextRow.getLabelSimple());
 	}
 
 	@Test
-	public void implicationKeepsBrackets() {
+	void implicationKeepsBrackets() {
 		add("a=false");
 		add("b=false");
 		add("c=false");
 		GeoElement d = add("d=a->(b->c)");
 		assertThat(d, hasValue("true"));
-		assertThat(d.getDefinitionForEditor(), equalTo("d=a->(b->c)"
-				.replace("->", Unicode.IMPLIES + "")));
+		assertThat(
+				d.getDefinitionForEditor(), equalTo("d=a->(b->c)".replace("->", Unicode.IMPLIES + "")));
 		reload();
 		assertThat(lookup("d"), hasValue("true"));
 	}
 
 	@Test
-	public void vectorNotation() {
+	void vectorNotation() {
 		t("$vector(1,2)", "(1, 2)");
 		t("$vector(1,2,3)", "(1, 2, 3)");
 	}
 
 	@Test
 	@Issue("APPS-2492")
-	public void ifShouldBeFunctionNotCommand() {
+	void ifShouldBeFunctionNotCommand() {
 		add("r=RandomBetween(1,12)");
-		GeoFunctionNVar function = add(
-				"simo(x,a,b,c,k)=6*If(0<r<4,a,3<r<7,b,6<r+0a<10,c,9<r<13,k)");
+		GeoFunctionNVar function = add("simo(x,a,b,c,k)=6*If(0<r<4,a,3<r<7,b,6<r+0a<10,c,9<r<13,k)");
 		assertEquals("x, a, b, c, k", function.getVarString(StringTemplate.testTemplate));
 		add("SetValue(r, 1)");
-		assertEquals("6 * If((0 < 1 < 4), a, (3 < 1 < 7), b, (6 < 1 + 0 * a < 10), "
-				+ "c, (9 < 1 < 13), k)", function.toValueString(StringTemplate.testTemplate));
+		assertEquals(
+				"6 * If((0 < 1 < 4), a, (3 < 1 < 7), b, (6 < 1 + 0 * a < 10), " + "c, (9 < 1 < 13), k)",
+				function.toValueString(StringTemplate.testTemplate));
 	}
 
 	@Test
 	@Issue("APPS-2492")
-	public void ifShouldKeepAllVariables() {
+	void ifShouldKeepAllVariables() {
 		add("r=RandomBetween(1,12)");
 		GeoFunctionNVar function = add("simo(x,a,b,c,k)=6*If(0<r<4,a,3<r<7,b,6<r<10,c,9<r<13,k)");
 		assertEquals("x, a, b, c, k", function.getVarString(StringTemplate.testTemplate));
@@ -803,7 +808,7 @@ public class ArithmeticTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-2492")
-	public void shouldSwitchFunctionVariableName() {
+	void shouldSwitchFunctionVariableName() {
 		add("r=1");
 		GeoFunction g = add("g(t)=If(r==1,x+1,t-1)");
 		assertEquals("x + 1", g.toValueString(StringTemplate.testTemplate));

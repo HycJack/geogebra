@@ -16,42 +16,41 @@
 
 package org.geogebra.common.gui.view.spreadsheet;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.main.App;
 import org.geogebra.common.spreadsheet.core.TabularRange;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Spreadsheet table component (Classic).
  */
 public interface MyTable extends MyTableInterface {
 
-	public static final int TABLE_MODE_STANDARD = 0;
-	public static final int TABLE_MODE_AUTOFUNCTION = 1;
-	public static final int TABLE_MODE_DROP = 2;
+	int TABLE_MODE_STANDARD = 0;
+	int TABLE_MODE_AUTOFUNCTION = 1;
+	int TABLE_MODE_DROP = 2;
 
 	/**
 	 * Set table mode
 	 * @param mode one of TABLE_MODE_* constants
 	 */
-	public void setTableMode(int mode);
+	void setTableMode(int mode);
 
 	/**
 	 * @return the spreadsheet view
 	 */
-	public SpreadsheetViewInterface getView();
+	SpreadsheetViewInterface getView();
 
 	/**
 	 * @return copy, paste and cut provider
 	 */
-	public CopyPasteCut getCopyPasteCut();
+	CopyPasteCut getCopyPasteCut();
 
 	/**
 	 * Set cell selection.
 	 * @param targetRange new selection
 	 * @return if selection is valid
 	 */
-	public boolean setSelection(TabularRange targetRange);
+	boolean setSelection(TabularRange targetRange);
 
 	/**
 	 * Select given cell.
@@ -59,14 +58,17 @@ public interface MyTable extends MyTableInterface {
 	 * @param x column
 	 * @param extend whether to extend current selection
 	 */
-	public void changeSelection(int y, int x, boolean extend);
+	void changeSelection(int y, int x, boolean extend);
 
 	/**
 	 * @return table mode (one of TABLE_MODE_* constants)
 	 */
-	public int getTableMode();
+	int getTableMode();
 
-	default @CheckForNull TabularRange getFirstSelection() {
+	/**
+	 * @return first selected range, or null if nothing is selected
+	 */
+	default @Nullable TabularRange getFirstSelection() {
 		return getSelectedRanges().isEmpty() ? null : getSelectedRanges().get(0);
 	}
 
@@ -75,7 +77,6 @@ public interface MyTable extends MyTableInterface {
 	 * @return processor for spreadsheet tools
 	 */
 	default SpreadsheetToolProcessor getToolProcessor(App app) {
-		return new SpreadsheetToolProcessor(app,
-				app.getSpreadsheetTableModel().getCellFormat(this));
+		return new SpreadsheetToolProcessor(app, app.getSpreadsheetTableModel().getCellFormat(this));
 	}
 }

@@ -46,8 +46,7 @@ public abstract class CASgiacJre extends CASgiacB {
 	 * eg sin(x)&gt;0
 	 */
 	@Override
-	synchronized protected void callEvaluateFunction(EvalFunction evaluateFunction)
-			throws Throwable {
+	protected synchronized void callEvaluateFunction(EvalFunction evaluateFunction) throws Throwable {
 		if (useThread()) {
 			// send expression to CAS
 			Thread thread = new EvaluateThread(evaluateFunction);
@@ -72,21 +71,17 @@ public abstract class CASgiacJre extends CASgiacB {
 	protected abstract boolean useThread();
 
 	class EvaluateThread extends Thread {
-		private final Runnable evaluateFunction;
 
 		EvaluateThread(Runnable evaluateFunction) {
-			this.evaluateFunction = evaluateFunction;
-		}
-
-		@Override
-		public void run() {
-			try {
-				evaluateFunction.run();
-			} catch (Throwable t) {
-				Log.debug("problem from JNI Giac: " + t.toString());
-				// force error in GeoGebra
-				threadResult = FORCE_ERROR;
-			}
+			super(() -> {
+				try {
+					evaluateFunction.run();
+				} catch (Throwable t) {
+					Log.debug("problem from JNI Giac: " + t.toString());
+					// force error in GeoGebra
+					threadResult = FORCE_ERROR;
+				}
+			});
 		}
 	}
 }

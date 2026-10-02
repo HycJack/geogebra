@@ -16,11 +16,10 @@
 
 package org.geogebra.common.kernel.interval.node;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.interval.Interval;
 import org.geogebra.common.kernel.interval.operators.IntervalNodeEvaluator;
 import org.geogebra.common.plugin.Operation;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Interval arithmetic operations.
@@ -28,8 +27,8 @@ import org.geogebra.common.plugin.Operation;
 public enum IntervalOperation {
 	UNSUPPORTED {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator,
-				IntervalNode left, IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(left.value());
 		}
 
@@ -40,8 +39,8 @@ public enum IntervalOperation {
 	},
 	NO_OPERATION {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator,
-				IntervalNode left, IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return null;
 		}
 
@@ -52,8 +51,8 @@ public enum IntervalOperation {
 	},
 	ABS {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator,
-				IntervalNode left, IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.abs(left.value()));
 		}
 
@@ -64,8 +63,8 @@ public enum IntervalOperation {
 	},
 	ACOS {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator,
-				IntervalNode left, IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.acos(left.value()));
 		}
 
@@ -76,8 +75,8 @@ public enum IntervalOperation {
 	},
 	ASIN {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator,
-				IntervalNode left, IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.asin(left.value()));
 		}
 
@@ -88,8 +87,8 @@ public enum IntervalOperation {
 	},
 	ATAN {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator,
-				IntervalNode left, IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.atan(left.value()));
 		}
 
@@ -100,8 +99,8 @@ public enum IntervalOperation {
 	},
 	COS {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.cos(left.value()));
 		}
 
@@ -112,8 +111,8 @@ public enum IntervalOperation {
 	},
 	COSH {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.cosh(left.value()));
 		}
 
@@ -124,8 +123,8 @@ public enum IntervalOperation {
 	},
 	COT {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.cot(left.value()));
 		}
 
@@ -136,8 +135,8 @@ public enum IntervalOperation {
 	},
 	CSC {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.csc(left.value()));
 		}
 
@@ -148,10 +147,9 @@ public enum IntervalOperation {
 	},
 	DIVIDE {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
-			return toValue(evaluator.divide(left.value(),
-					right.value()));
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
+			return toValue(evaluator.divide(left.value(), right.value()));
 		}
 
 		@Override
@@ -161,8 +159,9 @@ public enum IntervalOperation {
 	},
 	EXP {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
+
 			return toValue(evaluator.exp(left.value()));
 		}
 
@@ -173,8 +172,8 @@ public enum IntervalOperation {
 	},
 	LOG {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.log(left.value()));
 		}
 
@@ -185,8 +184,8 @@ public enum IntervalOperation {
 	},
 	LOG2 {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.log2(left.value()));
 		}
 
@@ -197,8 +196,8 @@ public enum IntervalOperation {
 	},
 	LOG10 {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.log10(left.value()));
 		}
 
@@ -209,10 +208,9 @@ public enum IntervalOperation {
 	},
 	MINUS {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
-			return toValue(evaluator.minus(left.value(),
-					right.value()));
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
+			return toValue(evaluator.minus(left.value(), right.value()));
 		}
 
 		@Override
@@ -222,10 +220,9 @@ public enum IntervalOperation {
 	},
 	MULTIPLY {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
-			return toValue(evaluator.multiply(left.value(),
-					right.value()));
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
+			return toValue(evaluator.multiply(left.value(), right.value()));
 		}
 
 		@Override
@@ -235,10 +232,9 @@ public enum IntervalOperation {
 	},
 	NROOT {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
-			return toValue(evaluator.nthRoot(left.value(),
-					right.value()));
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
+			return toValue(evaluator.nthRoot(left.value(), right.value()));
 		}
 
 		@Override
@@ -248,10 +244,9 @@ public enum IntervalOperation {
 	},
 	PLUS {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
-			return toValue(evaluator.plus(left.value(),
-					right.value()));
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
+			return toValue(evaluator.plus(left.value(), right.value()));
 		}
 
 		@Override
@@ -261,8 +256,8 @@ public enum IntervalOperation {
 	},
 	POWER {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.handlePower(left.value(), right.value(), right));
 		}
 
@@ -274,8 +269,8 @@ public enum IntervalOperation {
 
 	LOGB {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.logBase(left.value(), right.value()));
 		}
 
@@ -287,8 +282,8 @@ public enum IntervalOperation {
 
 	SEC {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.sec(left.value()));
 		}
 
@@ -299,8 +294,8 @@ public enum IntervalOperation {
 	},
 	SIN {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.sin(left.value()));
 		}
 
@@ -311,8 +306,8 @@ public enum IntervalOperation {
 	},
 	SINH {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.sinh(left.value()));
 		}
 
@@ -323,8 +318,8 @@ public enum IntervalOperation {
 	},
 	SQRT {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.sqrt(left.value()));
 		}
 
@@ -335,8 +330,8 @@ public enum IntervalOperation {
 	},
 	TAN {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.tan(left.value()));
 		}
 
@@ -347,8 +342,8 @@ public enum IntervalOperation {
 	},
 	TANH {
 		@Override
-		public IntervalExpressionValue handle(IntervalNodeEvaluator evaluator, IntervalNode left,
-				IntervalNode right) {
+		public IntervalExpressionValue handle(
+				IntervalNodeEvaluator evaluator, IntervalNode left, IntervalNode right) {
 			return toValue(evaluator.tanh(left.value()));
 		}
 
@@ -365,15 +360,15 @@ public enum IntervalOperation {
 	 * @param right {@link IntervalNode} as operand.
 	 * @return the value of the operation.
 	 */
-	public abstract IntervalExpressionValue handle(IntervalNodeEvaluator evaluator,
-			@Nonnull IntervalNode left, IntervalNode right);
+	public abstract IntervalExpressionValue handle(
+			IntervalNodeEvaluator evaluator, @NonNull IntervalNode left, IntervalNode right);
 
 	/**
 	 * @return corresponding operation for <code>ExpressionValue</code>s
 	 */
 	public abstract Operation mappedOperation();
 
-	static IntervalExpressionValue toValue(@Nonnull Interval interval) {
+	static IntervalExpressionValue toValue(@NonNull Interval interval) {
 		return new IntervalFunctionValue(interval);
 	}
 }

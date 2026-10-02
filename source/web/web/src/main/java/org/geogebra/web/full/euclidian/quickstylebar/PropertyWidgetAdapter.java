@@ -20,16 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.IconsEnumeratedProperty;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.PropertySupplier;
-import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
+import org.geogebra.common.properties.PropertyView;
 import org.geogebra.common.properties.impl.facade.BooleanPropertyListFacade;
 import org.geogebra.common.properties.impl.facade.FlagListPropertyListFacade;
-import org.geogebra.common.properties.impl.facade.NamedEnumeratedPropertyListFacade;
 import org.geogebra.common.properties.impl.facade.RangePropertyListFacade;
+import org.geogebra.common.properties.impl.objects.FontProperty;
 import org.geogebra.web.full.euclidian.LabelSettingsPanel;
 import org.geogebra.web.full.euclidian.quickstylebar.components.BorderThicknessPanel;
 import org.geogebra.web.full.euclidian.quickstylebar.components.SliderWithProperty;
@@ -41,14 +40,14 @@ import org.geogebra.web.html5.gui.menu.AriaMenuItem;
 import org.geogebra.web.html5.main.AppW;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-public class PropertyWidgetAdapter {
+public final class PropertyWidgetAdapter {
 	private final AppW appW;
 	private final boolean closePopupOnAction;
 	private List<IconButton> enumeratedPropertyButtons;
 
 	/**
-	 * @param appW - application
-	 * @param closePopupOnAction - weather popup should be closed on element click
+	 * @param appW application
+	 * @param closePopupOnAction whether popup should be closed on element click
 	 */
 	public PropertyWidgetAdapter(AppW appW, boolean closePopupOnAction) {
 		this.appW = appW;
@@ -56,12 +55,14 @@ public class PropertyWidgetAdapter {
 	}
 
 	/**
-	 * @param iconProperty - property
-	 * @param uiUpdater - update dependent ui
+	 * @param iconProperty property
+	 * @param uiUpdater update dependent ui
 	 * @return panel holding list of icon buttons based on property
 	 */
-	public FlowPanel getIconListPanel(IconsEnumeratedProperty<?> iconProperty,
-			PropertySupplier propertySupplier, Consumer<Integer> uiUpdater) {
+	public FlowPanel getIconListPanel(
+			IconsEnumeratedProperty<?> iconProperty,
+			PropertySupplier propertySupplier,
+			Consumer<Integer> uiUpdater) {
 		enumeratedPropertyButtons = new ArrayList<>();
 		FlowPanel buttonListComponent = new FlowPanel();
 		buttonListComponent.addStyleName("buttonList");
@@ -71,7 +72,9 @@ public class PropertyWidgetAdapter {
 		for (int i = 0; i < icons.length; i++) {
 			int finalI = i;
 			String label = labels != null ? labels[i] : null;
-			IconButton enumeratedPropertyIconButton = new IconButton(appW, null,
+			IconButton enumeratedPropertyIconButton = new IconButton(
+					appW,
+					null,
 					((AppWFull) appW).getPropertiesIconResource().getImageResource(icons[i]),
 					label);
 			enumeratedPropertyIconButton.addFastClickHandler(source -> {
@@ -99,42 +102,42 @@ public class PropertyWidgetAdapter {
 	}
 
 	/**
-	 * @param property - cell border thickness property
+	 * @param property cell border thickness property
 	 * @return panel for line thickness ui
 	 */
-	public FlowPanel getBorderThicknessWidget(AbstractEnumeratedProperty<Integer> property) {
+	public FlowPanel getBorderThicknessWidget(IconsEnumeratedProperty<Integer> property) {
 		return new BorderThicknessPanel(property, appW);
 	}
 
 	/**
-	 * @param property - range property
-	 * @param geo - geo element
+	 * @param property range property
 	 * @return slider based on range property
 	 */
-	public SliderWithProperty getSliderWidget(RangePropertyListFacade<?> property,
-			PropertySupplier propertySupplier,
-			GeoElement geo) {
-		return new SliderWithProperty(appW, property, propertySupplier, geo.getLineType(),
-				geo.getObjectColor());
+	public SliderWithProperty getSliderWidget(
+			RangePropertyListFacade<?> property, PropertySupplier propertySupplier) {
+		return new SliderWithProperty(appW, property, propertySupplier);
 	}
 
 	/**
-	 * @param property - text font size property
-	 * @return menu based on text font size property
+	 * @param dropdown text font size dropdown
+	 * @return menu based on text font size dropdown
 	 */
-	public GPopupMenuW getMenuWidget(NamedEnumeratedPropertyListFacade<?, ?> property) {
+	public GPopupMenuW getMenuWidget(PropertyView.Dropdown dropdown) {
 		GPopupMenuW fontSizeMenu = new GPopupMenuW(appW);
-		int selectedFontIdx = property.getIndex();
-		for (int i = 0; i < property.getValueNames().length; i++) {
-			String menuItemText = property.getValueNames()[i];
+		Integer selectedFontIdx = dropdown.getSelectedItemIndex();
+		for (int i = 0; i < dropdown.getItems().size(); i++) {
+			String menuItemText = dropdown.getItems().get(i);
 			int finalI = i;
-			AriaMenuItem item = new AriaMenuItem(menuItemText, null,
-					() -> {
-				property.setIndex(finalI);
+			AriaMenuItem item = new AriaMenuItem(menuItemText, null, () -> {
+				dropdown.setSelectedItemIndex(finalI);
 				appW.closePopups();
-					});
-			if (selectedFontIdx == finalI) {
-				item.addStyleName("selectedItem");
+			});
+			FontProperty.FontFamily fontFamily = dropdown.getFontFamilies().get(i);
+			if (fontFamily != null) {
+				item.getElement().getStyle().setProperty("fontFamily", fontFamily.cssName());
+			}
+			if (selectedFontIdx != null && selectedFontIdx == finalI) {
+				item.addStyleName("selectedValue");
 			}
 			fontSizeMenu.addItem(item);
 		}
@@ -155,9 +158,9 @@ public class PropertyWidgetAdapter {
 	 * @param localization localization
 	 * @return checkbox component
 	 */
-	public ComponentCheckbox getCheckBox(BooleanPropertyListFacade<?> property,
-			Localization localization) {
-		return new ComponentCheckbox(localization, property.getValue(),
-				property.getName(), property::setValue);
+	public ComponentCheckbox getCheckBox(
+			BooleanPropertyListFacade<?> property, Localization localization) {
+		return new ComponentCheckbox(
+				localization, property.getValue(), property.getName(), property::setValue);
 	}
 }

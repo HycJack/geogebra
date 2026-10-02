@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,8 +16,9 @@
 
 package org.geogebra.test.euclidian.plot;
 
-import org.geogebra.common.kernel.interval.Interval;
-import org.geogebra.common.kernel.interval.IntervalConstants;
+import static org.geogebra.common.kernel.interval.IntervalSetOps.connected;
+
+import org.geogebra.common.kernel.interval.IntervalSetOps;
 import org.geogebra.common.kernel.interval.function.IntervalTuple;
 
 /**
@@ -36,7 +37,7 @@ public class Tuples {
 	 * @return the tuple created from its params.
 	 */
 	public static IntervalTuple normal(double xLow, double xHigh, double yLow, double yHigh) {
-		return new IntervalTuple(new Interval(xLow, xHigh), new Interval(yLow, yHigh));
+		return new IntervalTuple(connected(xLow, xHigh), connected(yLow, yHigh));
 	}
 
 	/**
@@ -50,9 +51,7 @@ public class Tuples {
 	 * @return the inverted tuple created from its params.
 	 */
 	public static IntervalTuple inverted(double xLow, double xHigh, double yLow, double yHigh) {
-		Interval y = new Interval(yLow, yHigh);
-		y.invert();
-		return new IntervalTuple(new Interval(xLow, xHigh), y);
+		return new IntervalTuple(connected(xLow, xHigh), IntervalSetOps.inverted(yLow, yHigh));
 	}
 
 	/**
@@ -64,6 +63,6 @@ public class Tuples {
 	 * @return the undefined tuple created from its params.
 	 */
 	public static IntervalTuple undefined(double xLow, double xHigh) {
-		return new IntervalTuple(new Interval(xLow, xHigh), IntervalConstants.undefined());
+		return new IntervalTuple(connected(xLow, xHigh), IntervalSetOps.empty());
 	}
 }

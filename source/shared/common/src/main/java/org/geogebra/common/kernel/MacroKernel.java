@@ -18,8 +18,6 @@ package org.geogebra.common.kernel;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.io.MyXMLHandler;
 import org.geogebra.common.io.XMLParseException;
 import org.geogebra.common.kernel.algos.AlgoDispatcher;
@@ -29,18 +27,19 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoDirectionND;
 import org.geogebra.common.kernel.kernelND.GeoPlaneND;
 import org.geogebra.common.main.MyError;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Kernel with its own construction for macros.
  */
 public class MacroKernel extends Kernel {
 
-	private final @Nonnull Kernel parentKernel;
-	private final @Nonnull MacroConstruction macroCons;
+	private final @NonNull Kernel parentKernel;
+	private final @NonNull MacroConstruction macroCons;
 
 	/**
 	 * Creates new kernel for macro
-	 * 
+	 *
 	 * @param parentKernel
 	 *            kernel of construction in which we want to use this macro
 	 */
@@ -113,7 +112,7 @@ public class MacroKernel extends Kernel {
 
 	/**
 	 * Sets macro construction of this kernel via XML string.
-	 * 
+	 *
 	 * @param xmlString
 	 *            XML representation of the construction
 	 *  @throws XMLParseException if the xml is invalid
@@ -189,8 +188,7 @@ public class MacroKernel extends Kernel {
 	}
 
 	@Override
-	public GeoElement createGeoElement(Construction cons1, String type)
-			throws MyError {
+	public GeoElement createGeoElement(Construction cons1, String type) throws MyError {
 		return parentKernel.createGeoElement(cons1, type);
 	}
 
@@ -253,9 +251,7 @@ public class MacroKernel extends Kernel {
 	}
 
 	@Override
-	public ConstructionCompanion createConstructionCompanion(
-			Construction cons1) {
+	public ConstructionCompanion createConstructionCompanion(Construction cons1) {
 		return parentKernel.createConstructionCompanion(cons1);
 	}
-
 }

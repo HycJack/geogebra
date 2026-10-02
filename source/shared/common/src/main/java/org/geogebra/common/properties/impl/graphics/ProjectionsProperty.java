@@ -24,14 +24,13 @@ import static org.geogebra.common.euclidian3D.EuclidianView3DInterface.PROJECTIO
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian3D.EuclidianView3DInterface;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.settings.EuclidianSettings3D;
 import org.geogebra.common.properties.IconsEnumeratedProperty;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.impl.AbstractNamedEnumeratedProperty;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This property controls the projection type for 3D view.
@@ -42,11 +41,11 @@ public class ProjectionsProperty extends AbstractNamedEnumeratedProperty<Integer
 	private final EuclidianView3DInterface view;
 	private final EuclidianSettings3D euclidianSettings;
 
-	private static final PropertyResource[] icons = new PropertyResource[]{
-			PropertyResource.ICON_PROJECTION_PARALLEL,
-			PropertyResource.ICON_PROJECTION_PERSPECTIVE,
-			PropertyResource.ICON_PROJECTION_GLASSES,
-			PropertyResource.ICON_PROJECTION_OBLIQUE
+	private static final PropertyResource[] icons = new PropertyResource[] {
+		PropertyResource.ICON_PROJECTION_PARALLEL,
+		PropertyResource.ICON_PROJECTION_PERSPECTIVE,
+		PropertyResource.ICON_PROJECTION_GLASSES,
+		PropertyResource.ICON_PROJECTION_OBLIQUE
 	};
 
 	/**
@@ -55,8 +54,10 @@ public class ProjectionsProperty extends AbstractNamedEnumeratedProperty<Integer
 	 * @param view euclidian view.
 	 * @param euclidianSettings euclidian settings.
 	 */
-	public ProjectionsProperty(Localization localization,
-			EuclidianView3DInterface view, EuclidianSettings3D euclidianSettings) {
+	public ProjectionsProperty(
+			Localization localization,
+			EuclidianView3DInterface view,
+			EuclidianSettings3D euclidianSettings) {
 		super(localization, "Projection");
 		this.view = view;
 		this.euclidianSettings = euclidianSettings;
@@ -64,8 +65,7 @@ public class ProjectionsProperty extends AbstractNamedEnumeratedProperty<Integer
 				entry(PROJECTION_ORTHOGRAPHIC, "stylebar.ParallelProjection"),
 				entry(PROJECTION_PERSPECTIVE, "stylebar.PerspectiveProjection"),
 				entry(PROJECTION_GLASSES, "stylebar.GlassesProjection"),
-				entry(PROJECTION_OBLIQUE, "stylebar.ObliqueProjection")
-		));
+				entry(PROJECTION_OBLIQUE, "stylebar.ObliqueProjection")));
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class ProjectionsProperty extends AbstractNamedEnumeratedProperty<Integer
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return null;
 	}
 

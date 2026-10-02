@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -60,7 +60,6 @@ public class MyImageD implements ImageD {
 	public MyImageD(Image img) {
 		this.img = img;
 		this.sb = null;
-
 	}
 
 	/**
@@ -98,7 +97,7 @@ public class MyImageD implements ImageD {
 			return StringUtil.convertToHex(md5hash);
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.debug(e);
 		}
 
 		Log.error("MD5 Error");
@@ -111,23 +110,23 @@ public class MyImageD implements ImageD {
 	 * @return SVG image
 	 */
 	public static MyImageD loadAsSvg(String filename) {
-		return loadAsSvg(MyImageD.class.getResourceAsStream(filename),
-				MyImageD.class.getResource(filename));
+		return loadAsSvg(
+				MyImageD.class.getResourceAsStream(filename), MyImageD.class.getResource(filename));
 	}
 
 	private static MyImageD loadAsSvg(InputStream in, URL url) {
 		StringBuilder svgSb = new StringBuilder();
 		try {
-			try (BufferedReader reader = new BufferedReader(
-					new InputStreamReader(in, StandardCharsets.UTF_8))) {
-				for (String line = reader
-						.readLine(); line != null; line = reader.readLine()) {
+			try (BufferedReader reader =
+					new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+				for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 					svgSb.append(line);
 					svgSb.append('\n');
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.debug("Failed loading for " + url);
+			Log.debug(e);
 		}
 
 		svgSb = new StringBuilder(ImageManager.fixSVG(svgSb.toString()));
@@ -141,12 +140,14 @@ public class MyImageD implements ImageD {
 	 */
 	public static MyImageD load(File imageFile) throws IOException {
 		if (StringUtil.toLowerCaseUS(imageFile.getName()).endsWith(".svg")) {
-			return loadAsSvg(Files.newInputStream(imageFile.toPath()), imageFile.toURI().toURL());
+			return loadAsSvg(
+					Files.newInputStream(imageFile.toPath()), imageFile.toURI().toURL());
 		} else {
 			return new MyImageD(ImageIO.read(imageFile));
 		}
 	}
 
+	@Override
 	public Image getImage() {
 		return img;
 	}
@@ -210,9 +211,8 @@ public class MyImageD implements ImageD {
 						+ "}{" + StringUtil.pngMarker
 						+ Base64.encodeToString(os.toByteArray(), false) + "}";
 			} catch (Exception e) {
-				e.printStackTrace();
+				Log.debug(e);
 			}
-
 		}
 
 		Log.error("problem converting image to base64");
@@ -225,8 +225,7 @@ public class MyImageD implements ImageD {
 	 * @return image
 	 * @throws IOException when I/O problem occurs
 	 */
-	public static MyImageD fromFile(File file, String fileName)
-			throws IOException {
+	public static MyImageD fromFile(File file, String fileName) throws IOException {
 
 		if (fileName.endsWith(".svg")) {
 			return new MyImageD(JSVGImageBuilder.fromFile(file));
@@ -252,6 +251,7 @@ public class MyImageD implements ImageD {
 	 * @param x x-coordinate
 	 * @param y y-coordinate
 	 */
+	@Override
 	public void render(Graphics2D impl, int x, int y) {
 		if (isSVG()) {
 			renderSvg(impl, x, y);
@@ -282,14 +282,13 @@ public class MyImageD implements ImageD {
 	 * @param dy
 	 *            dest rect min y
 	 */
-	public void render(Graphics2D impl, int sx, int sy, int sw, int sh, int dx, int dy, int dw,
-			int dh) {
+	@Override
+	public void render(
+			Graphics2D impl, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh) {
 		if (isSVG()) {
 			renderSvg(impl, dx, dy);
 		} else {
-			impl.drawImage(
-					img, dx, dy, dx + dw, dy + dh,
-					sx, sy, sx + sw, sy + sh, null);
+			impl.drawImage(img, dx, dy, dx + dw, dy + dh, sx, sy, sx + sw, sy + sh, null);
 		}
 	}
 }

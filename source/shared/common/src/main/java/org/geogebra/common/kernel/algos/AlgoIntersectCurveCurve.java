@@ -34,15 +34,14 @@ import org.geogebra.common.util.debug.Log;
 
 /**
  * Algo for intersection of a curve with a curve
- * 
+ *
  * either uses CAS Solve[] to get all points, or NSolve for one
- * 
+ *
  * adapted from AlgoIntersectLineCurve
- * 
+ *
  * @author Michael
  */
-public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
-		implements UsesCAS {
+public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve implements UsesCAS {
 
 	private GeoCurveCartesianND curve2;
 	private GeoNumberValue t1;
@@ -53,7 +52,7 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 
 	/**
 	 * common constructor
-	 * 
+	 *
 	 * @param c
 	 *            Construction
 	 * @param labels
@@ -63,8 +62,8 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 	 * @param c2
 	 *            curve 2
 	 */
-	public AlgoIntersectCurveCurve(Construction c, String[] labels,
-			GeoCurveCartesianND c1, GeoCurveCartesianND c2) {
+	public AlgoIntersectCurveCurve(
+			Construction c, String[] labels, GeoCurveCartesianND c1, GeoCurveCartesianND c2) {
 
 		super(c);
 
@@ -99,8 +98,12 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 	 * @param t2
 	 *            path parameter to start iteration from
 	 */
-	public AlgoIntersectCurveCurve(Construction c, String[] labels,
-			GeoCurveCartesianND c1, GeoCurveCartesianND c2, GeoNumberValue t1,
+	public AlgoIntersectCurveCurve(
+			Construction c,
+			String[] labels,
+			GeoCurveCartesianND c1,
+			GeoCurveCartesianND c2,
+			GeoNumberValue t1,
 			GeoNumberValue t2) {
 
 		super(c);
@@ -162,21 +165,20 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 			Function funy1 = curve.getFun(1);
 			Function funy2 = curve2.getFun(1);
 
-			ExpressionNode enx1 = funx1.getExpression();
-			ExpressionNode eny1 = funy1.getExpression();
-			ExpressionNode enx2 = funx2.getExpression();
-			ExpressionNode eny2 = funy2.getExpression();
-
-			FunctionVariable fVarx1 = funx1.getFunctionVariable();
-			FunctionVariable fVarx2 = funx2.getFunctionVariable();
-			FunctionVariable fVary1 = funy1.getFunctionVariable();
-			FunctionVariable fVary2 = funy2.getFunctionVariable();
-
 			// Jacobian matrix
 			// partial derivative of eg enx2 wrt
 			// curve.getFunX().getFunctionVariable() is zero, so ignore
+			ExpressionNode enx1 = funx1.getExpression();
+			ExpressionNode enx2 = funx2.getExpression();
+			FunctionVariable fVarx1 = funx1.getFunctionVariable();
+			FunctionVariable fVarx2 = funx2.getFunctionVariable();
 			ExpressionNode j00 = enx1.derivative(fVarx1, kernel);
 			ExpressionNode minusj10 = enx2.derivative(fVarx2, kernel);
+
+			ExpressionNode eny1 = funy1.getExpression();
+			ExpressionNode eny2 = funy2.getExpression();
+			FunctionVariable fVary1 = funy1.getFunctionVariable();
+			FunctionVariable fVary2 = funy2.getFunctionVariable();
 			ExpressionNode j01 = eny1.derivative(fVary1, kernel);
 			ExpressionNode minusj11 = eny2.derivative(fVary2, kernel);
 
@@ -193,8 +195,7 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 
 			double EPS = 1e-15;
 
-			while (count < maxCount
-					&& (Math.abs(x0 - x1) > EPS || Math.abs(y0 - y1) > EPS)) {
+			while (count < maxCount && (Math.abs(x0 - x1) > EPS || Math.abs(y0 - y1) > EPS)) {
 
 				count++;
 				x0 = x1;
@@ -243,10 +244,8 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 			// use CAS Solver
 			// works well for polynomials to get all roots
 
-			String fv1 = curve.getFun(0).getFunctionVariable()
-					.toString(StringTemplate.defaultTemplate);
-			String fv2 = curve2.getFun(1).getFunctionVariable()
-					.toString(StringTemplate.defaultTemplate);
+			String fv1 = curve.getFun(0).getFunctionVariable().toString(StringTemplate.defaultTemplate);
+			String fv2 = curve2.getFun(1).getFunctionVariable().toString(StringTemplate.defaultTemplate);
 
 			// toString() returns with variables in
 			// for most cases, toValueString() with values substituted is better
@@ -260,10 +259,8 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 			String[] c1 = new String[dim];
 			String[] c2 = new String[dim];
 			for (int i = 0; i < dim; i++) {
-				c1[i] = curve.getFun(i).toValueString(
-						StringTemplate.fullFigures(StringType.GEOGEBRA_XML));
-				c2[i] = curve2.getFun(i).toValueString(
-						StringTemplate.fullFigures(StringType.GEOGEBRA_XML));
+				c1[i] = curve.getFun(i).toValueString(StringTemplate.fullFigures(StringType.GEOGEBRA_XML));
+				c2[i] = curve2.getFun(i).toValueString(StringTemplate.fullFigures(StringType.GEOGEBRA_XML));
 			}
 
 			// it's likely that both curves have parameter 't'
@@ -292,7 +289,7 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 
 			// Log.debug(sb.toString());
 
-			String result = "";
+			String result;
 			try {
 				result = kernel.evaluateGeoGebraCAS(sb.toString(), null);
 			} catch (Throwable e) {
@@ -324,26 +321,19 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 					index++;
 
 					// eg t=3/2
-					String s1 = result.substring(currentBrace + 1, nextComma)
-							.replaceAll(" ", "");
+					String s1 = result.substring(currentBrace + 1, nextComma).replaceAll(" ", "");
 					// eg t2=1/2
-					String s2 = result.substring(nextComma + 1, nextCloseBrace)
-							.replaceAll(" ", "");
+					String s2 = result.substring(nextComma + 1, nextCloseBrace).replaceAll(" ", "");
 
 					if (s1.startsWith(fv1 + "=") && s2.startsWith(fv2 + "=")) {
-						double p1 = ap.evaluateToDouble(
-								s1.substring(fv1.length() + 1), true, null);
-						double p2 = ap.evaluateToDouble(
-								s2.substring(fv2.length() + 1), true, null);
+						double p1 = ap.evaluateToDouble(s1.substring(fv1.length() + 1), true, null);
+						double p2 = ap.evaluateToDouble(s2.substring(fv2.length() + 1), true, null);
 
 						checkPointInRange(p1, p2, point);
 
-					} else if (s1.startsWith(fv2 + "=")
-							&& s2.startsWith(fv1 + "=")) {
-						double p2 = ap.evaluateToDouble(
-								s1.substring(fv2.length() + 1), true, null);
-						double p1 = ap.evaluateToDouble(
-								s2.substring(fv1.length() + 1), true, null);
+					} else if (s1.startsWith(fv2 + "=") && s2.startsWith(fv1 + "=")) {
+						double p2 = ap.evaluateToDouble(s1.substring(fv2.length() + 1), true, null);
+						double p1 = ap.evaluateToDouble(s2.substring(fv1.length() + 1), true, null);
 
 						checkPointInRange(p1, p2, point);
 
@@ -397,15 +387,16 @@ public class AlgoIntersectCurveCurve extends AlgoIntersectCoordSysCurve
 	}
 
 	@Override
-	final public String toString(StringTemplate tpl) {
-		return getLoc().getPlainDefault("IntersectionOfAandB",
-				"Intersection of %0 and %1",
-				curve.getLabel(tpl),
-				curve2.getLabel(tpl));
+	public final String toString(StringTemplate tpl) {
+		return getLoc()
+				.getPlainDefault(
+						"IntersectionOfAandB",
+						"Intersection of %0 and %1",
+						curve.getLabel(tpl),
+						curve2.getLabel(tpl));
 	}
 
 	protected boolean onCurve2(GeoPointND point, double param) {
 		return DoubleUtil.isEqual(curve2.getFun(2).value(param), point.getInhomZ());
 	}
-
 }

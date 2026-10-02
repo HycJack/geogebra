@@ -18,26 +18,45 @@ package org.geogebra.common.spreadsheet.core;
 
 import java.util.Objects;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A (relative or absolute) spreadsheet cell or cell range reference.
  *
  * @apiNote Row and column indexes are 0-based.
  */
-final class SpreadsheetReference {
+public final class SpreadsheetReference {
 
-	final @Nonnull SpreadsheetCellReference fromCell;
-	final @CheckForNull SpreadsheetCellReference toCell;
+	public final @NonNull SpreadsheetCellReference fromCell;
+	public final @Nullable SpreadsheetCellReference toCell;
 
-	SpreadsheetReference(@Nonnull SpreadsheetCellReference fromCell,
-			@CheckForNull SpreadsheetCellReference toCell) {
+	/**
+	 * Null-safe factory.
+	 * @param range A range, possibly {@code null}.
+	 * @return A spreadsheet reference, or {@code null} if {@code range} is null.
+	 */
+	public static @Nullable SpreadsheetReference fromRange(@Nullable TabularRange range) {
+		return range != null ? new SpreadsheetReference(range) : null;
+	}
+
+	SpreadsheetReference(
+			@NonNull SpreadsheetCellReference fromCell, @Nullable SpreadsheetCellReference toCell) {
 		this.fromCell = fromCell;
 		this.toCell = toCell;
 	}
 
-	boolean isSingleCell() {
+	SpreadsheetReference(@NonNull TabularRange range) {
+		this.fromCell = new SpreadsheetCellReference(range.getMinRow(), range.getMinColumn());
+		this.toCell = range.isSingleCell()
+				? null
+				: new SpreadsheetCellReference(range.getMaxRow(), range.getMaxColumn());
+	}
+
+	/**
+	 * @return {@code true} if references a single cell only
+	 */
+	public boolean isSingleCell() {
 		return !isRange();
 	}
 
@@ -45,7 +64,7 @@ final class SpreadsheetReference {
 		return toCell != null;
 	}
 
-	boolean equalsIgnoringAbsolute(@CheckForNull SpreadsheetReference other) {
+	boolean equalsIgnoringAbsolute(@Nullable SpreadsheetReference other) {
 		if (other == null) {
 			return false;
 		}
@@ -60,27 +79,29 @@ final class SpreadsheetReference {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(fromCell.toString());
-		if (toCell != null) {
-			sb.append(":");
-			sb.append(toCell.toString());
-		}
-		return sb.toString();
+		return toCell == null ? fromCell.toString() : fromCell + ":" + toCell;
 	}
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof SpreadsheetReference)) {
+		if (!(object instanceof SpreadsheetReference other)) {
 			return false;
 		}
-		SpreadsheetReference other = (SpreadsheetReference) object;
-		return Objects.equals(fromCell, other.fromCell)
-				&& Objects.equals(toCell, other.toCell);
+		return Objects.equals(fromCell, other.fromCell) && Objects.equals(toCell, other.toCell);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(fromCell, toCell);
+	}
+
+	/**
+	 * @return row count, or -1 if toCell is null
+	 */
+	public long cellCount() {
+		if (toCell == null) {
+			return -1;
+		}
+		return toCell.rowIndex - fromCell.rowIndex;
 	}
 }

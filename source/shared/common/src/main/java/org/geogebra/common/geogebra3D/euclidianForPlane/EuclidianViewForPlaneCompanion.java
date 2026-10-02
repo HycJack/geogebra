@@ -48,13 +48,12 @@ import org.geogebra.common.kernel.matrix.CoordMatrix;
 import org.geogebra.common.kernel.matrix.CoordMatrix4x4;
 import org.geogebra.common.kernel.matrix.CoordSys;
 import org.geogebra.common.kernel.matrix.Coords;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.EuclidianSettings;
 import org.geogebra.common.util.debug.Log;
 
 /**
  * Companion for view for plane specific stuff
- * 
+ *
  * @author mathieu
  *
  */
@@ -65,7 +64,7 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 	private CoordMatrix4x4 transform;
 
 	private boolean initViewJustCreated = false;
-	private Coords tmpCoords = new Coords(4);
+	private final Coords tmpCoords = new Coords(4);
 
 	private CoordMatrix4x4 planeMatrix;
 	private CoordMatrix4x4 transformedMatrix;
@@ -80,7 +79,7 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 
 	/**
 	 * constructor
-	 * 
+	 *
 	 * @param view
 	 *            view attached
 	 */
@@ -107,12 +106,11 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 			updateCenterAndOrientationRegardingView();
 			updateScaleRegardingView();
 		}
-
 	}
 
 	/**
 	 * set the plane creator
-	 * 
+	 *
 	 * @param plane
 	 *            plane creator
 	 */
@@ -132,19 +130,16 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 	 */
 	public void updateScaleRegardingView() {
 
-		double newScale = view.getApplication().getEuclidianView3D()
-				.getXscale();
+		double newScale = view.getApplication().getEuclidianView3D().getXscale();
 		double w = view.getWidth() / 2.0;
 		double h = view.getHeight() / 2.0;
 		double dx = (w - view.getXZero()) * newScale / view.getXscale();
 		double dy = (h - view.getYZero()) * newScale / view.getYscale();
 
 		setCoordSystem(w - dx, h - dy, newScale, newScale);
-
 	}
 
-	private void setCoordSystem(double xZero, double yZero, double xscale,
-			double yscale) {
+	private void setCoordSystem(double xZero, double yZero, double xscale, double yscale) {
 		view.setCoordSystem(xZero, yZero, xscale, yscale);
 	}
 
@@ -170,12 +165,10 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 		setTransformRegardingView();
 		updateMatrix();
 
-		EuclidianView3DInterface view3D = view.getApplication()
-				.getEuclidianView3D();
+		EuclidianView3DInterface view3D = view.getApplication().getEuclidianView3D();
 
 		// coords of the bounding box center in the 3D view
-		Coords c = new Coords(-view3D.getXZero(), -view3D.getYZero(),
-				-view3D.getZZero(), 1);
+		Coords c = new Coords(-view3D.getXZero(), -view3D.getYZero(), -view3D.getZZero(), 1);
 
 		// project it in this view coord sys
 		c.projectPlaneInPlaneCoords(getMatrix(), tmpCoords);
@@ -184,17 +177,17 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 		int x = view.toScreenCoordX(tmpCoords.getX());
 		int y = view.toScreenCoordY(tmpCoords.getY());
 
-		setCoordSystem(view.getWidth() / 2d - x + view.getXZero(),
-				view.getHeight() / 2d - y + view.getYZero(), view.getXscale(),
+		setCoordSystem(
+				view.getWidth() / 2d - x + view.getXZero(),
+				view.getHeight() / 2d - y + view.getYZero(),
+				view.getXscale(),
 				view.getYscale());
-
 	}
 
 	@Override
 	public CoordMatrix getMatrix() {
 
 		return transformedMatrix;
-
 	}
 
 	@Override
@@ -243,16 +236,15 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 		// }
 
 		inverseTransformedMatrix = transformedMatrix.inverse();
-
 	}
 
 	@Override
 	public void setTransformRegardingView() {
 		// TODO allow this even when 3d not inited
-		Coords directionView3D = ((EuclidianView3D) view.getApplication()
-				.getEuclidianView3D()).getViewDirection();
-		CoordMatrix toScreenMatrix = ((EuclidianView3D) view.getApplication()
-				.getEuclidianView3D()).getToScreenMatrix();
+		Coords directionView3D =
+				((EuclidianView3D) view.getApplication().getEuclidianView3D()).getViewDirection();
+		CoordMatrix toScreenMatrix =
+				((EuclidianView3D) view.getApplication().getEuclidianView3D()).getToScreenMatrix();
 
 		// front or back view
 		double p = plane.getCoordSys().getNormal().dotproduct(directionView3D);
@@ -310,7 +302,6 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 		} else if (transformRotate == 180) {
 			transform = CoordMatrix4x4.MIRROR_O.mul(transform);
 		}
-
 	}
 
 	@Override
@@ -325,7 +316,8 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 		view.startXML(sbxml, asPreference);
 
 		// transform
-		sbxml.startTag("transformForPlane")
+		sbxml
+				.startTag("transformForPlane")
 				.attr("mirror", transformMirror == -1)
 				.attr("rotate", transformRotate)
 				.endTag();
@@ -334,10 +326,9 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 	}
 
 	@Override
-	public void settingsChanged(AbstractSettings settings) {
-
+	public void settingsChanged(EuclidianSettings settings) {
 		super.settingsChanged(settings);
-
+		assert settings instanceof EuclidianSettingsForPlane;
 		EuclidianSettingsForPlane evs = (EuclidianSettingsForPlane) settings;
 
 		// transform
@@ -352,7 +343,6 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 
 		settingsFromLoadFile = evs.isFromLoadFile();
 		evs.setFromLoadFile(false);
-
 	}
 
 	@Override
@@ -376,44 +366,42 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 
 		// prevent not implemented type to be displayed (TODO remove)
 		switch (geo.getGeoClassType()) {
-		case POINT:
-		case POINT3D:
-		case SEGMENT:
-		case SEGMENT3D:
-		case LINE:
-		case LINE3D:
-		case RAY:
-		case RAY3D:
-		case VECTOR:
-		case VECTOR3D:
-		case POLYGON:
-		case POLYGON3D:
-		case POLYLINE:
-		case POLYLINE3D:
-		case CONIC:
-		case CONIC3D:
-		case CONICSECTION:
-		case CONICPART:
-		case ANGLE3D:
-		case TEXT:
-		case LOCUS:
-		case IMPLICIT_POLY:
-		case CURVE_CARTESIAN:
-		case CURVE_CARTESIAN3D:
-		case LIST:
-			return geo.isVisibleInViewForPlane();
-		case FUNCTION:
-			return !((GeoFunction) geo).isBooleanFunction()
-					&& geo.isVisibleInViewForPlane();
-		case ANGLE:
-			if (geo.isIndependent()) { // no slider in view for plane (for now)
+			case POINT:
+			case POINT3D:
+			case SEGMENT:
+			case SEGMENT3D:
+			case LINE:
+			case LINE3D:
+			case RAY:
+			case RAY3D:
+			case VECTOR:
+			case VECTOR3D:
+			case POLYGON:
+			case POLYGON3D:
+			case POLYLINE:
+			case POLYLINE3D:
+			case CONIC:
+			case CONIC3D:
+			case CONICSECTION:
+			case CONICPART:
+			case ANGLE3D:
+			case TEXT:
+			case LOCUS:
+			case IMPLICIT_POLY:
+			case CURVE_CARTESIAN:
+			case CURVE_CARTESIAN3D:
+			case LIST:
+				return geo.isVisibleInViewForPlane();
+			case FUNCTION:
+				return !((GeoFunction) geo).isBooleanFunction() && geo.isVisibleInViewForPlane();
+			case ANGLE:
+				if (geo.isIndependent()) { // no slider in view for plane (for now)
+					return false;
+				}
+				return geo.isVisibleInViewForPlane();
+			default:
 				return false;
-			}
-			return geo.isVisibleInViewForPlane();
-		default:
-			return false;
 		}
-
 	}
 
 	@Override
@@ -447,11 +435,13 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 		}
 
 		if (plane instanceof GeoPlaneND) {
-			return view.getApplication().getLocalization().getPlain("PlaneA",
-					plane.getLabel(StringTemplate.defaultTemplate));
+			return view.getApplication()
+					.getLocalization()
+					.getPlain("PlaneA", plane.getLabel(StringTemplate.defaultTemplate));
 		}
-		return view.getApplication().getLocalization().getPlain("PlaneFromA",
-				plane.getLabel(StringTemplate.defaultTemplate));
+		return view.getApplication()
+				.getLocalization()
+				.getPlain("PlaneFromA", plane.getLabel(StringTemplate.defaultTemplate));
 	}
 
 	@Override
@@ -460,7 +450,6 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 			return (GeoPlaneND) plane;
 		}
 		return view.getKernel().getManager3D().plane3D(plane);
-
 	}
 
 	@Override
@@ -475,7 +464,7 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 	}
 
 	/**
-	 * 
+	 *
 	 * @param clockwise
 	 *            input orientation
 	 * @return clockwise (resp. not(clockwise)) if clockwise is displayed as it
@@ -549,8 +538,8 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 
 	@Override
 	public boolean showGrid(boolean show) {
-		EuclidianSettings settings = view.getApplication().getSettings()
-				.getEuclidianForPlane(getFromPlaneString());
+		EuclidianSettings settings =
+				view.getApplication().getSettings().getEuclidianForPlane(getFromPlaneString());
 		if (settings != null) {
 			settings.setShowGridSetting(show);
 		}
@@ -559,7 +548,7 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 
 	/**
 	 * set the dock panel of the view
-	 * 
+	 *
 	 * @param panel
 	 *            dock panel containing
 	 */
@@ -569,7 +558,7 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if the panel is visible
 	 */
 	public boolean isPanelVisible() {
@@ -589,7 +578,6 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 		removeFromGuiAndKernel();
 		((App3DCompanion) view.getApplication().getCompanion())
 				.removeEuclidianViewForPlaneFromList(this);
-
 	}
 
 	/**
@@ -597,33 +585,28 @@ public class EuclidianViewForPlaneCompanion extends EuclidianViewFor3DCompanion
 	 */
 	public void removeFromGuiAndKernel() {
 		panel.closePanel();
-		view.getApplication().getGuiManager().getLayout().getDockManager()
-				.unRegisterPanel(panel);
+		view.getApplication().getGuiManager().getLayout().getDockManager().unRegisterPanel(panel);
 		view.getKernel().detach(view);
 	}
 
 	/**
 	 * update all drawables
-	 * 
+	 *
 	 * @param repaint
 	 *            says if repaint is needed
 	 */
 	@Override
 	public void updateAllDrawables(boolean repaint) {
 		view.updateAllDrawables(repaint);
-
 	}
 
 	@Override
 	public DrawableND newDrawParametricCurve(ParametricCurve geo) {
-		return new DrawParametricCurve(view,
-				new CurveEvaluableForPlane(geo, this));
+		return new DrawParametricCurve(view, new CurveEvaluableForPlane(geo, this));
 	}
 
 	@Override
 	public boolean isInPlane(CoordSys sys) {
-		return sys == null || sys.getEquationVector()
-				.isEqual(plane.getCoordSys().getEquationVector());
+		return sys == null || sys.getEquationVector().isEqual(plane.getCoordSys().getEquationVector());
 	}
-
 }

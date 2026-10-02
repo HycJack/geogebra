@@ -16,12 +16,15 @@
 
 package org.geogebra.common.geogebra3D.euclidian3D.openGL;
 
+import org.geogebra.common.awt.annotations.HasNativeSubclass;
+
 /**
  * factory for GL stuff
- * 
+ *
  * @author mathieu
  *
  */
+@HasNativeSubclass
 public abstract class GLFactory {
 
 	/**
@@ -51,15 +54,14 @@ public abstract class GLFactory {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return new float buffer
 	 */
-	abstract public GLBuffer newBuffer();
+	public abstract GLBuffer newBuffer();
 
 	/**
-	 * 
+	 *
 	 * @return new short buffer for indices
 	 */
-	abstract public GLBufferIndices newBufferIndices();
-
+	public abstract GLBufferIndices newBufferIndices();
 }

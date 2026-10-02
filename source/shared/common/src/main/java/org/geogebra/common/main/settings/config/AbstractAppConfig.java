@@ -16,10 +16,8 @@
 
 package org.geogebra.common.main.settings.config;
 
+import java.util.List;
 import java.util.Set;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
@@ -30,107 +28,115 @@ import org.geogebra.common.main.App;
 import org.geogebra.common.main.AppConfig;
 import org.geogebra.common.main.settings.config.equationforms.DefaultEquationBehaviour;
 import org.geogebra.common.main.settings.updater.SettingsUpdater;
+import org.geogebra.common.properties.remembered.RememberedPropertyHandler;
 import org.geogebra.common.restrictions.FeatureRestriction;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 abstract class AbstractAppConfig implements AppConfig {
 
-    private String appCode;
-    private SuiteSubApp subAppCode;
-    protected transient CommandFilter commandFilter;
-    protected transient EquationBehaviour equationBehaviour;
-    private transient ExpressionFilter expressionFilter;
+	private String appCode;
+	private SuiteSubApp subAppCode;
+	protected transient CommandFilter commandFilter;
+	protected transient EquationBehaviour equationBehaviour;
+	private transient ExpressionFilter expressionFilter;
 
-    AbstractAppConfig(String appCode) {
-        this(appCode, null);
-    }
+	AbstractAppConfig(String appCode) {
+		this(appCode, null);
+	}
 
-    AbstractAppConfig(String appCode, String subAppCode) {
-        this.appCode = appCode;
-        this.subAppCode = SuiteSubApp.forCode(subAppCode);
-        initializeEquationBehaviour();
-    }
-
-    @Override
-    public String getAppCode() {
-        return appCode;
-    }
+	AbstractAppConfig(String appCode, String subAppCode) {
+		this.appCode = appCode;
+		this.subAppCode = SuiteSubApp.forCode(subAppCode);
+		initializeEquationBehaviour();
+	}
 
 	@Override
-	public @CheckForNull String getSubAppCode() {
-        return subAppCode == null ? null : subAppCode.appCode;
-    }
+	public String getAppCode() {
+		return appCode;
+	}
 
 	@Override
-	public @CheckForNull SuiteSubApp getSubApp() {
-        return subAppCode;
-    }
+	public @Nullable String getSubAppCode() {
+		return subAppCode == null ? null : subAppCode.appCode;
+	}
 
 	@Override
-	public final @Nonnull EquationBehaviour getEquationBehaviour() {
-        if (equationBehaviour == null) {
-            initializeEquationBehaviour();
-        }
-        return equationBehaviour;
-    }
+	public @Nullable SuiteSubApp getSubApp() {
+		return subAppCode;
+	}
 
-    @Override
-    public void initializeEquationBehaviour() {
-        equationBehaviour = new DefaultEquationBehaviour();
-    }
+	@Override
+	public final @NonNull EquationBehaviour getEquationBehaviour() {
+		if (equationBehaviour == null) {
+			initializeEquationBehaviour();
+		}
+		return equationBehaviour;
+	}
 
-    @Override
-    public SettingsUpdater createSettingsUpdater() {
-        return new SettingsUpdater();
-    }
+	@Override
+	public void initializeEquationBehaviour() {
+		equationBehaviour = new DefaultEquationBehaviour();
+	}
 
-    @Override
-    public String getAppTransKey() {
-        if (getSubAppCode() != null) {
-            return  GeoGebraConstants.Version.SUITE.getTransKey();
-        }
-        return getVersion().getTransKey();
-    }
+	@Override
+	public SettingsUpdater createSettingsUpdater() {
+		return new SettingsUpdater();
+	}
 
-    @Override
-    public int getMainGraphicsViewId() {
-        return App.VIEW_EUCLIDIAN;
-    }
+	@Override
+	public String getAppTransKey() {
+		if (getSubAppCode() != null) {
+			return GeoGebraConstants.Version.SUITE.getTransKey();
+		}
+		return getVersion().getTransKey();
+	}
+
+	@Override
+	public int getMainGraphicsViewId() {
+		return App.VIEW_EUCLIDIAN;
+	}
 
 	@Override
 	public boolean hasOneVarStatistics() {
 		return true;
 	}
 
-    @Override
-    public CommandFilter getCommandFilter() {
-        if (commandFilter == null) {
-            commandFilter = createCommandFilter();
-        }
-        return commandFilter;
-    }
+	@Override
+	public CommandFilter getCommandFilter() {
+		if (commandFilter == null) {
+			commandFilter = createCommandFilter();
+		}
+		return commandFilter;
+	}
 
-    @Override
-    public boolean hasDataImport() {
-        return true;
-    }
+	@Override
+	public boolean hasDataImport() {
+		return true;
+	}
 
-    @Override
-    public void applyRestrictions(@Nonnull Set<FeatureRestriction> featureRestrictions) {
-        if (featureRestrictions.contains(FeatureRestriction.RESTRICT_CHANGING_EQUATION_FORM)) {
-            equationBehaviour.allowChangingEquationFormsByUser(false);
-        }
-    }
+	@Override
+	public void applyRestrictions(@NonNull Set<FeatureRestriction> featureRestrictions) {
+		if (featureRestrictions.contains(FeatureRestriction.RESTRICT_CHANGING_EQUATION_FORM)) {
+			equationBehaviour.allowChangingEquationFormsByUser(false);
+		}
+	}
 
-    @Override
-    public void removeRestrictions(@Nonnull Set<FeatureRestriction> featureRestrictions) {
-        initializeEquationBehaviour();
-    }
+	@Override
+	public void removeRestrictions(@NonNull Set<FeatureRestriction> featureRestrictions) {
+		initializeEquationBehaviour();
+	}
 
-    @Override
-    public ExpressionFilter getExpressionFilter() {
-        if (expressionFilter == null) {
-            expressionFilter = createExpressionFilter();
-        }
-        return expressionFilter;
-    }
+	@Override
+	public ExpressionFilter getExpressionFilter() {
+		if (expressionFilter == null) {
+			expressionFilter = createExpressionFilter();
+		}
+		return expressionFilter;
+	}
+
+	@Override
+	public @NonNull List<RememberedPropertyHandler<?>> getRememberedPropertyHandlers() {
+		return List.of();
+	}
 }

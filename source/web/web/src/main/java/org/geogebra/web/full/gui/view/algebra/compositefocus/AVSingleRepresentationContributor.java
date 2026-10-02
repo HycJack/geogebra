@@ -18,13 +18,12 @@ package org.geogebra.web.full.gui.view.algebra.compositefocus;
 
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.gui.AccessibilityManagerInterface;
 import org.geogebra.web.full.gui.view.algebra.FocusableCompositeW;
 import org.geogebra.web.full.gui.view.algebra.RadioTreeItemFocusAccess;
 import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Contributes a single content row to composite focus for an algebra view item.
@@ -48,19 +47,19 @@ public final class AVSingleRepresentationContributor implements FocusContributor
 	 *
 	 * @param contentProvider provides accessible text and role description
 	 */
-	public AVSingleRepresentationContributor(@Nonnull AccessibleContentProvider contentProvider) {
+	public AVSingleRepresentationContributor(@NonNull AccessibleContentProvider contentProvider) {
 		this.accessibleLabel = contentProvider.getContentSupplier();
 		this.roleDescription = contentProvider.getRoleDescription();
 	}
 
 	@Override
-	public void contribute(RadioTreeItemFocusAccess item, FocusableCompositeW focus,
-			AccessibilityManagerInterface am) {
-			FocusPartAdder.addIfExists(focus, am, item.checkbox(), AV_CHECKBOX_KEY, () ->
-					"checkbox", item::removeItemFocusStyle);
+	public void contribute(
+			RadioTreeItemFocusAccess item, FocusableCompositeW focus, AccessibilityManagerInterface am) {
+		FocusPartAdder.addIfExists(
+				focus, am, item.checkbox(), AV_CHECKBOX_KEY, () -> "checkbox", item::removeItemFocusStyle);
 		Widget widget = item.inputRow();
-		Widget row = FocusPartAdder.addIfExists(focus, am, widget, AV_DEFINITION_VALUE_KEY,
-				accessibleLabel, item::removeItemFocusStyle);
+		Widget row = FocusPartAdder.addIfExists(
+				focus, am, widget, AV_DEFINITION_VALUE_KEY, accessibleLabel, item::removeItemFocusStyle);
 		if (row != null) {
 			AriaHelper.setRole(row, "status");
 			AriaHelper.setRoleDescription(row, roleDescription);

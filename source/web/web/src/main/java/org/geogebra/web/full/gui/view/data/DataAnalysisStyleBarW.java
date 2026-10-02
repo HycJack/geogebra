@@ -24,7 +24,7 @@ import org.geogebra.web.full.gui.util.StyleBarW;
 import org.geogebra.web.html5.gui.util.ToggleButton;
 import org.geogebra.web.html5.main.AppW;
 
-public class DataAnalysisStyleBarW extends StyleBarW {
+public final class DataAnalysisStyleBarW extends StyleBarW {
 	private final DataAnalysisViewW daView;
 	private ToggleButton btnShowStatistics;
 	private ToggleButton btnShowPlot2;
@@ -81,12 +81,12 @@ public class DataAnalysisStyleBarW extends StyleBarW {
 		}
 
 		switch (model.getMode()) {
-		case DataAnalysisModel.MODE_ONEVAR:
-		case DataAnalysisModel.MODE_REGRESSION:
-			btnShowData.setVisible(true);
-			break;
-		default:
-			btnShowData.setVisible(false);
+			case DataAnalysisModel.MODE_ONEVAR:
+			case DataAnalysisModel.MODE_REGRESSION:
+				btnShowData.setVisible(true);
+				break;
+			default:
+				btnShowData.setVisible(false);
 		}
 
 		btnShowData.setSelected(model.showDataPanel());

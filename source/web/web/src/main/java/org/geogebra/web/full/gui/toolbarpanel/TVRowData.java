@@ -24,7 +24,7 @@ import org.geogebra.common.gui.view.table.TableValuesModel;
  * @author latzg
  *
  */
-public class TVRowData {
+public final class TVRowData {
 	private int row;
 	private TableValuesModel model;
 
@@ -68,8 +68,7 @@ public class TVRowData {
 	 * @return if cell is erroneous
 	 */
 	public boolean isCellErroneous(int col) {
-		if (row < model.getRowCount() && col < model.getColumnCount()
-			&& hasCellAt(row, col)) {
+		if (row < model.getRowCount() && col < model.getColumnCount() && hasCellAt(row, col)) {
 			return model.getCellAt(row, col).isErroneous();
 		}
 		return false;
@@ -86,4 +85,3 @@ public class TVRowData {
 		return row;
 	}
 }
-

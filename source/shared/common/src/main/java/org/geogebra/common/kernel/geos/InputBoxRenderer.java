@@ -20,7 +20,9 @@ import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.arithmetic.MyList;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.kernel.kernelND.GeoVectorND;
+import org.geogebra.editor.share.catalog.TemplateCatalog;
 import org.geogebra.editor.share.serializer.TeXEscaper;
+import org.geogebra.editor.share.serializer.TeXSerializer;
 import org.geogebra.editor.share.util.FormulaConverter;
 import org.geogebra.editor.share.util.Unicode;
 
@@ -33,19 +35,20 @@ class InputBoxRenderer {
 	InputBoxRenderer(GeoInputBox inputBox) {
 		this.inputBox = inputBox;
 		this.linkedGeo = inputBox.getLinkedGeo();
-		this.stringTemplateForLaTeX = inputBox.tpl.derivePrecisionPreservingLaTeXTemplate();
-		formulaConverter = new FormulaConverter();
+		updateLatexTemplate();
+		TeXSerializer serializer = new TeXSerializer();
+		serializer.useSimpleMatrixPlaceholders(true);
+		formulaConverter = new FormulaConverter(new TemplateCatalog(), serializer);
 	}
 
 	String getText() {
 		if (inputBox.isSymbolicModeWithSpecialEditor()) {
 			String tempUserEvalInput = inputBox.getTempUserEvalInput();
 			formulaConverter.setTemporaryInput(!"".equals(tempUserEvalInput));
-			return removeJlminput(formulaConverter.convert(inputBox.getTextForEditor()));
+			return formulaConverter.convert(inputBox.getTextForEditor());
 		}
 		if (linkedGeo.isGeoText()) {
-			String str = ((GeoText) linkedGeo).getTextStringSafe()
-					.replace("\n", GeoText.NEW_LINE);
+			String str = ((GeoText) linkedGeo).getTextStringSafe().replace("\n", GeoText.NEW_LINE);
 			if (inputBox.symbolicMode) {
 				return "\\text{" + TeXEscaper.escapeStringTextMode(str) + "}";
 			}
@@ -78,10 +81,9 @@ class InputBoxRenderer {
 	}
 
 	private String getTextForSymbolic() {
-		boolean flatEditableList = linkedGeo.isGeoList()
-				&& !linkedGeo.hasSpecialEditor();
-		boolean isComplexFunction = linkedGeo.isGeoSurfaceCartesian()
-				&& linkedGeo.getDefinition() != null;
+		boolean flatEditableList = linkedGeo.isGeoList() && !linkedGeo.hasSpecialEditor();
+		boolean isComplexFunction =
+				linkedGeo.isGeoSurfaceCartesian() && linkedGeo.getDefinition() != null;
 		if (linkedGeo.isGeoList() && !flatEditableList && !((GeoList) linkedGeo).isMatrix()) {
 			return getStringForFlatList(stringTemplateForLaTeX);
 		} else if (isRestrictedPoint()) {
@@ -100,8 +102,7 @@ class InputBoxRenderer {
 	 * @return string for flat list (definition or value, no brackets)
 	 */
 	String getStringForFlatList(StringTemplate tpl) {
-		if (linkedGeo.getDefinition() != null
-				&& linkedGeo.getDefinition().unwrap() instanceof MyList) {
+		if (linkedGeo.getDefinition() != null && linkedGeo.getDefinition().unwrap() instanceof MyList) {
 			return ((MyList) linkedGeo.getDefinition().unwrap()).toString(tpl, true, false);
 		}
 		return ((GeoList) linkedGeo).appendElements(new StringBuilder(), tpl).toString();
@@ -138,41 +139,17 @@ class InputBoxRenderer {
 	}
 
 	private String getLaTeXRedefineString() {
-		return linkedGeo.getRedefineString(true, true,
-				stringTemplateForLaTeX);
+		return linkedGeo.getRedefineString(true, true, stringTemplateForLaTeX);
 	}
 
 	void updateLatexTemplate() {
-		stringTemplateForLaTeX = inputBox.tpl.derivePrecisionPreservingLaTeXTemplate();
+		stringTemplateForLaTeX = inputBox
+				.tpl
+				.derivePrecisionPreservingLaTeXTemplate()
+				.deriveWithOmittedSpaceInCoefficientProducts();
 	}
 
 	void setLinkedGeo(GeoElementND linkedGeo) {
 		this.linkedGeo = linkedGeo;
-	}
-
-	private String removeJlminput(String input) {
-		StringBuilder output = new StringBuilder();
-		int i = 0;
-		while (i < input.length()) {
-			if (input.startsWith("\\jlminput{", i)) {
-				i += 10;
-				int braceCount = 1;
-				int start = i;
-
-				while (i < input.length() && braceCount > 0) {
-					if (input.charAt(i) == '{') {
-						braceCount++;
-					} else if (input.charAt(i) == '}') {
-						braceCount--;
-					}
-					i++;
-				}
-				output.append(input, start, i - 1);
-			} else {
-				output.append(input.charAt(i));
-				i++;
-			}
-		}
-		return output.toString();
 	}
 }

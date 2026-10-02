@@ -30,34 +30,36 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class CenterImagePositionPropertyTests extends BaseAppTestSetup {
+class CenterImagePositionPropertyTests extends BaseAppTestSetup {
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)",
-			"f(x) = x^2",
-			"a = 1 + 2",
-			"\"abc\"",
-	})
-	public void testNotApplicableForAnythingOtherThanImages(String expression) {
+	@ValueSource(
+			strings = {
+				"(1, 2)",
+				"f(x) = x^2",
+				"a = 1 + 2",
+				"\"abc\"",
+			})
+	void testNotApplicableForAnythingOtherThanImages(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertThrows(NotApplicablePropertyException.class, () -> new CenterImagePositionProperty(
-				getLocalization(), evaluateGeoElement(expression)));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new CenterImagePositionProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@Test
-	public void testApplicableForImages() {
+	void testApplicableForImages() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoImage geoImage = new GeoImage(getKernel().getConstruction());
 		assertDoesNotThrow(() -> new CenterImagePositionProperty(getLocalization(), geoImage));
 	}
 
 	@Test
-	public void testSettingCustomCenterPoint() {
+	void testSettingCustomCenterPoint() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoImage geoImage = new GeoImage(getKernel().getConstruction());
 		geoImage.setCentered(true);
-		CenterImagePositionProperty centerImagePositionProperty = assertDoesNotThrow(() ->
-				new CenterImagePositionProperty(getLocalization(), geoImage));
+		CenterImagePositionProperty centerImagePositionProperty =
+				assertDoesNotThrow(() -> new CenterImagePositionProperty(getLocalization(), geoImage));
 
 		centerImagePositionProperty.setValue("(1, 2)");
 		assertEquals("(1, 2)", centerImagePositionProperty.getValue());
@@ -71,12 +73,12 @@ public class CenterImagePositionPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testCenterPointSuggestions() {
+	void testCenterPointSuggestions() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoImage geoImage = new GeoImage(getKernel().getConstruction());
 		geoImage.setCentered(true);
-		CenterImagePositionProperty centerImagePositionProperty = assertDoesNotThrow(() ->
-				new CenterImagePositionProperty(getLocalization(), geoImage));
+		CenterImagePositionProperty centerImagePositionProperty =
+				assertDoesNotThrow(() -> new CenterImagePositionProperty(getLocalization(), geoImage));
 
 		evaluate("A = (1, 2)");
 		evaluate("B = (3, 4)");
@@ -85,12 +87,12 @@ public class CenterImagePositionPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testSettingSuggestedCenterPoint() {
+	void testSettingSuggestedCenterPoint() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoImage geoImage = new GeoImage(getKernel().getConstruction());
 		geoImage.setCentered(true);
-		CenterImagePositionProperty centerImagePositionProperty = assertDoesNotThrow(() ->
-				new CenterImagePositionProperty(getLocalization(), geoImage));
+		CenterImagePositionProperty centerImagePositionProperty =
+				assertDoesNotThrow(() -> new CenterImagePositionProperty(getLocalization(), geoImage));
 		evaluate("A = (1, 2)");
 		evaluate("B = (3, 4)");
 

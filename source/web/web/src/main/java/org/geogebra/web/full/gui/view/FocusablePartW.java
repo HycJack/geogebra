@@ -16,15 +16,15 @@
 
 package org.geogebra.web.full.gui.view;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.gui.AccessibilityManagerInterface;
 import org.geogebra.common.gui.compositefocus.FocusablePart;
 import org.geogebra.web.full.gui.TextFieldFocusablePart;
 import org.geogebra.web.html5.gui.inputfield.AutoCompleteTextFieldW;
 import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.geogebra.web.html5.gui.view.button.StandardButton;
+import org.gwtproject.user.client.ui.ComplexPanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Web-specific base class for focusable parts used in composite focus traversal.
@@ -37,10 +37,11 @@ import org.gwtproject.user.client.ui.Widget;
  * consistent visual focus styling.</p>
  */
 public class FocusablePartW implements FocusablePart {
+	public static final String CLASS_NAME = "av-focusablePart";
 	private final Widget widget;
 	private final String focusKey;
 	private final String accessibleLabel;
-	private final @CheckForNull Runnable onFocusCallback;
+	private final @Nullable Runnable onFocusCallback;
 
 	/**
 	 * Creates a focusable part for the given widget.
@@ -49,17 +50,14 @@ public class FocusablePartW implements FocusablePart {
 	 * @param accessibleLabel the aria label for the widget
 	 * @param onFocusCallback on focus callback
 	 */
-	public FocusablePartW(Widget widget, String focusKey, String accessibleLabel,
-			@CheckForNull Runnable onFocusCallback) {
+	public FocusablePartW(
+			Widget widget, String focusKey, String accessibleLabel, @Nullable Runnable onFocusCallback) {
 		this.widget = widget;
 		this.focusKey = focusKey;
 		this.accessibleLabel = accessibleLabel;
 		this.onFocusCallback = onFocusCallback;
-		// text field contains the information as value, not as label
-		if (!(widget instanceof AutoCompleteTextFieldW)) {
-			AriaHelper.setLabel(widget, accessibleLabel);
-		}
-		widget.addStyleName("av-focusablePart");
+		AriaHelper.setLabel(widget, accessibleLabel);
+		widget.addStyleName(CLASS_NAME);
 	}
 
 	/**
@@ -72,15 +70,18 @@ public class FocusablePartW implements FocusablePart {
 	 * @param onFocusCallback on focus callback
 	 * @return a focusable part instance, or {@code null} if the widget is {@code null}
 	 */
-	public static FocusablePartW create(Widget widget, String focusKey,
-			String accessibleLabel, AccessibilityManagerInterface am, Runnable onFocusCallback) {
+	public static FocusablePartW create(
+			Widget widget,
+			String focusKey,
+			String accessibleLabel,
+			AccessibilityManagerInterface am,
+			Runnable onFocusCallback) {
 		if (widget == null) {
 			return null;
 		}
 
 		if (widget instanceof AutoCompleteTextFieldW textField) {
-			return new TextFieldFocusablePart(textField, focusKey, accessibleLabel,
-					onFocusCallback);
+			return new TextFieldFocusablePart(textField, focusKey, accessibleLabel, onFocusCallback);
 		}
 
 		if (widget instanceof StandardButton button) {
@@ -109,7 +110,13 @@ public class FocusablePartW implements FocusablePart {
 
 	@Override
 	public void focus() {
-		widget.getElement().focus();
+		if (widget instanceof ComplexPanel panel
+				&& panel.getWidgetCount() > 0
+				&& panel.getWidget(0).getElement().getTabIndex() >= 0) {
+			panel.getWidget(0).getElement().focus();
+		} else {
+			widget.getElement().focus();
+		}
 		if (onFocusCallback != null) {
 			onFocusCallback.run();
 		}
@@ -127,7 +134,6 @@ public class FocusablePartW implements FocusablePart {
 
 	@Override
 	public String toString() {
-		return "{" + widget.getClass().getSimpleName()
-				+ ", '" + focusKey + "'}";
+		return "{" + widget.getClass().getSimpleName() + ", '" + focusKey + "'}";
 	}
 }

@@ -17,44 +17,59 @@
 package org.geogebra.web.full.gui.toolbarpanel.tableview;
 
 import java.util.List;
+import java.util.function.Function;
 
-import org.geogebra.web.full.gui.toolbarpanel.ProbabilityTableAdapter;
+import org.geogebra.common.gui.view.probcalculator.ProbabilityCalculatorTableValues;
+import org.geogebra.common.gui.view.probcalculator.ProbabilityCalculatorTableValues.Row;
+import org.geogebra.common.gui.view.probcalculator.ProbabilityCalculatorTableValuesViewModel;
+import org.geogebra.common.states.State.Subscription;
 import org.geogebra.web.full.util.StickyTable;
 import org.geogebra.web.html5.gui.util.Dom;
 import org.gwtproject.cell.client.SafeHtmlCell;
 import org.gwtproject.safehtml.shared.SafeHtml;
 import org.gwtproject.user.cellview.client.Column;
+import org.jspecify.annotations.Nullable;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import elemental2.dom.HTMLElement;
 
-public class StickyProbabilityTable extends StickyTable<List<String>> {
+public final class StickyProbabilityTable extends StickyTable<Row> {
 
-	private ProbabilityTableAdapter adapter;
+	private ProbabilityCalculatorTableValuesViewModel model;
+	// TODO APPS-7848: Cancel when the probability table is permanently disposed.
+	// onUnload() cannot be used because the same table is unloaded and reloaded
+	// whenever the side sheet is closed and reopened.
+	@SuppressFBWarnings("URF_UNREAD_FIELD")
+	private @Nullable Subscription contentSubscription;
+
+	private ProbabilityCalculatorTableValues values;
 
 	/**
 	 * New table for prob calc
 	 */
 	public StickyProbabilityTable() {
 		getTable().addStyleName("fullWidth");
-		getTable().setRowStyles(
-				(row, rowIndex) -> adapter.isHighlighted(rowIndex) ? "highlighted" : "");
+		getTable().setRowStyles((row, rowIndex) -> row.highlighted() ? "highlighted" : "");
 	}
 
-	private void addColumn(final int col) {
-		getTable().addColumn(new Column<>(new SafeHtmlCell()) {
-			@Override
-			public SafeHtml getValue(List<String> row) {
-				return new TableCell(row.get(col), false).getHTML();
-			}
-		}, getHeaderHTML(col));
+	private void addColumn(final Function<Row, String> projection) {
+		getTable()
+				.addColumn(
+						new Column<>(new SafeHtmlCell()) {
+							@Override
+							public SafeHtml getValue(Row row) {
+								return new TableCell(projection.apply(row), false).getHTML();
+							}
+						},
+						getHeaderHTML(projection));
 	}
 
-	private SafeHtml getHeaderHTML(int col) {
+	private SafeHtml getHeaderHTML(Function<Row, String> projection) {
 		HTMLElement content = Dom.createDiv("content");
 		HTMLElement label = Dom.createDiv("gwt-Label noMenu");
 		content.appendChild(label);
 		return () -> {
-			label.innerHTML = adapter.getColumnName(col);
+			label.innerHTML = values == null ? "" : projection.apply(values.header());
 			return content.outerHTML;
 		};
 	}
@@ -65,17 +80,22 @@ public class StickyProbabilityTable extends StickyTable<List<String>> {
 	}
 
 	@Override
-	protected void fillValues(List<List<String>> data) {
-		adapter.fillValues(data);
+	protected void fillValues(List<Row> data) {
+		values = model.getContent().get();
+		data.clear();
+		if (values != null) {
+			data.addAll(values.rows());
+		}
 	}
 
 	/**
-	 * Sets adapter and initialized GUI
-	 * @param adapter adapter to probability data
+	 * Sets model and initializes GUI.
+	 * @param model model to probability data
 	 */
-	public void setAdapter(ProbabilityTableAdapter adapter) {
-		this.adapter = adapter;
-		addColumn(0);
-		addColumn(1);
+	public void setModel(ProbabilityCalculatorTableValuesViewModel model) {
+		this.model = model;
+		contentSubscription = model.getContent().subscribe(ignored -> refresh());
+		addColumn(Row::k);
+		addColumn(Row::probability);
 	}
 }

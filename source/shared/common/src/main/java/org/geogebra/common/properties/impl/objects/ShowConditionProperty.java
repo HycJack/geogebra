@@ -16,8 +16,6 @@
 
 package org.geogebra.common.properties.impl.objects;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.CircularDefinitionException;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.arithmetic.ValidExpression;
@@ -26,9 +24,11 @@ import org.geogebra.common.kernel.geos.GeoBoolean;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.parser.ParseException;
 import org.geogebra.common.main.Localization;
+import org.geogebra.common.main.MyError;
 import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.util.StringUtil;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting and optional condition to decide about the visibility of its object.
@@ -46,16 +46,16 @@ public final class ShowConditionProperty extends AbstractValuedProperty<String>
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
+	public @Nullable String validateValue(String value) {
 		if (StringUtil.emptyTrim(value)) {
 			return null;
 		}
 		try {
-			ValidExpression validExpression = element.getKernel().getParser()
-					.parseGeoGebraExpression(value);
+			ValidExpression validExpression =
+					element.getKernel().getParser().parseGeoGebraExpression(value);
 			return validExpression.getValueType() == ValueType.BOOLEAN ? null : "";
-		} catch (ParseException parseException) {
-			return parseException.getLocalizedMessage();
+		} catch (ParseException | MyError validationError) {
+			return validationError.getLocalizedMessage();
 		}
 	}
 
@@ -66,7 +66,9 @@ public final class ShowConditionProperty extends AbstractValuedProperty<String>
 				element.setShowObjectCondition(null);
 				return;
 			}
-			GeoBoolean condition = element.getKernel().getAlgebraProcessor()
+			GeoBoolean condition = element
+					.getKernel()
+					.getAlgebraProcessor()
 					.evaluateToBoolean(value, element.getApp().getErrorHandler());
 			element.setShowObjectCondition(condition);
 			element.updateRepaint();

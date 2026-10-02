@@ -1,4 +1,5 @@
 @use 'colors';
+@use 'colorMap' as *;
 @use 'dimens';
 @use 'shared';
 @use 'z-index';
@@ -10,16 +11,18 @@
 
 	.algebraView .avItem, .algebraView .avInputItem {
 		/* to override default padding and margin coming from GWT */
-		padding: 0 !important;
-		margin: 0 !important;
+		padding: 0;
+		margin: 0;
 	}
 
 	.algebraViewObjectStylebar {
 		position: absolute;
-		top: 0;
-		bottom: 0;
-		right: 0;
+		top: 1px;
+		bottom: 2px;
+		right: 2px;
+		z-index: 1;
 		padding-right: 12px;
+		background: colors.$white;
 
 		.symbolicButton {
 			display: inline-block;
@@ -108,6 +111,12 @@
 		outline: 2px solid var(--ggb-dark-color);
 		outline-offset: -2px;
 
+		.elemText.singleRow {
+			border-bottom: 2px solid var(--ggb-dark-color);
+			padding-top: 10px;
+			min-height: 36px;
+		}
+
 		.marblePanel {
 			background-color: unset;
 		}
@@ -183,11 +192,16 @@
 	.avInputItem .scrollableTextBox,
 	.avItem .elemText.scrollableTextBox {
 		padding-top: 8px;
-		padding-left: 68px;
+		padding-left: 10px;
+		margin-left: 58px;
 		padding-bottom: 0px;
 		div {
 			overflow: hidden;
 		}
+	}
+
+	.avInputItem .scrollableTextBox.noPreview div {
+		padding-bottom: 8px;
 	}
 
 	.algebraPanelScientific {
@@ -232,7 +246,7 @@
 	}
 
 	.avItem .elemText.noPadding {
-		padding-left: 0;
+		margin-left: 0;
 		padding-top: 6px;
 	}
 
@@ -249,20 +263,49 @@
 		display: flex;
 		align-items: center;
 		min-height: 36px;
+
+		&:empty {
+			min-height: 0;
+		}
 	}
 
 	.avItem .elemText {
 		padding-top: 12px;
 		padding-bottom: 0px;
-		padding-left: 68px;
+		padding-left: 10px;
+		margin-left: 58px;
+		margin-right: 40px;
 
 		.avPlainText {
 			padding: 2px;
+		}
+		.scrollWrap {
+			overflow-x: auto;
+		}
+		&.singleRow {
+			max-width: 100%;
+			overflow-x: auto;
+			.avPlainText {
+				margin-bottom: 8px;
+			}
+		}
+		&:not(.scrollableTextBox):after {
+			content: '';
+			display: block;
+			position: absolute;
+			top: 4px;
+			bottom: 4px;
+			right: 36px;
+			width: 100%;
+			pointer-events: none;
+			background: linear-gradient(to left, #fff 0px, colors.$transparent-white 40px, colors.$transparent-white);
 		}
 	}
 
 	.avValue {
 		display: flex;
+		max-width: 100%;
+		overflow-x: auto;
 	}
 
 	.canvasVal {
@@ -498,6 +541,8 @@
 	.avDefinition, .avDefinitionPlain {
 		display: inline-block; // needed for view expanding
 		min-height: 28px;
+		max-width: 100%;
+		overflow-x: auto;
 	}
 
 	.avDummyLabel {
@@ -506,13 +551,75 @@
 	}
 
 	.av-focusablePart {
-		&:focus {
+		&:focus-within {
 			width: fit-content;
 			outline: 2px solid var(--ggb-dark-color);
 			outline-offset: 2px;
 		}
 	}
 
+	.resizePopup {
+		transform: translateX(-50%);
+	}
+
+	.resizePopupContent {
+		display: flex;
+		padding: 0 8px;
+	}
+
+	.resizeControlsSeparator {
+		margin: 36px 8px 0;
+	}
+
+	.resizeControlGroup {
+		display: flex;
+		flex-wrap: wrap;
+		row-gap: 8px;
+		align-items: center;
+		width: 88px;
+		.gwt-Label {
+			// instead of horizontal gap use text-align to deal with different digit widths
+			width: 24px;
+			text-align: center;
+		}
+		.groupTitle {
+			width: 100%;
+		}
+	}
+
+	.openResizeControlButton {
+		position: absolute;
+		z-index: z-index.$z-dialog;
+		background: neutral(200);
+		height: 8px;
+		width: 28px;
+		border-radius: 4px;
+		overflow: visible;
+		justify-content: center;
+		.gwt-Image {
+			position: absolute;
+			top: -8px;
+			padding: 4px 6px;
+		}
+		&:not([disabled]):hover {
+			background: neutral(300);
+		}
+		&.active {
+			background: purple(100);
+		}
+	}
+
+	.resizeButton {
+		padding: 8px;
+		box-sizing: border-box;
+		width: 32px;
+		height: 32px;
+		background: neutral(200);
+		border-radius: 4px;
+		&:not([disabled]):hover {
+			background: neutral(300);
+		}
+	}
 
 }
 

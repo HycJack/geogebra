@@ -22,17 +22,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.gui.view.table.InvalidValuesException;
 import org.geogebra.common.gui.view.table.TableValues;
 import org.geogebra.common.gui.view.table.TableValuesView;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoFunction;
-import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.common.properties.PropertyView;
 import org.geogebra.test.BaseAppTestSetup;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +41,6 @@ class AlgebraContextMenuActionHandlerTests extends BaseAppTestSetup
 	private boolean showTableValueCreatingDialogCalled = false;
 	private int scrolledToColumnIndex = -1;
 	private boolean showObjectPropertiesCalled = false;
-	private boolean showOldObjectPropertiesCalled = false;
 
 	@BeforeEach
 	void setup() {
@@ -53,8 +50,7 @@ class AlgebraContextMenuActionHandlerTests extends BaseAppTestSetup
 	@Test
 	void testRemovingInvalidAlgebraViewInput() {
 		AlgebraContextMenuActionHandler contextMenuActionHandler =
-				new AlgebraContextMenuActionHandler(getApp(), new TableValuesView(getKernel()),
-						null, this);
+				new AlgebraContextMenuActionHandler(getApp(), new TableValuesView(getKernel()), null, this);
 		contextMenuActionHandler.handleSelectedItem(AlgebraContextMenuItem.Delete);
 		assertTrue(clearAlgebraInputCalled);
 	}
@@ -62,9 +58,8 @@ class AlgebraContextMenuActionHandlerTests extends BaseAppTestSetup
 	@Test
 	void testRemovingValidAlgebraViewItem() {
 		GeoElement geoElement = evaluateGeoElement("A = (1, 2)");
-		AlgebraContextMenuActionHandler contextMenuActionHandler =
-				new AlgebraContextMenuActionHandler(getApp(), new TableValuesView(getKernel()),
-						geoElement, this);
+		AlgebraContextMenuActionHandler contextMenuActionHandler = new AlgebraContextMenuActionHandler(
+				getApp(), new TableValuesView(getKernel()), geoElement, this);
 		assertNotNull(lookup("A"));
 		contextMenuActionHandler.handleSelectedItem(AlgebraContextMenuItem.Delete);
 		assertFalse(clearAlgebraInputCalled);
@@ -102,8 +97,7 @@ class AlgebraContextMenuActionHandlerTests extends BaseAppTestSetup
 	}
 
 	@Test
-	void testCreatingTableValuesScrollsToColumnAlreadyInTable()
-			throws InvalidValuesException {
+	void testCreatingTableValuesScrollsToColumnAlreadyInTable() throws InvalidValuesException {
 		TableValues tableValues = new TableValuesView(getKernel());
 		getKernel().attach(tableValues);
 		tableValues.setValues(0, 5, 1);
@@ -120,25 +114,12 @@ class AlgebraContextMenuActionHandlerTests extends BaseAppTestSetup
 	}
 
 	@Test
-	void testSettingsShowsOldObjectPropertiesWithPreviewFeaturesDisabled() {
-		GeoElement geoElement = evaluateGeoElement("A = (1, 2)");
-		AlgebraContextMenuActionHandler handler = new AlgebraContextMenuActionHandler(getApp(),
-				new TableValuesView(getKernel()), geoElement, this);
-		handler.handleSelectedItem(AlgebraContextMenuItem.Settings);
-		assertTrue(showOldObjectPropertiesCalled);
-		assertFalse(showObjectPropertiesCalled);
-	}
-
-	@Test
-	void testSettingsShowsNewObjectPropertiesWithPreviewFeaturesEnabled() {
-		PreviewFeature.setPreviewFeaturesEnabled(true);
+	void testSettingsShowsObjectProperties() {
 		GeoElement geoElement = evaluateGeoElement("A = (1, 2)");
 		AlgebraContextMenuActionHandler handler = new AlgebraContextMenuActionHandler(
 				getApp(), new TableValuesView(getKernel()), geoElement, this);
 		handler.handleSelectedItem(AlgebraContextMenuItem.Settings);
-		assertFalse(showOldObjectPropertiesCalled);
 		assertTrue(showObjectPropertiesCalled);
-		PreviewFeature.setPreviewFeaturesEnabled(false);
 	}
 
 	@Test
@@ -185,17 +166,12 @@ class AlgebraContextMenuActionHandlerTests extends BaseAppTestSetup
 	}
 
 	@Override
-	public void addFormulaToAlgebraView(@Nonnull String formula) {
+	public void addFormulaToAlgebraView(@NonNull String formula) {
 		// not needed for tests
 	}
 
 	@Override
-	public void showOldObjectProperties() {
-		showOldObjectPropertiesCalled = true;
-	}
-
-	@Override
-	public void showObjectProperties(@Nonnull PropertyView.TabbedPageSelector tabbedPageSelector) {
+	public void showObjectProperties(PropertyView.@NonNull TabbedPageSelector tabbedPageSelector) {
 		showObjectPropertiesCalled = true;
 	}
 }

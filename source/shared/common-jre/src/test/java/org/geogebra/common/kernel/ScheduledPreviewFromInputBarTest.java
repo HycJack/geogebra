@@ -2,41 +2,44 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.kernel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.geogebra.common.BaseUnitTest;
+import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.test.annotation.Issue;
 import org.geogebra.test.commands.ErrorAccumulator;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ScheduledPreviewFromInputBarTest extends BaseUnitTest {
+class ScheduledPreviewFromInputBarTest extends BaseUnitTest {
 
 	private ErrorAccumulator errorHandler;
 	private ScheduledPreviewFromInputBar preview;
 
-	@Before
-	public void setupPreview() {
-		preview = new ScheduledPreviewFromInputBar(getKernel(),
-				Integer.MAX_VALUE);
+	@BeforeEach
+	void setupPreview() {
+		preview = new ScheduledPreviewFromInputBar(getKernel(), Integer.MAX_VALUE);
 		errorHandler = new ErrorAccumulator();
 	}
 
 	@Test
-	public void shouldValidate() {
+	void shouldValidate() {
 		preview.updatePreviewFromInputBar("a=1", errorHandler);
 		assertEquals("", errorHandler.getErrors());
 		preview.updatePreviewFromInputBar("a=", errorHandler);
@@ -44,12 +47,24 @@ public class ScheduledPreviewFromInputBarTest extends BaseUnitTest {
 		preview.updatePreviewFromInputBar("a=2", errorHandler);
 		assertEquals("", errorHandler.getErrorsSinceReset());
 		preview.updatePreviewFromInputBar("a=1/(1,1,1)", errorHandler);
-		assertEquals("Illegal division \n"
-				+ "1 / (1, 1, 1) ", errorHandler.getErrorsSinceReset());
+		assertEquals("Illegal division \n" + "1 / (1, 1, 1) ", errorHandler.getErrorsSinceReset());
 	}
 
 	@Test
-	public void shouldValidateRedefinition() {
+	void shouldRemovePreviousPreviewFromConstruction() {
+		GeoElement r = add("R=(1,1)");
+		assertEquals(0, getConstruction().getAlgoList().size());
+		preview.updatePreviewFromInputBar("2R", errorHandler);
+		preview.updatePreviewFromInputBar("Ri", errorHandler);
+		assertEquals(1, getConstruction().getAlgoList().size());
+		assertEquals(1, r.getAlgorithmList().size());
+		preview.clear();
+		assertEquals(0, getConstruction().getAlgoList().size());
+		assertEquals(0, r.getAlgorithmList().size());
+	}
+
+	@Test
+	void shouldValidateRedefinition() {
 		add("a=2");
 		preview.updatePreviewFromInputBar("a=1", errorHandler);
 		assertEquals("", errorHandler.getErrors());
@@ -58,5 +73,19 @@ public class ScheduledPreviewFromInputBarTest extends BaseUnitTest {
 		preview.updatePreviewFromInputBar("a=1/(1,1,1)", errorHandler);
 		// TODO with APPS-76 we should notice the invalid syntax
 		assertEquals("", errorHandler.getErrorsSinceReset());
+	}
+
+	@Test
+	@Issue("APPS-7810")
+	void shouldNotReusePreviousInput() {
+		preview.updatePreviewFromInputBar("1", errorHandler);
+		assertNotNull(preview.getPreview("1"));
+		preview.updatePreviewFromInputBar("2+", errorHandler);
+		assertNull(preview.getPreview("2+"));
+		assertEquals("2+", preview.getInput("2+"));
+		preview.updatePreviewFromInputBar("3", errorHandler);
+		assertNotNull(preview.getPreview("3"));
+		preview.updatePreviewFromInputBar("", errorHandler);
+		assertNull(preview.getPreview(""));
 	}
 }

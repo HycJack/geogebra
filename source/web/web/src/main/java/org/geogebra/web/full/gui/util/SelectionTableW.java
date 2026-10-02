@@ -24,7 +24,7 @@ import org.gwtproject.user.client.ui.Grid;
 import org.gwtproject.user.client.ui.Label;
 import org.gwtproject.user.client.ui.Widget;
 
-public class SelectionTableW extends Grid implements ClickHandler {
+public final class SelectionTableW extends Grid implements ClickHandler {
 	private int selectedColumn = -1;
 	private int selectedRow = -1;
 	private SelectionTable mode;
@@ -43,8 +43,7 @@ public class SelectionTableW extends Grid implements ClickHandler {
 	 * @param mode
 	 *            image / text / latex
 	 */
-	public SelectionTableW(ImageOrText[] data, Integer rows0, Integer columns0,
-			SelectionTable mode) {
+	public SelectionTableW(ImageOrText[] data, Integer rows0, Integer columns0, SelectionTable mode) {
 		super();
 		this.mode = mode;
 		int rows = rows0;
@@ -78,7 +77,7 @@ public class SelectionTableW extends Grid implements ClickHandler {
 		addClickHandler(this);
 		addStyleName("SelectionTable");
 
-		if (this.mode.equals(SelectionTable.MODE_ICON)) {
+		if (this.mode == SelectionTable.MODE_ICON) {
 			setBorderStyleForCells();
 		}
 	}
@@ -125,8 +124,7 @@ public class SelectionTableW extends Grid implements ClickHandler {
 	 * @return selected index of the table
 	 */
 	public int getSelectedIndex() {
-		int index = this.getColumnCount() * this.selectedRow
-				+ this.selectedColumn;
+		int index = this.getColumnCount() * this.selectedRow + this.selectedColumn;
 		if (index < -1) {
 			index = -1;
 		}
@@ -148,7 +146,7 @@ public class SelectionTableW extends Grid implements ClickHandler {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param index
 	 *            {@code int}
 	 * @param selected
@@ -183,8 +181,7 @@ public class SelectionTableW extends Grid implements ClickHandler {
 		int r = 0;
 		int c = 0;
 		if (isIniting) {
-			for (int i = 0; i < Math.min(data.length,
-					this.mNumRows * this.mNumColumns); i++) {
+			for (int i = 0; i < Math.min(data.length, this.mNumRows * this.mNumColumns); i++) {
 				setWidget(r, c, createWidget(data[i]));
 				++c;
 				if (c == this.mNumColumns) {
@@ -194,8 +191,7 @@ public class SelectionTableW extends Grid implements ClickHandler {
 			}
 			isIniting = false;
 		} else if (mode != SelectionTable.MODE_TEXT) {
-			for (int i = 0; i < Math.min(data.length,
-					this.mNumRows * this.mNumColumns); i++) {
+			for (int i = 0; i < Math.min(data.length, this.mNumRows * this.mNumColumns); i++) {
 				if (getWidget(r, c) instanceof Label) {
 					data[i].applyToLabel((Label) getWidget(r, c));
 
@@ -216,14 +212,14 @@ public class SelectionTableW extends Grid implements ClickHandler {
 			return w;
 		}
 		switch (mode) {
-		case MODE_TEXT:
-		case MODE_ICON:
-			w = new Label();
-			object.applyToLabel((Label) w);
-			break;
-		default:
-		case MODE_LATEX:
-			break;
+			case MODE_TEXT:
+			case MODE_ICON:
+				w = new Label();
+				object.applyToLabel((Label) w);
+				break;
+			default:
+			case MODE_LATEX:
+				break;
 		}
 		return w;
 	}
@@ -264,15 +260,14 @@ public class SelectionTableW extends Grid implements ClickHandler {
 
 	/**
 	 * to update the text of the {@link ImageOrText}
-	 * 
+	 *
 	 * @param data
 	 *            texts or images
 	 */
 	public void updateText(ImageOrText[] data) {
 		int r = 0;
 		int c = 0;
-		for (int i = 0; i < Math.min(data.length,
-				this.mNumRows * this.mNumColumns); i++) {
+		for (int i = 0; i < Math.min(data.length, this.mNumRows * this.mNumColumns); i++) {
 			if (getWidget(r, c) instanceof Label) {
 				((Label) getWidget(r, c)).setText(data[i].getText());
 

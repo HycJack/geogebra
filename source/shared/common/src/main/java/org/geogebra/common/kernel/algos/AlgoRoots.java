@@ -49,7 +49,6 @@ import org.geogebra.common.util.debug.Log;
  * @author Hans-Petter Ulven
  * @version 2011-03-08
  */
-
 public class AlgoRoots extends AlgoGeoPointsFunction {
 
 	private static final int TYPE_ROOTS = 0;
@@ -61,12 +60,12 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	private GeoFunctionable f2;
 
 	// Vars
-	private int type = TYPE_ROOTS;
+	private final int type;
 	private Function diff;
 
 	/**
 	 * Computes "all" Roots of f in &lt;l,r&gt; TYPE_ROOTS
-	 * 
+	 *
 	 * @param cons
 	 *            construction
 	 * @param labels
@@ -80,9 +79,13 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	 * @param labelEnabled
 	 *            whether to allow setting labels
 	 */
-	public AlgoRoots(Construction cons, String[] labels,
+	public AlgoRoots(
+			Construction cons,
+			String[] labels,
 			GeoFunctionable function,
-			GeoNumberValue left, GeoNumberValue right, boolean labelEnabled) {
+			GeoNumberValue left,
+			GeoNumberValue right,
+			boolean labelEnabled) {
 		// Ancestor gets first function for points!
 		super(cons, labels, labelEnabled && !cons.isSuppressLabelsActive());
 		this.f0 = function;
@@ -100,7 +103,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 
 	/**
 	 * Computes roots of a function visible in a given view.
-	 * 
+	 *
 	 * @param cons
 	 *            construction
 	 * @param labels
@@ -110,11 +113,12 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	 * @param view
 	 *            view
 	 */
-	public AlgoRoots(Construction cons, String[] labels,
+	public AlgoRoots(
+			Construction cons,
+			String[] labels,
 			GeoFunctionable function,
 			EuclidianViewInterfaceCommon view) {
-		this(cons, labels, function, view.getXminObject(),
-				view.getXmaxObject(), true);
+		this(cons, labels, function, view.getXminObject(), view.getXmaxObject(), true);
 
 		// updates the area that is visible
 		cons.registerEuclidianViewCE(this);
@@ -123,7 +127,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 
 	/**
 	 * Computes "all" Roots of f in &lt;l,r&gt; TYPE_ROOTS
-	 * 
+	 *
 	 * @param cons
 	 *            construction
 	 * @param function
@@ -133,8 +137,8 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	 * @param right
 	 *            right bound
 	 */
-	public AlgoRoots(Construction cons, GeoFunction function,
-			GeoNumberValue left, GeoNumberValue right) {
+	public AlgoRoots(
+			Construction cons, GeoFunction function, GeoNumberValue left, GeoNumberValue right) {
 		super(cons);
 		this.f0 = function;
 		this.left = left;
@@ -149,7 +153,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 
 	/**
 	 * Computes "all" Roots of f-g in &lt;l,r&gt; TYPE_INTERSECTIONS
-	 * 
+	 *
 	 * @param cons
 	 *            construction
 	 * @param labels
@@ -163,9 +167,12 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	 * @param right
 	 *            right bound
 	 */
-	public AlgoRoots(Construction cons, String[] labels,
+	public AlgoRoots(
+			Construction cons,
+			String[] labels,
 			GeoFunctionable function,
-			GeoFunctionable function2, GeoNumberValue left,
+			GeoFunctionable function2,
+			GeoNumberValue left,
 			GeoNumberValue right) {
 		// Ancestor gets first function for points!
 		super(cons, labels, !cons.isSuppressLabelsActive());
@@ -182,7 +189,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 		compute();
 
 		showOneRootInAlgebraView(); // Show at least one root point in algebra
-									// view
+		// view
 
 	}
 
@@ -201,19 +208,19 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	@Override
 	protected void setInputOutput() {
 		switch (type) {
-		default:
-		case TYPE_ROOTS:
-			input = new GeoElement[3];
-			input[0] = f0.toGeoElement();
-			input[1] = left.toGeoElement();
-			input[2] = right.toGeoElement();
-			break;
-		case TYPE_INTERSECTIONS:
-			input = new GeoElement[4];
-			input[0] = f1.toGeoElement();
-			input[1] = f2.toGeoElement();
-			input[2] = left.toGeoElement();
-			input[3] = right.toGeoElement();
+			default:
+			case TYPE_ROOTS:
+				input = new GeoElement[3];
+				input[0] = f0.toGeoElement();
+				input[1] = left.toGeoElement();
+				input[2] = right.toGeoElement();
+				break;
+			case TYPE_INTERSECTIONS:
+				input = new GeoElement[4];
+				input[0] = f1.toGeoElement();
+				input[1] = f2.toGeoElement();
+				input[2] = left.toGeoElement();
+				input[3] = right.toGeoElement();
 		}
 
 		super.setOutput(getPoints()); // Points in ancestor
@@ -229,17 +236,18 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 			updateInterval();
 		}
 
-		boolean ok = false;
+		boolean ok;
 		switch (type) {
-		default:
-		case TYPE_ROOTS:
-			ok = f0.toGeoElement().isDefined() && left.isDefined()
-					&& right.isDefined();
-			break;
-		case TYPE_INTERSECTIONS:
-			ok = f1.toGeoElement().isDefined() && f2.toGeoElement().isDefined()
-					&& left.isDefined() && right.isDefined();
-			break;
+			default:
+			case TYPE_ROOTS:
+				ok = f0.toGeoElement().isDefined() && left.isDefined() && right.isDefined();
+				break;
+			case TYPE_INTERSECTIONS:
+				ok = f1.toGeoElement().isDefined()
+						&& f2.toGeoElement().isDefined()
+						&& left.isDefined()
+						&& right.isDefined();
+				break;
 		}
 		if (!ok) {
 			double[] xs = new double[1];
@@ -264,7 +272,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 
 		double l = left.getDouble();
 		double r = right.getDouble();
-		double[] roots = new double[0];
+		double[] roots;
 		int numberofroots = 0;
 
 		/*
@@ -284,8 +292,8 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 		// make sure m is at least 1 even for invisible EV
 		int m = Math.max(n, 1);
 		try { // To catch eventual wrong indexes in arrays...
-				// Adjust samples. Some research needed to find best factor in
-				// if(numberofroots<m*factor...
+			// Adjust samples. Some research needed to find best factor in
+			// if(numberofroots<m*factor...
 			do { // debug("doing samples: "+m);
 				roots = findRoots(function, l, r, m);
 
@@ -303,6 +311,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 				Log.debug("We have probably lost some roots...");
 			}
 		} catch (Exception e) {
+			roots = new double[0];
 			Log.debug("Exception in compute() " + e.toString());
 		}
 
@@ -317,7 +326,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	 * Main algorithm, public for eventual use by other commands Finds a
 	 * samplesize n depending on screen coordinates Samples n intervals Collects
 	 * roots in intervals where y(l)*y(r)&gt;0
-	 * 
+	 *
 	 * @param f
 	 *            function
 	 * @param l
@@ -328,11 +337,10 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	 *            number of samples
 	 * @return roots
 	 */
-	public static double[] findRoots(Function f, double l, double r,
-			int samples) {
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
+	public static double[] findRoots(Function f, double l, double r, int samples) {
 		if (DoubleUtil.isEqual(l, r)) {
-			return DoubleUtil.isZero(f.value(l)) ? new double[] { l }
-					: new double[0];
+			return DoubleUtil.isZero(f.value(l)) ? new double[] {l} : new double[0];
 		}
 		double[] y = new double[samples + 1]; //
 		ArrayList<Double> xlist = new ArrayList<>();
@@ -370,7 +378,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 				res[i] = xlist.get(i);
 			} // for all x in xlist
 			removeDuplicates(res); // new 08.03.11 to avoid (1,0.00000x) and
-									// (1,-0.00000x) ...
+			// (1,-0.00000x) ...
 			return res;
 		}
 		return null;
@@ -380,8 +388,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 		return (a < 0.0d && b > 0.0d) || (a > 0.0d && b < 0.0d);
 	}
 
-	private static void add(ArrayList<Double> xlist, double root,
-			Function f) {
+	private static void add(ArrayList<Double> xlist, double root, Function f) {
 		double root2 = DoubleUtil.checkRoot(root, f);
 
 		// NaN -> we're very near hole -> don't add root
@@ -392,7 +399,7 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 
 	/**
 	 * Brent's algo Copied from AlgoRootInterval.java.
-	 * 
+	 *
 	 * @param f
 	 *            function
 	 * @param left
@@ -401,28 +408,24 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 	 *            right bound
 	 * @return root
 	 */
-	public static double calcSingleRoot(Function f, double left,
-			double right) {
+	public static double calcSingleRoot(Function f, double left, double right) {
 		BrentSolver rootFinder = new BrentSolver();
 
 		if (!f.isDefined()) {
 			return Double.NaN;
 		}
 
-		double root = Double.NaN;
+		double root;
 		Function fun = f.getFunction();
 
 		try {
 			// Brent's method
-			root = rootFinder.solve(AlgoRootNewton.MAX_ITERATIONS, fun, left,
-					right);
+			root = rootFinder.solve(AlgoRootNewton.MAX_ITERATIONS, fun, left, right);
 		} catch (Exception e) {
 			try {
 				// Let's try again by searching for a valid domain first
-				double[] borders = RealRootUtil.getDefinedInterval(fun, left,
-						right);
-				root = rootFinder.solve(AlgoRootNewton.MAX_ITERATIONS, fun,
-						borders[0], borders[1]);
+				double[] borders = RealRootUtil.getDefinedInterval(fun, left, right);
+				root = rootFinder.solve(AlgoRootNewton.MAX_ITERATIONS, fun, borders[0], borders[1]);
 			} catch (Exception ex) {
 				root = Double.NaN;
 			}
@@ -478,14 +481,9 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 				}
 
 				// at least one point with dependencies was found
-				if (temp.size() > 0) {
+				if (!temp.isEmpty()) {
 					// delete all other points
-					for (int i = 0; i < points.length; i++) {
-						if (!temp.contains(points[i])) {
-							points[i].setParentAlgorithm(null);
-							points[i].remove();
-						}
-					}
+					removePointsOtherThan(temp);
 					// do not reset points -> position of the not removed points
 					// is not changed
 					return;
@@ -502,6 +500,15 @@ public class AlgoRoots extends AlgoGeoPointsFunction {
 			}
 
 			super.setOutput(points);
+		}
+	}
+
+	private void removePointsOtherThan(ArrayList<GeoPoint> pointsToKeep) {
+		for (int i = 0; i < points.length; i++) {
+			if (!pointsToKeep.contains(points[i])) {
+				points[i].setParentAlgorithm(null);
+				points[i].remove();
+			}
 		}
 	}
 

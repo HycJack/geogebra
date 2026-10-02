@@ -31,28 +31,35 @@ import org.geogebra.common.properties.impl.objects.delegate.ThicknessPropertyDel
  */
 public class ThicknessProperty extends AbstractRangeProperty<Integer> {
 
+	/** Minimal thickness for most elements */
+	public static final int DEFAULT_MIN_THICKNESS = 1;
+	/** Max thickness for math apps elements, in half-pixels */
+	public static final int DEFAULT_MAX_THICKNESS = 13;
+	/** Max line thickness of highlighter, in half-pixels */
+	public static final int MAX_PEN_HIGHLIGHTER_SIZE = 60;
+
 	private final AbstractGeoElementDelegate delegate;
 
 	/**
-	 * Constructor
-	 * @param localization - localization
-	 * @param element - geo
-	 * @throws NotApplicablePropertyException - exception
+	 * Default thickness property with max value 13, used for all apps other than notes.
+	 * @param localization localization
+	 * @param element geo
+	 * @throws NotApplicablePropertyException exception
 	 */
 	public ThicknessProperty(Localization localization, GeoElement element)
 			throws NotApplicablePropertyException {
-		super(localization, "Thickness", null, 9, 1);
+		super(localization, "Thickness", null, DEFAULT_MAX_THICKNESS, 1);
 		delegate = new ThicknessPropertyDelegate(element);
 	}
 
 	/**
-	 * Constructor
-	 * @param localization - localization
-	 * @param max - maximum of range
-	 * @param delegate - delegate
+	 * Parametrized thickness property.
+	 * @param localization localization
+	 * @param max maximum of range
+	 * @param delegate delegate
 	 */
-	public ThicknessProperty(Localization localization, int max,
-			AbstractGeoElementDelegate delegate) {
+	public ThicknessProperty(
+			Localization localization, int max, AbstractGeoElementDelegate delegate) {
 		super(localization, "Thickness", null, max, 1);
 		this.delegate = delegate;
 	}
@@ -75,8 +82,7 @@ public class ThicknessProperty extends AbstractRangeProperty<Integer> {
 	}
 
 	private void setThickness(GeoElement element, int size) {
-		if (element instanceof GeoList) {
-			GeoList list = (GeoList) element;
+		if (element instanceof GeoList list) {
 			for (int i = 0; i < list.size(); i++) {
 				setThickness(list.get(i), size);
 			}

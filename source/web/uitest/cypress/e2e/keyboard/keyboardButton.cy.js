@@ -1,9 +1,9 @@
 import '../../support/embed/commands.js'
 import {selectors} from '@geogebra/web-test-harness/selectors'
-/*global cy*/
 
 describe('Keyboard button visibility test', () => {
     beforeEach(() => {
+        cy.window().then(win => win.localStorage.removeItem("keyboardwanted"));
         cy.visit('classic.html');
         cy.get("body.application");
     });

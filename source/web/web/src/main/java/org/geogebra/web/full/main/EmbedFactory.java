@@ -43,7 +43,7 @@ import org.gwtproject.user.client.DOM;
 
 import elemental2.dom.DomGlobal;
 
-public class EmbedFactory implements AsyncOperation<URLStatus>, MaterialCallbackI {
+public final class EmbedFactory implements AsyncOperation<URLStatus>, MaterialCallbackI {
 	private URLChecker urlChecker;
 	final AppW app;
 	private Runnable hideDialogCallback;
@@ -68,8 +68,7 @@ public class EmbedFactory implements AsyncOperation<URLStatus>, MaterialCallback
 	}
 
 	private void initURLChecker() {
-		if (DomGlobal.location.host != null
-				&& DomGlobal.location.host.contains("geogebra")) {
+		if (DomGlobal.location.host != null && DomGlobal.location.host.contains("geogebra")) {
 			urlChecker = new EmbedURLChecker(app.getAppletParameters().getParamBackendURL());
 		} else {
 			urlChecker = new MarvlURLChecker();
@@ -151,8 +150,7 @@ public class EmbedFactory implements AsyncOperation<URLStatus>, MaterialCallback
 		if (obj.getErrorKey() == null) {
 			GeoElement geo = createAndShowEmbeddedElement(obj.getUrl());
 			runHideCallback();
-			app.getActiveEuclidianView()
-					.getEuclidianController().selectAndShowSelectionUI(geo);
+			app.getActiveEuclidianView().getEuclidianController().selectAndShowSelectionUI(geo);
 		} else {
 			mediaInputPanel.showError(obj.getErrorKey());
 		}

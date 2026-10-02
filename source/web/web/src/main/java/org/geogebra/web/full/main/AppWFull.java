@@ -34,13 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
@@ -59,6 +55,7 @@ import org.geogebra.common.exam.ExamOptions;
 import org.geogebra.common.exam.ExamState;
 import org.geogebra.common.exam.ExamType;
 import org.geogebra.common.factories.CASFactory;
+import org.geogebra.common.factories.UtilFactory;
 import org.geogebra.common.geogebra3D.euclidian3D.printer3D.FormatCollada;
 import org.geogebra.common.geogebra3D.euclidian3D.printer3D.FormatColladaHTML;
 import org.geogebra.common.gui.inputfield.HasLastItem;
@@ -69,6 +66,7 @@ import org.geogebra.common.gui.view.algebra.scicalc.LabelHiderCallback;
 import org.geogebra.common.gui.view.spreadsheet.CopyPasteAdapter;
 import org.geogebra.common.gui.view.spreadsheet.DataImport;
 import org.geogebra.common.io.layout.DockPanelData;
+import org.geogebra.common.io.layout.DockPanelData.TabIds;
 import org.geogebra.common.io.layout.Perspective;
 import org.geogebra.common.io.layout.PerspectiveDecoder;
 import org.geogebra.common.javax.swing.SwingConstants;
@@ -93,9 +91,7 @@ import org.geogebra.common.main.ShareController;
 import org.geogebra.common.main.error.ErrorHandler;
 import org.geogebra.common.main.error.ErrorHelper;
 import org.geogebra.common.main.localization.AutocompleteProvider;
-import org.geogebra.common.main.settings.FontSettings;
 import org.geogebra.common.main.settings.config.AppConfigDefault;
-import org.geogebra.common.main.settings.updater.SettingsUpdaterBuilder;
 import org.geogebra.common.main.syntax.suggestionfilter.SyntaxFilter;
 import org.geogebra.common.main.undo.UndoHistory;
 import org.geogebra.common.main.undo.UndoManager;
@@ -121,6 +117,7 @@ import org.geogebra.common.util.debug.Analytics;
 import org.geogebra.common.util.debug.Log;
 import org.geogebra.editor.web.MathFieldW;
 import org.geogebra.ggbjdk.java.awt.geom.Dimension;
+import org.geogebra.gwtutil.JsObject;
 import org.geogebra.gwtutil.NavigatorUtil;
 import org.geogebra.keyboard.base.impl.TemplateKeyProvider;
 import org.geogebra.keyboard.web.HasKeyboard;
@@ -143,7 +140,6 @@ import org.geogebra.web.full.gui.app.GGWCommandLine;
 import org.geogebra.web.full.gui.app.GGWToolBar;
 import org.geogebra.web.full.gui.applet.GeoGebraFrameFull;
 import org.geogebra.web.full.gui.dialog.DialogManagerW;
-import org.geogebra.web.full.gui.dialog.MatrixInputDialog;
 import org.geogebra.web.full.gui.dialog.RelationPaneW;
 import org.geogebra.web.full.gui.exam.ExamControllerDelegateW;
 import org.geogebra.web.full.gui.exam.ExamEventBus;
@@ -214,7 +210,6 @@ import org.geogebra.web.html5.move.googledrive.GoogleDriveOperation;
 import org.geogebra.web.html5.util.AppletParameters;
 import org.geogebra.web.html5.util.GeoGebraElement;
 import org.geogebra.web.html5.util.Persistable;
-import org.geogebra.web.richtext.impl.CarotaUtil;
 import org.geogebra.web.shared.GlobalHeader;
 import org.geogebra.web.shared.components.dialog.DialogData;
 import org.geogebra.web.shared.ggtapi.LoginOperationW;
@@ -229,6 +224,8 @@ import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.RequiresResize;
 import org.gwtproject.user.client.ui.RootPanel;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import elemental2.core.Global;
 import elemental2.dom.DomGlobal;
@@ -247,7 +244,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 
 	private static final String RECENT_CHANGES_KEY = "RecentChangesInfo.Graphing";
 	private static final boolean ALLOW_RECENT_CHANGES_DIALOG = false;
-	private final static int AUTO_SAVE_PERIOD = 2000;
+	private static final int AUTO_SAVE_PERIOD = 2000;
 	// NB this needs to be adjusted in app-release if we change it here
 	private static final int MIN_SIZE_FOR_PICKER = 650;
 
@@ -261,6 +258,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	protected final GDevice device;
 	/** material ID waiting for login */
 	String toOpen = "";
+
 	private PerspectivesPopup perspectivesPopup;
 
 	private Perspective activePerspective;
@@ -268,14 +266,14 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	private boolean menuShowing = false;
 	private final GeoGebraFrameFull frame;
 	private DockSplitPaneW oldSplitLayoutPanel = null; // just a
-																// technical
+	// technical
 	private int spWidth;
 	private int spHeight;
 	private boolean isMenuInited = false;
 	// helper
 	// variable
 	private FlowPanel splitPanelWrapper = null;
-	private @CheckForNull MenuViewController menuViewController;
+	private @Nullable MenuViewController menuViewController;
 
 	private EmbedManagerW embedManager;
 	private VideoManagerW videoManager;
@@ -289,7 +287,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	private KeyboardManager keyboardManager;
 	/** dialog manager */
 	protected DialogManagerW dialogManager = null;
-	private @CheckForNull String autosavedMaterial = null;
+
+	private @Nullable String autosavedMaterial = null;
 	private MaskWidgetList maskWidgets;
 	private SuiteHeaderAppPicker suiteAppPickerButton;
 	private final Map<SuiteSubApp, Material> constructionJson = new HashMap<>();
@@ -312,9 +311,13 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 * @param device browser / tablet / win store device
 	 * @param frame frame
 	 */
-	public AppWFull(GeoGebraElement geoGebraElement, AppletParameters parameters,
-			int dimension, GLookAndFeelI laf,
-			GDevice device, GeoGebraFrameFull frame) {
+	public AppWFull(
+			GeoGebraElement geoGebraElement,
+			AppletParameters parameters,
+			int dimension,
+			GLookAndFeelI laf,
+			GDevice device,
+			GeoGebraFrameFull frame) {
 		super(geoGebraElement, parameters, dimension, laf);
 
 		this.frame = frame;
@@ -322,26 +325,24 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		setAppletHeight(frame.getComputedHeight());
 		setAppletWidth(frame.getComputedWidth());
 
-		this.useFullGui = !isApplet() || parameters.getDataParamShowAlgebraInput(false)
+		this.useFullGui = !isApplet()
+				|| parameters.getDataParamShowAlgebraInput(false)
 				|| parameters.getDataParamShowToolBar(false)
 				|| parameters.getDataParamShowMenuBar(false)
-				|| parameters.getDataParamEnableRightClick() || !isStartedWithFile();
+				|| parameters.getDataParamEnableRightClick()
+				|| !isStartedWithFile();
 
-		Log.info("GeoGebra " + GeoGebraConstants.VERSION_STRING + " "
-				+ GeoGebraConstants.BUILD_DATE);
+		Log.info("GeoGebra " + GeoGebraConstants.VERSION_STRING + " " + GeoGebraConstants.BUILD_DATE);
 		initCommonObjects();
 		initing = true;
 
-		this.euclidianViewPanel = new EuclidianDockPanelW(this,
-				allowStylebar());
+		this.euclidianViewPanel = new EuclidianDockPanelW(this, allowStylebar());
 		initActivity();
 		initCoreObjects();
 
 		examController = suiteScope.examController;
-		examController.addListener(getExamEventBus());
 		examControllerDelegate = new ExamControllerDelegateW(this);
-		ExamControllerIntegrationW.setup(suiteScope, examControllerDelegate,
-				examControllerDelegate);
+		ExamControllerIntegrationW.setup(suiteScope, examControllerDelegate, examControllerDelegate);
 		ExamControllerIntegrationW.activate(this);
 		checkExamPerspective();
 
@@ -362,10 +363,10 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	@Override
-	protected @Nonnull GeoElementCellRendererFactory getGeoElementCellRendererFactory(
+	protected @NonNull GeoElementCellRendererFactory getGeoElementCellRendererFactory(
 			Supplier<Double> fontSizeProvider) {
-		return new GeoElementCellRendererFactory(new AwtReTexGraphicsBridgeW(),
-				this::getFontSizeDouble);
+		return new GeoElementCellRendererFactory(
+				new AwtReTexGraphicsBridgeW(), this::getFontSizeDouble);
 	}
 
 	private void setupHeader() {
@@ -410,9 +411,11 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 */
 	private String getSupportedExamModes(String appCode) {
 		List<ExamType> examTypes = ExamType.getAvailableValues(getLocalization(), getConfig());
-		return Stream.concat(Stream.of(appCode, CHOOSE), examTypes.stream()
-						.filter(r -> r != ExamType.GENERIC)
-						.map(r -> r.name().toLowerCase(Locale.ROOT)))
+		return Stream.concat(
+						Stream.of(appCode, CHOOSE),
+						examTypes.stream()
+								.filter(r -> r != ExamType.GENERIC)
+								.map(r -> r.name().toLowerCase(Locale.ROOT)))
 				.collect(Collectors.joining(", "));
 	}
 
@@ -425,7 +428,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			return null;
 		}
 		if (paramExamMode.equals(appletParameters.getDataParamAppName())
-			|| paramExamMode.equals(CHOOSE)) {
+				|| paramExamMode.equals(CHOOSE)) {
 			return ExamType.GENERIC;
 		}
 		if (hasExamModes()) {
@@ -450,6 +453,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		return activity;
 	}
 
+	/**
+	 * @return the sub-application of the current activity, or null if there is no activity
+	 */
 	public GeoGebraActivity getCurrentActivity() {
 		return activity == null ? null : activity.getSubapp();
 	}
@@ -459,37 +465,37 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			return;
 		}
 		switch (appletParameters.getDataParamAppName()) {
-		case GRAPHING_APPCODE:
-			activity = new GraphingActivity();
-			break;
-		case GEOMETRY_APPCODE:
-			activity = new GeometryActivity();
-			break;
-		case G3D_APPCODE:
-			activity = new Graphing3DActivity();
-			break;
-		case "mr":
-			activity = new MixedRealityActivity();
-			break;
-		case CAS_APPCODE:
-			activity = new CASActivity();
-			break;
-		case SCIENTIFIC_APPCODE:
-			activity = new ScientificActivity();
-			break;
-		case NOTES_APPCODE:
-			activity = isByCS() ? new MebisNotesActivity() : new NotesActivity();
-			break;
-		case EVALUATOR_APPCODE:
-			activity = new EvaluatorActivity();
-			break;
-		case SUITE_APPCODE:
-			String disableCAS = NavigatorUtil.getUrlParameter("disableCAS");
-			activity = new SuiteActivity(getInitialSubApp(), "".equals(disableCAS)
-					|| "true".equals(disableCAS));
-			break;
-		default:
-			activity = new ClassicActivity(new AppConfigDefault());
+			case GRAPHING_APPCODE:
+				activity = new GraphingActivity();
+				break;
+			case GEOMETRY_APPCODE:
+				activity = new GeometryActivity();
+				break;
+			case G3D_APPCODE:
+				activity = new Graphing3DActivity();
+				break;
+			case "mr":
+				activity = new MixedRealityActivity();
+				break;
+			case CAS_APPCODE:
+				activity = new CASActivity();
+				break;
+			case SCIENTIFIC_APPCODE:
+				activity = new ScientificActivity();
+				break;
+			case NOTES_APPCODE:
+				activity = isByCS() ? new MebisNotesActivity() : new NotesActivity();
+				break;
+			case EVALUATOR_APPCODE:
+				activity = new EvaluatorActivity();
+				break;
+			case SUITE_APPCODE:
+				String disableCAS = NavigatorUtil.getUrlParameter("disableCAS");
+				activity = new SuiteActivity(
+						getInitialSubApp(), "".equals(disableCAS) || "true".equals(disableCAS));
+				break;
+			default:
+				activity = new ClassicActivity(new AppConfigDefault());
 		}
 		setConfig(activity.getConfig());
 	}
@@ -521,7 +527,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		}
 		String lastUsedSubApp = BrowserStorage.LOCAL.getItem(BrowserStorage.LAST_USED_SUB_APP);
 		return !StringUtil.empty(lastUsedSubApp)
-				? SuiteSubApp.forCode(lastUsedSubApp) : SuiteSubApp.GRAPHING;
+				? SuiteSubApp.forCode(lastUsedSubApp)
+				: SuiteSubApp.GRAPHING;
 	}
 
 	/**
@@ -530,8 +537,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	private void startActivity() {
 		preloadAdvancedCommandsForSuiteCAS();
 		activity.start(this);
-		getSettings().getAlgebra().setEquationChangeByDragRestricted(
-				getConfig().isObjectDraggingRestricted());
+		getSettings()
+				.getAlgebra()
+				.setEquationChangeByDragRestricted(getConfig().isObjectDraggingRestricted());
 	}
 
 	/**
@@ -567,44 +575,46 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 				getGlobalHandlers().addEventListener(DomGlobal.window, "storage", event -> {
 					StorageEvent storageEvent = (StorageEvent) event;
 					if (storageEvent.newValue == null
-							&& createStorageMacroKey(getEditMacro().getEditName())
-							.equals(storageEvent.key)) {
+							&& createStorageMacroKey(getEditMacro().getEditName()).equals(storageEvent.key)) {
 						DomGlobal.window.close();
 					}
 				});
 				// Before the tab is closed, remove the macro from local storage
 				// in order to let the original app open the macro editing again.
-				getGlobalHandlers().addEventListener(DomGlobal.window, "beforeunload", event ->
-					removeMacroFromStorage(getEditMacro().getEditName())
-				);
+				getGlobalHandlers()
+						.addEventListener(
+								DomGlobal.window,
+								"beforeunload",
+								event -> removeMacroFromStorage(getEditMacro().getEditName()));
 			} else {
 				removeAllMacrosFromStorage();
 				// Close all the editing tabs when the original app is closed.
-				getGlobalHandlers().addEventListener(DomGlobal.window, "beforeunload", event ->
-						removeAllMacrosFromStorage());
+				getGlobalHandlers()
+						.addEventListener(
+								DomGlobal.window, "beforeunload", event -> removeAllMacrosFromStorage());
 				// After the macro is edited and the save button is pressed, the editing tab
 				// sends a message to the original app containing the XML of the edited macro.
-				getGlobalHandlers().addEventListener(DomGlobal.window, "message", event -> {
-					MessageEvent<?> message = Js.uncheckedCast(event);
-					String editedMacroMessage = message.data.toString();
-					try {
-						JsPropertyMap<Object> messageProperties =
-								Js.asPropertyMap(Global.JSON.parse(editedMacroMessage));
-						Object macroName = messageProperties
-								.get(EDITED_MACRO_NAME_KEY);
-						if (macroName != null) {
-							getKernel().removeMacro(macroName.toString());
-							if (addMacroXML(
-									messageProperties.get(EDITED_MACRO_XML_KEY).toString())) {
-								setXML(getXML(), true);
-							}
-						}
-					} catch (Throwable err) {
-						Log.debug("Error occurred while updating the macro XML: " + err.getMessage()
-								+ "\nEdited macro message: " + editedMacroMessage);
-					}
-				});
+				getGlobalHandlers()
+						.addEventListener(DomGlobal.window, "message", this::handleMacroEditingMessage);
 			}
+		}
+	}
+
+	private void handleMacroEditingMessage(elemental2.dom.Event event) {
+		MessageEvent<?> message = Js.uncheckedCast(event);
+		String editedMacroMessage = message.data.toString();
+		try {
+			JsPropertyMap<Object> messageProperties = JsObject.of(Global.JSON.parse(editedMacroMessage));
+			Object macroName = messageProperties.get(EDITED_MACRO_NAME_KEY);
+			if (macroName != null) {
+				getKernel().removeMacro(macroName.toString());
+				if (addMacroXML(messageProperties.get(EDITED_MACRO_XML_KEY).toString())) {
+					setXML(getXML(), true);
+				}
+			}
+		} catch (Throwable err) {
+			Log.debug("Error occurred while updating the macro XML: " + err.getMessage()
+					+ "\nEdited macro message: " + editedMacroMessage);
 		}
 	}
 
@@ -617,8 +627,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	@Override
-	public final boolean showKeyboard(MathKeyboardListener textField,
-			boolean forceShow) {
+	public final boolean showKeyboard(MathKeyboardListener textField, boolean forceShow) {
 		boolean ret = getAppletFrame().showKeyboard(true, textField, forceShow);
 		if (textField != null && ret) {
 			CancelEventTimer.keyboardSetVisible();
@@ -658,8 +667,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			ensureLoginOperation();
 			if (getVendorSettings().canSessionExpire()) {
 				AuthenticationModel model = getLoginOperation().getModel();
-				model.setSessionExpireTimer(newTimer(getDialogManager().getSessionExpireDialog(),
-						AuthenticationModel.SESSION_TIME));
+				model.setSessionExpireTimer(UtilFactory.getPrototype()
+						.newTimer(
+								getDialogManager().getSessionExpireDialog(), AuthenticationModel.SESSION_TIME));
 			}
 			MenuViewController menuController = new MenuViewController(this);
 			menuController.setMenuViewListener(this);
@@ -686,17 +696,16 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	@Override
 	public final boolean letShowPropertiesDialog() {
 		return (getAppletParameters().getDataParamShowMenuBar(false)
-					|| allowStylebar() || rightClickEnabled)
-						&& getAppletParameters().getParamAllowSettingsView();
+						|| allowStylebar()
+						|| rightClickEnabled)
+				&& getAppletParameters().getParamAllowSettingsView();
 	}
 
 	@Override
 	public final void updateKeyboard() {
 		invokeLater(() -> {
-			DockPanelW dp = getGuiManager().getLayout().getDockManager()
-					.getPanelForKeyboard();
-			MathKeyboardListener listener = getGuiManager()
-					.getKeyboardListener(dp);
+			DockPanelW dp = getGuiManager().getLayout().getDockManager().getPanelForKeyboard();
+			MathKeyboardListener listener = getGuiManager().getKeyboardListener(dp);
 			if (listener != null) {
 				// dp.getKeyboardListener().setFocus(true);
 				listener.ensureEditing();
@@ -709,9 +718,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			if (!getAppletFrame().appNeedsKeyboard()) {
 				getAppletFrame().showKeyboard(false, null, true);
 			}
-
 		});
-
 	}
 
 	@Override
@@ -760,13 +767,14 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		if (appletParameters.getDataParamShowStartTooltip(perspective != null)) {
 			getToolTipManager().setBlockToolTip(false);
 			String appName = perspective != null ? perspective.getId() : getConfig().getAppTitle();
-			String helpText = getLocalization().getPlain("CheckOutTutorial",
-					getLocalization().getMenu(appName));
+			String helpText =
+					getLocalization().getPlain("CheckOutTutorial", getLocalization().getMenu(appName));
 			String tooltipURL = getLocalization().getTutorialURL(getConfig());
 			ToolTipManagerW toolTipManagerW = getToolTipManager();
 			String title = getLocalization().getMenu("NewToGeoGebra");
-			toolTipManagerW.showBottomInfoToolTip(new ToolTip(title, helpText, "Help",
-							tooltipURL), this,
+			toolTipManagerW.showBottomInfoToolTip(
+					new ToolTip(title, helpText, "Help", tooltipURL),
+					this,
 					ComponentSnackbar.DEFAULT_TOOLTIP_DURATION);
 			getToolTipManager().setBlockToolTip(true);
 		}
@@ -783,12 +791,21 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		int maxColumn = data.length > 0 ? data[0].length - 1 : 0;
 		new CopyPasteAdapter(this, getSpreadsheetTableModel())
 				.pasteExternal(data, 0, 0, maxColumn, data.length);
+		getSettings().getSpreadsheet().ensureDimensions(data.length, maxColumn);
 		onOpenFile();
 	}
 
 	@Override
 	public void resetUI() {
 		resetEVs();
+		if (isWhiteboardActive()) {
+			getActiveEuclidianView().getSettings().setLineThicknessScaled(true);
+		}
+		ToolbarPanel unbundledToolbarBefore =
+				getGuiManager() != null ? getGuiManager().getUnbundledToolbar() : null;
+		final TabIds previousTabId =
+				unbundledToolbarBefore != null ? unbundledToolbarBefore.getSelectedTabId() : null;
+
 		// remove all Macros before loading preferences
 		kernel.removeAllMacros();
 		// reload the saved/(default) preferences
@@ -802,18 +819,16 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		}
 
 		if (isUnbundledOrWhiteboard()) {
-			p = PerspectiveDecoder.getDefaultPerspective(getConfig().getForcedPerspective(),
-					getGuiManager().getLayout());
+			p = PerspectiveDecoder.getDefaultPerspective(
+					getConfig().getForcedPerspective(), getGuiManager().getLayout());
 		}
 
 		if (isUnbundled()) {
 			if (isPortrait()) {
 				p.getSplitPaneData()[0].setDivider(PerspectiveDecoder.portraitRatio(
-						getHeight(),
-						isUnbundledGraphing() || isUnbundled3D()));
+						getHeight(), isUnbundledGraphing() || isUnbundled3D()));
 			} else {
-				p.getSplitPaneData()[0].setDivider(
-						PerspectiveDecoder.landscapeRatio(this, getWidth()));
+				p.getSplitPaneData()[0].setDivider(PerspectiveDecoder.landscapeRatio(this, getWidth()));
 			}
 		}
 
@@ -822,13 +837,11 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		resetAllToolbars();
 
 		resetToolbarPanel();
-
-		getGuiManager().updateGlobalOptions();
-
-		if (isUnbundled() && getGuiManager()
-				.getUnbundledToolbar() != null) {
-			getGuiManager().getUnbundledToolbar()
-					.updateContent();
+		if (getGuiManager().getUnbundledToolbar() != null) {
+			getGuiManager().getUnbundledToolbar().updateContent();
+			if (previousTabId != null) {
+				getGuiManager().getUnbundledToolbar().openTab(previousTabId, false);
+			}
 		}
 	}
 
@@ -841,7 +854,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			}
 		}
 		gm.setToolBarDefinition(gm.getDefaultToolbarString());
-
 	}
 
 	/**
@@ -849,8 +861,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 */
 	protected final void resetToolbarPanel() {
 		GuiManagerW gm = getGuiManager();
-		DockPanel avPanel = gm.getLayout().getDockManager()
-				.getPanel(VIEW_ALGEBRA);
+		DockPanel avPanel = gm.getLayout().getDockManager().getPanel(VIEW_ALGEBRA);
 		if (avPanel instanceof ToolbarDockPanelW) {
 			final ToolbarDockPanelW dockPanel = (ToolbarDockPanelW) avPanel;
 			if (dockPanel.getToolbar() != null) {
@@ -882,10 +893,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 				new StartExamAction().startExamDirectly(this);
 			} else {
 				resetViewsEnabled();
-				String negativeKey = isLockedExam()
-						? null : "Cancel";
-				DialogData data = new DialogData("exam_custom_header",
-						negativeKey, "exam_start_button");
+				String negativeKey = isLockedExam() ? null : "Cancel";
+				DialogData data = new DialogData("exam_custom_header", negativeKey, "exam_start_button");
 				new ExamClassicStartDialog(this, data).show();
 			}
 		}
@@ -898,8 +907,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 
 	@Override
 	public RelationPaneW getRelationDialog(String subTitle) {
-		DialogData data = new DialogData(getLocalization().getCommand("Relation"), subTitle,
-				null, "OK");
+		DialogData data =
+				new DialogData(getLocalization().getCommand("Relation"), subTitle, null, "OK");
 		return new RelationPaneW(this, data);
 	}
 
@@ -1004,8 +1013,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	protected final void initGoogleDriveEventFlow() {
 		googleDriveOperation = new GoogleDriveOperationW(this);
 		String state = NavigatorUtil.getUrlParameter("state");
-		if (getNetworkOperation().isOnline() && state != null
-				&& !"".equals(state)) {
+		if (getNetworkOperation().isOnline() && state != null && !"".equals(state)) {
 			googleDriveOperation.initGoogleDriveApi();
 		}
 	}
@@ -1016,21 +1024,17 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	@Override
-	public final void openMaterial(final String id,
-			final AsyncOperation<String> onError) {
-		if (getLoginOperation() != null
-				&& getLoginOperation().getGeoGebraTubeAPI()
-				.isCheckDone()) {
+	public final void openMaterial(final String id, final AsyncOperation<String> onError) {
+		if (getLoginOperation() != null && getLoginOperation().getGeoGebraTubeAPI().isCheckDone()) {
 			doOpenMaterial(id, onError);
 		} else {
 			ensureLoginOperation();
 			toOpen = id;
 			// not logged in to Mebis while opening shared link: show login
 			// dialog first
-			if (!getLoginOperation().isLoggedIn() && !getLoginOperation()
-					.getGeoGebraTubeAPI().anonymousOpen()) {
-				getLoginOperation().getView()
-						.add(new SharedFileOpenCallback(this, onError));
+			if (!getLoginOperation().isLoggedIn()
+					&& !getLoginOperation().getGeoGebraTubeAPI().anonymousOpen()) {
+				getLoginOperation().getView().add(new SharedFileOpenCallback(this, onError));
 			} else {
 				getLoginOperation().getView().add(new EventRenderable() {
 
@@ -1084,8 +1088,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 * @param onError error handler
 	 * @param caller temporary login listener, to be removed after opening
 	 */
-	protected void checkOpen(final AsyncOperation<String> onError,
-			EventRenderable caller) {
+	protected void checkOpen(final AsyncOperation<String> onError, EventRenderable caller) {
 		if (toOpen != null && toOpen.length() > 0) {
 			doOpenMaterial(toOpen, onError);
 			toOpen = "";
@@ -1097,53 +1100,45 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 * @param id material ID
 	 * @param onError error callback
 	 */
-	public final void doOpenMaterial(String id,
-			final AsyncOperation<String> onError) {
-		getLoginOperation().getResourcesAPI()
-				.getItem(id, new MaterialCallback() {
+	public final void doOpenMaterial(String id, final AsyncOperation<String> onError) {
+		getLoginOperation().getResourcesAPI().getItem(id, new MaterialCallback() {
 
-					@Override
-					public void onLoaded(
-							final List<Material> parseResponse,
-							Pagination meta) {
-						// may be one or more materials (in case of multi-applet activity)
-						if (!parseResponse.isEmpty()) {
-							Material material = parseResponse.get(0);
-							material.setSyncStamp(
-									parseResponse.get(0).getModified());
-							AppWFull.this.setSyncStamp(
-									parseResponse.get(0).getModified());
-							registerOpenFileListener(
-									getUpdateTitleCallback(material));
-							if (!StringUtil.empty(material.getFileName())) {
-								getArchiveLoader().processFileName(
-										material.getFileName());
-							} else {
-								getGgbApi().setBase64(material.getBase64());
-							}
-							setActiveMaterial(material);
-							if (material.isMultiuser()) {
-								getShareController().startMultiuser(material.getSharingKeySafe());
-							}
-							ensureSupportedModeActive();
-						} else {
-							onError.callback(Errors.LoadFileFailed.getKey());
-						}
+			@Override
+			public void onLoaded(final List<Material> parseResponse, Pagination meta) {
+				// may be one or more materials (in case of multi-applet activity)
+				if (!parseResponse.isEmpty()) {
+					Material material = parseResponse.get(0);
+					material.setSyncStamp(parseResponse.get(0).getModified());
+					AppWFull.this.setSyncStamp(parseResponse.get(0).getModified());
+					registerOpenFileListener(getUpdateTitleCallback(material));
+					if (!StringUtil.empty(material.getFileName())) {
+						getArchiveLoader().processFileName(material.getFileName());
+					} else {
+						getGgbApi().setBase64(material.getBase64());
 					}
+					setActiveMaterial(material);
+					if (material.isMultiuser()) {
+						getShareController().startMultiuser(material.getSharingKeySafe());
+					}
+					ensureSupportedModeActive();
+				} else {
+					onError.callback(Errors.LoadFileFailed.getKey());
+				}
+			}
 
-					@Override
-					public void onError(Throwable error) {
-						onError.callback(error.getMessage().contains("401")
+			@Override
+			public void onError(Throwable error) {
+				onError.callback(
+						error.getMessage().contains("401")
 								? Errors.NotAuthorized.getKey()
 								: Errors.LoadFileFailed.getKey());
-					}
-				});
+			}
+		});
 	}
 
 	private void ensureSupportedModeActive() {
 		if (getMode() == EuclidianConstants.MODE_MOVE && isWhiteboardActive()) {
-			int mode = showToolBar ? EuclidianConstants.MODE_PEN
-					: EuclidianConstants.MODE_SELECT_MOW;
+			int mode = showToolBar ? EuclidianConstants.MODE_PEN : EuclidianConstants.MODE_SELECT_MOW;
 			setMode(mode, ModeSetter.DOCK_PANEL);
 		}
 	}
@@ -1152,8 +1147,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 * @param material loaded material
 	 * @return callback that updates browser title
 	 */
-	public final OpenFileListener getUpdateTitleCallback(
-			final Material material) {
+	public final OpenFileListener getUpdateTitleCallback(final Material material) {
 		return () -> {
 			this.updateMaterialURL(material);
 			return true;
@@ -1176,8 +1170,10 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	public final void showPerspectivesPopupIfNeeded() {
 		boolean smallScreen = NavigatorUtil.getWindowWidth() < MIN_SIZE_FOR_PICKER
 				|| NavigatorUtil.getWindowHeight() < MIN_SIZE_FOR_PICKER;
-		if (isUnbundledOrWhiteboard() || smallScreen
-				|| isAppletWithoutAppsPicker() || !examController.isIdle()
+		if (isUnbundledOrWhiteboard()
+				|| smallScreen
+				|| isAppletWithoutAppsPicker()
+				|| !examController.isIdle()
 				|| !StringUtil.empty(getAppletParameters().getDataParamPerspective())) {
 			return;
 		}
@@ -1185,8 +1181,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	private boolean isAppletWithoutAppsPicker() {
-		return !(getAppletParameters().getDataParamShowAppsPicker() || getAppletParameters()
-				.getDataParamApp());
+		return !(getAppletParameters().getDataParamShowAppsPicker()
+				|| getAppletParameters().getDataParamApp());
 	}
 
 	/**
@@ -1219,12 +1215,13 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		}
 	}
 
-	private void executeCommand(String command, EvalInfo info,
-			AsyncOperation<GeoElementND[]> callback) {
+	private void executeCommand(
+			String command, EvalInfo info, AsyncOperation<GeoElementND[]> callback) {
 		try {
-			getKernel().getAlgebraProcessor()
-					.processAlgebraCommandNoExceptionHandling(command, false,
-							ErrorHelper.silent(), info, callback);
+			getKernel()
+					.getAlgebraProcessor()
+					.processAlgebraCommandNoExceptionHandling(
+							command, false, ErrorHelper.silent(), info, callback);
 		} catch (CommandNotLoadedError err) {
 			throw err;
 		} catch (Throwable throwable) {
@@ -1263,25 +1260,21 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	public void updateViewSizes() {
 		getEuclidianViewpanel().deferredOnResize();
 		if (hasEuclidianView2(1)) {
-			getGuiManager().getEuclidianView2DockPanel(1)
-					.deferredOnResize();
+			getGuiManager().getEuclidianView2DockPanel(1).deferredOnResize();
 		}
 		if (getGuiManager().hasSpreadsheetView()) {
-			DockPanel sp = getGuiManager().getLayout().getDockManager()
-					.getPanel(App.VIEW_SPREADSHEET);
+			DockPanel sp = getGuiManager().getLayout().getDockManager().getPanel(App.VIEW_SPREADSHEET);
 			if (sp != null) {
 				sp.deferredOnResize();
 			}
 		}
 		if (getGuiManager().hasCasView()) {
-			DockPanelW sp = getGuiManager().getLayout().getDockManager()
-					.getPanel(App.VIEW_CAS);
+			DockPanelW sp = getGuiManager().getLayout().getDockManager().getPanel(App.VIEW_CAS);
 			if (sp != null) {
 				sp.onResize();
 			}
 		}
-		getAppletFrame()
-				.setMenuHeight(getInputPosition() == InputPosition.bottom);
+		getAppletFrame().setMenuHeight(getInputPosition() == InputPosition.bottom);
 	}
 
 	@Override
@@ -1306,11 +1299,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	@Override
 	public TemplateKeyProvider getTemplateKeyProvider() {
 		return new LocalizedTemplateKeyProvider(this);
-	}
-
-	@Override
-	public void showMatrixInputDialog(Consumer<String> processInput) {
-		new MatrixInputDialog(this, processInput).show();
 	}
 
 	/**
@@ -1392,7 +1380,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	@Override
 	public final void setUnsaved() {
 		super.setUnsaved();
-		if (hasSaveCheckDialog() && kernel != null && kernel.getConstruction() != null
+		if (hasSaveCheckDialog()
+				&& kernel != null
+				&& kernel.getConstruction() != null
 				&& kernel.getConstruction().isStarted()) {
 			getLAF().addWindowClosingHandler(this);
 		}
@@ -1437,8 +1427,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		}
 		if (autosavedMaterial != null && !isStartedWithFile() && examController.isIdle()) {
 			afterLocalizationLoaded(() -> {
-				getDialogManager().showRecoverAutoSavedDialog(
-						this, autosavedMaterial);
+				getDialogManager().showRecoverAutoSavedDialog(this, autosavedMaterial);
 				autosavedMaterial = null;
 			});
 		} else {
@@ -1446,8 +1435,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		}
 	}
 
-	private void showRecentChangesDialog(String message, String link,
-			final Runnable closingCallback) {
+	private void showRecentChangesDialog(
+			String message, String link, final Runnable closingCallback) {
 		DialogData data = new DialogData("WhatsNew", null, "OK");
 		final WhatsNewDialog dialog = new WhatsNewDialog(this, data, message, link);
 		dialog.addCloseHandler(closeEvent -> closingCallback.run());
@@ -1477,7 +1466,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			}
 		};
 		timer.scheduleRepeating(AUTO_SAVE_PERIOD);
-
 	}
 
 	@Override
@@ -1493,8 +1481,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		if (menuShowing) {
 			int h = this.oldSplitLayoutPanel.getOffsetHeight();
 			if (!isFloatingMenu()) {
-				frame.getMenuBar(this).setPixelSize(GLookAndFeel.MENUBAR_WIDTH,
-						h);
+				frame.getMenuBar(this).setPixelSize(GLookAndFeel.MENUBAR_WIDTH, h);
 			} else {
 				frame.getMenuBar(this).setHeight(h + "px");
 			}
@@ -1513,14 +1500,12 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		if (activity != null) {
 			return activity.isWhiteboard();
 		}
-		return "notes"
-				.equals(getAppletParameters().getDataParamAppName());
+		return "notes".equals(getAppletParameters().getDataParamAppName());
 	}
 
 	@Override
 	public final void ensureStandardView() {
-		getActiveEuclidianView()
-				.setKeepCenter(true);
+		getActiveEuclidianView().setKeepCenter(true);
 	}
 
 	@Override
@@ -1579,9 +1564,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			euclidianDockPanel.setVisible(true);
 
 			euclidianDockPanel.setEmbeddedSize(getInnerAppletWidth());
-			getEuclidianViewpanel().setPixelSize(
-					getInnerAppletWidth(),
-					getInnerAppletHeight());
+			getEuclidianViewpanel().setPixelSize(getInnerAppletWidth(), getInnerAppletHeight());
 			euclidianDockPanel.updatePanel(false);
 
 			oldSplitLayoutPanel = null;
@@ -1605,8 +1588,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		for (int i = frame.getWidgetCount() - 1; i >= 0; i--) {
 			if (!(frame.getWidget(i) instanceof HasKeyboardPopup
 					|| frame.getWidget(i) instanceof TabbedKeyboard
-					|| (menuViewController != null
-					&& frame.getWidget(i) == menuViewController.getView())
+					|| (menuViewController != null && frame.getWidget(i) == menuViewController.getView())
 					|| frame.getWidget(i) instanceof Persistable
 					|| frame.getWidget(i).getStyleName().contains("perspectivePopup"))) {
 				frame.remove(i);
@@ -1626,8 +1608,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 				&& this.getToolbarPosition() != SwingConstants.SOUTH) {
 			frame.attachToolbar(this);
 		}
-		if (this.getInputPosition() == InputPosition.top && appletParameters
-				.getDataParamShowAlgebraInput(showAlgebraInput)) {
+		if (this.getInputPosition() == InputPosition.top
+				&& appletParameters.getDataParamShowAlgebraInput(showAlgebraInput)) {
 			attachAlgebraInput();
 		}
 
@@ -1642,8 +1624,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		// showAlgebraInput should come from data-param,
 		// this is just a 'second line of defense'
 		// otherwise it can be used for taking ggb settings into account too
-		if (this.getInputPosition() == InputPosition.bottom && appletParameters
-				.getDataParamShowAlgebraInput(showAlgebraInput)) {
+		if (this.getInputPosition() == InputPosition.bottom
+				&& appletParameters.getDataParamShowAlgebraInput(showAlgebraInput)) {
 			attachAlgebraInput();
 		}
 		if (appletParameters.getDataParamShowToolBar(showToolBar)
@@ -1655,15 +1637,15 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	private void refreshSplitLayoutPanel() {
-		if (frame != null && frame.getWidgetCount() != 0
+		if (frame != null
+				&& frame.getWidgetCount() != 0
 				&& frame.getWidgetIndex(getSplitLayoutPanel()) == -1
 				&& frame.getWidgetIndex(oldSplitLayoutPanel) != -1) {
 			int wi = frame.getWidgetIndex(oldSplitLayoutPanel);
 			frame.remove(oldSplitLayoutPanel);
 			frame.insert(getSplitLayoutPanel(), wi);
 			oldSplitLayoutPanel = getSplitLayoutPanel();
-			Browser.removeDefaultContextMenu(
-					getSplitLayoutPanel().getElement());
+			Browser.removeDefaultContextMenu(getSplitLayoutPanel().getElement());
 		}
 	}
 
@@ -1679,8 +1661,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 
 		updateSplitPanelHeight();
 
-		getGuiManager().getAlgebraInput()
-				.setInputFieldWidth(this.getAppletWidth());
+		getGuiManager().getAlgebraInput().setInputFieldWidth(this.getAppletWidth());
 	}
 
 	@Override
@@ -1708,8 +1689,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		oldSplitLayoutPanel = getSplitLayoutPanel();
 
 		if (oldSplitLayoutPanel != null) {
-			if (!isFloatingMenu()
-					&& getAppletParameters().getDataParamShowMenuBar(false)) {
+			if (!isFloatingMenu() && getAppletParameters().getDataParamShowMenuBar(false)) {
 				splitPanelWrapper = new FlowPanel();
 				splitPanelWrapper.addStyleName("splitPanelWrapper");
 				// TODO
@@ -1722,21 +1702,18 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			} else {
 				frame.add(oldSplitLayoutPanel);
 			}
-			Browser.removeDefaultContextMenu(
-					getSplitLayoutPanel().getElement());
+			Browser.removeDefaultContextMenu(getSplitLayoutPanel().getElement());
 
 			if (!oldSLPanelChanged) {
 				return;
 			}
 
-			getGlobalHandlers().add(ClickStartHandler.init(oldSplitLayoutPanel,
-					new ClickStartHandler() {
-						@Override
-						public void onClickStart(int x, int y,
-								final PointerEventType type) {
-							onUnhandledClick();
-						}
-					}));
+			getGlobalHandlers().add(ClickStartHandler.init(oldSplitLayoutPanel, new ClickStartHandler() {
+				@Override
+				public void onClickStart(int x, int y, final PointerEventType type) {
+					onUnhandledClick();
+				}
+			}));
 		}
 	}
 
@@ -1744,7 +1721,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		updateAVStylebar();
 
 		if (!isWhiteboardActive() && !CancelEventTimer.cancelKeyboardHide()) {
-			DomGlobal.setTimeout(ignore -> hideKeyboard() , 0);
+			DomGlobal.setTimeout(ignore -> hideKeyboard(), 0);
 		}
 	}
 
@@ -1759,8 +1736,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		}
 		String perspective = getAppletParameters().getDataParamPerspective();
 		if (!isUsingFullGui()) {
-			if (showConsProtNavigation() || !isJustEuclidianVisible()
-					|| perspective.length() > 0) {
+			if (showConsProtNavigation() || !isJustEuclidianVisible() || perspective.length() > 0) {
 				useFullGui = true;
 			}
 		}
@@ -1770,8 +1746,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			buildSingleApplicationPanel();
 			Perspective current = getTmpPerspective();
 			if (current != null && current.getToolbarDefinition() != null) {
-				getGuiManager().setGeneralToolBarDefinition(
-						current.getToolbarDefinition());
+				getGuiManager().setGeneralToolBarDefinition(current.getToolbarDefinition());
 				setPerspectives(current);
 			}
 		} else if (!asSlide) {
@@ -1779,7 +1754,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 
 			Perspective p = null;
 			if (perspective != null && !StringUtil.isNaN(perspective)) {
-				p = PerspectiveDecoder.decode(perspective,
+				p = PerspectiveDecoder.decode(
+						perspective,
 						this.getKernel().getParser(),
 						ToolBar.getAllToolsNoMacros(true, false, this),
 						getLayout());
@@ -1790,11 +1766,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			}
 
 			getGuiManager().updateFrameSize();
-			if (appletParameters.getDataParamShowAlgebraInput(false)
-					&& !isUnbundledOrWhiteboard()) {
+			if (appletParameters.getDataParamShowAlgebraInput(false) && !isUnbundledOrWhiteboard()) {
 				Perspective p2 = getTmpPerspective(p);
-				if (p2 != null && !algebraVisible(p2)
-						&& getInputPosition() == InputPosition.algebraView) {
+				if (p2 != null && !algebraVisible(p2) && getInputPosition() == InputPosition.algebraView) {
 					setInputPosition(InputPosition.bottom, false);
 					p2.setInputPosition(InputPosition.bottom);
 				}
@@ -1829,8 +1803,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			// but preferring to change what is needed only to avoid new unknown
 			// bugs
 			if (getGuiManager().hasSpreadsheetView()) {
-				DockPanel sp = getGuiManager().getLayout().getDockManager()
-						.getPanel(App.VIEW_SPREADSHEET);
+				DockPanel sp = getGuiManager().getLayout().getDockManager().getPanel(App.VIEW_SPREADSHEET);
 				if (sp != null) {
 					sp.deferredOnResize();
 				}
@@ -1840,8 +1813,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		if (isUsingFullGui()) {
 			updateNavigationBars();
 		}
-		this.setPreferredSize(
-				new Dimension((int) this.getWidth(), (int) this.getHeight()));
+		this.setPreferredSize(new Dimension((int) this.getWidth(), (int) this.getHeight()));
 		setDefaultCursor();
 		frame.useDataParamBorder();
 
@@ -1868,7 +1840,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		resetPen();
 		restoreCurrentUndoHistory();
 		FragmentPrefetcher.fetchAllIfStandalone();
-
 	}
 
 	@Override
@@ -1884,7 +1855,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			initialViewState = isUnbundled()
 					? new UnbundledInitialViewState(this, isShowToolbar(), allowStyleBar)
 					: new ClassicInitialViewState(this, isShowToolbar(), allowStyleBar);
-
 		}
 		return initialViewState;
 	}
@@ -1899,9 +1869,8 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		if (fromXml == null) {
 			return; // invalid or missing file
 		}
-		Perspective forcedPerspective = PerspectiveDecoder
-				.getDefaultPerspective(getConfig().getForcedPerspective(),
-						getGuiManager().getLayout());
+		Perspective forcedPerspective = PerspectiveDecoder.getDefaultPerspective(
+				getConfig().getForcedPerspective(), getGuiManager().getLayout());
 
 		LayoutW layout = getGuiManager().getLayout();
 		updateAvVisibilityAndTab(forcedPerspective, fromXml);
@@ -1950,8 +1919,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			} else {
 				ratio = algebraWidth / (algebraWidth + euclidianWidth);
 			}
-			forcedPerspective.getSplitPaneData()[0]
-					.setDivider(ratio);
+			forcedPerspective.getSplitPaneData()[0].setDivider(ratio);
 		}
 		if (algebra != -1 && oldAlgebra != -1) {
 			dockPanelData[algebra].setTabId(oldDockPanelData[oldAlgebra].getTabId());
@@ -1959,14 +1927,13 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	private void setPerspectives(Perspective p) {
-		getGuiManager().getLayout().setPerspectiveOrDefault(
-				p == null ? getTmpPerspective() : p);
+		getGuiManager().getLayout().setPerspectiveOrDefault(p == null ? getTmpPerspective() : p);
 	}
 
 	private void setupToolbarPanelVisibility(DockPanelData[] dockPanelData) {
 		int algebra = findDockPanelData(dockPanelData, App.VIEW_ALGEBRA);
-		int euclidian = findDockPanelData(dockPanelData,
-				isUnbundled3D() ? App.VIEW_EUCLIDIAN3D : App.VIEW_EUCLIDIAN);
+		int euclidian = findDockPanelData(
+				dockPanelData, isUnbundled3D() ? App.VIEW_EUCLIDIAN3D : App.VIEW_EUCLIDIAN);
 
 		boolean isAvVisible = algebra != -1 && dockPanelData[algebra].isVisible();
 		boolean isEvVisible = euclidian != -1 && dockPanelData[euclidian].isVisible();
@@ -2022,8 +1989,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		}
 
 		for (DockPanelData panel : docPerspective.getDockPanelData()) {
-			if ((panel.getViewId() != App.VIEW_EUCLIDIAN)
-					&& panel.isVisible()) {
+			if ((panel.getViewId() != App.VIEW_EUCLIDIAN) && panel.isVisible()) {
 				return false;
 			}
 		}
@@ -2040,20 +2006,18 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		this.oldSplitLayoutPanel.setPixelSize(spWidth, spHeight);
 		// we need relative position to make sure the menubar / toolbar are not
 		// hidden
-		this.oldSplitLayoutPanel.getElement().getStyle()
-				.setPosition(Position.RELATIVE);
-		if (!isUnbundled() && getGuiManager().hasAlgebraView()
-				&& showView(App.VIEW_ALGEBRA)) {
-			getAlgebraView().setShowAlgebraInput(showAlgebraInput()
-					&& getInputPosition() == InputPosition.algebraView);
+		this.oldSplitLayoutPanel.getElement().getStyle().setPosition(Position.RELATIVE);
+		if (!isUnbundled() && getGuiManager().hasAlgebraView() && showView(App.VIEW_ALGEBRA)) {
+			getAlgebraView()
+					.setShowAlgebraInput(
+							showAlgebraInput() && getInputPosition() == InputPosition.algebraView);
 		}
 	}
 
 	@Override
 	public double getWidth() {
 		if (spWidth > 0) {
-			return menuShowing && !isFloatingMenu()
-					? spWidth + GLookAndFeel.MENUBAR_WIDTH : spWidth;
+			return menuShowing && !isFloatingMenu() ? spWidth + GLookAndFeel.MENUBAR_WIDTH : spWidth;
 		}
 		return super.getWidth();
 	}
@@ -2110,15 +2074,13 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 			}
 			splitPanelWrapper.add(frame.getMenuBar(this));
 			spWidth = (int) (fullWidth - GLookAndFeel.MENUBAR_WIDTH);
-			oldSplitLayoutPanel.setPixelSize(spWidth,
-					oldSplitLayoutPanel.getOffsetHeight());
+			oldSplitLayoutPanel.setPixelSize(spWidth, oldSplitLayoutPanel.getOffsetHeight());
 			updateMenuHeight();
 			if (needsUpdate) {
 				frame.getMenuBar(this).getMenubar().updateMenubar();
 			}
 			getGuiManager().refreshDraggingViews();
-			oldSplitLayoutPanel.getElement().getStyle()
-					.setOverflow(Overflow.HIDDEN);
+			oldSplitLayoutPanel.getElement().getStyle().setOverflow(Overflow.HIDDEN);
 			frame.getMenuBar(this).getMenubar().dispatchOpenEvent();
 		} else {
 			if (menuViewController != null) {
@@ -2142,13 +2104,17 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		getAccessibilityManager().focusFirstElement();
 	}
 
+	private @Nullable ToolbarPanel getToolbarPanel() {
+		if (guiManager == null) {
+			return null;
+		}
+		return guiManager.getUnbundledToolbar();
+	}
+
 	private void updateMenuBtnStatus(boolean expanded) {
-		if (getGuiManager() != null) {
-			ToolbarPanel toolbarPanel = getGuiManager()
-					.getUnbundledToolbar();
-			if (toolbarPanel != null) {
-				toolbarPanel.markMenuAsExpanded(expanded);
-			}
+		ToolbarPanel toolbarPanel = getToolbarPanel();
+		if (toolbarPanel != null) {
+			toolbarPanel.markMenuAsExpanded(expanded);
 		}
 	}
 
@@ -2161,16 +2127,12 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		if (menuViewController != null) {
 			menuViewController.setMenuVisible(false);
 		} else {
-			spWidth = this.oldSplitLayoutPanel.getOffsetWidth()
-					+ GLookAndFeel.MENUBAR_WIDTH;
-			this.oldSplitLayoutPanel.setPixelSize(
-					spWidth,
-					this.oldSplitLayoutPanel.getOffsetHeight());
+			spWidth = this.oldSplitLayoutPanel.getOffsetWidth() + GLookAndFeel.MENUBAR_WIDTH;
+			this.oldSplitLayoutPanel.setPixelSize(spWidth, this.oldSplitLayoutPanel.getOffsetHeight());
 			if (this.splitPanelWrapper != null) {
 				this.splitPanelWrapper.remove(frame.getMenuBar(this));
 			}
-			oldSplitLayoutPanel.getElement().getStyle()
-					.setOverflow(Overflow.VISIBLE);
+			oldSplitLayoutPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
 		}
 		this.menuShowing = false;
 
@@ -2203,7 +2165,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 
 		if (frame.isKeyboardShowing()) {
 			newHeight -= frame.getKeyboardHeight();
-
 		}
 		if (newHeight >= 0) {
 			this.setSpHeight(newHeight);
@@ -2218,8 +2179,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	@Override
 	public int getToolbarAndInputBarHeight() {
 		int height = 0;
-		if (showAlgebraInput()
-				&& getInputPosition() != InputPosition.algebraView) {
+		if (showAlgebraInput() && getInputPosition() != InputPosition.algebraView) {
 			height += GLookAndFeel.COMMAND_LINE_HEIGHT;
 		}
 		if (showToolBar() && !isUnbundledOrWhiteboard()) {
@@ -2249,17 +2209,15 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	private void centerAndResizePopups() {
 		for (HasHide w : popups) {
 			if (w instanceof RequiresResize) {
-					((GPopupPanel) w).centerAndResize(
-						this.getAppletFrame().getKeyboardHeight());
+				((GPopupPanel) w).centerAndResize(this.getAppletFrame().getKeyboardHeight());
 			}
 		}
 	}
 
 	private void resizePropertiesView() {
-		if (getGuiManager().hasPropertiesView()
-				&& isUnbundledOrWhiteboard()) {
-			((PropertiesViewW) getGuiManager().getPropertiesView()).resize(
-					getWidth(), getHeight() - frame.getKeyboardHeight());
+		if (getGuiManager().hasPropertiesView() && isUnbundledOrWhiteboard()) {
+			((PropertiesViewW) getGuiManager().getPropertiesView())
+					.resize(getWidth(), getHeight() - frame.getKeyboardHeight());
 		}
 	}
 
@@ -2271,11 +2229,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	@Override
 	public void setFileVersion(String version, String appName) {
 		super.setFileVersion(version, appName);
-		if (!"auto".equals(appName)
-				&& "auto".equals(getAppletParameters().getDataParamAppName())) {
+		if (!"auto".equals(appName) && "auto".equals(getAppletParameters().getDataParamAppName())) {
 			String appCode = getConfig().getAppCode();
-			getAppletParameters().setAttribute("appName",
-					appName == null ? "" : appName);
+			getAppletParameters().setAttribute("appName", appName == null ? "" : appName);
 
 			boolean isClassic = "classic".equals(appName) || StringUtil.empty(appName);
 			if (isClassic && !isApplet()) {
@@ -2294,9 +2250,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	public void updateAppCodeSuite(SuiteSubApp subApp, Perspective p) {
 		if (SUITE_APPCODE.equals(getAppletParameters().getDataParamAppName())) {
 			SuiteSubApp appCode = getConfig().getSubApp();
-			if (appCode != null && !appCode.equals(subApp)) {
-				this.activity = new SuiteActivity(subApp,
-						!getSettings().getCasSettings().isEnabled());
+			if (appCode != null && appCode != subApp) {
+				this.activity =
+						new SuiteActivity(subApp, !getSettings().getCasSettings().isEnabled());
 				getKernel().removeFiltersFromConfig();
 				setConfigNoSettingsReset(activity.getConfig());
 				getKernel().setFiltersFromConfig();
@@ -2347,7 +2303,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	@Override
-	public final @Nonnull VideoManagerW getVideoManager() {
+	public final @NonNull VideoManagerW getVideoManager() {
 		if (videoManager == null) {
 			videoManager = new VideoManagerW(this);
 		}
@@ -2411,13 +2367,11 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	@Override
 	public JsPropertyMap<Object> getEmbeddedCalculators(boolean includeGraspableMath) {
 		getEmbedManager();
-		return embedManager != null
-				? embedManager.getEmbeddedCalculators(includeGraspableMath)
-				: null;
+		return embedManager != null ? embedManager.getEmbeddedCalculators(includeGraspableMath) : null;
 	}
 
 	@Override
-	public @Nonnull KeyboardManager getKeyboardManager() {
+	public @NonNull KeyboardManager getKeyboardManager() {
 		if (keyboardManager == null) {
 			keyboardManager = new KeyboardManager(this);
 		}
@@ -2439,25 +2393,13 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	@Override
-	protected SettingsUpdaterBuilder newSettingsUpdaterBuilder() {
-		getSettings().getFontSettings().addListener(settings -> {
-			FontSettings fontSettings = (FontSettings) settings;
-			if (isWhiteboardActive()) {
-				CarotaUtil.setDefaultFontSize(fontSettings.getAppFontSize());
-			}
-		});
-		return super.newSettingsUpdaterBuilder();
-	}
-
-	@Override
 	public HasLastItem getLastItemProvider() {
 		if (!getConfig().hasAnsButtonInAv()
-				|| getActiveEuclidianView().getEuclidianController()
-				.isSymbolicEditorSelected()) {
+				|| getActiveEuclidianView().getEuclidianController().isSymbolicEditorSelected()) {
 			return null;
 		}
-		return new ConstructionItemProvider(getKernel().getConstruction(), getAlgebraView(),
-				getGeoElementValueConverter());
+		return new ConstructionItemProvider(
+				getKernel().getConstruction(), getAlgebraView(), getGeoElementValueConverter());
 	}
 
 	/**
@@ -2467,6 +2409,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 */
 	public void startExam(ExamType examType, ExamOptions options) {
 		ExamControllerIntegrationW.activate(this);
+		examController.addListener(getExamEventBus());
 		if (examController.getState() == ExamState.IDLE
 				|| examController.getState() == ExamState.PREPARING) {
 			examController.startExam(examType, options);
@@ -2522,21 +2465,22 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 
 	@Override
 	public InlineTextController createInlineTextController(EuclidianView view, GeoInline geo) {
-		Element parentElement = ((EuclidianViewW) view).getAbsolutePanel().getParent().getElement();
+		Element parentElement =
+				((EuclidianViewW) view).getAbsolutePanel().getParent().getElement();
 		return new InlineTextControllerW(geo, view, parentElement);
 	}
 
 	@Override
-	public InlineFormulaController createInlineFormulaController(EuclidianView view,
-			GeoFormula geo) {
-		EuclidianDockPanelW panel = (EuclidianDockPanelW) getGuiManager().getLayout()
-				.getDockManager().getPanel(VIEW_EUCLIDIAN);
+	public InlineFormulaController createInlineFormulaController(EuclidianView view, GeoFormula geo) {
+		EuclidianDockPanelW panel =
+				(EuclidianDockPanelW) getGuiManager().getLayout().getDockManager().getPanel(VIEW_EUCLIDIAN);
 		return new InlineFormulaControllerW(geo, this, panel.getEuclidianPanel());
 	}
 
 	@Override
 	public InlineTableController createTableController(EuclidianView view, GeoInlineTable geo) {
-		Element parentElement = ((EuclidianViewW) view).getAbsolutePanel().getParent().getElement();
+		Element parentElement =
+				((EuclidianViewW) view).getAbsolutePanel().getParent().getElement();
 		return new InlineTableControllerW(geo, view, parentElement);
 	}
 
@@ -2668,9 +2612,10 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		} else if (!StringUtil.empty(getAppletParameters().getParamFeatureSet())) {
 			ExamType examType = ExamType.byName(getAppletParameters().getParamFeatureSet());
 			if (examType != null) {
-				examType.createRestrictions()
-						.applySettingsRestrictions(getSettings(),
-								getKernel().getConstruction().getConstructionDefaults());
+				examType
+						.createRestrictions()
+						.applySettingsRestrictions(
+								getSettings(), getKernel().getConstruction().getConstructionDefaults());
 			}
 		}
 	}
@@ -2686,10 +2631,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	}
 
 	private void updateSidebarAndMenu(SuiteSubApp subAppCode) {
-		getKernel().setSymbolicMode(
-				SuiteSubApp.CAS.equals(subAppCode)
-						? SymbolicMode.SYMBOLIC_AV
-						: SymbolicMode.NONE);
+		getKernel()
+				.setSymbolicMode(
+						SuiteSubApp.CAS == subAppCode ? SymbolicMode.SYMBOLIC_AV : SymbolicMode.NONE);
 
 		if (menuViewController != null) {
 			menuViewController.resetMenuOnAppSwitch(this);
@@ -2700,7 +2644,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		initSettingsUpdater().resetSettingsOnAppStart();
 		guiManager.updatePropertiesView();
 		guiManager.updatePropertiesViewStylebar();
-		guiManager.updateGlobalOptions();
 	}
 
 	/**
@@ -2724,8 +2667,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 
 	private void resetFullScreenBtn() {
 		GuiManagerW gm = getGuiManager();
-		DockPanel avPanel = gm.getLayout().getDockManager()
-				.getPanel(VIEW_ALGEBRA);
+		DockPanel avPanel = gm.getLayout().getDockManager().getPanel(VIEW_ALGEBRA);
 		if (avPanel instanceof ToolbarDockPanelW) {
 			((ToolbarDockPanelW) avPanel).tryBuildZoomPanel();
 		}
@@ -2748,6 +2690,9 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		return csvImportHandler;
 	}
 
+	/**
+	 * @return command that handles CSV import.
+	 */
 	public Command getCsvHandler() {
 		return getCsvImportHandler().getCsvHandler();
 	}
@@ -2769,7 +2714,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	/**
 	 * @return listener forwarding exam change events to other listeners
 	 */
-	public @Nonnull ExamEventBus getExamEventBus() {
+	public @NonNull ExamEventBus getExamEventBus() {
 		if (this.examEventBus == null) {
 			examEventBus = new ExamEventBus();
 		}
@@ -2815,21 +2760,18 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		GeoGebraPreferencesW.resetPreferences(this);
 
 		// reset default line thickness etc
-		getKernel().getConstruction().getConstructionDefaults()
-				.resetDefaults();
+		getKernel().getConstruction().getConstructionDefaults().resetDefaults();
 
 		// reset defaults for geoelements; this will create brand
 		// new objects
 		// so the options defaults dialog should be reset later
-		getKernel().getConstruction().getConstructionDefaults()
-				.createDefaultGeoElements();
+		getKernel().getConstruction().getConstructionDefaults().createDefaultGeoElements();
 
 		// reset the stylebar defaultGeo
 		if (getEuclidianView1().hasStyleBar()) {
 			getEuclidianView1().getStyleBar().restoreDefaultGeo();
 		}
-		if (hasEuclidianView2EitherShowingOrNot(1)
-				&& getEuclidianView2(1).hasStyleBar()) {
+		if (hasEuclidianView2EitherShowingOrNot(1) && getEuclidianView2(1).hasStyleBar()) {
 			getEuclidianView2(1).getStyleBar().restoreDefaultGeo();
 		}
 		// TODO needed to eg. update rounding, possibly too heavy
@@ -2843,8 +2785,10 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	 */
 	public PropertiesIconResource getPropertiesIconResource() {
 		if (propertiesIconResource == null) {
-			propertiesIconResource = new PropertiesIconResource(isUsingFontAwesome()
-					? new MebisPropertiesIconProvider() : new DefaultPropertiesIconProvider());
+			propertiesIconResource = new PropertiesIconResource(
+					isUsingFontAwesome()
+							? new MebisPropertiesIconProvider()
+							: new DefaultPropertiesIconProvider());
 		}
 
 		return propertiesIconResource;

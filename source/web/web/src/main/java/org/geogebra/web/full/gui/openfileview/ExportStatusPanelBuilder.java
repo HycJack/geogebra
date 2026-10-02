@@ -24,7 +24,7 @@ import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Image;
 import org.gwtproject.user.client.ui.Label;
 
-public class ExportStatusPanelBuilder {
+public final class ExportStatusPanelBuilder {
 
 	/**
 	 * @return panel showing information for status {@link ExportStatus#PENDING}
@@ -50,8 +50,8 @@ public class ExportStatusPanelBuilder {
 		statusPanel.addStyleName("exportStatusPanel");
 
 		FlowPanel messagePanel = getStatusMessagePanel(ExportStatus.AVAILABLE);
-		StandardButton downloadButton = new StandardButton("Jetzt herunterladen");
-		downloadButton.addStyleName("dialogContainedButton");
+		StandardButton downloadButton =
+				BaseWidgetFactory.INSTANCE.newFilledButton("Jetzt herunterladen");
 		downloadButton.addFastClickHandler(source -> downloadFiles.run());
 
 		statusPanel.add(getStatusImage(ExportStatus.AVAILABLE));
@@ -59,7 +59,6 @@ public class ExportStatusPanelBuilder {
 		statusPanel.add(downloadButton);
 
 		return statusPanel;
-
 	}
 
 	/**

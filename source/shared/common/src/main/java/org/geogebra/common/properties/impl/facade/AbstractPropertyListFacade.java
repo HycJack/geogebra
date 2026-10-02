@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -18,10 +18,9 @@ package org.geogebra.common.properties.impl.facade;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.properties.Property;
 import org.geogebra.common.properties.PropertyKey;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Base class for properties that hold a list of properties of type <code>P</code>
@@ -45,12 +44,12 @@ public abstract class AbstractPropertyListFacade<P extends Property> implements 
 	}
 
 	@Override
-	public @Nonnull String getRawName() {
+	public @NonNull String getRawName() {
 		return getFirstProperty().getRawName();
 	}
 
 	@Override
-	public @Nonnull PropertyKey getKey() {
+	public @NonNull PropertyKey getKey() {
 		return getFirstProperty().getKey();
 	}
 
@@ -78,6 +77,9 @@ public abstract class AbstractPropertyListFacade<P extends Property> implements 
 		return getFirstProperty().isAvailable();
 	}
 
+	/**
+	 * @return the first property in the list
+	 */
 	public P getFirstProperty() {
 		return properties.get(0);
 	}

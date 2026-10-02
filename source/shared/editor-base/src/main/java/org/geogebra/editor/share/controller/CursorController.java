@@ -16,6 +16,11 @@
 
 package org.geogebra.editor.share.controller;
 
+import static org.geogebra.editor.share.util.IntegralHelper.INTEGRAND;
+import static org.geogebra.editor.share.util.IntegralHelper.LOWER_LIMIT;
+import static org.geogebra.editor.share.util.IntegralHelper.UPPER_LIMIT;
+import static org.geogebra.editor.share.util.IntegralHelper.VARIABLE;
+
 import java.util.ArrayList;
 
 import org.geogebra.editor.share.catalog.Tag;
@@ -27,19 +32,16 @@ import org.geogebra.editor.share.tree.InternalNode;
 import org.geogebra.editor.share.tree.Node;
 import org.geogebra.editor.share.tree.PlaceholderNode;
 import org.geogebra.editor.share.tree.SequenceNode;
+import org.geogebra.editor.share.util.IntegralHelper;
 
 /**
  * Cursor movement in the expression tree.
  */
 public class CursorController {
-
-	/**
-	 * Next character &rarr; key.
-	 * @param editorState current state
-	 * @return whether we moved right
-	 */
-	public static boolean nextCharacter(EditorState editorState) {
-		return nextCharacter(editorState, true);
+	/** Defines which fields are visited while traversing the expression tree. */
+	public enum Traversal {
+		SELECTABLE_FIELDS,
+		NAVIGABLE_FIELDS,
 	}
 
 	/**
@@ -47,21 +49,33 @@ public class CursorController {
 	 * @param editorState current state
 	 * @return whether we moved right
 	 */
-	public static boolean nextCharacter(EditorState editorState, boolean skipPlaceholders) {
+	public static boolean nextCharacter(EditorState editorState) {
+		return nextCharacter(editorState, true, Traversal.NAVIGABLE_FIELDS);
+	}
+
+	/**
+	 * Move to the next character or field.
+	 * @param editorState current state
+	 * @param skipPlaceholders whether to skip placeholders
+	 * @param traversal fields to visit while moving through the expression tree
+	 * @return whether the cursor moved
+	 */
+	public static boolean nextCharacter(
+			EditorState editorState, boolean skipPlaceholders, Traversal traversal) {
 		int currentOffset = editorState.getCurrentOffset();
 		SequenceNode currentField = editorState.getCurrentNode();
 		if (isLastPlaceholderInProtectedParent(editorState)) {
 			if (currentOffset == currentField.size() - 1) {
-				return nextField(editorState);
+				return nextField(editorState, editorState.getCurrentNode(), traversal);
 			}
 			return false;
 		}
 
 		if (currentOffset < currentField.size()) {
 			Node node = currentField.getChild(currentOffset);
-			return nextCharacterInCurrentField(node, editorState, skipPlaceholders);
+			return nextCharacterInCurrentField(node, editorState, skipPlaceholders, traversal);
 		} else {
-			return nextField(editorState);
+			return nextField(editorState, editorState.getCurrentNode(), traversal);
 		}
 	}
 
@@ -74,15 +88,15 @@ public class CursorController {
 	}
 
 	private static boolean nextCharacterInCurrentField(
-			Node node, EditorState editorState, boolean skipPlaceholders) {
+			Node node, EditorState editorState, boolean skipPlaceholders, Traversal traversal) {
 
 		InternalNode internalNode = asInternalNode(node);
 		if (internalNode != null && internalNode.hasChildren()) {
-			firstField(editorState, internalNode);
+			firstField(editorState, internalNode, traversal);
 		} else {
 			editorState.incCurrentOffset();
 			if (skipPlaceholders && node instanceof PlaceholderNode) {
-				nextCharacter(editorState);
+				nextCharacter(editorState, true, traversal);
 			}
 		}
 		return true;
@@ -108,12 +122,11 @@ public class CursorController {
 			prevCharacterInCurrentField(node, editorState);
 			return true;
 		} else {
-			return prevField(editorState);
+			return prevField(editorState, editorState.getCurrentNode());
 		}
 	}
 
-	private static void prevCharacterInCurrentField(
-			Node node, EditorState editorState) {
+	private static void prevCharacterInCurrentField(Node node, EditorState editorState) {
 
 		InternalNode internalNode = asInternalNode(node);
 		if (internalNode != null && internalNode.hasChildren()) {
@@ -129,29 +142,32 @@ public class CursorController {
 	private static boolean isPrevCharPlaceholder(EditorState editorState) {
 		SequenceNode currentField = editorState.getCurrentNode();
 		int offset = editorState.getCurrentOffset();
-		return offset > 0
-				&& currentField.getChild(offset - 1) instanceof CharPlaceholderNode;
+		return offset > 0 && currentField.getChild(offset - 1) instanceof CharPlaceholderNode;
 	}
 
 	/**
-	 * Move to the beginning of the whole expression
+	 * Move to the beginning of the whole expression.
 	 * @param editorState current state
 	 */
 	public static void firstField(EditorState editorState) {
 		SequenceNode root = editorState.getRootNode();
-		firstField(editorState, root.extractLocked());
+		firstField(editorState, root.extractLocked(), Traversal.NAVIGABLE_FIELDS);
 	}
 
 	/**
-	 * Move to the beginning of a subexpression
+	 * Move to the beginning of a subexpression.
 	 * @param editorState current state
 	 * @param node0 subexpression
+	 * @param traversal fields to visit while moving through the expression tree
 	 */
-	public static void firstField(EditorState editorState,
-			InternalNode node0) {
+	public static void firstField(EditorState editorState, InternalNode node0, Traversal traversal) {
 		InternalNode node = node0;
 		// surface to first symbol
 		while (!(node instanceof SequenceNode)) {
+			if (IntegralHelper.isIntegral(node)) {
+				moveToFirstIntegralField(editorState, (FunctionNode) node, traversal);
+				return;
+			}
 			int current = node.first();
 			node = (InternalNode) node.getChild(current);
 		}
@@ -172,8 +188,7 @@ public class CursorController {
 	 * @param editorState current state
 	 * @param node0 subexpression
 	 */
-	public static void lastField(EditorState editorState,
-			InternalNode node0) {
+	public static void lastField(EditorState editorState, InternalNode node0) {
 		InternalNode node = node0;
 		// surface to last symbol
 		while (!(node instanceof SequenceNode)) {
@@ -194,27 +209,17 @@ public class CursorController {
 	}
 
 	private static boolean isLastFieldPlaceholder(SequenceNode sequence) {
-		return sequence
-				.getChild(sequence.size() - 1) instanceof CharPlaceholderNode;
-	}
-
-	/**
-	 * Move cursor to the right.
-	 * @param editorState current state
-	 * @return whether current node has next field
-	 */
-	public static boolean nextField(EditorState editorState) {
-		return nextField(editorState, editorState.getCurrentNode());
+		return sequence.getChild(sequence.size() - 1) instanceof CharPlaceholderNode;
 	}
 
 	/**
 	 * Move cursor to the right of a node.
 	 * @param editorState current state
 	 * @param node node where we want the cursor
+	 * @param traversal fields to visit while moving through the expression tree
 	 * @return whether node has next field
 	 */
-	public static boolean nextField(EditorState editorState,
-			InternalNode node) {
+	public static boolean nextField(EditorState editorState, InternalNode node, Traversal traversal) {
 		// retrieve parent
 		InternalNode parent = node.getParent();
 		int current = node.getParentIndex();
@@ -228,27 +233,19 @@ public class CursorController {
 			editorState.setCurrentOffset(node.getParentIndex() + 1);
 			return parent.size() > node.getParentIndex();
 			// try to find next sibling
+		} else if (IntegralHelper.isIntegral(parent)) {
+			return nextIntegralField(editorState, (FunctionNode) parent, current, traversal);
 		} else if (parent.hasNext(current)) {
 			current = parent.getNext(current);
-			InternalNode node1 = (InternalNode) parent
-					.getChild(current);
-			firstField(editorState, node1);
+			InternalNode node1 = (InternalNode) parent.getChild(current);
+			firstField(editorState, node1, traversal);
 			return true;
 			// try to delve down the tree
 		} else if (ArrayNode.isLocked(parent)) {
 			return false;
 		} else {
-			return nextField(editorState, parent);
+			return nextField(editorState, parent, traversal);
 		}
-	}
-
-	/**
-	 * Find previous field.
-	 * @param editorState current state
-	 * @return whether the cursor moved
-	 */
-	public static boolean prevField(EditorState editorState) {
-		return prevField(editorState, editorState.getCurrentNode());
 	}
 
 	/* Search for previous node */
@@ -268,10 +265,11 @@ public class CursorController {
 			editorState.setCurrentOffset(node.getParentIndex());
 			return true;
 			// try to find previous sibling
+		} else if (IntegralHelper.isIntegral(parentNode)) {
+			return previousIntegralField(editorState, (FunctionNode) parentNode, current);
 		} else if (parentNode.hasPrevious(current)) {
 			current = parentNode.getPrevious(current);
-			InternalNode node1 = (InternalNode) parentNode
-					.getChild(current);
+			InternalNode node1 = (InternalNode) parentNode.getChild(current);
 			lastField(editorState, node1);
 			return true;
 			// delve down the tree
@@ -301,9 +299,15 @@ public class CursorController {
 
 	/** Up field. */
 	private static boolean upField(EditorState editorState, InternalNode node) {
+		if (moveVerticallyInIntegral(editorState, node, true)) {
+			return true;
+		}
+		if (isIntegralField(node)) {
+			return false;
+		}
 		if (node.getParent() instanceof FunctionNode) {
 			Tag name = ((FunctionNode) node.getParent()).getName();
-			if (name.equals(Tag.SUBSCRIPT)) {
+			if (name == Tag.SUBSCRIPT) {
 				return moveOutOfSuperSubScript(editorState);
 			}
 		}
@@ -328,19 +332,22 @@ public class CursorController {
 	}
 
 	/** Down field. */
-	private static boolean downField(EditorState editorState,
-			InternalNode node) {
-		if (node.getParent() instanceof FunctionNode) {
-			Tag name = ((FunctionNode) node.getParent()).getName();
-			if (name.equals(Tag.SUPERSCRIPT)) {
+	private static boolean downField(EditorState editorState, InternalNode node) {
+		if (moveVerticallyInIntegral(editorState, node, false)) {
+			return true;
+		}
+		if (isIntegralField(node)) {
+			return false;
+		}
+		if (node.getParent() instanceof FunctionNode function) {
+			Tag name = function.getName();
+			if (name == Tag.SUPERSCRIPT) {
 				return moveOutOfSuperSubScript(editorState);
 			}
 		}
 		if (node instanceof SequenceNode) {
-			if (node.getParent() instanceof FunctionNode) {
-				FunctionNode function = (FunctionNode) node.getParent();
-				int downIndex = function
-						.getDownIndex(node.getParentIndex());
+			if (node.getParent() instanceof FunctionNode function) {
+				int downIndex = function.getDownIndex(node.getParentIndex());
 				SequenceNode downArg = function.getChild(downIndex);
 				if (downArg != null) {
 					editorState.setCurrentNode(downArg);
@@ -360,17 +367,115 @@ public class CursorController {
 		return false;
 	}
 
-	private static boolean checkMoveArray(Node node,
-			EditorState editorState, int rowChange) {
+	private static boolean isIntegralField(InternalNode node) {
+		return node instanceof SequenceNode sequenceNode
+				&& IntegralHelper.isIntegral(sequenceNode.getParent());
+	}
+
+	private static boolean moveToIntegralField(
+			EditorState editorState,
+			FunctionNode integral,
+			int integralFieldIndex,
+			boolean placeAtFieldEnd,
+			boolean revealLimits) {
+		if (revealLimits && IntegralHelper.shouldRevealLimits(integral, integralFieldIndex)) {
+			IntegralHelper.revealLimits(integral);
+		}
+		SequenceNode field = integral.getChild(integralFieldIndex);
+		editorState.setCurrentNode(field);
+		editorState.setCurrentOffset(placeAtFieldEnd ? field.size() : 0);
+		return true;
+	}
+
+	private static void moveToFirstIntegralField(
+			EditorState editorState, FunctionNode integralNode, Traversal traversal) {
+		int fieldIndex = IntegralHelper.hasLimits(integralNode.getName())
+						&& (traversal == Traversal.NAVIGABLE_FIELDS
+								|| IntegralHelper.shouldRenderLimits(integralNode, null))
+				? UPPER_LIMIT
+				: INTEGRAND;
+		moveToIntegralField(
+				editorState, integralNode, fieldIndex, false, traversal == Traversal.NAVIGABLE_FIELDS);
+	}
+
+	private static boolean nextIntegralField(
+			EditorState editorState, FunctionNode function, int currentFieldIndex, Traversal traversal) {
+		if (traversal == Traversal.SELECTABLE_FIELDS) {
+			return nextIntegralFieldForSelection(editorState, function, currentFieldIndex);
+		}
+		int nextFieldIndex =
+				IntegralHelper.hasLimits(function.getName()) && IntegralHelper.isLimit(currentFieldIndex)
+						? INTEGRAND
+						: currentFieldIndex + 1;
+		if (nextFieldIndex < function.size()) {
+			return moveToIntegralField(editorState, function, nextFieldIndex, false, true);
+		}
+		return nextField(editorState, function, traversal);
+	}
+
+	private static boolean nextIntegralFieldForSelection(
+			EditorState editorState, FunctionNode function, int currentFieldIndex) {
+		if (IntegralHelper.shouldRenderLimits(function, null)) {
+			if (currentFieldIndex == UPPER_LIMIT) {
+				return moveToIntegralField(editorState, function, LOWER_LIMIT, false, false);
+			}
+			if (currentFieldIndex == LOWER_LIMIT) {
+				return moveToIntegralField(editorState, function, INTEGRAND, false, false);
+			}
+		}
+		int nextFieldIndex = currentFieldIndex + 1;
+		if (nextFieldIndex < function.size()) {
+			return moveToIntegralField(editorState, function, nextFieldIndex, false, false);
+		}
+		return nextField(editorState, function, Traversal.SELECTABLE_FIELDS);
+	}
+
+	private static boolean previousIntegralField(
+			EditorState editorState, FunctionNode function, int currentFieldIndex) {
+		if (currentFieldIndex == VARIABLE) {
+			return moveToIntegralField(editorState, function, INTEGRAND, true, true);
+		}
+		if (currentFieldIndex == INTEGRAND && IntegralHelper.hasLimits(function.getName())) {
+			return moveToIntegralField(editorState, function, UPPER_LIMIT, true, true);
+		}
+		return prevField(editorState, function);
+	}
+
+	private static boolean moveVerticallyInIntegral(
+			EditorState editorState, InternalNode node, boolean up) {
+		if (node instanceof SequenceNode sequenceNode
+				&& sequenceNode.getParent() instanceof FunctionNode function
+				&& IntegralHelper.hasLimits(function.getName())) {
+			int currentFieldIndex = sequenceNode.getParentIndex();
+			if (currentFieldIndex == INTEGRAND && editorState.getCurrentOffset() == 0) {
+				return moveToIntegralField(
+						editorState, function, up ? UPPER_LIMIT : LOWER_LIMIT, true, true);
+			}
+			if (currentFieldIndex == UPPER_LIMIT && !up) {
+				return moveToIntegralField(editorState, function, LOWER_LIMIT, true, true);
+			}
+			if (currentFieldIndex == LOWER_LIMIT && up) {
+				return moveToIntegralField(editorState, function, UPPER_LIMIT, true, true);
+			}
+		}
+		// If the cursor is just before an integral, navigate to its limits.
+		if (node instanceof SequenceNode sequenceNode
+				&& sequenceNode.getChild(editorState.getCurrentOffset()) instanceof FunctionNode function
+				&& IntegralHelper.hasLimits(function.getName())) {
+			return moveToIntegralField(
+					editorState, function, up ? UPPER_LIMIT : LOWER_LIMIT, false, true);
+		}
+		return false;
+	}
+
+	private static boolean checkMoveArray(Node node, EditorState editorState, int rowChange) {
 		if (node.getParent() instanceof ArrayNode) {
 			ArrayNode function = (ArrayNode) node.getParent();
 
 			if (function.getRows() > 1) {
-				int downIndex = node.getParentIndex()
-						+ function.getColumns() * rowChange;
+				int downIndex = node.getParentIndex() + function.getColumns() * rowChange;
 				if (downIndex >= 0 && downIndex < function.size()) {
-					editorState
-							.setCurrentNode(function.getChild(downIndex));
+					editorState.setCurrentNode(function.getChild(downIndex));
 					editorState.resetSelection();
 					editorState.setCurrentOffset(0);
 					return true;
@@ -381,23 +486,25 @@ public class CursorController {
 	}
 
 	private static boolean moveOutOfSuperSubScript(EditorState editorState) {
-		Node cursorFieldLeft = editorState.getCurrentNode().getChild(
-				editorState.getCurrentOffset() - 1);
-		Node cursorFieldRight = editorState.getCurrentNode().getChild(
-				editorState.getCurrentOffset());
-		InternalNode parentFunction = cursorFieldLeft != null ? cursorFieldLeft.getParent()
+		Node cursorFieldLeft =
+				editorState.getCurrentNode().getChild(editorState.getCurrentOffset() - 1);
+		Node cursorFieldRight = editorState.getCurrentNode().getChild(editorState.getCurrentOffset());
+		InternalNode parentFunction = cursorFieldLeft != null
+				? cursorFieldLeft.getParent()
 				: cursorFieldRight != null ? cursorFieldRight.getParent() : null;
-		if (parentFunction != null && parentFunction.getChild(0).equals(cursorFieldRight)
+		if (parentFunction != null
+				&& parentFunction.getChild(0).equals(cursorFieldRight)
 				&& cursorFieldLeft == null) {
 			prevCharacter(editorState);
 			return true;
 		}
-		if (parentFunction != null && parentFunction.getChild(parentFunction.size() - 1)
-				.equals(cursorFieldLeft) && cursorFieldRight == null) {
-			return nextCharacter(editorState);
+		if (parentFunction != null
+				&& parentFunction.getChild(parentFunction.size() - 1).equals(cursorFieldLeft)
+				&& cursorFieldRight == null) {
+			return nextCharacter(editorState, true, Traversal.NAVIGABLE_FIELDS);
 		}
 		if (parentFunction == null) {
-			return nextCharacter(editorState);
+			return nextCharacter(editorState, true, Traversal.NAVIGABLE_FIELDS);
 		}
 		return false;
 	}
@@ -408,8 +515,7 @@ public class CursorController {
 	 * @param ct starting container
 	 * @param editorState editor state
 	 */
-	public static void setPath(ArrayList<Integer> list, InternalNode ct,
-			EditorState editorState) {
+	public static void setPath(ArrayList<Integer> list, InternalNode ct, EditorState editorState) {
 		InternalNode current = ct;
 		int i = list.size() - 1;
 		while (i >= 0) {
@@ -426,8 +532,7 @@ public class CursorController {
 				} else {
 					i--;
 					if (i >= 0) {
-						current = (SequenceNode) ((InternalNode) child)
-								.getChild(list.get(i));
+						current = (SequenceNode) ((InternalNode) child).getChild(list.get(i));
 						i--;
 					} else if (current instanceof SequenceNode node) {
 						editorState.setCurrentNode(node);
@@ -442,7 +547,6 @@ public class CursorController {
 				return;
 			}
 		}
-
 	}
 
 	/**

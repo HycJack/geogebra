@@ -31,17 +31,17 @@ import org.gwtproject.user.client.ui.ListBox;
  * The two data sets are taken from the current collection of data provided by a
  * MultiVar StatDialog. JComboBoxes for choosing data sets are embedded in the
  * table.
- * 
+ *
  * @author G. Sturr
- * 
+ *
  */
-public class TwoVarStatPanelW extends StatTableW implements TwoVarStatListener {
+public final class TwoVarStatPanelW extends StatTableW implements TwoVarStatListener {
 	private AppW app;
 	private DataAnalysisViewW statDialog;
 	private StatDataTable statTable;
 	private TwoVarStatModel model;
 	private TwoVarInferencePanelW listener;
-	
+
 	/**
 	 * @param app
 	 *            application
@@ -52,8 +52,11 @@ public class TwoVarStatPanelW extends StatTableW implements TwoVarStatListener {
 	 * @param listener
 	 *            listener
 	 */
-	public TwoVarStatPanelW(AppW app, DataAnalysisViewW statDialog,
-			boolean isPairedData, TwoVarInferencePanelW listener) {
+	public TwoVarStatPanelW(
+			AppW app,
+			DataAnalysisViewW statDialog,
+			boolean isPairedData,
+			TwoVarInferencePanelW listener) {
 		super();
 		model = new TwoVarStatModel(app, isPairedData, this);
 		this.app = app;
@@ -62,36 +65,33 @@ public class TwoVarStatPanelW extends StatTableW implements TwoVarStatListener {
 		this.listener = listener;
 
 		setTable(isPairedData);
-
 	}
 
 	/**
 	 * Update the table.
-	 * 
+	 *
 	 * @param isPairedData
 	 *            whether to use paired data
 	 */
 	public void setTable(boolean isPairedData) {
 
 		model.setPairedData(isPairedData);
-		setStatTable(model.getRowCount(), model.getRowNames(),
-				model.getColumnCount(), model.getColumnNames());
+		setStatTable(
+				model.getRowCount(), model.getRowNames(), model.getColumnCount(), model.getColumnNames());
 
 		// create an array of data titles for the table cell comboboxes
 		// the array includes and extra element to store the combo box label
 		String[] titles = statDialog.getDataTitles();
 		Localization loc = app.getLocalization();
-		createListBoxCell(0, 0, loc.getMenu("Sample1"), titles,
-				model.getSelectedDataIndex0());
-		createListBoxCell(1, 0, loc.getMenu("Sample2"), titles,
-				model.getSelectedDataIndex1());
+		createListBoxCell(0, 0, loc.getMenu("Sample1"), titles, model.getSelectedDataIndex0());
+		createListBoxCell(1, 0, loc.getMenu("Sample2"), titles, model.getSelectedDataIndex1());
 	}
 
-	private void createListBoxCell(final int row, final int col, String title, String[] items,
-			int selectedIdx) {
+	private void createListBoxCell(
+			final int row, final int col, String title, String[] items, int selectedIdx) {
 		Label label = new Label(title);
 		final ListBox listBox = new ListBox();
-		for (String item: items) {
+		for (String item : items) {
 			listBox.addItem(item);
 		}
 
@@ -109,13 +109,13 @@ public class TwoVarStatPanelW extends StatTableW implements TwoVarStatListener {
 
 	/**
 	 * Update model when a listbox in given row changes.
-	 * 
+	 *
 	 * @param row
 	 *            row
 	 * @param idx
 	 *            selected index
 	 */
-	protected void listboxChange(int row, int idx) {
+	private void listboxChange(int row, int idx) {
 		if (row == 0) {
 			model.setSelectedDataIndex0(idx);
 		} else {
@@ -135,7 +135,6 @@ public class TwoVarStatPanelW extends StatTableW implements TwoVarStatListener {
 	@Override
 	public void setValueAt(String value, int row, int col) {
 		statTable.setValueAt(value, row, col);
-
 	}
 
 	@Override
@@ -154,5 +153,4 @@ public class TwoVarStatPanelW extends StatTableW implements TwoVarStatListener {
 	public Integer[] getSelectedDataIndex() {
 		return model.getSelectedDataIndex();
 	}
-
 }

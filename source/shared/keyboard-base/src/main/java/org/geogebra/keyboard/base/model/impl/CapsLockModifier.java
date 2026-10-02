@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -29,12 +29,16 @@ import org.geogebra.keyboard.base.model.KeyModifier;
 public class CapsLockModifier implements KeyModifier {
 
 	private boolean capsLock = false;
-	private Map<String, String> upperKeys;
+	private final Map<String, String> upperKeys;
 
+	/** Default constructor. */
 	public CapsLockModifier() {
 		this(null);
 	}
 
+	/**
+	 * @param upperKeys mapping from lower to upper keys
+	 */
 	public CapsLockModifier(Map<String, String> upperKeys) {
 		this.upperKeys = upperKeys;
 	}
@@ -48,7 +52,7 @@ public class CapsLockModifier implements KeyModifier {
 
 	/**
 	 * Set capslock to false.
-	 * 
+	 *
 	 * @return whether capslock was enabled before
 	 */
 	public boolean disableCapsLock() {
@@ -58,8 +62,7 @@ public class CapsLockModifier implements KeyModifier {
 	}
 
 	@Override
-	public String modifyResourceName(String resourceName,
-			ResourceType resourceType) {
+	public String modifyResourceName(String resourceName, ResourceType resourceType) {
 		if (resourceType == ResourceType.TEXT && resourceName.length() == 1) {
 			if (capsLock) {
 				return getUpperCase(resourceName);
@@ -95,10 +98,9 @@ public class CapsLockModifier implements KeyModifier {
 	}
 
 	@Override
-	public Background modifyBackground(Background background,
-			ActionType actionType, String actionName) {
-		if (actionType == ActionType.CUSTOM
-				&& actionName.equals(Action.CAPS_LOCK.name())) {
+	public Background modifyBackground(
+			Background background, ActionType actionType, String actionName) {
+		if (actionType == ActionType.CUSTOM && actionName.equals(Action.CAPS_LOCK.name())) {
 			if (capsLock) {
 				return Background.FUNCTIONAL_PRESSED;
 			}

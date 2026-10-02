@@ -79,11 +79,13 @@ public class ArchiveEntry {
 		}
 		BlobPropertyBag options = BlobPropertyBag.create();
 		options.setType(extension.getMime());
-		return URL.createObjectURL(new Blob(
-				new JsArray<>(Blob.ConstructorBlobPartsArrayUnionType.of(data)),
-				options));
+		return URL.createObjectURL(
+				new Blob(new JsArray<>(Blob.ConstructorBlobPartsArrayUnionType.of(data)), options));
 	}
 
+	/**
+	 * @return whether this entry is empty
+	 */
 	public boolean isEmpty() {
 		return StringUtil.empty(string) && data == null;
 	}
@@ -103,6 +105,9 @@ public class ArchiveEntry {
 		return extension;
 	}
 
+	/**
+	 * @return whether this represents a thumbnail
+	 */
 	public boolean isThumbnail() {
 		return MyXMLio.XML_FILE_THUMBNAIL.equalsIgnoreCase(fileName);
 	}

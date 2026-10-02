@@ -67,8 +67,7 @@ public class AlgoLocusList extends AlgoElement {
 	 * @param registerCE
 	 *            add to construction?
 	 */
-	public AlgoLocusList(Construction cons, GeoPoint Q, GeoPoint P,
-			boolean registerCE) {
+	public AlgoLocusList(Construction cons, GeoPoint Q, GeoPoint P, boolean registerCE) {
 
 		// just ignoring try_steps here because it would
 		// probably not be OK to split MIN_STEPS any more
@@ -101,8 +100,7 @@ public class AlgoLocusList extends AlgoElement {
 	 * @param P
 	 *            moving point
 	 */
-	public AlgoLocusList(Construction cons, String label, GeoPoint Q,
-			GeoPoint P) {
+	public AlgoLocusList(Construction cons, String label, GeoPoint Q, GeoPoint P) {
 		super(cons);
 		this.movingPoint = P;
 		this.locusPoint = Q;
@@ -125,6 +123,7 @@ public class AlgoLocusList extends AlgoElement {
 		locus.setLabel(label);
 	}
 
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
 	private void fillLocusArray(GeoPoint Q, GeoPoint P) {
 
 		if (arrLocus == null) {
@@ -151,24 +150,15 @@ public class AlgoLocusList extends AlgoElement {
 				if (actEl instanceof Path) {
 					if (i < arrLocusSize) {
 						if (arrLocus.get(i) instanceof AlgoLocusList) {
-							oldel = ((AlgoLocusList) arrLocus.get(i))
-									.getMovingPoint().getPath();
+							oldel = ((AlgoLocusList) arrLocus.get(i)).getMovingPoint().getPath();
 						} else if (arrLocus.get(i) instanceof AlgoLocus) {
-							oldel = ((AlgoLocus) arrLocus.get(i))
-									.getMovingPoint().getPath();
+							oldel = ((AlgoLocus) arrLocus.get(i)).getMovingPoint().getPath();
 						} else {
 							oldel = null;
 						}
 						if (oldel == actEl) {
 							if (shouldUpdateScreenBorders) {
-								if (arrLocus.get(i) instanceof AlgoLocus) {
-									((AlgoLocus) arrLocus.get(i))
-											.updateScreenBorders();
-								} else if (arrLocus
-										.get(i) instanceof AlgoLocusList) {
-									((AlgoLocusList) arrLocus.get(i))
-											.updateScreenBorders();
-								}
+								updateBorders(arrLocus.get(i));
 							}
 							arrLocus.get(i).compute();
 							continue;
@@ -181,8 +171,7 @@ public class AlgoLocusList extends AlgoElement {
 
 					if (actEl instanceof GeoList) {
 						if (((GeoList) actEl).shouldUseAlgoLocusList(true)) {
-							actAlgo = new AlgoLocusList(cons, Q, P,
-									false);
+							actAlgo = new AlgoLocusList(cons, Q, P, false);
 							pathPart = ((AlgoLocusList) actAlgo).getLocus();
 						} else {
 							actAlgo = new AlgoLocus(cons, Q, P, try_steps, false);
@@ -213,6 +202,14 @@ public class AlgoLocusList extends AlgoElement {
 		}
 	}
 
+	private void updateBorders(AlgoElement algoElement) {
+		if (algoElement instanceof AlgoLocus) {
+			((AlgoLocus) algoElement).updateScreenBorders();
+		} else if (algoElement instanceof AlgoLocusList) {
+			((AlgoLocusList) algoElement).updateScreenBorders();
+		}
+	}
+
 	@Override
 	public Commands getClassName() {
 		return Commands.Locus;
@@ -225,7 +222,7 @@ public class AlgoLocusList extends AlgoElement {
 
 	/**
 	 * Returns the dependent point
-	 * 
+	 *
 	 * @return dependent point Q
 	 */
 	public GeoPoint getQ() {
@@ -234,7 +231,7 @@ public class AlgoLocusList extends AlgoElement {
 
 	/**
 	 * A way more descriptive name for the getter.
-	 * 
+	 *
 	 * @return dependent point Q
 	 */
 	public GeoPoint getLocusPoint() {
@@ -292,7 +289,7 @@ public class AlgoLocusList extends AlgoElement {
 
 	/**
 	 * Returns locus
-	 * 
+	 *
 	 * @return locus
 	 */
 	public GeoLocus getLocus() {
@@ -325,9 +322,10 @@ public class AlgoLocusList extends AlgoElement {
 				continue;
 			}
 			for (int j = 0; j < actGeo.getPointLength(); j++) {
-				insertPoint(actGeo.getPoints().get(j).x, actGeo.getPoints()
-						.get(j).y, j != 0
-						&& actGeo.getPoints().get(j).getLineTo());
+				insertPoint(
+						actGeo.getPoints().get(j).x,
+						actGeo.getPoints().get(j).y,
+						j != 0 && actGeo.getPoints().get(j).getLineTo());
 			}
 			if (actGeo.getPointLength() > 0) {
 				foundDefined = true;
@@ -346,8 +344,7 @@ public class AlgoLocusList extends AlgoElement {
 	}
 
 	private void insertPoint(double x, double y, boolean lineTo) {
-		locus.insertPoint(x, y, lineTo ? SegmentType.LINE_TO
-				: SegmentType.MOVE_TO);
+		locus.insertPoint(x, y, lineTo ? SegmentType.LINE_TO : SegmentType.MOVE_TO);
 	}
 
 	@Override

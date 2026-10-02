@@ -29,37 +29,44 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class StartingPointPositionPropertyTests extends BaseAppTestSetup {
+class StartingPointPositionPropertyTests extends BaseAppTestSetup {
+
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"Slider(-5, 5, 1)",
-			"\"abc\"",
-	})
-	public void testApplicableObjects(String expression) {
+	@ValueSource(
+			strings = {
+				"Slider(-5, 5, 1)", // number slider
+				"Vector((1, 2))",
+				"Slider(0, 10, 0.1, 0.1, 100, true, true, false, false)", // angle slider
+				"\"abc\"",
+			})
+	void testApplicableObjects(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertDoesNotThrow(() -> new StartingPointPositionProperty(
-				getLocalization(), evaluateGeoElement(expression)));
+		assertDoesNotThrow(
+				() -> new StartingPointPositionProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"true",
-			"(1, 2)",
-			"Vector((1, 2))",
-			"β = Angle((0, 0), (1, 1), (2, 2))",
-	})
-	public void testNotApplicableObjects(String expression) {
+	@ValueSource(
+			strings = {
+				"true",
+				"(1, 2)",
+				"Vector((1, 2),(3,4))",
+				"β = Angle((0, 0), (1, 1), (2, 2))",
+				"BarChart({1,2,3},{4,5,6})"
+			})
+	void testNotApplicableObjects(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
-		assertThrows(NotApplicablePropertyException.class, () -> new StartingPointPositionProperty(
-				getLocalization(), evaluateGeoElement(expression)));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new StartingPointPositionProperty(getLocalization(), evaluateGeoElement(expression)));
 	}
 
 	@Test
-	public void testSettingCustomStartingPoint() {
+	void testSettingCustomStartingPoint() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoText geoText = evaluateGeoElement("\"abc\"");
-		StartingPointPositionProperty startingPointPositionProperty = assertDoesNotThrow(() ->
-				new StartingPointPositionProperty(getLocalization(), geoText));
+		StartingPointPositionProperty startingPointPositionProperty =
+				assertDoesNotThrow(() -> new StartingPointPositionProperty(getLocalization(), geoText));
 
 		startingPointPositionProperty.setValue("(1, 2)");
 		assertEquals("(1, 2)", startingPointPositionProperty.getValue());
@@ -68,11 +75,11 @@ public class StartingPointPositionPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
-	public void testSettingSuggestedStartingPoint() {
+	void testSettingSuggestedStartingPoint() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoText geoText = evaluateGeoElement("\"abc\"");
-		StartingPointPositionProperty startingPointPositionProperty = assertDoesNotThrow(() ->
-				new StartingPointPositionProperty(getLocalization(), geoText));
+		StartingPointPositionProperty startingPointPositionProperty =
+				assertDoesNotThrow(() -> new StartingPointPositionProperty(getLocalization(), geoText));
 		evaluateGeoElement("A = (1, 2)");
 
 		startingPointPositionProperty.setValue("A");

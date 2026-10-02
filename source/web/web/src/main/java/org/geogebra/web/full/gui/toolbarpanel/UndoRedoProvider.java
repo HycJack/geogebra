@@ -25,9 +25,9 @@ import org.geogebra.web.html5.main.topbar.TopBarIcon;
 /**
  * Undo/redo panel for unbundled apps
  */
-public class UndoRedoProvider {
+public final class UndoRedoProvider {
 	private final AppW app;
-	protected FocusableWidget redoAnchor;
+	FocusableWidget redoAnchor;
 	IconButton btnUndo;
 	IconButton btnRedo;
 
@@ -51,15 +51,21 @@ public class UndoRedoProvider {
 	}
 
 	private void initUndoButton(AccessibilityGroup undoGroup) {
-		btnUndo = new IconButton(app, () -> onUndoPressed(app), app.getTopBarIconResource()
-				.getImageResource(TopBarIcon.UNDO), "Undo");
+		btnUndo = new IconButton(
+				app,
+				() -> onUndoPressed(app),
+				app.getTopBarIconResource().getImageResource(TopBarIcon.UNDO),
+				"Undo");
 		new FocusableWidget(undoGroup, null, btnUndo).attachTo(app);
 		btnUndo.addStyleName("undo");
 	}
 
 	private void initRedoButton(AccessibilityGroup redoGroup) {
-		btnRedo = new IconButton(app, () -> onRedoPressed(app), app.getTopBarIconResource()
-				.getImageResource(TopBarIcon.REDO), "Redo");
+		btnRedo = new IconButton(
+				app,
+				() -> onRedoPressed(app),
+				app.getTopBarIconResource().getImageResource(TopBarIcon.REDO),
+				"Redo");
 		new FocusableWidget(redoGroup, null, btnRedo).attachTo(app);
 		btnRedo.addStyleName("redo");
 	}
@@ -103,7 +109,7 @@ public class UndoRedoProvider {
 		btnRedo.setDisabled(!app.getKernel().redoPossible());
 	}
 
-	protected void setLabels() {
+	void setLabels() {
 		btnUndo.setLabels();
 		btnRedo.setLabels();
 	}

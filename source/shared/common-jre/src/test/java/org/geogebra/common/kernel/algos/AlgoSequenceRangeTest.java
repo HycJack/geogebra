@@ -20,39 +20,52 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.kernel.StringTemplate;
+import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.test.BaseAppTestSetup;
+import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class AlgoSequenceRangeTest extends BaseAppTestSetup {
+class AlgoSequenceRangeTest extends BaseAppTestSetup {
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@Test
-	public void testRounding() {
+	void testRounding() {
 		getApp().setRounding("2d");
-		assertEquals("{-0.1, -0.1, -0.09, -0.09, -0.08, -0.08, -0.07, -0.07, -0.06, -0.06,"
-				+ " -0.05, -0.05, -0.04, -0.04, -0.03, -0.03, -0.02, -0.02, -0.01, -0.01, 0, 0.01,"
-				+ " 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05, 0.06, 0.06, 0.07, 0.07,"
-				+ " 0.08, 0.08, 0.09, 0.09, 0.1, 0.1}",
-				evaluateGeoElement("Sequence(-0.1,0.1,.005)").toValueString(
-						StringTemplate.defaultTemplate));
-		assertEquals("{0.1, 0.1, 0.09, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.06, 0.05,"
-				+ " 0.05, 0.04, 0.04, 0.03, 0.03, 0.02, 0.02, 0.01, 0.01, 0, -0.01, -0.01, -0.02,"
-				+ " -0.02, -0.03, -0.03, -0.04, -0.04, -0.05, -0.05, -0.06, -0.06, -0.07, -0.07,"
-				+ " -0.08, -0.08, -0.09, -0.09, -0.1, -0.1}",
-				evaluateGeoElement("Sequence(0.1,-0.1,-.005)").toValueString(
-						StringTemplate.defaultTemplate));
+		assertEquals(
+				"{-0.1, -0.1, -0.09, -0.09, -0.08, -0.08, -0.07, -0.07, -0.06, -0.06,"
+						+ " -0.05, -0.05, -0.04, -0.04, -0.03, -0.03, -0.02, -0.02, -0.01, -0.01, 0, 0.01,"
+						+ " 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05, 0.06, 0.06, 0.07, 0.07,"
+						+ " 0.08, 0.08, 0.09, 0.09, 0.1, 0.1}",
+				evaluateGeoElement("Sequence(-0.1,0.1,.005)")
+						.toValueString(StringTemplate.defaultTemplate));
+		assertEquals(
+				"{0.1, 0.1, 0.09, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.06, 0.05,"
+						+ " 0.05, 0.04, 0.04, 0.03, 0.03, 0.02, 0.02, 0.01, 0.01, 0, -0.01, -0.01, -0.02,"
+						+ " -0.02, -0.03, -0.03, -0.04, -0.04, -0.05, -0.05, -0.06, -0.06, -0.07, -0.07,"
+						+ " -0.08, -0.08, -0.09, -0.09, -0.1, -0.1}",
+				evaluateGeoElement("Sequence(0.1,-0.1,-.005)")
+						.toValueString(StringTemplate.defaultTemplate));
 	}
 
 	@Test
-	public void testDegenerateCases() {
-		assertEquals("{1}", evaluateGeoElement("Sequence(1,1,1)")
-				.toValueString(StringTemplate.testTemplate));
-		assertEquals("?", evaluateGeoElement("Sequence(1,1,-1)")
-				.toValueString(StringTemplate.testTemplate));
+	void testDegenerateCases() {
+		assertEquals(
+				"{1}", evaluateGeoElement("Sequence(1,1,1)").toValueString(StringTemplate.testTemplate));
+		assertEquals(
+				"?", evaluateGeoElement("Sequence(1,1,-1)").toValueString(StringTemplate.testTemplate));
+	}
+
+	@Test
+	@Issue("APPS-7291")
+	void testRangeUpdate() {
+		evaluate("a=?");
+		GeoList list = evaluateGeoElement("Sequence(a,a,1)");
+		evaluate("SetValue(a,1)");
+		assertEquals("{1}", list.toValueString(StringTemplate.testTemplate));
 	}
 }

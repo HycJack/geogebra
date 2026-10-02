@@ -28,37 +28,38 @@ import org.geogebra.editor.share.tree.Formula;
 import org.geogebra.editor.share.tree.SequenceNode;
 import org.junit.jupiter.api.Test;
 
-public class AddPlaceholdersTest {
+class AddPlaceholdersTest {
 	private final Parser parser = new Parser(new TemplateCatalog());
 	private final AddPlaceholders placeholders = new AddPlaceholders();
 
 	@Test
-	public void testEmptyPoint() {
+	void testEmptyPoint() {
 		Formula formula = getFormula("(?,?)");
 		SequenceNode rootSequence = formula.getRootNode();
-		ArrayNode arrayNode = (ArrayNode) (rootSequence.getChild(0));
+		ArrayNode arrayNode = (ArrayNode) rootSequence.getChild(0);
 		placeholders.process(arrayNode);
-		assertEquals("ArrayNode[SequenceNode[CharPlaceholderNode[], ,,"
-				+ " CharPlaceholderNode[]]]", arrayNode.toString());
+		assertEquals(
+				"ArrayNode[SequenceNode[CharPlaceholderNode[], ,," + " CharPlaceholderNode[]]]",
+				arrayNode.toString());
 	}
 
 	@Test
-	public void testHalfEmptyPoint() {
+	void testHalfEmptyPoint() {
 		Formula formula = getFormula("(1,?)");
 		SequenceNode rootSequence = formula.getRootNode();
-		ArrayNode arrayNode = (ArrayNode) (rootSequence.getChild(0));
+		ArrayNode arrayNode = (ArrayNode) rootSequence.getChild(0);
 		placeholders.process(arrayNode);
-		assertEquals("ArrayNode[SequenceNode[1, ,,"
-				+ " CharPlaceholderNode[]]]", arrayNode.toString());
+		assertEquals("ArrayNode[SequenceNode[1, ,," + " CharPlaceholderNode[]]]", arrayNode.toString());
 	}
 
 	@Test
-	public void deepFractionsShouldParseAndSerializeFast() {
+	void deepFractionsShouldParseAndSerializeFast() {
 		int depth = 15;
 		long start = System.currentTimeMillis();
 		Formula formula = getFormula("1/(".repeat(depth) + "1" + ")".repeat(depth));
 		placeholders.process(formula.getRootNode());
-		assertEquals("((1)/(".repeat(depth) + "1" + "))".repeat(depth),
+		assertEquals(
+				"((1)/(".repeat(depth) + "1" + "))".repeat(depth),
 				GeoGebraSerializer.serialize(formula.getRootNode(), (EditorFeatures) null));
 		assertTrue(System.currentTimeMillis() - start < 1000, "Traversing too slow");
 	}

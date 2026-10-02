@@ -23,12 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.arithmetic.ExpressionNode;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
 import org.geogebra.common.plugin.Operation;
+import org.jspecify.annotations.NonNull;
 
 /**
  * <p>It factorizes GCD from expanded expression<br>
@@ -47,7 +46,7 @@ public final class GCDFromExpanded implements SimplifyNode {
 	private List<ExpressionValue> flatten;
 	private final Map<Integer, Integer> sqrtMap = new HashMap<>();
 
-	public GCDFromExpanded(@Nonnull SimplifyUtils utils) {
+	public GCDFromExpanded(@NonNull SimplifyUtils utils) {
 		this.utils = utils;
 	}
 
@@ -66,23 +65,20 @@ public final class GCDFromExpanded implements SimplifyNode {
 		for (ExpressionValue value : flatten) {
 			if (isIntegerValue(value)) {
 				sumOfInts += (int) value.evaluateDouble();
-			} else {
-				if (ExpressionValueUtils.isSqrtNode(value)) {
-					rest = addOrLet(rest, value.wrap());
-				} else if (value.isOperation(Operation.MULTIPLY)) {
-					ExpressionNode product = utils.reduceProduct(value.wrap()).wrap();
-					if (isIntegerValue(product.getLeft()) && ExpressionValueUtils.isSqrtNode(
-							product.getRightTree())) {
-						int radicand = (int) product.getRightTree().getLeft().evaluateDouble();
-						int amount = (int) product.getLeft().evaluateDouble();
-						if (Math.abs(amount) == 1 && !sqrtMap.containsKey(radicand)) {
-							rest = addOrLet(rest,
-									amount == 1
-											? utils.newSqrt(radicand)
-											: utils.newSqrt(radicand).multiplyR(-1));
-						} else {
-							addToSqrtMap(radicand, amount);
-						}
+			} else if (ExpressionValueUtils.isSqrtNode(value)) {
+				rest = addOrLet(rest, value.wrap());
+			} else if (value.isOperation(Operation.MULTIPLY)) {
+				ExpressionNode product = utils.reduceProduct(value.wrap()).wrap();
+				if (isIntegerValue(product.getLeft())
+						&& ExpressionValueUtils.isSqrtNode(product.getRightTree())) {
+					int radicand = (int) product.getRightTree().getLeft().evaluateDouble();
+					int amount = (int) product.getLeft().evaluateDouble();
+					if (Math.abs(amount) == 1 && !sqrtMap.containsKey(radicand)) {
+						rest = addOrLet(
+								rest,
+								amount == 1 ? utils.newSqrt(radicand) : utils.newSqrt(radicand).multiplyR(-1));
+					} else {
+						addToSqrtMap(radicand, amount);
 					}
 				}
 			}
@@ -121,9 +117,11 @@ public final class GCDFromExpanded implements SimplifyNode {
 			ExpressionNode newSqrt = utils.newSqrt(entry.getKey());
 			if (multiplier != 0 && Math.abs(entry.getValue()) >= Math.abs(multiplier * gcd1)) {
 				ExpressionNode gcdSqrt = newGCDSqrt(entry.getKey(), multiplier);
-				sum = addOrLet(sum, Math.abs(entry.getValue()) == Math.abs(gcd1)
-						? newSqrt.multiplyR(Math.signum((double) multiplier))
-						: gcdSqrt);
+				sum = addOrLet(
+						sum,
+						Math.abs(entry.getValue()) == Math.abs(gcd1)
+								? newSqrt.multiplyR(Math.signum((double) multiplier))
+								: gcdSqrt);
 			}
 			if (entry.getValue() != multiplier * gcd1) {
 				long restAmount = entry.getValue() - multiplier * gcd1;
@@ -132,7 +130,8 @@ public final class GCDFromExpanded implements SimplifyNode {
 				}
 
 				ExpressionNode modSqrt = Math.abs(restAmount) == 1
-						? newSqrt : utils.newMultiply(utils.newDouble(restAmount), newSqrt);
+						? newSqrt
+						: utils.newMultiply(utils.newDouble(restAmount), newSqrt);
 				mod = addOrLet(mod, modSqrt);
 			}
 		}
@@ -178,9 +177,7 @@ public final class GCDFromExpanded implements SimplifyNode {
 			return utils.newSqrt(radicand).multiplyR(-1);
 		}
 
-		return utils.newMultiply(
-				utils.newDouble(multiplier),
-				utils.newSqrt(radicand));
+		return utils.newMultiply(utils.newDouble(multiplier), utils.newSqrt(radicand));
 	}
 
 	private boolean flattenNode(ExpressionValue value) {

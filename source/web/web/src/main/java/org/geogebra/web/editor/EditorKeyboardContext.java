@@ -17,7 +17,6 @@
 package org.geogebra.web.editor;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.geogebra.common.kernel.geos.inputbox.InputBoxType;
 import org.geogebra.common.main.AppKeyboardType;
@@ -28,7 +27,7 @@ import org.geogebra.web.html5.bridge.AttributeProvider;
 
 import elemental2.dom.DomGlobal;
 
-public class EditorKeyboardContext implements HasKeyboard {
+public final class EditorKeyboardContext implements HasKeyboard {
 
 	private final AttributeProvider element;
 
@@ -61,15 +60,13 @@ public class EditorKeyboardContext implements HasKeyboard {
 			}
 
 			@Override
-			public String getMenu(String key) {
-				return key;
+			public String getMenuDefault(String key, String fallback) {
+				return fallback.isEmpty() ? key : fallback;
 			}
 
 			@Override
 			public String getKeyboardRow(int i) {
-				String[] rows = {"qQwWeErRtTyYuUiIoOpP",
-						"aAsSdDfFgGhHjJkKlL",
-						"zZxXcCvVbBnNmM"};
+				String[] rows = {"qQwWeErRtTyYuUiIoOpP", "aAsSdDfFgGhHjJkKlL", "zZxXcCvVbBnNmM"};
 				return rows[i - 1];
 			}
 		};
@@ -98,10 +95,5 @@ public class EditorKeyboardContext implements HasKeyboard {
 	@Override
 	public TemplateKeyProvider getTemplateKeyProvider() {
 		return null;
-	}
-
-	@Override
-	public void showMatrixInputDialog(Consumer<String> ignore) {
-		// Not needed
 	}
 }

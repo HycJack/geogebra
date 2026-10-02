@@ -16,8 +16,6 @@
 
 package org.geogebra.web.full.gui.toolbar.mow;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.ModeChangeListener;
 import org.geogebra.common.gui.SetLabels;
 import org.geogebra.web.full.gui.toolbar.mow.toolbox.NotesToolbox;
@@ -25,13 +23,12 @@ import org.geogebra.web.full.main.AppWFull;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.shared.mow.header.NotesTopBar;
 import org.gwtproject.user.client.ui.Widget;
+import org.jspecify.annotations.Nullable;
 
-public class NotesLayout implements SetLabels, ModeChangeListener {
+public final class NotesLayout implements SetLabels, ModeChangeListener {
 	private final AppW appW;
-	private final @CheckForNull NotesToolbox toolbar;
-	private final @CheckForNull NotesTopBar topBar;
-
-	private static final int TOP_BAR_HEIGHT = 48;
+	private final @Nullable NotesToolbox toolbar;
+	private final @Nullable NotesTopBar topBar;
 
 	/**
 	 * @param appW application
@@ -40,8 +37,7 @@ public class NotesLayout implements SetLabels, ModeChangeListener {
 		this.appW = appW;
 		topBar = new NotesTopBar(appW);
 		this.toolbar = appW.showToolBar() ? new NotesToolbox(appW, topBar.wasAttached()) : null;
-		appW.getActiveEuclidianView().getEuclidianController()
-				.setModeChangeListener(this);
+		appW.getActiveEuclidianView().getEuclidianController().setModeChangeListener(this);
 		setLabels();
 	}
 
@@ -82,8 +78,11 @@ public class NotesLayout implements SetLabels, ModeChangeListener {
 		}
 	}
 
+	/**
+	 * @return the height of the top bar, or 0 if there is no top bar
+	 */
 	public int getTopBarHeight() {
-		return topBar != null && topBar.wasAttached() ? TOP_BAR_HEIGHT : 0;
+		return topBar == null ? 0 : topBar.getHeight();
 	}
 
 	/**

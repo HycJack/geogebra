@@ -269,6 +269,35 @@ $keyboard_button_transition: opacity .3s ease;
 			background: neutral(300);
 		}
 
+		&.quickStyleBarFontSizePopup {
+			z-index: z-index.$z-dialog-over-keyboard;
+			width: 52px;
+			border-radius: 12px;
+			padding: 8px 0;
+			box-shadow: 0 1px 6px 0 rgba(133, 132, 138, 0.08), 0 2px 12px -1px rgba(133, 132, 138, 0.12);
+
+			.dropDownElement {
+				box-sizing: border-box;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-width: 52px;
+				height: 32px;
+				line-height: normal;
+				padding-left: 0;
+				padding-right: 0;
+				font-size: 16px;
+				color: neutral(900);
+				text-overflow: clip;
+			}
+
+			.dropDownElement:hover,
+			.selectedDropDownElement,
+			.selectedDropDownElement:hover {
+				background-color: neutral(200);
+			}
+		}
+
 		&.show {
 			opacity: 1;
 			transform: scale(1);
@@ -338,27 +367,34 @@ $keyboard_button_transition: opacity .3s ease;
 
 	/** Material Design TEXT BUTTON **/
 	.materialTextButton {
-		display: inline-block;
+		display: inline-flex;
 		min-width: 64px;
-		height: 36px;
+		height: 40px;
 		background: transparent;
-		color: var(--ggb-primary-color);
-		font-size: 90%;
-		letter-spacing: .04em;
-		line-height: 36px;
-		text-transform: uppercase;
-		border-radius: 4px;
-		padding: 0px 8px;
-		margin-left: 8px;
+		color: var(--ggb-dark-color);
+		font-size: 14px;
+		letter-spacing: .1px;
+		line-height: 20px;
+		border-radius: var(--ggb-button-border-radius);
+		padding: 0px 16px;
 		cursor: pointer;
 		transition: background 280ms cubic-bezier(0.4, 0, 0.2, 1);
 
-		&:hover {
-			background: neutral(200);
+		&:hover, &.keyboardFocus:focus-visible {
+			background: var(--ggb-light-color);
+		}
+
+		img {
+			width: 24px;
+			height: 24px;
+			margin: 8px 8px 8px 0;
 		}
 
 		.gwt-Label {
 			text-align: center;
+			height: 20px;
+			line-height: 20px;
+			margin: auto;
 		}
 
 		&.disabled {
@@ -369,33 +405,30 @@ $keyboard_button_transition: opacity .3s ease;
 				cursor: default;
 			}
 		}
+
+		&.keyboardFocus:focus-visible {
+			outline-color: var(--ggb-dark-color);
+			outline-width: 2px;
+			outline-style: solid;
+			outline-offset: 2px;
+		}
 	}
 
-	/** Material Design CONTAINED BUTTON **/
-	.materialContainedButton {
+	/** Material Design FILLED BUTTON **/
+	.materialFilledButton {
 		@extend .materialTextButton;
 
-		padding: 0px 16px;
 		background-color: var(--ggb-primary-color);
 		color: white;
-		box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0,0,0,.12);
-		transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
 		text-align: center;
 
-		&:hover {
-			background: var(--ggb-primary-color);
-			box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0,0,0,.12);
+		&:hover, &.keyboardFocus:focus-visible {
+			background: var(--ggb-dark-color);
 		}
 
-		&.disabled {
+		&.disabled, &.disabled:hover {
 			background-color: neutral(300);
 			color: neutral(500);
-
-			&:hover {
-				cursor: default;
-				background: neutral(300);
-				box-shadow: none;
-			}
 		}
 	}
 
@@ -403,92 +436,18 @@ $keyboard_button_transition: opacity .3s ease;
 	.materialOutlinedButton {
 		@extend .materialTextButton;
 
-		border: 1px solid colors.$black-12;
+		border: 1px solid neutral(300);
 		box-sizing: border-box;
 	}
 
-	/** Material TEXT BUTTON used for dialogs negative action **/
-	.dialogTextButton {
+	/** Material Design TONAL BUTTON **/
+	.materialTonalButton {
 		@extend .materialTextButton;
 
-		color: neutral(700);
-		margin: 0;
+		background: neutral(200);
 
-		&:hover {
-			color: neutral(700);
-			background-color: neutral(200);
-		}
-
-		&:focus-visible {
-			outline-color: var(--ggb-dark-color);
-			outline-width: 2px;
-			outline-style: solid;
-			outline-offset: 3px;
-			background: var(--ggb-light-color);
-		}
-	}
-
-	/** Material CONTAINED BUTTON used for dialogs positive action **/
-	.dialogContainedButton {
-		@extend .materialContainedButton;
-
-		box-shadow: none;
-		margin: 0;
-
-		&:focus-visible {
-			outline-color: var(--ggb-dark-color);
-			outline-width: 2px;
-			outline-style: solid;
-			outline-offset: 3px;
-		}
-	}
-
-	.containedButton {
-		cursor: pointer;
-		float: left;
-		min-width: 64px;
-		height: header.$button_height;
-		border-radius: 4px;
-		background-color: neutral(200);
-		transition: header.$button_hover_transition;
-		&:hover {
-			background-color: neutral(300);
-		}
-
-		img {
-			float: left;
-			width: 18px;
-			height: 18px;
-			padding: 9px 8px 9px 12px;
-			opacity: 0.54;
-		}
-
-		.gwt-Label {
-			float: left;
-			padding: 11px 16px 11px 0px;
-			text-transform: uppercase;
-			font-size: 87.5%; // (=14px)
-			line-height: 1;
-			color: neutral(700);
-		}
-
-		&.disabled, &[disabled] {
-			img {
-				opacity: 0.34;
-			}
-
-			.gwt-Label {
-				color: neutral(500);
-				background-color: neutral(200);
-			}
-
-			&:hover {
-				cursor: default;
-				background-color: neutral(200);
-				img {
-					opacity: 0.34;
-				}
-			}
+		&:hover, &.keyboardFocus:focus-visible, &.disabled, &.disabled:hover {
+			background: neutral(300);
 		}
 	}
 
@@ -583,8 +542,19 @@ $keyboard_button_transition: opacity .3s ease;
 				display: inline-flex;
 				right: 0px;
 
-				&.transition {
-					transition: right 0.25s cubic-bezier(.35,0,.25,1);
+				.tabPanel.fadeIn {
+					opacity: 0;
+					animation-name: fadeInOpacity;
+					animation-timing-function: cubic-bezier(0, 0, 0, 1);
+					animation-duration: 200ms;
+					animation-delay: 100ms;
+				}
+
+				.tabPanel.fadeOut {
+					opacity: 0;
+					animation-name: fadeOutOpacity;
+					animation-timing-function: cubic-bezier(0.3, 0, 1, 1);
+					animation-duration: 100ms;
 				}
 			}
 	}
@@ -616,7 +586,7 @@ $keyboard_button_transition: opacity .3s ease;
 			letter-spacing: 0.2px;
 		}
 
-		.dialogContainedButton {
+		.materialFilledButton {
 			display: block;
 			margin: 24px auto 0 auto;
 		}
@@ -859,7 +829,7 @@ $keyboard_button_transition: opacity .3s ease;
 
 	.dropDown, .comboBox {
 		.optionLabelHolder {
-			max-width: calc(100% - 56px);
+			max-width: calc(100% - 32px);
 		}
 	}
 	.dropDown, .comboBox, .inputTextField, .textEdit {
@@ -904,7 +874,7 @@ $keyboard_button_transition: opacity .3s ease;
 
 		.arrow {
 			padding: 6px;
-			margin: 5px 6px 5px 10px;
+			margin: 5px 6px 5px 5px;
 			transition: transform 200ms ease-in-out;
 
 			svg {
@@ -969,9 +939,11 @@ $keyboard_button_transition: opacity .3s ease;
 
 	.comboBox {
 		.optionLabelHolder {
+			width: 100%;
+
 			.AutoCompleteTextFieldW {
 				border: none;
-				margin: 11px 10px 11px 16px;
+				margin: 11px 0px 11px 16px;
 
 				input[type="text"] {
 					border: none;
@@ -1014,6 +986,10 @@ $keyboard_button_transition: opacity .3s ease;
 			input[type=text] {
 				color: neutral(900);
 			}
+
+			.supportLabel {
+				display: none;
+			}
 		}
 	}
 /* INPUT TEXT FIELD COMPONENT */
@@ -1025,6 +1001,14 @@ $keyboard_button_transition: opacity .3s ease;
 		.optionLabelHolder {
 			display: inline-flex;
 			width: 100%;
+			height: 100%;
+		}
+
+		.mathTextField {
+			display: block;
+			margin: auto 16px;
+			width: 100%;
+			min-width: 160px;
 		}
 
 		.textField {
@@ -1032,7 +1016,7 @@ $keyboard_button_transition: opacity .3s ease;
 		}
 
 		.AutoCompleteTextFieldW {
-			width: calc(100% - 58px);
+			width: calc(100% - 32px);
 			margin: 11px 0 11px 16px;
 
 			.fieldContainer {
@@ -1069,8 +1053,11 @@ $keyboard_button_transition: opacity .3s ease;
 					}
 			}
 
-			&.kbdInput button {
+			&.kbdInput {
+			 width: calc(100% - 56px);
+			 button {
 				visibility: visible;
+				}
 			}
 		}
 
@@ -1087,6 +1074,18 @@ $keyboard_button_transition: opacity .3s ease;
 			height: 16px;
 			line-height: 100%;
 			margin: 4px 16px 0 16px;
+		}
+
+		.supportLabel {
+			font-size: 12px;
+			height: 16px;
+			line-height: 100%;
+			margin: 4px 16px 0 16px;
+			display: block;
+
+			&.hide {
+				display: none;
+			}
 		}
 	}
 
@@ -1230,15 +1229,6 @@ $keyboard_button_transition: opacity .3s ease;
 		}
 	}
 
-	.sliderComponent {
-		.sliderLabel {
-			height: 20px;
-			line-height: 20px;
-			margin: 5px 8px;
-			font-size: 90%;
-		}
-	}
-
 	input[type=range].slider {
 		-webkit-appearance: none;
 		width: 100%;
@@ -1276,22 +1266,16 @@ $keyboard_button_transition: opacity .3s ease;
 	}
 
 	.sliderComponent {
+		.sliderLabel, .displayValue {
+			height: 20px;
+			line-height: 20px;
+			margin: 5px 8px;
+			font-size: 14px;
+		}
+
 		.labelPreviewHolder {
 			display: flex;
 			justify-content: space-between;
-		}
-
-		.optionsSlider {
-			display: inline;
-
-			.gwt-Label {
-				display: none;
-			}
-		}
-
-		.preview {
-			overflow: hidden;
-			margin-right: 8px;
 		}
 
 		input.slider {
@@ -1339,8 +1323,7 @@ $keyboard_button_transition: opacity .3s ease;
 		}
 
 		.contentPanel {
-			height: 100%;
-
+			height: calc(100% - 64px); //64px height of sideSheet titlePanel
 			&.withButtonPanel {
 				height: calc(100% - 132px);
 			}
@@ -1357,6 +1340,19 @@ $keyboard_button_transition: opacity .3s ease;
 			button {
 				margin: 0;
 			}
+		}
+	}
+
+	.probabilityTableSideSheet {
+		width: 400px;
+		.sideSheet .contentPanel {
+			height: calc(100% - 64px);
+			overflow: hidden;
+		}
+
+		.tvTable,
+		.tvTable > .scroller {
+			height: 100%;
 		}
 	}
 
@@ -1410,8 +1406,9 @@ $keyboard_button_transition: opacity .3s ease;
 		}
 
 		.containerPanel {
-			visibility: hidden;
+			display: none;
 			height: 0;
+			overflow: hidden;
 
 			&.keyboardFocus:focus-visible {
 				outline-color: var(--ggb-dark-color);
@@ -1423,7 +1420,7 @@ $keyboard_button_transition: opacity .3s ease;
 		}
 
 		&.extended {
-			height: fit-content;
+			height: auto;
 			box-sizing: border-box;
 			border-top: 1px solid neutral(300);
 			border-bottom: 1px solid neutral(300);
@@ -1433,8 +1430,9 @@ $keyboard_button_transition: opacity .3s ease;
 			}
 
 			.containerPanel {
-				visibility: visible;
-				height: 100%;
+				display: block;
+				height: auto;
+				overflow: visible;
 			}
 		}
 	}
@@ -1528,6 +1526,60 @@ $keyboard_button_transition: opacity .3s ease;
 				outline-width: 2px;
 				outline-style: solid;
 				outline-offset: -2px;
+			}
+		}
+	}
+
+	.componentChips {
+		padding: 4px 16px;
+		display: flex;
+		gap: 8px;
+		background-color: neutral(200);
+		border-radius: 16px;
+		border: 1px solid neutral(600);
+
+		.gwt-Label {
+			color: neutral(800);
+			font-size: 12px;
+			height: 20px;
+			line-height: 20px;
+		}
+
+		&:hover {
+			background-color: neutral(300);
+		}
+
+		&.disabled, &.primary.disabled, &.disabled:hover, &.primary.disabled:hover {
+			cursor: default;
+			background-color: neutral(300);
+			border-color: neutral(500);
+
+			.gwt-Label {
+				color: neutral(500);
+			}
+		}
+
+		&.ripple:after {
+			background-image: radial-gradient(circle, neutral(500) 10%, transparent 10.01%);
+		}
+
+		&.keyboardFocus:focus-visible {
+			outline-color: var(--ggb-primary-color);
+			outline-width: 2px;
+			outline-style: solid;
+			outline-offset: 2px;
+		}
+
+		&.primary {
+			background-color: var(--ggb-light-color);
+			border-color: var(--ggb-primary-color);
+
+			&:hover {
+				background-color: var(--ggb-selection-color);
+			}
+
+			&.ripple:after {
+				background-image: radial-gradient(circle, purple(500) 10%, transparent 10.01%);
 			}
 		}
 	}

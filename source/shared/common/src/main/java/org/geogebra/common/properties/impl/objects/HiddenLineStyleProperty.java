@@ -21,16 +21,16 @@ import static java.util.Map.entry;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.common.main.App;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.settings.config.AppConfigGraphing3D;
 import org.geogebra.common.plugin.EuclidianStyleConstants;
 import org.geogebra.common.properties.impl.AbstractNamedEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.HiddenLineStyleProperty.HiddenLineStyle;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting the hidden line style.
@@ -53,11 +53,11 @@ public class HiddenLineStyleProperty extends AbstractNamedEnumeratedProperty<Hid
 			this.transKey = transKey;
 		}
 
-		static @CheckForNull HiddenLineStyle fromEuclidianStyleConstant(
-				int euclidianStyleConstant) {
+		static @Nullable HiddenLineStyle fromEuclidianStyleConstant(int euclidianStyleConstant) {
 			return Arrays.stream(HiddenLineStyle.values())
 					.filter(lineStyle -> lineStyle.euclidianStyleConstant == euclidianStyleConstant)
-					.findFirst().orElse(null);
+					.findFirst()
+					.orElse(null);
 		}
 	}
 
@@ -72,14 +72,18 @@ public class HiddenLineStyleProperty extends AbstractNamedEnumeratedProperty<Hid
 	public HiddenLineStyleProperty(Localization localization, GeoElement geoElement)
 			throws NotApplicablePropertyException {
 		super(localization, "HiddenLineStyle");
-		if (!geoElement.showLineProperties()
-				|| !(geoElement.getApp().getConfig() instanceof AppConfigGraphing3D)) {
+		if (!geoElement.showLineProperties() || !is3DViewAvailable(geoElement.getApp())) {
 			throw new NotApplicablePropertyException(geoElement);
 		}
 		setNamedValues(Arrays.stream(HiddenLineStyle.values())
 				.map(hiddenLineStyle -> entry(hiddenLineStyle, hiddenLineStyle.transKey))
 				.collect(Collectors.toList()));
 		this.geoElement = geoElement;
+	}
+
+	private boolean is3DViewAvailable(App app) {
+		return app.getConfig() instanceof AppConfigGraphing3D
+				|| !app.isUnbundledOrWhiteboard() && app.isEuclidianView3Dinited();
 	}
 
 	@Override

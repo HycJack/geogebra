@@ -30,6 +30,7 @@ import org.geogebra.common.main.MyError.Errors;
 import org.geogebra.web.full.css.MaterialDesignResources;
 import org.geogebra.web.full.gui.GuiManagerW;
 import org.geogebra.web.full.gui.menu.icons.DefaultMenuIconResources;
+import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.gui.util.FastClickHandler;
 import org.geogebra.web.html5.gui.util.LayoutUtilW;
 import org.geogebra.web.html5.gui.util.ListBoxApi;
@@ -46,8 +47,10 @@ import org.gwtproject.user.client.ui.ListBox;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.URL;
 
-public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDialogListener,
-		ToolNameIconPanelW.MacroChangeListener, MultiSelectButtonsPanel.ButtonsListener {
+public final class ToolManagerDialogW extends ComponentDialog
+		implements ToolManagerDialogListener,
+				ToolNameIconPanelW.MacroChangeListener,
+				MultiSelectButtonsPanel.ButtonsListener {
 
 	AppW appw;
 	final LocalizationW loc;
@@ -59,10 +62,10 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 
 	StandardButton openButton;
 
-	private static class MacroListBox extends ListBox {
+	private static final class MacroListBox extends ListBox {
 		List<Macro> macros;
 
-		public MacroListBox() {
+		private MacroListBox() {
 			macros = new ArrayList<>();
 		}
 
@@ -70,15 +73,15 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 			return macro.getToolName() + ": " + macro.getNeededTypesString();
 		}
 
-		public List<Macro> getMacros() {
+		List<Macro> getMacros() {
 			return macros;
 		}
 
-		public Macro getMacro(int index) {
+		Macro getMacro(int index) {
 			return macros.get(index);
 		}
 
-		public Macro getSelectedMacro() {
+		Macro getSelectedMacro() {
 			int idx = getSelectedIndex();
 			if (idx == -1) {
 				return null;
@@ -86,7 +89,7 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 			return getMacro(idx);
 		}
 
-		public void setSelectedMacro(Macro macro) {
+		void setSelectedMacro(Macro macro) {
 			int idx = getSelectedIndex();
 			if (idx == -1) {
 				return;
@@ -95,12 +98,12 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 			setItemText(idx, getMacroText(macro));
 		}
 
-		public void addMacro(Macro macro) {
+		void addMacro(Macro macro) {
 			macros.add(macro);
 			addItem(getMacroText(macro));
 		}
 
-		public void insertMacro(Macro macro, int index) {
+		void insertMacro(Macro macro, int index) {
 			macros.add(index, macro);
 			insertItem(getMacroText(macro), index);
 		}
@@ -109,10 +112,9 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 		public void removeItem(int index) {
 			macros.remove(index);
 			super.removeItem(index);
-
 		}
 
-		public List<Macro> getSelectedMacros() {
+		List<Macro> getSelectedMacros() {
 			List<Macro> sel = null;
 			for (int i = 0; i < getItemCount(); i++) {
 				if (isItemSelected(i)) {
@@ -126,7 +128,7 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 			return sel;
 		}
 
-		public boolean isEmpty() {
+		boolean isEmpty() {
 			return macros.isEmpty();
 		}
 	}
@@ -176,13 +178,18 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 		for (int j = 0; j < selIndexesTemp.size(); j++) {
 			int i = selIndexesTemp.get(j);
 			if (toolList.getMacro(i).isUsed()) {
-				macroNamesNoDel.append("\n")
+				macroNamesNoDel
+						.append("\n")
 						.append(toolList.getMacro(i).getToolOrCommandName())
-						.append(": ").append(toolList.getMacro(i).getNeededTypesString());
+						.append(": ")
+						.append(toolList.getMacro(i).getNeededTypesString());
 				toolList.setItemSelected(j, false);
 			} else {
-				macroNamesDel.append("\n").append(toolList.getMacro(i).getToolOrCommandName())
-						.append(": ").append(toolList.getMacro(i).getNeededTypesString());
+				macroNamesDel
+						.append("\n")
+						.append(toolList.getMacro(i).getToolOrCommandName())
+						.append(": ")
+						.append(toolList.getMacro(i).getNeededTypesString());
 			}
 		}
 		if (macroNamesDel.length() == 0) {
@@ -210,10 +217,8 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 	}
 
 	private void onToolDelete() {
-		final List<Integer> selIndexes = ListBoxApi
-				.getSelectionIndexes(toolList);
-		List<Macro> macros = toolList
-				.getSelectedMacros();
+		final List<Integer> selIndexes = ListBoxApi.getSelectionIndexes(toolList);
+		List<Macro> macros = toolList.getSelectedMacros();
 		// need this because of removing
 
 		Collections.reverse(selIndexes);
@@ -238,11 +243,10 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 		return new MultiSelectButtonsPanel(this);
 	}
 
-	private StandardButton addStyledButton(SVGResource img, FlowPanel rootPanel,
-			String label, FastClickHandler clickHandler) {
-		StandardButton btn = new StandardButton(img, label, 18);
+	private StandardButton addStyledButton(
+			SVGResource img, FlowPanel rootPanel, String label, FastClickHandler clickHandler) {
+		StandardButton btn = BaseWidgetFactory.INSTANCE.newTonalButton(img, label);
 		btn.addFastClickHandler(clickHandler);
-		btn.addStyleName("containedButton");
 		rootPanel.add(btn);
 		return btn;
 	}
@@ -257,8 +261,7 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 		toolList.setMultipleSelect(true);
 		toolList.setVisibleItemCount(6);
 
-		FlowPanel centerPanel = LayoutUtilW.panelRow(toolList,
-				createListUpDownRemovePanel());
+		FlowPanel centerPanel = LayoutUtilW.panelRow(toolList, createListUpDownRemovePanel());
 		centerPanel.setStyleName("multiSelectList");
 		panel.add(centerPanel);
 
@@ -266,14 +269,18 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 		toolButtonPanel.addStyleName("toolButtons");
 		panel.add(toolButtonPanel);
 
-		openButton = addStyledButton(MaterialDesignResources.INSTANCE.mow_pdf_open_folder(),
-				toolButtonPanel, loc.getMenu("Open"),
-				w -> this.openMacroEditingTab()
-		);
+		openButton = addStyledButton(
+				MaterialDesignResources.INSTANCE.mow_pdf_open_folder(),
+				toolButtonPanel,
+				loc.getMenu("Open"),
+				w -> this.openMacroEditingTab());
 		openButton.setEnabled(false);
 
-		addStyledButton(DefaultMenuIconResources.INSTANCE.save(), toolButtonPanel,
-				loc.getMenu("Save"), w -> this.saveTools());
+		addStyledButton(
+				DefaultMenuIconResources.INSTANCE.save(),
+				toolButtonPanel,
+				loc.getMenu("Save"),
+				w -> this.saveTools());
 
 		// name & icon
 		macroPanel = new ToolNameIconPanelW(appw, this);
@@ -289,11 +296,9 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 
 	private void updateMacroPanel() {
 		Macro selectedMacro = toolList.getSelectedMacro();
-		openButton.setEnabled(
-				!appw.isOpenedForMacroEditing()
+		openButton.setEnabled(!appw.isOpenedForMacroEditing()
 				&& selectedMacro != null
-				&& !appw.storageContainsMacro(selectedMacro.getEditName())
-		);
+				&& !appw.storageContainsMacro(selectedMacro.getEditName()));
 		macroPanel.setMacro(selectedMacro);
 	}
 
@@ -306,8 +311,7 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 			MaterialsManagerI fm = appw.getFileManager();
 			if (fm != null) {
 				URL url = new URL(DomGlobal.location.href);
-				url.searchParams.append(AppW.EDIT_MACRO_URL_PARAM_NAME,
-						selectedMacro.getEditName());
+				url.searchParams.append(AppW.EDIT_MACRO_URL_PARAM_NAME, selectedMacro.getEditName());
 				fm.open(url.toString(), "");
 			}
 		}
@@ -403,10 +407,9 @@ public class ToolManagerDialogW extends ComponentDialog implements ToolManagerDi
 		} else {
 			Macro selectedMacro = toolList.getSelectedMacro();
 			if (selectedMacro != null) {
-				appw.getGuiManager().removeFromToolbarDefinition(
-						selectedMacro.getKernel().getMacroID(selectedMacro)
-						+ EuclidianConstants.MACRO_MODE_ID_OFFSET
-				);
+				appw.getGuiManager()
+						.removeFromToolbarDefinition(selectedMacro.getKernel().getMacroID(selectedMacro)
+								+ EuclidianConstants.MACRO_MODE_ID_OFFSET);
 			}
 		}
 		GuiManagerW gm = (GuiManagerW) appw.getGuiManager();

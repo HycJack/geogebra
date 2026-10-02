@@ -19,6 +19,7 @@ package org.geogebra.web.full.gui.view.algebra;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.ScreenReader;
+import org.geogebra.common.util.CommandSyntaxLookupImpl;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.editor.share.serializer.TeXSerializer;
 import org.geogebra.editor.web.MathFieldW;
@@ -33,13 +34,20 @@ import com.himamis.retex.renderer.web.FactoryProviderGWT;
 public class LaTeXTreeItem extends RadioTreeItem {
 
 	private MathFieldW mf;
+	private MatrixResizePopup resizePopup;
 
 	public LaTeXTreeItem(Kernel kernel, AlgebraViewW av) {
 		super(kernel, av);
 	}
 
-	public LaTeXTreeItem(GeoElement geo) {
+	protected LaTeXTreeItem(GeoElement geo) {
 		super(geo);
+	}
+
+	protected static LaTeXTreeItem of(GeoElement geo) {
+		LaTeXTreeItem ret = new LaTeXTreeItem(geo);
+		ret.buildGui();
+		return ret;
 	}
 
 	@Override
@@ -85,26 +93,38 @@ public class LaTeXTreeItem extends RadioTreeItem {
 		}
 
 		FactoryProviderGWT.ensureLoaded();
-		mf = new MathFieldW(new SyntaxAdapterImplWithPaste(app.getKernel()), latexItem, canvas,
-				getLatexController(), app.getEditorFeatures());
+		mf = new MathFieldW(
+				new SyntaxAdapterImplWithPaste(app.getKernel()),
+				latexItem,
+				canvas,
+				getLatexController(),
+				app.getEditorFeatures());
+		mf.getInternal().getInputController().setCommandSyntaxLookup(new CommandSyntaxLookupImpl(app));
 		DataTest.ALGEBRA_INPUT.apply(mf.getInputTextArea());
 		mf.setExpressionReader(ScreenReader.getExpressionReader(app));
 		updateEditorAriaLabel("");
+		resizePopup = new MatrixResizePopup(
+				mf.getInternal().getMatrixResizeController(), mf, app, this::onKeyTyped);
+		mf.getInternal().getMatrixResizeController().addListener(resizePopup);
 		mf.setFontSize(getFontSize());
 		mf.getInternal().registerMathFieldInternalListener(syntaxController);
 		mf.setPixelRatio(app.getPixelRatio());
 		mf.setOnBlur((blurEvent) -> {
 			toastController.hide();
+			resizePopup.hide();
 			controller.onBlur(blurEvent);
 		});
-		mf.setOnFocus(focusEvent -> setFocusedStyle(true, false));
+		mf.setOnFocus(focusEvent -> {
+			setFocusedStyle(true, false);
+			mf.getInternal().getMatrixResizeController().addListener(resizePopup);
+			updateAriaLabel();
+		});
 	}
 
 	private void updateEditorAriaLabel(String text) {
 		if (mf != null) {
 			if (!StringUtil.emptyTrim(text)) {
-				String label = ScreenReader.getAriaExpression(app, mf.getFormula(),
-						ariaPreview);
+				String label = ScreenReader.getAriaExpression(app, mf.getFormula(), ariaPreview);
 				if (StringUtil.empty(label)) {
 					label = mf.getDescription();
 				}
@@ -135,14 +155,13 @@ public class LaTeXTreeItem extends RadioTreeItem {
 
 	@Override
 	public void insertString(String text) {
-		new MathFieldProcessing(mf).autocomplete(
-				app.getParserFunctions().toEditorAutocomplete(text, loc));
+		new MathFieldProcessing(mf)
+				.autocomplete(app.getParserFunctions().toEditorAutocomplete(text, loc));
 	}
 
 	@Override
 	protected String getEditorLatex() {
-		return mf == null ? null
-				: TeXSerializer.serialize(mf.getFormula().getRootNode());
+		return mf == null ? null : TeXSerializer.serialize(mf.getFormula().getRootNode());
 	}
 
 	@Override
@@ -161,6 +180,9 @@ public class LaTeXTreeItem extends RadioTreeItem {
 	protected void setEnabled(boolean enabled) {
 		if (mf != null) {
 			mf.setEnabled(false);
+		}
+		if (resizePopup != null) {
+			resizePopup.hide();
 		}
 	}
 
@@ -201,7 +223,7 @@ public class LaTeXTreeItem extends RadioTreeItem {
 
 	@Override
 	public RadioTreeItem copy() {
-		return new LaTeXTreeItem(geo);
+		return LaTeXTreeItem.of(geo);
 	}
 
 	@Override

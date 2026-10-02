@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,9 +16,9 @@
 
 package org.geogebra.common.properties.impl.objects;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -35,32 +35,31 @@ import org.geogebra.common.scientific.LabelController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class LabelStylePropertyTest {
+class LabelStylePropertyTest {
 	AppCommon app;
 	GeoElementND element;
 	LabelStyleProperty property;
 
 	@BeforeEach
-	public void setup() throws NotApplicablePropertyException {
+	void setup() throws NotApplicablePropertyException {
 		app = AppCommonFactory.create3D();
-		element = app.getKernel().getAlgebraProcessor()
-				.processAlgebraCommand("(1,2)", false)[0];
-		property = new LabelStyleProperty(app.getLocalization(),
-				app.getKernel(), element.toGeoElement());
+		element = app.getKernel().getAlgebraProcessor().processAlgebraCommand("(1,2)", false)[0];
+		property =
+				new LabelStyleProperty(app.getLocalization(), app.getKernel(), element.toGeoElement());
 	}
 
 	@Test
-	public void notApplicableForText() {
-		GeoElement text = (GeoElement) app.getKernel().getAlgebraProcessor()
-				.processAlgebraCommand("\"text\"", false)[0];
+	void notApplicableForText() {
+		GeoElement text = (GeoElement)
+				app.getKernel().getAlgebraProcessor().processAlgebraCommand("\"text\"", false)[0];
 		text.setEuclidianVisible(true);
-		assertThrows(NotApplicablePropertyException.class,
-				() -> new LabelStyleProperty(app.getLocalization(), app.getKernel(),
-						text));
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new LabelStyleProperty(app.getLocalization(), app.getKernel(), text));
 	}
 
 	@Test
-	public void testGetValue() {
+	void testGetValue() {
 		assertEquals(List.of(true, false), property.getValue());
 		element.setLabelVisible(false);
 		element.setLabelMode(GeoElementND.LABEL_NAME_VALUE);
@@ -74,7 +73,7 @@ public class LabelStylePropertyTest {
 	}
 
 	@Test
-	public void testSetValue() {
+	void testSetValue() {
 		property.setValue(List.of(false, false));
 		assertFalse(element.isLabelVisible(), "Label should be hidden");
 		property.setValue(List.of(true, true));
@@ -85,7 +84,7 @@ public class LabelStylePropertyTest {
 	}
 
 	@Test
-	public void testSetValueWithCaption() {
+	void testSetValueWithCaption() {
 		element.setCaption("The Caption");
 		property.setValue(List.of(true, true));
 		assertTrue(element.isLabelVisible(), "Label should be shown");
@@ -97,7 +96,7 @@ public class LabelStylePropertyTest {
 	}
 
 	@Test
-	public void testSetValueWithHiddenAlgebraLabel() {
+	void testSetValueWithHiddenAlgebraLabel() {
 		new LabelController().hideLabel(element);
 		assertEquals(List.of(false, false), property.getValue());
 		property.setValue(List.of(true, true));
@@ -106,13 +105,13 @@ public class LabelStylePropertyTest {
 	}
 
 	@Test
-	public void testSetValueWithHiddenAlgebraLabelAndUndo() {
+	void testSetValueWithHiddenAlgebraLabelAndUndo() {
 		element.getApp().getKernel().setUndoActive(true);
 		element.getApp().getKernel().initUndoInfo();
 		new LabelController().hideLabel(element);
 		assertEquals(List.of(false, false), property.getValue());
-		property.addValueObserver(new UndoActionObserver(List.of(element.toGeoElement()),
-				UndoActionType.STYLE));
+		property.addValueObserver(
+				new UndoActionObserver(List.of(element.toGeoElement()), UndoActionType.STYLE));
 		assertEquals(LabelManager.HIDDEN_PREFIX, element.getLabelSimple());
 
 		property.setValue(List.of(true, true));
@@ -129,5 +128,4 @@ public class LabelStylePropertyTest {
 		assertTrue(element.isAlgebraLabelVisible());
 		assertEquals(GeoElementND.LABEL_NAME_VALUE, element.getLabelMode());
 	}
-
 }

@@ -29,21 +29,21 @@ import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class InteractionPropertyCollectionTest extends BaseAppTestSetup {
+class InteractionPropertyCollectionTest extends BaseAppTestSetup {
 
 	private final GeoElementPropertiesFactory propertiesFactory = new GeoElementPropertiesFactory();
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@Test
-	public void testIncrementFieldsEnabledDependentOnSelectionAllowed() {
+	void testIncrementFieldsEnabledDependentOnSelectionAllowed() {
 		GeoElement point = evaluateGeoElement("(1, 1)");
-		InteractionPropertyCollection interactionProperty = assertDoesNotThrow(() ->
-				new InteractionPropertyCollection(propertiesFactory, getAlgebraProcessor(),
-						getLocalization(), List.of(point)));
+		InteractionPropertyCollection interactionProperty =
+				assertDoesNotThrow(() -> new InteractionPropertyCollection(
+						propertiesFactory, getAlgebraProcessor(), getLocalization(), List.of(point)));
 		interactionProperty.getSelectionAllowedProperty().setValue(false);
 		assertFalse(interactionProperty.getAnimationStepProperty().isEnabled());
 		assertFalse(interactionProperty.getVerticalStepProperty().isEnabled());

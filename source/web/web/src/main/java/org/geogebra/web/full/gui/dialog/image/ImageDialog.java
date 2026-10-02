@@ -32,7 +32,7 @@ import org.gwtproject.dom.style.shared.Unit;
 import org.gwtproject.user.client.ui.FileUpload;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-public class ImageDialog extends ComponentDialog implements WebcamDialogInterface {
+public final class ImageDialog extends ComponentDialog implements WebcamDialogInterface {
 	private FlowPanel cameraPanel;
 	private WebCamInputPanel webcamInputPanel;
 	private StandardButton captureBtn;
@@ -50,16 +50,18 @@ public class ImageDialog extends ComponentDialog implements WebcamDialogInterfac
 	}
 
 	private void buildGUI() {
-		FileUpload uploadImage = UploadImagePanel.getUploadButton((AppW) app,
-				(fileName, content) -> {
-					((AppW) app).imageDropHappened(fileName, content);
-					hide();
-				});
+		FileUpload uploadImage = UploadImagePanel.getUploadButton((AppW) app, (fileName, content) -> {
+			((AppW) app).imageDropHappened(fileName, content);
+			hide();
+		});
 
-		InfoErrorData uploadData = new InfoErrorData(null, "ImageDialog.UploadImageMsg",
-				"ImageDialog.Browse", MaterialDesignResources.INSTANCE.upload());
-		ComponentInfoErrorPanel uploadPanel = new ComponentInfoErrorPanel(app.getLocalization(),
-				uploadData, uploadImage::click);
+		InfoErrorData uploadData = new InfoErrorData(
+				null,
+				"ImageDialog.UploadImageMsg",
+				"ImageDialog.Browse",
+				MaterialDesignResources.INSTANCE.upload());
+		ComponentInfoErrorPanel uploadPanel =
+				new ComponentInfoErrorPanel(app.getLocalization(), uploadData, uploadImage::click);
 		uploadPanel.disableActionButton(!((AppW) app).enableFileFeatures());
 
 		TabData uploadTab = new TabData("Upload", uploadPanel);
@@ -74,10 +76,9 @@ public class ImageDialog extends ComponentDialog implements WebcamDialogInterfac
 	}
 
 	private FlowPanel getErrorPanel(String title, String msg) {
-		InfoErrorData cameraData = new InfoErrorData(title, msg, null,
-				MaterialDesignResources.INSTANCE.no_camera());
-		return new ComponentInfoErrorPanel(app.getLocalization(),
-				cameraData, null);
+		InfoErrorData cameraData =
+				new InfoErrorData(title, msg, null, MaterialDesignResources.INSTANCE.no_camera());
+		return new ComponentInfoErrorPanel(app.getLocalization(), cameraData, null);
 	}
 
 	private void loadCameraPanel() {
@@ -90,14 +91,13 @@ public class ImageDialog extends ComponentDialog implements WebcamDialogInterfac
 		}
 
 		cameraPanel.clear();
-		cameraPanel.setStyleName("cameraPanel");
+		cameraPanel.setStyleName("cameraPanel tabPanel");
 		cameraPanel.add(webcamInputPanel);
 		cameraPanel.add(captureBtn);
 	}
 
 	private void initCaptureBtn() {
-		captureBtn = new StandardButton(
-				MaterialDesignResources.INSTANCE.camera_white(), null, 24);
+		captureBtn = new StandardButton(MaterialDesignResources.INSTANCE.camera_white(), null, 24);
 		captureBtn.setStyleName("mowFloatingButton");
 		AriaHelper.setTitle(captureBtn, app.getLocalization().getMenu("ImageDialog.Capture"));
 
@@ -151,10 +151,11 @@ public class ImageDialog extends ComponentDialog implements WebcamDialogInterfac
 	@Override
 	public void onResize() {
 		super.onResize();
-		tab.onResize();
 		if (!cameraPanel.getStyleName().contains("error")) {
-			cameraPanel.getElement().getStyle().setHeight(webcamInputPanel.getOffsetHeight() + 28,
-					Unit.PX);
+			cameraPanel
+					.getElement()
+					.getStyle()
+					.setHeight(webcamInputPanel.getOffsetHeight() + 28, Unit.PX);
 		}
 	}
 }

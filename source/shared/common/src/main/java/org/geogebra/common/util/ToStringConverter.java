@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -20,11 +20,10 @@ import static org.geogebra.common.kernel.kernelND.GeoElementND.LABEL_CAPTION_VAL
 import static org.geogebra.common.kernel.kernelND.GeoElementND.LABEL_NAME_VALUE;
 import static org.geogebra.common.kernel.kernelND.GeoElementND.LABEL_VALUE;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.LabelManager;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Provides methods for serializing GeoElement to String.
@@ -39,7 +38,7 @@ public interface ToStringConverter {
 	 * @param tpl string template
 	 * @return value string, local variables printed as labels
 	 */
-	@Nonnull String toOutputValueString(GeoElement object, StringTemplate tpl);
+	@NonNull String toOutputValueString(GeoElement object, StringTemplate tpl);
 
 	/**
 	 * Filters output of {@link GeoElement#toValueString(StringTemplate)}
@@ -47,7 +46,7 @@ public interface ToStringConverter {
 	 * @param tpl string template
 	 * @return value string, local variables printed as values
 	 */
-	@Nonnull String toValueString(GeoElement object, StringTemplate tpl);
+	@NonNull String toValueString(GeoElement object, StringTemplate tpl);
 
 	/**
 	 * Filters output of {@link GeoElement#getLabelDescription()}
@@ -55,13 +54,13 @@ public interface ToStringConverter {
 	 * @param tpl string template
 	 * @return string containing label, filtered value, or both, bases on element's label setting.
 	 */
-	@Nonnull String toLabelAndDescription(GeoElement object, StringTemplate tpl);
+	@NonNull String toLabelAndDescription(GeoElement object, StringTemplate tpl);
 
 	/**
 	 * @param object construction element
 	 * @return output value string, using default template
 	 */
-	default @Nonnull String convert(GeoElement object) {
+	default @NonNull String convert(GeoElement object) {
 		return toOutputValueString(object, StringTemplate.defaultTemplate);
 	}
 
@@ -69,7 +68,7 @@ public interface ToStringConverter {
 	 * @param object construction element
 	 * @return string containing label and description, using default template
 	 */
-	default @Nonnull String toLabelAndDescription(GeoElement object) {
+	default @NonNull String toLabelAndDescription(GeoElement object) {
 		return toLabelAndDescription(object, StringTemplate.defaultTemplate);
 	}
 
@@ -79,21 +78,21 @@ public interface ToStringConverter {
 	 * @param wrappedConverter ToStringConverter used by default
 	 * @return The restricted label description for the GeoElement
 	 */
-	static String getRestrictedLabelDescription(GeoElement element, StringTemplate template,
-			ToStringConverter wrappedConverter) {
+	static String getRestrictedLabelDescription(
+			GeoElement element, StringTemplate template, ToStringConverter wrappedConverter) {
 		String label;
 		switch (element.getLabelMode()) {
-		case LABEL_VALUE:
-			label = element.getDefinition(template);
-			break;
-		case LABEL_NAME_VALUE:
-			label = withLabel(element, element.getDefinition(template), template);
-			break;
-		case LABEL_CAPTION_VALUE:
-			label = getCaptionAndValue(element, element.getDefinition(template), template);
-			break;
-		default:
-			label = wrappedConverter.toLabelAndDescription(element, template);
+			case LABEL_VALUE:
+				label = element.getDefinition(template);
+				break;
+			case LABEL_NAME_VALUE:
+				label = withLabel(element, element.getDefinition(template), template);
+				break;
+			case LABEL_CAPTION_VALUE:
+				label = getCaptionAndValue(element, element.getDefinition(template), template);
+				break;
+			default:
+				label = wrappedConverter.toLabelAndDescription(element, template);
 		}
 		return label.startsWith(LabelManager.HIDDEN_PREFIX) ? "" : label;
 	}
@@ -103,8 +102,7 @@ public interface ToStringConverter {
 	 * @param value value
 	 * @return assignment string; caption: value, caption = value
 	 */
-	static String getCaptionAndValue(GeoElement element, String value,
-			StringTemplate template) {
+	static String getCaptionAndValue(GeoElement element, String value, StringTemplate template) {
 		String delimiter = element.getLabelDelimiterWithSpace(template);
 		if ("".equals(element.getRawCaption())) {
 			if (element.hasVisibleLabel()) {

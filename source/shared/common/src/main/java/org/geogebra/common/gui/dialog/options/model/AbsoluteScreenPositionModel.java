@@ -30,6 +30,7 @@ import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.error.ErrorHelper;
+import org.geogebra.common.properties.impl.objects.PlacementProperty;
 import org.geogebra.common.util.debug.Log;
 
 public abstract class AbsoluteScreenPositionModel extends TextPropertyModel {
@@ -108,8 +109,9 @@ public abstract class AbsoluteScreenPositionModel extends TextPropertyModel {
 
 	@Override
 	protected boolean isValidAt(int index) {
-		return getGeoAt(index) instanceof AbsoluteScreenLocateable
-				&& ((AbsoluteScreenLocateable) getGeoAt(index)).isAbsoluteScreenLocActive();
+		return getGeoAt(index) instanceof AbsoluteScreenLocateable absLoc
+				&& absLoc.isAbsoluteScreenLocActive()
+				&& !PlacementProperty.isDependentTextCommand(getGeoAt(index));
 	}
 
 	@Override
@@ -117,16 +119,19 @@ public abstract class AbsoluteScreenPositionModel extends TextPropertyModel {
 		if (value != null) {
 			for (GeoElement geo : getGeosAsList()) {
 				MyVecNode def = getPositionDef(geo);
-				String[] newDef = def == null ? new String[] {
-						((AbsoluteScreenLocateable) geo).getAbsoluteScreenLocX() + "",
-						((AbsoluteScreenLocateable) geo).getAbsoluteScreenLocY() + "",
-				} : new String[] {
-						def.getX().toString(StringTemplate.editTemplate),
-						def.getY().toString(StringTemplate.editTemplate)
-				};
+				String[] newDef = def == null
+						? new String[] {
+							((AbsoluteScreenLocateable) geo).getAbsoluteScreenLocX() + "",
+							((AbsoluteScreenLocateable) geo).getAbsoluteScreenLocY() + "",
+						}
+						: new String[] {
+							def.getX().toString(StringTemplate.editTemplate),
+							def.getY().toString(StringTemplate.editTemplate)
+						};
 				newDef[getIndex()] = str;
-				GeoPointND eval = app.getKernel().getAlgebraProcessor().evaluateToPoint(
-						"(" + String.join(",", newDef) + ")", ErrorHelper.silent(), true);
+				GeoPointND eval = app.getKernel()
+						.getAlgebraProcessor()
+						.evaluateToPoint("(" + String.join(",", newDef) + ")", ErrorHelper.silent(), true);
 
 				if (Inspecting.isDynamicGeoElement(eval)) {
 					try {
@@ -135,8 +140,8 @@ public abstract class AbsoluteScreenPositionModel extends TextPropertyModel {
 						Log.warn(e);
 					}
 				} else {
-					((AbsoluteScreenLocateable) geo).setAbsoluteScreenLoc((int) eval.getInhomX(),
-							(int) eval.getInhomY());
+					((AbsoluteScreenLocateable) geo)
+							.setAbsoluteScreenLoc((int) eval.getInhomX(), (int) eval.getInhomY());
 				}
 				geo.updateVisualStyleRepaint(GProperty.POSITION);
 			}
@@ -175,7 +180,8 @@ public abstract class AbsoluteScreenPositionModel extends TextPropertyModel {
 	private MyVecNode getPositionDef(GeoElementND abs) {
 		if (abs instanceof Locateable) {
 			GeoPointND sp = ((Locateable) abs).getStartPoint();
-			if (sp != null && sp.getDefinition() != null
+			if (sp != null
+					&& sp.getDefinition() != null
 					&& sp.getDefinition().unwrap() instanceof MyVecNode) {
 				return (MyVecNode) sp.getDefinition().unwrap();
 			}

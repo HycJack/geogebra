@@ -18,8 +18,6 @@ package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.inline.InlineTableController;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
@@ -32,15 +30,18 @@ import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.GeoElementDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.properties.impl.objects.delegate.TablePropertyDelegate;
+import org.jspecify.annotations.Nullable;
 
 public class CellBorderProperty extends AbstractEnumeratedProperty<BorderType>
 		implements IconsEnumeratedProperty<BorderType> {
 
 	private static final PropertyResource[] icons = {
-			PropertyResource.ICON_CELL_BORDER_ALL, PropertyResource.ICON_CELL_BORDER_INNER,
-			PropertyResource.ICON_CELL_BORDER_OUTER, PropertyResource.ICON_CELL_BORDER_NONE};
-	private static final String[] rawLabels = {"stylebar.AllBorders", "stylebar.InnerBorders",
-			"stylebar.OuterBorders", "stylebar.ClearBorders"};
+		PropertyResource.ICON_CELL_BORDER_ALL, PropertyResource.ICON_CELL_BORDER_INNER,
+		PropertyResource.ICON_CELL_BORDER_OUTER, PropertyResource.ICON_CELL_BORDER_NONE
+	};
+	private static final String[] rawLabels = {
+		"stylebar.AllBorders", "stylebar.InnerBorders", "stylebar.OuterBorders", "stylebar.ClearBorders"
+	};
 	private final GeoElementDelegate delegate;
 
 	/**
@@ -61,7 +62,7 @@ public class CellBorderProperty extends AbstractEnumeratedProperty<BorderType>
 	}
 
 	@Override
-	public @CheckForNull String[] getToolTipLabels() {
+	public @Nullable String[] getToolTipLabels() {
 		return rawLabels;
 	}
 

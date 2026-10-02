@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -16,9 +16,8 @@
 
 package org.geogebra.common.kernel.geos;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.algos.ChartStyle;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Chart construction elements with stylable parts.
@@ -27,7 +26,7 @@ public interface ChartStyleGeo {
 	/**
 	 * @return style information for all individual parts
 	 */
-	@Nonnull ChartStyle getStyle();
+	@NonNull ChartStyle getStyle();
 
 	/**
 	 * @return number of parts

@@ -18,12 +18,11 @@ package org.geogebra.common.kernel.arithmetic.simplifiers;
 
 import static org.geogebra.common.kernel.arithmetic.simplifiers.ExpressionValueUtils.isIntegerValue;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.arithmetic.ExpressionNode;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
 import org.geogebra.common.plugin.Operation;
+import org.jspecify.annotations.Nullable;
 
 final class SurdAddition {
 	ExpressionNode a;
@@ -32,23 +31,22 @@ final class SurdAddition {
 	private final SimplifyUtils utils;
 
 	SurdAddition(ExpressionNode node, SimplifyUtils utils) {
-		a = isIntegerValue(node.getLeftTree()) ? utils.newDouble(node.getLeft()).wrap()
+		a = isIntegerValue(node.getLeftTree())
+				? utils.newDouble(node.getLeft()).wrap()
 				: node.getLeftTree();
 		b = node.getRightTree();
 		this.node = node;
 		this.utils = utils;
 		if (node.getOperation() == Operation.MINUS) {
 			if (b.isOperation(Operation.MULTIPLY)) {
-				b = b.getLeft().evaluateDouble() == -1 ? b.getRightTree()
-						: b.multiplyR(-1);
+				b = b.getLeft().evaluateDouble() == -1 ? b.getRightTree() : b.multiplyR(-1);
 			} else {
 				b = node.getRightTree().multiplyR(-1);
 			}
 		}
-
 	}
 
-	@CheckForNull ExpressionNode factorOut() {
+	@Nullable ExpressionNode factorOut() {
 		ensureIntegerFirst();
 		if (ExpressionValueUtils.isSqrtNode(b) || ExpressionValueUtils.isNegativeSqrt(b)) {
 			return null;
@@ -62,27 +60,22 @@ final class SurdAddition {
 		}
 		ExpressionNode node;
 		long fbDivGcd = fb / gcd;
-		ExpressionValue v2 = fbDivGcd == 1 ? factorB.wrap().getRight()
-				: utils.newMultiply(
-				utils.newDouble(fbDivGcd),
-				factorB.wrap().getRight()
-		);
+		ExpressionValue v2 = fbDivGcd == 1
+				? factorB.wrap().getRight()
+				: utils.newMultiply(utils.newDouble(fbDivGcd), factorB.wrap().getRight());
 		if (gcd < 0 && fb < 0 && fa > 0) {
-			ExpressionNode num = isIntegerValue(a)
-					? utils.newDouble((double) fa / -gcd).wrap()
-					: divWithGcd(a, -gcd);
+			ExpressionNode num =
+					isIntegerValue(a) ? utils.newDouble((double) fa / -gcd).wrap() : divWithGcd(a, -gcd);
 			node = v2 != null ? num.subtract(v2) : num;
 
 			return utils.newDouble(-gcd).wrap().multiplyR(node);
 		} else {
-			ExpressionNode num = isIntegerValue(a)
-					? utils.newDouble((double) fa / gcd).wrap()
-					: divWithGcd(a, gcd);
+			ExpressionNode num =
+					isIntegerValue(a) ? utils.newDouble((double) fa / gcd).wrap() : divWithGcd(a, gcd);
 
 			node = v2 != null ? num.plus(v2) : num;
 			return utils.newDouble(gcd).wrap().multiplyR(node);
 		}
-
 	}
 
 	private ExpressionNode divWithGcd(ExpressionNode node, long gcd) {
@@ -109,12 +102,10 @@ final class SurdAddition {
 			int multiplier = ExpressionValueUtils.getLeftMultiplier(node);
 			if (multiplier == -1) {
 				ExpressionValue right = node.getRight();
-				if (right.isOperation(Operation.MULTIPLY) && isIntegerValue(
-						right.wrap().getLeft())) {
+				if (right.isOperation(Operation.MULTIPLY) && isIntegerValue(right.wrap().getLeft())) {
 					return utils.newMultiply(
 							utils.newDouble(-1 * right.wrap().getLeft().evaluateDouble()),
-							right.wrap().getRight()
-					);
+							right.wrap().getRight());
 				}
 				return utils.newDouble(multiplier);
 			}
@@ -126,13 +117,12 @@ final class SurdAddition {
 		a = multiply(a, multiplier).wrap();
 		b = multiply(b, multiplier).wrap();
 		Operation operation = node.getOperation();
-		if (a.evaluateDouble() < 0 && (node.isOperation(Operation.MINUS)
-				|| b.evaluateDouble() < 0)) {
-			return utils.newNode(utils.flipSign(a.wrap()), Operation.inverse(operation), b)
+		if (a.evaluateDouble() < 0 && (node.isOperation(Operation.MINUS) || b.evaluateDouble() < 0)) {
+			return utils
+					.newNode(utils.flipSign(a.wrap()), Operation.inverse(operation), b)
 					.multiplyR(-1);
 		}
-		boolean flipNeeded =
-				multiplier < 0 && operation == Operation.MINUS && b.evaluateDouble() > 0;
+		boolean flipNeeded = multiplier < 0 && operation == Operation.MINUS && b.evaluateDouble() > 0;
 		return utils.newNode(a, flipNeeded ? Operation.inverse(operation) : operation, b);
 	}
 
@@ -144,9 +134,7 @@ final class SurdAddition {
 		int leftMultiplier = ExpressionValueUtils.getLeftMultiplier(node);
 		if (leftMultiplier != 1) {
 			double mul = multiplier * leftMultiplier;
-			return mul == 1
-					? node.getRight()
-					: utils.newMultiply(utils.newDouble(mul), node.getRight());
+			return mul == 1 ? node.getRight() : utils.newMultiply(utils.newDouble(mul), node.getRight());
 		}
 		return node.multiplyR(multiplier);
 	}

@@ -22,13 +22,15 @@ import java.util.List;
 import org.geogebra.common.annotation.MissingDoc;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.common.kernel.geos.GeoLocusStroke;
 import org.geogebra.common.kernel.geos.GeoNumeric;
+import org.geogebra.common.kernel.geos.GeoPolyLine;
 import org.geogebra.common.main.App;
 import org.geogebra.common.plugin.EuclidianStyleConstants;
+import org.geogebra.common.properties.impl.objects.ThicknessProperty;
 
 public class LineStyleModel extends OptionsModel {
 	private boolean lineTypeEnabled;
-	private boolean lineStyleHiddenEnabled;
 	private boolean lineOpacityEnabled;
 
 	private static List<Integer> lineStyleArray = null;
@@ -56,12 +58,6 @@ public class LineStyleModel extends OptionsModel {
 		void setLineTypeVisible(boolean value);
 
 		@MissingDoc
-		void setLineStyleHiddenVisible(boolean value);
-
-		@MissingDoc
-		void selectCommonLineStyleHidden(boolean equalStyle, int type);
-
-		@MissingDoc
 		void setLineOpacityVisible(boolean value);
 	}
 
@@ -73,7 +69,6 @@ public class LineStyleModel extends OptionsModel {
 		if (lineStyleArray == null) {
 			lineStyleArray = getLineTypes();
 		}
-
 	}
 
 	public LineStyleModel(App app) {
@@ -94,8 +89,10 @@ public class LineStyleModel extends OptionsModel {
 		return lineStyleArray.size();
 	}
 
+	/**
+	 * @return the highest minimal thickness, in half-pixels
+	 */
 	public int maxMinimumThickness() {
-
 		if (!hasGeos()) {
 			return 1;
 		}
@@ -106,9 +103,25 @@ public class LineStyleModel extends OptionsModel {
 				return 1;
 			}
 		}
-
 		return 0;
+	}
 
+	/**
+	 * @return the lowest maximal thickness, in half-pixels
+	 */
+	public int minMaximumThickness() {
+		if (!hasGeos()) {
+			return ThicknessProperty.DEFAULT_MAX_THICKNESS;
+		}
+
+		for (int i = 0; i < getGeosLength(); i++) {
+			GeoElement testGeo = getGeoAt(i).getGeoElementForPropertiesDialog();
+			if (!(testGeo instanceof GeoLocusStroke
+					|| testGeo instanceof GeoPolyLine && !testGeo.isLabelSet())) {
+				return ThicknessProperty.DEFAULT_MAX_THICKNESS;
+			}
+		}
+		return ThicknessProperty.MAX_PEN_HIGHLIGHTER_SIZE;
 	}
 
 	@Override
@@ -120,7 +133,6 @@ public class LineStyleModel extends OptionsModel {
 			listener.setThicknessSliderMinimum(maxMinimumThickness());
 			listener.setOpacitySliderValue(getOpacityPercentage());
 			listener.setLineTypeVisible(lineTypeEnabled);
-			listener.setLineStyleHiddenVisible(lineStyleHiddenEnabled);
 			listener.setLineOpacityVisible(lineOpacityEnabled);
 		}
 		// check if geos have same line style
@@ -139,24 +151,6 @@ public class LineStyleModel extends OptionsModel {
 				listener.selectCommonLineStyle(equalStyle, type0);
 			}
 		}
-
-		// check if geos have same line style
-		if (lineStyleHiddenEnabled) {
-			boolean equalStyle = true;
-			int type0 = geo0.getLineTypeHidden();
-			for (int i = 1; i < getGeosLength(); i++) {
-				temp = getGeoAt(i);
-				// same style?
-				if (type0 != temp.getLineTypeHidden()) {
-					equalStyle = false;
-				}
-			}
-
-			if (listener != null) {
-				listener.selectCommonLineStyleHidden(equalStyle, type0);
-			}
-		}
-
 	}
 
 	public int getOpacityPercentage() {
@@ -209,7 +203,7 @@ public class LineStyleModel extends OptionsModel {
 
 	/**
 	 * Decides if geo is accepted for this model.
-	 * 
+	 *
 	 * @param geo
 	 *            The geo to match.
 	 * @return if geo has line properties
@@ -222,7 +216,6 @@ public class LineStyleModel extends OptionsModel {
 	public boolean checkGeos() {
 		boolean geosOK = true;
 		lineTypeEnabled = true;
-		lineStyleHiddenEnabled = true;
 		lineOpacityEnabled = true;
 		for (int i = 0; i < getGeosLength(); i++) {
 			if (!isValidAt(i)) {
@@ -231,13 +224,8 @@ public class LineStyleModel extends OptionsModel {
 			}
 
 			GeoElement geo = getGeoAt(i);
-			if (i == 0) {
-				lineStyleHiddenEnabled = geo.getKernel().getApplication()
-						.isEuclidianView3Dinited();
-			}
 			if ((geo instanceof GeoNumeric) && ((GeoNumeric) geo).isSlider()) {
 				lineTypeEnabled = false;
-				lineStyleHiddenEnabled = false;
 				lineOpacityEnabled = false;
 			}
 		}

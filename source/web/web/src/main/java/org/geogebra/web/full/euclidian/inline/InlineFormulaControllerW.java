@@ -18,6 +18,7 @@ package org.geogebra.web.full.euclidian.inline;
 
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.euclidian.draw.DrawFormula;
+import org.geogebra.common.euclidian.draw.DrawInline;
 import org.geogebra.common.euclidian.event.PointerEventType;
 import org.geogebra.common.euclidian.inline.InlineFormulaController;
 import org.geogebra.common.kernel.geos.GeoFormula;
@@ -35,7 +36,11 @@ import org.gwtproject.timer.client.Timer;
 import org.gwtproject.user.client.ui.AbsolutePanel;
 import org.gwtproject.user.client.ui.Panel;
 
-public class InlineFormulaControllerW implements InlineFormulaController {
+import elemental2.dom.Element;
+import elemental2.dom.Event;
+import jsinterop.base.Js;
+
+public final class InlineFormulaControllerW implements InlineFormulaController {
 
 	private final GeoFormula formula;
 	private final MathFieldEditor mathFieldEditor;
@@ -43,12 +48,18 @@ public class InlineFormulaControllerW implements InlineFormulaController {
 	private final AbsolutePanel widget;
 	private final Style style;
 	private final AppW app;
+	// whether this was either part of an undo point or loaded from file
+	private boolean includedInUndoHistory;
 
 	private final Timer saveTimer = new Timer() {
 		@Override
 		public void run() {
-			formula.setContent(getText());
-			formula.getKernel().storeUndoInfo();
+			String text = getText();
+			formula.setContent(text);
+			if (!StringUtil.empty(text)) {
+				formula.getKernel().storeUndoInfo();
+				includedInUndoHistory = true;
+			}
 		}
 	};
 
@@ -75,6 +86,8 @@ public class InlineFormulaControllerW implements InlineFormulaController {
 				mathFieldEditor.focus();
 			}
 		});
+		Js.<Element>uncheckedCast(widget.getElement())
+				.addEventListener("pointerdown", Event::stopPropagation);
 		widget.setVisible(false);
 		widget.addStyleName("mowWidget");
 		parent.add(widget);
@@ -93,10 +106,10 @@ public class InlineFormulaControllerW implements InlineFormulaController {
 	@Override
 	public void setLocation(int x, int y) {
 		// clamp forces the  editor to be in visible area, may still be behind keyboard
-		style.setLeft(MyMath.clamp(x, 0,
-				widget.getParent().getOffsetWidth() - formula.getMinWidth()), Unit.PX);
-		style.setTop(MyMath.clamp(y, 0,
-				widget.getParent().getOffsetHeight() - formula.getMinHeight()), Unit.PX);
+		style.setLeft(
+				MyMath.clamp(x, 0, widget.getParent().getOffsetWidth() - formula.getMinWidth()), Unit.PX);
+		style.setTop(
+				MyMath.clamp(y, 0, widget.getParent().getOffsetHeight() - formula.getMinHeight()), Unit.PX);
 	}
 
 	@Override
@@ -136,16 +149,23 @@ public class InlineFormulaControllerW implements InlineFormulaController {
 	}
 
 	@Override
-	public void toBackground() {
-		if (widget.isVisible() && !mathFieldEditor.getMathField()
-				.getText().equals(formula.getContent())) {
+	public void toBackground(DrawInline.SuspensionTrigger trigger) {
+		String newText = getText();
+		if (widget.isVisible() && !newText.equals(formula.getContent())) {
 			saveTimer.cancel();
 			saveTimer.run();
 		}
 		if (widget.isVisible()) {
-			formula.updateRepaint();
-			widget.setVisible(false);
-			formula.unlockForMultiuser();
+			if (StringUtil.empty(newText) && trigger == DrawInline.SuspensionTrigger.BLUR) {
+				formula.remove();
+				if (includedInUndoHistory) {
+					formula.getKernel().storeUndoInfo();
+				}
+			} else {
+				formula.updateRepaint();
+				widget.setVisible(false);
+				formula.unlockForMultiuser();
+			}
 		}
 		mathFieldEditor.setKeyboardVisibility(false);
 	}
@@ -154,6 +174,7 @@ public class InlineFormulaControllerW implements InlineFormulaController {
 	public void updateContent(String content) {
 		if (content != null) {
 			mathFieldEditor.setText(content);
+			includedInUndoHistory = true;
 		}
 	}
 
@@ -202,9 +223,10 @@ public class InlineFormulaControllerW implements InlineFormulaController {
 
 				saveTimer.schedule(500);
 
-				int width = (int) ((mathFieldEditor.getMathField().asWidget().getOffsetWidth()
-						- DrawFormula.PADDING) * formula.getWidth() / formula
-							.getContentWidth());
+				int width = (int)
+						((mathFieldEditor.getMathField().asWidget().getOffsetWidth() - DrawFormula.PADDING)
+								* formula.getWidth()
+								/ formula.getContentWidth());
 				int height = (int) mathFieldEditor.getMathField().getHeightWithMargin();
 
 				formula.setMinWidth(width);

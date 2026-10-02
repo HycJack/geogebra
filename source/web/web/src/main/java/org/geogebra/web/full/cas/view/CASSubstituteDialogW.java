@@ -32,7 +32,7 @@ import org.gwtproject.event.dom.client.MouseOverEvent;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
 
-public class CASSubstituteDialogW extends ComponentDialog {
+public final class CASSubstituteDialogW extends ComponentDialog {
 	private List<InputPanelW> substFields = new ArrayList<>();
 	private List<InputPanelW> withFields = new ArrayList<>();
 
@@ -51,11 +51,9 @@ public class CASSubstituteDialogW extends ComponentDialog {
 	private void buildGUI(Localization loc, Vector<Vector<String>> data) {
 		FlowPanel labelPanel = new FlowPanel();
 		labelPanel.addStyleName("flexGroup");
-		Label substLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(
-				loc.getMenu("Substitute"));
+		Label substLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(loc.getMenu("Substitute"));
 		labelPanel.add(substLabel);
-		Label withLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(
-				loc.getMenu("With"));
+		Label withLabel = BaseWidgetFactory.INSTANCE.newPrimaryText(loc.getMenu("With"));
 		withLabel.addStyleName("with");
 		labelPanel.add(withLabel);
 		addDialogContent(labelPanel);
@@ -69,18 +67,18 @@ public class CASSubstituteDialogW extends ComponentDialog {
 		FlowPanel block = new FlowPanel();
 		block.addStyleName("flexGroup");
 
-		InputPanelW subst = new InputPanelW(data.get(idx).get(0), app,  false);
+		InputPanelW subst = new InputPanelW(data.get(idx).get(0), app, false);
 		subst.addTextComponentKeyUpHandler(event -> {
 			int substIdx = substFields.indexOf(subst);
 			if (substIdx > -1) {
 				data.get(substIdx).set(0, subst.getText());
 			}
 		});
-		InputPanelW with = new InputPanelW(data.get(idx).get(1), app,  false);
+		InputPanelW with = new InputPanelW(data.get(idx).get(1), app, false);
 		with.getTextComponent().addStyleName("with");
 		with.addTextComponentKeyUpHandler(event -> {
 			setPosBtnDisabled(false);
-			int withIdx =  withFields.indexOf(with);
+			int withIdx = withFields.indexOf(with);
 			if (withIdx > -1) {
 				data.get(withIdx).set(1, with.getText());
 			}
@@ -113,10 +111,16 @@ public class CASSubstituteDialogW extends ComponentDialog {
 		addDialogContent(block);
 	}
 
-	private void removeOrAddEmptyLine(InputPanelW inputField, Vector<Vector<String>> data, int idx,
-			int vectElem, FlowPanel parenPanel) {
-		if (inputField.getText().isEmpty() && idx != data.size()
-				&& data.get(idx).get(vectElem).isEmpty() && idx != data.size() - 1) {
+	private void removeOrAddEmptyLine(
+			InputPanelW inputField,
+			Vector<Vector<String>> data,
+			int idx,
+			int vectElem,
+			FlowPanel parenPanel) {
+		if (inputField.getText().isEmpty()
+				&& idx != data.size()
+				&& data.get(idx).get(vectElem).isEmpty()
+				&& idx != data.size() - 1) {
 			data.remove(idx);
 			substFields.remove(idx);
 			withFields.remove(idx);
@@ -132,17 +136,26 @@ public class CASSubstituteDialogW extends ComponentDialog {
 	}
 
 	private void addFocusHandler(InputPanelW inputField) {
-		inputField.getTextComponent().addFocusHandler(event ->
-				inputField.getTextComponent().addStyleName("focused"));
+		inputField
+				.getTextComponent()
+				.addFocusHandler(event -> inputField.getTextComponent().addStyleName("focused"));
 	}
 
 	private void addHoverHandler(InputPanelW inputField) {
-		inputField.getTextComponent().addDomHandler(event -> {
-			inputField.getTextComponent().addStyleName("hover");
-		}, MouseOverEvent.getType());
-		inputField.getTextComponent().addDomHandler(event -> {
-			inputField.getTextComponent().removeStyleName("hover");
-		}, MouseOutEvent.getType());
+		inputField
+				.getTextComponent()
+				.addDomHandler(
+						event -> {
+							inputField.getTextComponent().addStyleName("hover");
+						},
+						MouseOverEvent.getType());
+		inputField
+				.getTextComponent()
+				.addDomHandler(
+						event -> {
+							inputField.getTextComponent().removeStyleName("hover");
+						},
+						MouseOutEvent.getType());
 	}
 
 	private void extendData(Vector<Vector<String>> data) {

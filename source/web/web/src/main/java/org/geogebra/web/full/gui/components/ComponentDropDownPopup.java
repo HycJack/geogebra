@@ -17,6 +17,7 @@
 package org.geogebra.web.full.gui.components;
 
 import org.geogebra.web.full.javax.swing.GPopupMenuW;
+import org.geogebra.web.html5.gui.menu.AriaMenuBar;
 import org.geogebra.web.html5.gui.menu.AriaMenuItem;
 import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.geogebra.web.html5.main.AppW;
@@ -29,7 +30,7 @@ import org.gwtproject.user.client.ui.Widget;
 /**
  * Popup menu following the Material Design.
  */
-public class ComponentDropDownPopup {
+public final class ComponentDropDownPopup {
 	private static final int OFFSET_X = 0;
 	public static final int POPUP_PADDING = 8;
 	public static final int MARGIN_FROM_SCREEN = 32;
@@ -38,7 +39,6 @@ public class ComponentDropDownPopup {
 	private final Widget anchor;
 	private final int itemHeight;
 	private final AppW app;
-	private String popupID;
 	private boolean autoFocus;
 
 	/**
@@ -48,8 +48,8 @@ public class ComponentDropDownPopup {
 	 * @param labelKey label
 	 * @param anchor to align the selected item.
 	 */
-	public ComponentDropDownPopup(AppW app, int itemHeight, Widget anchor, String labelKey,
-			Runnable onClose) {
+	public ComponentDropDownPopup(
+			AppW app, int itemHeight, Widget anchor, String labelKey, Runnable onClose) {
 		this.app = app;
 		this.itemHeight = itemHeight;
 		this.anchor = anchor;
@@ -63,6 +63,13 @@ public class ComponentDropDownPopup {
 			}
 		});
 		setAccessibilityProperties(labelKey);
+	}
+
+	/**
+	 * @param styleName additional style name
+	 */
+	public void addStyleName(String styleName) {
+		menu.getPopupPanel().addStyleName(styleName);
 	}
 
 	/**
@@ -111,8 +118,8 @@ public class ComponentDropDownPopup {
 	public void positionAtBottomAnchor() {
 		int anchorBottom = (int) (anchor.getElement().getAbsoluteBottom() - app.getAbsTop());
 		int spaceBottom = (int) (app.getHeight() - anchorBottom);
-		int spaceTop = (int) (anchor.getElement().getAbsoluteTop() - app.getAbsTop()
-				- MARGIN_FROM_SCREEN);
+		int spaceTop =
+				(int) (anchor.getElement().getAbsoluteTop() - app.getAbsTop() - MARGIN_FROM_SCREEN);
 		int minSpaceBottom = 3 * getItemHeight() + MARGIN_FROM_SCREEN + POPUP_PADDING;
 		int popupHeight = getPopupHeight();
 
@@ -124,7 +131,8 @@ public class ComponentDropDownPopup {
 	}
 
 	private void showAtTopOfAnchor(int popupHeight, int spaceTop) {
-		int popupTop = popupHeight > spaceTop ? MARGIN_FROM_SCREEN
+		int popupTop = popupHeight > spaceTop
+				? MARGIN_FROM_SCREEN
 				: (int) (anchor.asWidget().getAbsoluteTop() - app.getAbsTop() - popupHeight);
 		showAtPoint(getLeft(), popupTop);
 
@@ -201,15 +209,28 @@ public class ComponentDropDownPopup {
 	 * @param x - horizontal pos
 	 * @param y - vertical pos
 	 */
-	private void showAtPoint(int x, int  y) {
+	private void showAtPoint(int x, int y) {
 		menu.showAtPoint(x, y);
-		menu.getPopupPanel().getElement().setId(popupID);
 		Scheduler.get().scheduleDeferred(() -> {
 			menu.getPopupPanel().addStyleName("show");
 			if (this.autoFocus) {
-				menu.getPopupMenu().focus();
+				focusSelectedItem();
 			}
 		});
+	}
+
+	/**
+	 * Move keyboard focus to the selected item. Safe to call once the popup is visible.
+	 */
+	public void focusSelectedItem() {
+		AriaMenuBar popupMenu = menu.getPopupMenu();
+		if (selectedIndex >= 0) {
+			popupMenu.selectItem(selectedIndex);
+		}
+		if (popupMenu.getSelectedItem() == null) {
+			popupMenu.selectItem(0);
+		}
+		popupMenu.requestKeyboardFocus();
 	}
 
 	private int getItemHeight() {
@@ -221,13 +242,19 @@ public class ComponentDropDownPopup {
 	}
 
 	private void setAccessibilityProperties(String labelKey) {
-		AriaHelper.setRole(menu.getPopupPanel(), "listbox");
-		AriaHelper.setLabel(menu.getPopupPanel(), app.getLocalization().getMenu(labelKey));
+		AriaHelper.setRole(menu.getPopupPanel(), "presentation");
+		AriaHelper.setRole(menu.getPopupMenu(), "listbox");
+		AriaHelper.setLabel(menu.getPopupMenu(), app.getLocalization().getMenu(labelKey));
 		menu.getPopupPanel().setMayMoveFocus(true);
 	}
 
+	/**
+	 * @param popupID DOM id to assign to the popup listbox,
+	 * also used to link it from the anchor via aria-controls.
+	 */
 	public void setPopupID(String popupID) {
-		this.popupID = popupID;
+		menu.getPopupMenu().getElement().setId(popupID);
+		AriaHelper.setControls(anchor, popupID);
 	}
 
 	/**
@@ -246,6 +273,9 @@ public class ComponentDropDownPopup {
 		menu.getPopupPanel().setStyleName("forceKeyboardFocus", force);
 	}
 
+	/**
+	 * @param autoFocus Whether keyboard focus should be moved to the selected item when opened.
+	 */
 	public void setAutoFocus(boolean autoFocus) {
 		this.autoFocus = autoFocus;
 	}

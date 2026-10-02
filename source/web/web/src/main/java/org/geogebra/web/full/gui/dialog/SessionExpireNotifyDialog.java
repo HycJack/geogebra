@@ -16,6 +16,7 @@
 
 package org.geogebra.web.full.gui.dialog;
 
+import org.geogebra.common.factories.UtilFactory;
 import org.geogebra.common.move.ggtapi.models.AuthenticationModel;
 import org.geogebra.common.plugin.Event;
 import org.geogebra.common.plugin.EventType;
@@ -27,8 +28,7 @@ import org.geogebra.web.shared.components.dialog.ComponentDialog;
 import org.geogebra.web.shared.components.dialog.DialogData;
 import org.gwtproject.user.client.ui.Label;
 
-public class SessionExpireNotifyDialog extends ComponentDialog
-		implements GTimerListener {
+public final class SessionExpireNotifyDialog extends ComponentDialog implements GTimerListener {
 
 	/**
 	 * dialog to notify user that will be logged out when session expires
@@ -55,7 +55,8 @@ public class SessionExpireNotifyDialog extends ComponentDialog
 	}
 
 	private void startLogOutTimer() {
-		GTimer logOutTimer = app.newTimer(this, AuthenticationModel.LOG_OUT_TIME);
+		GTimer logOutTimer =
+				UtilFactory.getPrototype().newTimer(this, AuthenticationModel.LOG_OUT_TIME);
 		app.getLoginOperation().getModel().setLogOutTimer(logOutTimer);
 		logOutTimer.start();
 	}

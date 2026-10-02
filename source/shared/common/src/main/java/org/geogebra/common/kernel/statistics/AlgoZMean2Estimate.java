@@ -25,8 +25,8 @@ import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 
 /**
- * 
- * 
+ *
+ *
  * @author G. Sturr
  */
 public class AlgoZMean2Estimate extends AlgoElement {
@@ -62,8 +62,14 @@ public class AlgoZMean2Estimate extends AlgoElement {
 	 * @param level
 	 *            level of confidence
 	 */
-	public AlgoZMean2Estimate(Construction cons, GeoNumeric mean, GeoNumeric sd,
-			GeoNumeric n, GeoNumeric mean_2, GeoNumeric sd_2, GeoNumeric n_2,
+	public AlgoZMean2Estimate(
+			Construction cons,
+			GeoNumeric mean,
+			GeoNumeric sd,
+			GeoNumeric n,
+			GeoNumeric mean_2,
+			GeoNumeric sd_2,
+			GeoNumeric n_2,
 			GeoNumeric level) {
 		super(cons);
 		this.mean = mean;
@@ -95,8 +101,14 @@ public class AlgoZMean2Estimate extends AlgoElement {
 	 * @param level
 	 *            level of confidence
 	 */
-	public AlgoZMean2Estimate(Construction cons, String label, GeoList list,
-			GeoList list2, GeoNumeric sd, GeoNumeric sd_2, GeoNumeric level) {
+	public AlgoZMean2Estimate(
+			Construction cons,
+			String label,
+			GeoList list,
+			GeoList list2,
+			GeoNumeric sd,
+			GeoNumeric sd_2,
+			GeoNumeric level) {
 		super(cons);
 
 		this.list = list;
@@ -168,14 +180,10 @@ public class AlgoZMean2Estimate extends AlgoElement {
 		}
 
 		double n1, n2, mean1, mean2;
-		double sd1 = sd.getDouble();
-		double sd2 = sd_2.getDouble();
-		double cLevel = level.getDouble();
 
 		if (list == null) {
 
-			if (!n.isDefined() || !n_2.isDefined() || !mean.isDefined()
-					|| !mean_2.isDefined()) {
+			if (!n.isDefined() || !n_2.isDefined() || !mean.isDefined() || !mean_2.isDefined()) {
 				result.setUndefined();
 				return;
 			}
@@ -198,10 +206,12 @@ public class AlgoZMean2Estimate extends AlgoElement {
 			mean1 = list.mean();
 			mean2 = list2.mean();
 		}
-
+		double sd1 = sd.getDouble();
+		double sd2 = sd_2.getDouble();
+		double cLevel = level.getDouble();
 		NormalDistribution normalDist = new NormalDistribution(0, 1);
 
-		double critZ = 0;
+		double critZ;
 
 		try {
 			critZ = normalDist.inverseCumulativeProbability((1 - cLevel) / 2);
@@ -219,7 +229,5 @@ public class AlgoZMean2Estimate extends AlgoElement {
 		result.clear();
 		result.addNumber(stat - me, null);
 		result.addNumber(stat + me, null);
-
 	}
-
 }

@@ -18,8 +18,6 @@ package org.geogebra.common.euclidian;
 
 import java.util.ArrayList;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.common.awt.GRectangle2D;
 import org.geogebra.common.euclidian.measurement.MeasurementController;
@@ -29,6 +27,7 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.common.util.MyMath;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Class to handle rotating of objects
@@ -44,8 +43,9 @@ public class RotateBoundingBox {
 	 * @param euclidianController {@link EuclidianController}
 	 * @param measurementController {@link MeasurementController}
 	 */
-	public RotateBoundingBox(@Nonnull EuclidianController euclidianController,
-			@Nonnull MeasurementController measurementController) {
+	public RotateBoundingBox(
+			@NonNull EuclidianController euclidianController,
+			@NonNull MeasurementController measurementController) {
 		this.ec = euclidianController;
 		this.view = ec.getView();
 		this.measurementController = measurementController;
@@ -74,14 +74,13 @@ public class RotateBoundingBox {
 	private GPoint2D calculateRotationCenter(GRectangle2D bounds) {
 		ArrayList<GeoElement> selectedGeos = ec.selection.getSelectedGeos();
 		GeoElement selectedGeo = selectedGeos.isEmpty() ? null : selectedGeos.get(0);
-		GPoint2D activeToolCenter =
-				measurementController.getActiveToolCenter(selectedGeo, view);
+		GPoint2D activeToolCenter = measurementController.getActiveToolCenter(selectedGeo, view);
 		if (activeToolCenter != null) {
 			return activeToolCenter;
 		}
 
 		double x = bounds.getMinX() + bounds.getWidth() / 2;
-		double y = bounds.getMinY()  + bounds.getHeight() / 2;
+		double y = bounds.getMinY() + bounds.getHeight() / 2;
 		return new GPoint2D(x, y);
 	}
 
@@ -104,24 +103,20 @@ public class RotateBoundingBox {
 		}
 
 		ec.rotationCenter = new GeoPoint(
-				construction,
-				view.toRealWorldCoordX(center.x),
-				view.toRealWorldCoordY(center.y), 1);
+				construction, view.toRealWorldCoordX(center.x), view.toRealWorldCoordY(center.y), 1);
 	}
 
 	// lastMouseLoc is not updated outside the view, but the event
 	// contains values in that region too, so we clamp them
 	private GPoint2D clampToView(double eventX, double eventY) {
 		return new GPoint2D(
-				MyMath.clamp(eventX, 0, view.getWidth()),
-				MyMath.clamp(eventY, 0, view.getHeight())
-		);
+				MyMath.clamp(eventX, 0, view.getWidth()), MyMath.clamp(eventY, 0, view.getHeight()));
 	}
 
 	private NumberValue calculateAngle(GPoint2D center, GPoint2D eventPoint) {
-		return new GeoNumeric(construction,
+		return new GeoNumeric(
+				construction,
 				Math.atan2(-(eventPoint.y - center.y), eventPoint.x - center.x)
-						- Math.atan2(-(ec.lastMouseLoc.getY() - center.y),
-						ec.lastMouseLoc.getX() - center.x));
+						- Math.atan2(-(ec.lastMouseLoc.getY() - center.y), ec.lastMouseLoc.getX() - center.x));
 	}
 }

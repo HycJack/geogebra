@@ -38,69 +38,69 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class BackgroundAndBorderPropertyCollectionTests extends BaseAppTestSetup {
+class BackgroundAndBorderPropertyCollectionTests extends BaseAppTestSetup {
 	private final GeoElementPropertiesFactory propertiesFactory = new GeoElementPropertiesFactory();
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)",
-			"f(x) = x^2",
-			"a = 1 + 2",
-	})
-	public void testNotApplicableObjects(String expression) {
+	@ValueSource(
+			strings = {
+				"(1, 2)",
+				"f(x) = x^2",
+				"a = 1 + 2",
+			})
+	void testNotApplicableObjects(String expression) {
 		GeoElement geoElement = evaluateGeoElement(expression);
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new BackgroundAndBorderPropertyCollection(
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new BackgroundAndBorderPropertyCollection(
 						propertiesFactory, getLocalization(), List.of(geoElement)));
 	}
 
 	@Test
-	public void testInlineTextBackgroundAndBorderProperties() {
-		GeoInlineText inlineText = new GeoInlineText(getKernel().getConstruction(),
-				new GPoint2D());
+	void testInlineTextBackgroundAndBorderProperties() {
+		GeoInlineText inlineText = new GeoInlineText(getKernel().getConstruction(), new GPoint2D());
 		BackgroundAndBorderPropertyCollection backgroundAndBorderPropertyCollection =
 				assertDoesNotThrow(() -> new BackgroundAndBorderPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(inlineText)
-				));
+						propertiesFactory, getLocalization(), List.of(inlineText)));
 		List<String> backgroundAndBorderNames = Arrays.stream(
-				backgroundAndBorderPropertyCollection.getProperties())
-				.map(Property::getName).toList();
-		assertEquals(List.of("Background Color", "No color", "Border color", "Border width"),
+						backgroundAndBorderPropertyCollection.getProperties())
+				.map(Property::getName)
+				.toList();
+		assertEquals(
+				List.of("Background Color", "No color", "Border color", "Border width"),
 				backgroundAndBorderNames);
 	}
 
 	@Test
-	public void testInlineTableBackgroundAndBorderProperties() {
-		GeoInlineTable inlineTable = new GeoInlineTable(getKernel().getConstruction(),
-				new GPoint2D());
+	void testInlineTableBackgroundAndBorderProperties() {
+		GeoInlineTable inlineTable = new GeoInlineTable(getKernel().getConstruction(), new GPoint2D());
 		BackgroundAndBorderPropertyCollection backgroundAndBorderPropertyCollection =
 				assertDoesNotThrow(() -> new BackgroundAndBorderPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(inlineTable)
-				));
+						propertiesFactory, getLocalization(), List.of(inlineTable)));
 		List<String> backgroundAndBorderNames = Arrays.stream(
 						backgroundAndBorderPropertyCollection.getProperties())
-				.map(Property::getName).toList();
-		assertEquals(List.of("Background Color", "No color", "Border style"),
-				backgroundAndBorderNames);
+				.map(Property::getName)
+				.toList();
+		assertEquals(List.of("Background Color", "No color", "Border style"), backgroundAndBorderNames);
 	}
 
 	@Test
-	public void testMindMapBackgroundAndBorderProperties() {
-		GeoMindMapNode mindMap = new GeoMindMapNode(getKernel().getConstruction(),
-				new GPoint2D());
+	void testMindMapBackgroundAndBorderProperties() {
+		GeoMindMapNode mindMap = new GeoMindMapNode(getKernel().getConstruction(), new GPoint2D());
 		BackgroundAndBorderPropertyCollection backgroundAndBorderPropertyCollection =
 				assertDoesNotThrow(() -> new BackgroundAndBorderPropertyCollection(
-						propertiesFactory, getLocalization(), List.of(mindMap)
-				));
+						propertiesFactory, getLocalization(), List.of(mindMap)));
 		List<String> backgroundAndBorderNames = Arrays.stream(
 						backgroundAndBorderPropertyCollection.getProperties())
-				.map(Property::getName).toList();
-		assertEquals(List.of("Background Color", "No color", "Border color", "Border width"),
+				.map(Property::getName)
+				.toList();
+		assertEquals(
+				List.of("Background Color", "No color", "Border color", "Border width"),
 				backgroundAndBorderNames);
 	}
 }

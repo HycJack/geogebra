@@ -97,14 +97,13 @@ public class DefaultClipper extends ClipperBase {
 			// return 0;
 			// }
 		}
-
 	}
 
 	/**
 	 * modified to be compatible with double
 	 */
-	private static void getHorzDirection(Edge HorzEdge, Direction[] Dir,
-			double[] Left, double[] Right) {
+	private static void getHorzDirection(
+			Edge HorzEdge, Direction[] Dir, double[] Left, double[] Right) {
 		if (HorzEdge.getBot().getX() < HorzEdge.getTop().getX()) {
 			Left[0] = HorzEdge.getBot().getX();
 			Right[0] = HorzEdge.getTop().getX();
@@ -119,8 +118,8 @@ public class DefaultClipper extends ClipperBase {
 	/**
 	 * modified to be compatible with double
 	 */
-	private static boolean getOverlap(double a1, double a2, double b1,
-			double b2, double[] Left, double[] Right) {
+	private static boolean getOverlap(
+			double a1, double a2, double b1, double b2, double[] Left, double[] Right) {
 		if (a1 < a2) {
 			if (b1 < b2) {
 				Left[0] = Math.max(a1, b1);
@@ -141,8 +140,7 @@ public class DefaultClipper extends ClipperBase {
 		return Left[0] < Right[0];
 	}
 
-	private static boolean isParam1RightOfParam2(OutRec outRec0,
-			OutRec outRec2) {
+	private static boolean isParam1RightOfParam2(OutRec outRec0, OutRec outRec2) {
 		OutRec outRec1 = outRec0;
 		do {
 			outRec1 = outRec1.firstLeft;
@@ -156,6 +154,7 @@ public class DefaultClipper extends ClipperBase {
 	/**
 	 * modified to be compatible with double
 	 */
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
 	private static int isPointInPolygon(DoublePoint pt, final OutPt startOp) {
 		// returns 0 if false, +1 if true, -1 if pt ON polygon boundary
 		// See "The Point in Polygon Problem for Arbitrary Polygons" by Hormann
@@ -170,8 +169,7 @@ public class DefaultClipper extends ClipperBase {
 			final double poly1x = op.getPt().getX(), poly1y = op.getPt().getY();
 
 			if (poly1y == pty) {
-				if (poly1x == ptx
-						|| poly0y == pty && poly1x > ptx == poly0x < ptx) {
+				if (poly1x == ptx || poly0y == pty && poly1x > ptx == poly0x < ptx) {
 					return -1;
 				}
 			}
@@ -180,8 +178,7 @@ public class DefaultClipper extends ClipperBase {
 					if (poly1x > ptx) {
 						result = 1 - result;
 					} else {
-						final double d = (poly0x - ptx) * (poly1y - pty)
-								- (poly1x - ptx) * (poly0y - pty);
+						final double d = (poly0x - ptx) * (poly1y - pty) - (poly1x - ptx) * (poly0y - pty);
 						if (d == 0) {
 							return -1;
 						}
@@ -191,8 +188,7 @@ public class DefaultClipper extends ClipperBase {
 					}
 				} else {
 					if (poly1x > ptx) {
-						final double d = (poly0x - ptx) * (poly1y - pty)
-								- (poly1x - ptx) * (poly0y - pty);
+						final double d = (poly0x - ptx) * (poly1y - pty) - (poly1x - ptx) * (poly0y - pty);
 						if (d == 0) {
 							return -1;
 						}
@@ -213,16 +209,23 @@ public class DefaultClipper extends ClipperBase {
 	/**
 	 * modified to be compatible with double
 	 */
-	private static boolean joinHorz(OutPt opStart, OutPt opStartB, OutPt opEnd,
-			OutPt opEndB, DoublePoint Pt, boolean DiscardLeft) {
+	private static boolean joinHorz(
+			OutPt opStart,
+			OutPt opStartB,
+			OutPt opEnd,
+			OutPt opEndB,
+			DoublePoint Pt,
+			boolean DiscardLeft) {
 		OutPt op1 = opStart;
 		OutPt op1b = opStartB;
 		OutPt op2 = opEnd;
 		OutPt op2b = opEndB;
 		final Direction Dir1 = op1.getPt().getX() > op1b.getPt().getX()
-				? Direction.RIGHT_TO_LEFT : Direction.LEFT_TO_RIGHT;
+				? Direction.RIGHT_TO_LEFT
+				: Direction.LEFT_TO_RIGHT;
 		final Direction Dir2 = op2.getPt().getX() > op2b.getPt().getX()
-				? Direction.RIGHT_TO_LEFT : Direction.LEFT_TO_RIGHT;
+				? Direction.RIGHT_TO_LEFT
+				: Direction.LEFT_TO_RIGHT;
 		if (Dir1 == Dir2) {
 			return false;
 		}
@@ -331,10 +334,10 @@ public class DefaultClipper extends ClipperBase {
 		// 3. StrictlySimple joins where edges touch but are not collinear and
 		// where
 		// Join.OutPt1, Join.OutPt2 & Join.OffPt all share the same point.
-		final boolean isHorizontal = j.outPt1.getPt().getY() == j.getOffPt()
-				.getY();
+		final boolean isHorizontal = j.outPt1.getPt().getY() == j.getOffPt().getY();
 
-		if (isHorizontal && j.getOffPt().equals(j.outPt1.getPt())
+		if (isHorizontal
+				&& j.getOffPt().equals(j.outPt1.getPt())
 				&& j.getOffPt().equals(j.outPt2.getPt())) {
 			// Strictly Simple join ...
 			if (outRec1 != outRec2) {
@@ -380,12 +383,12 @@ public class DefaultClipper extends ClipperBase {
 			// OutPt2.Pt
 			// may be anywhere along the horizontal edge.
 			op1b = op1;
-			while (op1.prev.getPt().getY() == op1.getPt().getY()
-					&& op1.prev != op1b && op1.prev != op2) {
+			while (op1.prev.getPt().getY() == op1.getPt().getY() && op1.prev != op1b && op1.prev != op2) {
 				op1 = op1.prev;
 			}
 			while (op1b.next.getPt().getY() == op1b.getPt().getY()
-					&& op1b.next != op1 && op1b.next != op2) {
+					&& op1b.next != op1
+					&& op1b.next != op2) {
 				op1b = op1b.next;
 			}
 			if (op1b.next == op1 || op1b.next == op2) {
@@ -394,11 +397,13 @@ public class DefaultClipper extends ClipperBase {
 
 			op2b = op2;
 			while (op2.prev.getPt().getY() == op2.getPt().getY()
-					&& op2.prev != op2b && op2.prev != op1b) {
+					&& op2.prev != op2b
+					&& op2.prev != op1b) {
 				op2 = op2.prev;
 			}
 			while (op2b.next.getPt().getY() == op2b.getPt().getY()
-					&& op2b.next != op2 && op2b.next != op1) {
+					&& op2b.next != op2
+					&& op2b.next != op1) {
 				op2b = op2b.next;
 			}
 			if (op2b.next == op2 || op2b.next == op1) {
@@ -408,8 +413,13 @@ public class DefaultClipper extends ClipperBase {
 			final double[] LeftV = new double[1], RightV = new double[1];
 			// Op1 -. Op1b & Op2 -. Op2b are the extremities of the horizontal
 			// edges
-			if (!getOverlap(op1.getPt().getX(), op1b.getPt().getX(),
-					op2.getPt().getX(), op2b.getPt().getX(), LeftV, RightV)) {
+			if (!getOverlap(
+					op1.getPt().getX(),
+					op1b.getPt().getX(),
+					op2.getPt().getX(),
+					op2b.getPt().getX(),
+					LeftV,
+					RightV)) {
 				return false;
 			}
 			final double Left = LeftV[0];
@@ -426,12 +436,10 @@ public class DefaultClipper extends ClipperBase {
 			if (op1.getPt().getX() >= Left && op1.getPt().getX() <= Right) {
 				Pt = new DoublePoint(op1.getPt());
 				DiscardLeftSide = op1.getPt().getX() > op1b.getPt().getX();
-			} else if (op2.getPt().getX() >= Left
-					&& op2.getPt().getX() <= Right) {
+			} else if (op2.getPt().getX() >= Left && op2.getPt().getX() <= Right) {
 				Pt = new DoublePoint(op2.getPt());
 				DiscardLeftSide = op2.getPt().getX() > op2b.getPt().getX();
-			} else if (op1b.getPt().getX() >= Left
-					&& op1b.getPt().getX() <= Right) {
+			} else if (op1b.getPt().getX() >= Left && op1b.getPt().getX() <= Right) {
 				Pt = new DoublePoint(op1b.getPt());
 				DiscardLeftSide = op1b.getPt().getX() > op1.getPt().getX();
 			} else {
@@ -452,15 +460,14 @@ public class DefaultClipper extends ClipperBase {
 				op1b = op1b.next;
 			}
 			final boolean Reverse1 = op1b.getPt().getY() > op1.getPt().getY()
-					|| !Point.slopesEqual(op1.getPt(), op1b.getPt(),
-							j.getOffPt());
+					|| !Point.slopesEqual(op1.getPt(), op1b.getPt(), j.getOffPt());
 			if (Reverse1) {
 				op1b = op1.prev;
 				while (op1b.getPt().equals(op1.getPt()) && op1b != op1) {
 					op1b = op1b.prev;
 				}
-				if (op1b.getPt().getY() > op1.getPt().getY() || !Point
-						.slopesEqual(op1.getPt(), op1b.getPt(), j.getOffPt())) {
+				if (op1b.getPt().getY() > op1.getPt().getY()
+						|| !Point.slopesEqual(op1.getPt(), op1b.getPt(), j.getOffPt())) {
 					return false;
 				}
 			}
@@ -470,20 +477,21 @@ public class DefaultClipper extends ClipperBase {
 				op2b = op2b.next;
 			}
 			final boolean Reverse2 = op2b.getPt().getY() > op2.getPt().getY()
-					|| !Point.slopesEqual(op2.getPt(), op2b.getPt(),
-							j.getOffPt());
+					|| !Point.slopesEqual(op2.getPt(), op2b.getPt(), j.getOffPt());
 			if (Reverse2) {
 				op2b = op2.prev;
 				while (op2b.getPt().equals(op2.getPt()) && op2b != op2) {
 					op2b = op2b.prev;
 				}
-				if (op2b.getPt().getY() > op2.getPt().getY() || !Point
-						.slopesEqual(op2.getPt(), op2b.getPt(), j.getOffPt())) {
+				if (op2b.getPt().getY() > op2.getPt().getY()
+						|| !Point.slopesEqual(op2.getPt(), op2b.getPt(), j.getOffPt())) {
 					return false;
 				}
 			}
 
-			if (op1b == op1 || op2b == op2 || op1b == op2b
+			if (op1b == op1
+					|| op2b == op2
+					|| op1b == op2b
 					|| outRec1 == outRec2 && Reverse1 == Reverse2) {
 				return false;
 			}
@@ -511,89 +519,6 @@ public class DefaultClipper extends ClipperBase {
 		}
 	}
 
-	/**
-	 * modified to be compatible with double
-	 */
-	private static Paths minkowski(Path pattern, Path path, boolean IsSum,
-			boolean IsClosed) {
-		final int delta = IsClosed ? 1 : 0;
-		final int polyCnt = pattern.size();
-		final int pathCnt = path.size();
-		final Paths result = new Paths(pathCnt);
-		if (IsSum) {
-			for (int i = 0; i < pathCnt; i++) {
-				final Path p = new Path(polyCnt);
-				for (final DoublePoint ip : pattern) {
-					p.add(new DoublePoint(path.get(i).getX() + ip.getX(),
-							path.get(i).getY() + ip.getY(), 0));
-				}
-				result.add(p);
-			}
-		} else {
-			for (int i = 0; i < pathCnt; i++) {
-				final Path p = new Path(polyCnt);
-				for (final DoublePoint ip : pattern) {
-					p.add(new DoublePoint(path.get(i).getX() - ip.getX(),
-							path.get(i).getY() - ip.getY(), 0));
-				}
-				result.add(p);
-			}
-		}
-
-		final Paths quads = new Paths((pathCnt + delta) * (polyCnt + 1));
-		for (int i = 0; i < pathCnt - 1 + delta; i++) {
-			for (int j = 0; j < polyCnt; j++) {
-				final Path quad = new Path(4);
-				quad.add(result.get(i % pathCnt).get(j % polyCnt));
-				quad.add(result.get((i + 1) % pathCnt).get(j % polyCnt));
-				quad.add(result.get((i + 1) % pathCnt).get((j + 1) % polyCnt));
-				quad.add(result.get(i % pathCnt).get((j + 1) % polyCnt));
-				if (!quad.orientation()) {
-					Collections.reverse(quad);
-				}
-				quads.add(quad);
-			}
-		}
-		return quads;
-	}
-
-	public static Paths minkowskiDiff(Path poly1, Path poly2) {
-		final Paths paths = minkowski(poly1, poly2, false, true);
-		final DefaultClipper c = new DefaultClipper();
-		c.addPaths(paths, PolyType.SUBJECT, true);
-		c.execute(ClipType.UNION, paths, PolyFillType.NON_ZERO,
-				PolyFillType.NON_ZERO);
-		return paths;
-	}
-
-	public static Paths minkowskiSum(Path pattern, Path path,
-			boolean pathIsClosed) {
-		final Paths paths = minkowski(pattern, path, true, pathIsClosed);
-		final DefaultClipper c = new DefaultClipper();
-		c.addPaths(paths, PolyType.SUBJECT, true);
-		c.execute(ClipType.UNION, paths, PolyFillType.NON_ZERO,
-				PolyFillType.NON_ZERO);
-		return paths;
-	}
-
-	public static Paths minkowskiSum(Path pattern, Paths paths,
-			boolean pathIsClosed) {
-		final Paths solution = new Paths();
-		final DefaultClipper c = new DefaultClipper();
-		for (int i = 0; i < paths.size(); ++i) {
-			final Paths tmp = minkowski(pattern, paths.get(i), true,
-					pathIsClosed);
-			c.addPaths(tmp, PolyType.SUBJECT, true);
-			if (pathIsClosed) {
-				final Path path = paths.get(i).translatePath(pattern.get(0));
-				c.addPath(path, PolyType.CLIP, true);
-			}
-		}
-		c.execute(ClipType.UNION, solution, PolyFillType.NON_ZERO,
-				PolyFillType.NON_ZERO);
-		return solution;
-	}
-
 	private static boolean poly2ContainsPoly1(OutPt outPt1, OutPt outPt2) {
 		OutPt op = outPt1;
 		do {
@@ -612,10 +537,18 @@ public class DefaultClipper extends ClipperBase {
 	// SimplifyPolygon functions ...
 	// Convert self-intersecting polygons into simple polygons
 	// ------------------------------------------------------------------------------
+	/**
+	 * Simplify polygon.
+	 * @return polygon
+	 */
 	public static Paths simplifyPolygon(Path poly) {
 		return simplifyPolygon(poly, PolyFillType.EVEN_ODD);
 	}
 
+	/**
+	 * Simplify polygons.
+	 * @return polygons
+	 */
 	public static Paths simplifyPolygon(Path poly, PolyFillType fillType) {
 		final Paths result = new Paths();
 		final DefaultClipper c = new DefaultClipper(STRICTLY_SIMPLE);
@@ -625,10 +558,18 @@ public class DefaultClipper extends ClipperBase {
 		return result;
 	}
 
+	/**
+	 * Simplify polygons.
+	 * @return polygons
+	 */
 	public static Paths simplifyPolygons(Paths polys) {
 		return simplifyPolygons(polys, PolyFillType.EVEN_ODD);
 	}
 
+	/**
+	 * Simplify polygons.
+	 * @return polygons
+	 */
 	public static Paths simplifyPolygons(Paths polys, PolyFillType fillType) {
 		final Paths result = new Paths();
 		final DefaultClipper c = new DefaultClipper(STRICTLY_SIMPLE);
@@ -642,9 +583,11 @@ public class DefaultClipper extends ClipperBase {
 		this(0);
 	}
 
-	public DefaultClipper(int InitOptions) // constructor
-	{
-		super((PRESERVE_COLLINEAR & InitOptions) != 0);
+	/**
+	 * @param initOptions initialization options (bit mask)
+	 */
+	public DefaultClipper(int initOptions) {
+		super((PRESERVE_COLLINEAR & initOptions) != 0);
 		scanbeam = null;
 		activeEdges = null;
 		sortedEdges = null;
@@ -654,8 +597,8 @@ public class DefaultClipper extends ClipperBase {
 		polyOuts = new ArrayList<>();
 		joins = new ArrayList<>();
 		ghostJoins = new ArrayList<>();
-		reverseSolution = (REVERSE_SOLUTION & InitOptions) != 0;
-		strictlySimple = (STRICTLY_SIMPLE & InitOptions) != 0;
+		reverseSolution = (REVERSE_SOLUTION & initOptions) != 0;
+		strictlySimple = (STRICTLY_SIMPLE & initOptions) != 0;
 
 		// zFillFunction = null;
 
@@ -754,9 +697,11 @@ public class DefaultClipper extends ClipperBase {
 			}
 		}
 
-		if (prevE != null && prevE.outIdx >= 0
+		if (prevE != null
+				&& prevE.outIdx >= 0
 				&& Edge.topX(prevE, pt.getY()) == Edge.topX(e, pt.getY())
-				&& Edge.slopesEqual(e, prevE) && e.windDelta != 0
+				&& Edge.slopesEqual(e, prevE)
+				&& e.windDelta != 0
 				&& prevE.windDelta != 0) {
 			final OutPt outPt = addOutPt(prevE, pt);
 			addJoin(result, outPt, e.getTop());
@@ -880,7 +825,7 @@ public class DefaultClipper extends ClipperBase {
 		final int ObsoleteIdx = e2.outIdx;
 
 		e1.outIdx = Edge.UNASSIGNED; // nb: safe because we only get here via
-										// AddLocalMaxPoly
+		// AddLocalMaxPoly
 		e2.outIdx = Edge.UNASSIGNED;
 
 		Edge e = activeEdges;
@@ -999,8 +944,7 @@ public class DefaultClipper extends ClipperBase {
 			} else if (outRec.isOpen) {
 				outRec.polyNode.setOpen(true);
 				polytree.addChild(outRec.polyNode);
-			} else if (outRec.firstLeft != null
-					&& outRec.firstLeft.polyNode != null) {
+			} else if (outRec.firstLeft != null && outRec.firstLeft.polyNode != null) {
 				outRec.firstLeft.polyNode.addChild(outRec.polyNode);
 			} else {
 				polytree.addChild(outRec.polyNode);
@@ -1073,8 +1017,8 @@ public class DefaultClipper extends ClipperBase {
 	/**
 	 * modified to be compatible with double
 	 */
-	private static boolean doHorzSegmentsOverlap(double seg1a, double seg1b,
-			double seg2a, double seg2b) {
+	private static boolean doHorzSegmentsOverlap(
+			double seg1a, double seg1b, double seg2a, double seg2b) {
 		double seg1min = seg1a;
 		double seg2min = seg2a;
 		double seg1max = seg1b;
@@ -1121,9 +1065,7 @@ public class DefaultClipper extends ClipperBase {
 			}
 			deleteFromAEL(e);
 			deleteFromAEL(eMaxPair);
-		}
-
-		else if (e.windDelta == 0) {
+		} else if (e.windDelta == 0) {
 			if (e.outIdx >= 0) {
 				addOutPt(e, e.getTop());
 				e.outIdx = Edge.UNASSIGNED;
@@ -1154,8 +1096,7 @@ public class DefaultClipper extends ClipperBase {
 			{
 				OutPt op2 = op.next;
 				while (op2 != outrec.getPoints()) {
-					if (op.getPt().equals(op2.getPt()) && !op2.next.equals(op)
-							&& !op2.prev.equals(op)) {
+					if (op.getPt().equals(op2.getPt()) && !op2.next.equals(op) && !op2.prev.equals(op)) {
 						// split the polygon into two ...
 						final OutPt op3 = op.prev;
 						final OutPt op4 = op2.prev;
@@ -1168,16 +1109,14 @@ public class DefaultClipper extends ClipperBase {
 						final OutRec outrec2 = createOutRec();
 						outrec2.setPoints(op2);
 						updateOutPtIdxs(outrec2);
-						if (poly2ContainsPoly1(outrec2.getPoints(),
-								outrec.getPoints())) {
+						if (poly2ContainsPoly1(outrec2.getPoints(), outrec.getPoints())) {
 							// OutRec2 is contained by OutRec1 ...
 							outrec2.isHole = !outrec.isHole;
 							outrec2.firstLeft = outrec;
 							if (usingPolyTree) {
 								fixupFirstLefts2(outrec2, outrec);
 							}
-						} else if (poly2ContainsPoly1(outrec.getPoints(),
-								outrec2.getPoints())) {
+						} else if (poly2ContainsPoly1(outrec.getPoints(), outrec2.getPoints())) {
 							// OutRec1 is contained by OutRec2 ...
 							outrec2.isHole = outrec.isHole;
 							outrec.isHole = !outrec2.isHole;
@@ -1205,25 +1144,22 @@ public class DefaultClipper extends ClipperBase {
 
 	// ------------------------------------------------------------------------------
 
-	private static boolean EdgesAdjacent(IntersectNode inode) {
-		return inode.edge1.nextInSEL == inode.Edge2
-				|| inode.edge1.prevInSEL == inode.Edge2;
+	private static boolean edgesAdjacent(IntersectNode inode) {
+		return inode.edge1.nextInSEL == inode.Edge2 || inode.edge1.prevInSEL == inode.Edge2;
 	}
 
 	// ------------------------------------------------------------------------------
 
 	@Override
 	public boolean execute(ClipType clipType, Paths solution) {
-		return execute(clipType, solution, PolyFillType.EVEN_ODD,
-				PolyFillType.EVEN_ODD);
+		return execute(clipType, solution, PolyFillType.EVEN_ODD, PolyFillType.EVEN_ODD);
 	}
 
 	@Override
-	public boolean execute(ClipType clipType, Paths solution,
-			PolyFillType subjFillType, PolyFillType clipFillType) {
+	public boolean execute(
+			ClipType clipType, Paths solution, PolyFillType subjFillType, PolyFillType clipFillType) {
 
 		synchronized (this) {
-
 			if (hasOpenPaths) {
 				// throw new IllegalStateException( "Error: PolyTree struct is
 				// need for open path clipping." );
@@ -1245,21 +1181,18 @@ public class DefaultClipper extends ClipperBase {
 				return succeeded;
 			} finally {
 				polyOuts.clear();
-
 			}
 		}
-
 	}
 
 	@Override
 	public boolean execute(ClipType clipType, PolyTree polytree) {
-		return execute(clipType, polytree, PolyFillType.EVEN_ODD,
-				PolyFillType.EVEN_ODD);
+		return execute(clipType, polytree, PolyFillType.EVEN_ODD, PolyFillType.EVEN_ODD);
 	}
 
 	@Override
-	public boolean execute(ClipType clipType, PolyTree polytree,
-			PolyFillType subjFillType, PolyFillType clipFillType) {
+	public boolean execute(
+			ClipType clipType, PolyTree polytree, PolyFillType subjFillType, PolyFillType clipFillType) {
 		synchronized (this) {
 			this.subjFillType = subjFillType;
 			this.clipFillType = clipFillType;
@@ -1356,8 +1289,7 @@ public class DefaultClipper extends ClipperBase {
 			}
 			final OutRec firstLeft = outRec.firstLeft.parseFirstLeft();
 			if (firstLeft.equals(OldOutRec)) {
-				if (poly2ContainsPoly1(outRec.getPoints(),
-						NewOutRec.getPoints())) {
+				if (poly2ContainsPoly1(outRec.getPoints(), NewOutRec.getPoints())) {
 					outRec.firstLeft = NewOutRec;
 				}
 			}
@@ -1382,9 +1314,9 @@ public class DefaultClipper extends ClipperBase {
 		copyAELToSEL();
 		final int cnt = intersectList.size();
 		for (int i = 0; i < cnt; i++) {
-			if (!EdgesAdjacent(intersectList.get(i))) {
+			if (!edgesAdjacent(intersectList.get(i))) {
 				int j = i + 1;
-				while (j < cnt && !EdgesAdjacent(intersectList.get(j))) {
+				while (j < cnt && !edgesAdjacent(intersectList.get(j))) {
 					j++;
 				}
 				if (j == cnt) {
@@ -1394,10 +1326,8 @@ public class DefaultClipper extends ClipperBase {
 				final IntersectNode tmp = intersectList.get(i);
 				intersectList.set(i, intersectList.get(j));
 				intersectList.set(j, tmp);
-
 			}
-			swapPositionsInSEL(intersectList.get(i).edge1,
-					intersectList.get(i).Edge2);
+			swapPositionsInSEL(intersectList.get(i).edge1, intersectList.get(i).Edge2);
 		}
 		return true;
 	}
@@ -1411,7 +1341,7 @@ public class DefaultClipper extends ClipperBase {
 		OutPt lastOK = null;
 		outRec.bottomPt = null;
 		OutPt pp = outRec.getPoints();
-		for (;;) {
+		for (; ; ) {
 			if (pp.prev == pp || pp.prev == pp.next) {
 				outRec.setPoints(null);
 				return;
@@ -1419,11 +1349,9 @@ public class DefaultClipper extends ClipperBase {
 			// test for duplicate points and collinear edges ...
 			if (pp.getPt().equals(pp.next.getPt())
 					|| pp.getPt().equals(pp.prev.getPt())
-					|| Point.slopesEqual(pp.prev.getPt(), pp.getPt(),
-							pp.next.getPt())
-							&& (!preserveCollinear || !Point
-									.isPt2BetweenPt1AndPt3(pp.prev.getPt(),
-											pp.getPt(), pp.next.getPt()))) {
+					|| Point.slopesEqual(pp.prev.getPt(), pp.getPt(), pp.next.getPt())
+							&& (!preserveCollinear
+									|| !Point.isPt2BetweenPt1AndPt3(pp.prev.getPt(), pp.getPt(), pp.next.getPt()))) {
 				lastOK = null;
 				pp.prev.next = pp.next;
 				pp.next.prev = pp.prev;
@@ -1454,8 +1382,7 @@ public class DefaultClipper extends ClipperBase {
 			edge.prevInAEL = null;
 			edge.nextInAEL = null;
 			activeEdges = edge;
-		} else if (startEdge == null
-				&& Edge.doesE2InsertBeforeE1(activeEdges, edge)) {
+		} else if (startEdge == null && Edge.doesE2InsertBeforeE1(activeEdges, edge)) {
 			edge.prevInAEL = null;
 			edge.nextInAEL = activeEdges;
 			activeEdges.prevInAEL = edge;
@@ -1464,8 +1391,7 @@ public class DefaultClipper extends ClipperBase {
 			if (startEdge == null) {
 				startEdge = activeEdges;
 			}
-			while (startEdge.nextInAEL != null
-					&& !Edge.doesE2InsertBeforeE1(startEdge.nextInAEL, edge)) {
+			while (startEdge.nextInAEL != null && !Edge.doesE2InsertBeforeE1(startEdge.nextInAEL, edge)) {
 				startEdge = startEdge.nextInAEL;
 			}
 			edge.nextInAEL = startEdge.nextInAEL;
@@ -1529,25 +1455,28 @@ public class DefaultClipper extends ClipperBase {
 
 			// if output polygons share an Edge with a horizontal rb, they'll
 			// need joining later ...
-			if (Op1 != null && rb.isHorizontal() && ghostJoins.size() > 0
-					&& rb.windDelta != 0) {
+			if (Op1 != null && rb.isHorizontal() && ghostJoins.size() > 0 && rb.windDelta != 0) {
 				for (int i = 0; i < ghostJoins.size(); i++) {
 					// if the horizontal Rb and a 'ghost' horizontal overlap,
 					// then convert
 					// the 'ghost' join to a real join ready for later ...
 					final Join j = ghostJoins.get(i);
-					if (doHorzSegmentsOverlap(j.outPt1.getPt().getX(),
-							j.getOffPt().getX(), rb.getBot().getX(),
+					if (doHorzSegmentsOverlap(
+							j.outPt1.getPt().getX(),
+							j.getOffPt().getX(),
+							rb.getBot().getX(),
 							rb.getTop().getX())) {
 						addJoin(j.outPt1, Op1, j.getOffPt());
 					}
 				}
 			}
 
-			if (lb.outIdx >= 0 && lb.prevInAEL != null
+			if (lb.outIdx >= 0
+					&& lb.prevInAEL != null
 					&& lb.prevInAEL.getCurrent().getX() == lb.getBot().getX()
 					&& lb.prevInAEL.outIdx >= 0
-					&& Edge.slopesEqual(lb.prevInAEL, lb) && lb.windDelta != 0
+					&& Edge.slopesEqual(lb.prevInAEL, lb)
+					&& lb.windDelta != 0
 					&& lb.prevInAEL.windDelta != 0) {
 				final OutPt Op2 = addOutPt(lb.prevInAEL, lb.getBot());
 				addJoin(Op1, Op2, lb.getTop());
@@ -1555,9 +1484,11 @@ public class DefaultClipper extends ClipperBase {
 
 			if (lb.nextInAEL != rb) {
 
-				if (rb.outIdx >= 0 && rb.prevInAEL.outIdx >= 0
+				if (rb.outIdx >= 0
+						&& rb.prevInAEL.outIdx >= 0
 						&& Edge.slopesEqual(rb.prevInAEL, rb)
-						&& rb.windDelta != 0 && rb.prevInAEL.windDelta != 0) {
+						&& rb.windDelta != 0
+						&& rb.prevInAEL.windDelta != 0) {
 					final OutPt Op2 = addOutPt(rb.prevInAEL, rb.getBot());
 					addJoin(Op1, Op2, rb.getTop());
 				}
@@ -1574,10 +1505,9 @@ public class DefaultClipper extends ClipperBase {
 						// that param1 will be to the right of param2 ABOVE the
 						// intersection ...
 						intersectEdges(rb, e, lb.getCurrent()); // order
-																// important
-																// here
+						// important
+						// here
 						e = e.nextInAEL;
-
 					}
 				}
 			}
@@ -1620,6 +1550,7 @@ public class DefaultClipper extends ClipperBase {
 	/**
 	 * modified to be compatible with double
 	 */
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
 	private void intersectEdges(Edge e1, Edge e2, DoublePoint pt) {
 
 		// e1 will be to the left of e2 BELOW the intersection. Therefore e1 is
@@ -1638,31 +1569,20 @@ public class DefaultClipper extends ClipperBase {
 			// are both open paths, AND they are both 'contributing maximas' ...
 			if (e1.windDelta == 0 && e2.windDelta == 0) {
 				return;
-			} else if (e1.polyType == e2.polyType && e1.windDelta != e2.windDelta
+			} else if (e1.polyType == e2.polyType
+					&& e1.windDelta != e2.windDelta
 					&& clipType == ClipType.UNION) {
-				if (e1.windDelta == 0) {
-					if (e2Contributing) {
-						addOutPt(e1, pt);
-						if (e1Contributing) {
-							e1.outIdx = Edge.UNASSIGNED;
-						}
-					}
-				} else {
-					if (e1Contributing) {
-						addOutPt(e2, pt);
-						if (e2Contributing) {
-							e2.outIdx = Edge.UNASSIGNED;
-						}
-					}
-				}
+				unionEdges(e1, e2, e1Contributing, e2Contributing, pt);
 			} else if (e1.polyType != e2.polyType) {
-				if (e1.windDelta == 0 && Math.abs(e2.windCnt) == 1
+				if (e1.windDelta == 0
+						&& Math.abs(e2.windCnt) == 1
 						&& (clipType != ClipType.UNION || e2.windCnt2 == 0)) {
 					addOutPt(e1, pt);
 					if (e1Contributing) {
 						e1.outIdx = Edge.UNASSIGNED;
 					}
-				} else if (e2.windDelta == 0 && Math.abs(e1.windCnt) == 1
+				} else if (e2.windDelta == 0
+						&& Math.abs(e1.windCnt) == 1
 						&& (clipType != ClipType.UNION || e1.windCnt2 == 0)) {
 					addOutPt(e2, pt);
 					if (e2Contributing) {
@@ -1723,30 +1643,31 @@ public class DefaultClipper extends ClipperBase {
 
 		int e1Wc, e2Wc;
 		switch (e1FillType) {
-		case POSITIVE:
-			e1Wc = e1.windCnt;
-			break;
-		case NEGATIVE:
-			e1Wc = -e1.windCnt;
-			break;
-		default:
-			e1Wc = Math.abs(e1.windCnt);
-			break;
+			case POSITIVE:
+				e1Wc = e1.windCnt;
+				break;
+			case NEGATIVE:
+				e1Wc = -e1.windCnt;
+				break;
+			default:
+				e1Wc = Math.abs(e1.windCnt);
+				break;
 		}
 		switch (e2FillType) {
-		case POSITIVE:
-			e2Wc = e2.windCnt;
-			break;
-		case NEGATIVE:
-			e2Wc = -e2.windCnt;
-			break;
-		default:
-			e2Wc = Math.abs(e2.windCnt);
-			break;
+			case POSITIVE:
+				e2Wc = e2.windCnt;
+				break;
+			case NEGATIVE:
+				e2Wc = -e2.windCnt;
+				break;
+			default:
+				e2Wc = Math.abs(e2.windCnt);
+				break;
 		}
 
 		if (e1Contributing && e2Contributing) {
-			if (e1Wc != 0 && e1Wc != 1 || e2Wc != 0 && e2Wc != 1
+			if (e1Wc != 0 && e1Wc != 1
+					|| e2Wc != 0 && e2Wc != 1
 					|| e1.polyType != e2.polyType && clipType != ClipType.XOR) {
 				addLocalMaxPoly(e1, e2, pt);
 			} else {
@@ -1772,52 +1693,51 @@ public class DefaultClipper extends ClipperBase {
 			// neither edge is currently contributing ...
 			int e1Wc2, e2Wc2;
 			switch (e1FillType2) {
-			case POSITIVE:
-				e1Wc2 = e1.windCnt2;
-				break;
-			case NEGATIVE:
-				e1Wc2 = -e1.windCnt2;
-				break;
-			default:
-				e1Wc2 = Math.abs(e1.windCnt2);
-				break;
+				case POSITIVE:
+					e1Wc2 = e1.windCnt2;
+					break;
+				case NEGATIVE:
+					e1Wc2 = -e1.windCnt2;
+					break;
+				default:
+					e1Wc2 = Math.abs(e1.windCnt2);
+					break;
 			}
 			switch (e2FillType2) {
-			case POSITIVE:
-				e2Wc2 = e2.windCnt2;
-				break;
-			case NEGATIVE:
-				e2Wc2 = -e2.windCnt2;
-				break;
-			default:
-				e2Wc2 = Math.abs(e2.windCnt2);
-				break;
+				case POSITIVE:
+					e2Wc2 = e2.windCnt2;
+					break;
+				case NEGATIVE:
+					e2Wc2 = -e2.windCnt2;
+					break;
+				default:
+					e2Wc2 = Math.abs(e2.windCnt2);
+					break;
 			}
 
 			if (e1.polyType != e2.polyType) {
 				addLocalMinPoly(e1, e2, pt);
 			} else if (e1Wc == 1 && e2Wc == 1) {
 				switch (clipType) {
-				case INTERSECTION:
-					if (e1Wc2 > 0 && e2Wc2 > 0) {
+					case INTERSECTION:
+						if (e1Wc2 > 0 && e2Wc2 > 0) {
+							addLocalMinPoly(e1, e2, pt);
+						}
+						break;
+					case UNION:
+						if (e1Wc2 <= 0 && e2Wc2 <= 0) {
+							addLocalMinPoly(e1, e2, pt);
+						}
+						break;
+					case DIFFERENCE:
+						if (e1.polyType == PolyType.CLIP && e1Wc2 > 0 && e2Wc2 > 0
+								|| e1.polyType == PolyType.SUBJECT && e1Wc2 <= 0 && e2Wc2 <= 0) {
+							addLocalMinPoly(e1, e2, pt);
+						}
+						break;
+					case XOR:
 						addLocalMinPoly(e1, e2, pt);
-					}
-					break;
-				case UNION:
-					if (e1Wc2 <= 0 && e2Wc2 <= 0) {
-						addLocalMinPoly(e1, e2, pt);
-					}
-					break;
-				case DIFFERENCE:
-					if (e1.polyType == PolyType.CLIP && e1Wc2 > 0 && e2Wc2 > 0
-							|| e1.polyType == PolyType.SUBJECT && e1Wc2 <= 0
-									&& e2Wc2 <= 0) {
-						addLocalMinPoly(e1, e2, pt);
-					}
-					break;
-				case XOR:
-					addLocalMinPoly(e1, e2, pt);
-					break;
+						break;
 				}
 			} else {
 				Edge.swapSides(e1, e2);
@@ -1825,11 +1745,29 @@ public class DefaultClipper extends ClipperBase {
 		}
 	}
 
+	private void unionEdges(
+			Edge e1, Edge e2, boolean e1Contributing, boolean e2Contributing, DoublePoint pt) {
+		if (e1.windDelta == 0) {
+			if (e2Contributing) {
+				addOutPt(e1, pt);
+				if (e1Contributing) {
+					e1.outIdx = Edge.UNASSIGNED;
+				}
+			}
+		} else {
+			if (e1Contributing) {
+				addOutPt(e2, pt);
+				if (e2Contributing) {
+					e2.outIdx = Edge.UNASSIGNED;
+				}
+			}
+		}
+	}
+
 	/**
 	 * modified to be compatible with double
 	 */
-	private static void intersectPoint(Edge edge1, Edge edge2,
-			DoublePoint[] ipV) {
+	private static void intersectPoint(Edge edge1, Edge edge2, DoublePoint[] ipV) {
 		final DoublePoint ip = ipV[0] = new DoublePoint();
 
 		double b1, b2;
@@ -1848,8 +1786,7 @@ public class DefaultClipper extends ClipperBase {
 			if (edge2.isHorizontal()) {
 				ip.setY(edge2.getBot().getY());
 			} else {
-				b2 = edge2.getBot().getY()
-						- edge2.getBot().getX() / edge2.deltaX;
+				b2 = edge2.getBot().getY() - edge2.getBot().getX() / edge2.deltaX;
 				ip.setY(ip.getX() / edge2.deltaX + b2);
 			}
 		} else if (edge2.getDelta().getX() == 0) {
@@ -1857,8 +1794,7 @@ public class DefaultClipper extends ClipperBase {
 			if (edge1.isHorizontal()) {
 				ip.setY(edge1.getBot().getY());
 			} else {
-				b1 = edge1.getBot().getY()
-						- edge1.getBot().getX() / edge1.deltaX;
+				b1 = edge1.getBot().getY() - edge1.getBot().getX() / edge1.deltaX;
 				ip.setY(ip.getX() / edge1.deltaX + b1);
 			}
 		} else {
@@ -1873,8 +1809,7 @@ public class DefaultClipper extends ClipperBase {
 			}
 		}
 
-		if (ip.getY() < edge1.getTop().getY()
-				|| ip.getY() < edge2.getTop().getY()) {
+		if (ip.getY() < edge1.getTop().getY() || ip.getY() < edge2.getTop().getY()) {
 			if (edge1.getTop().getY() > edge2.getTop().getY()) {
 				ip.setY(edge1.getTop().getY());
 			} else {
@@ -1956,8 +1891,7 @@ public class DefaultClipper extends ClipperBase {
 					}
 				}
 
-				if (poly2ContainsPoly1(outRec2.getPoints(),
-						outRec1.getPoints())) {
+				if (poly2ContainsPoly1(outRec2.getPoints(), outRec1.getPoints())) {
 					// outRec2 is contained by outRec1 ...
 					outRec2.isHole = !outRec1.isHole;
 					outRec2.firstLeft = outRec1;
@@ -1968,13 +1902,11 @@ public class DefaultClipper extends ClipperBase {
 						fixupFirstLefts2(outRec2, outRec1);
 					}
 
-					if ((outRec2.isHole ^ reverseSolution) == outRec2
-							.area() > 0) {
+					if ((outRec2.isHole ^ reverseSolution) == outRec2.area() > 0) {
 						outRec2.getPoints().reversePolyPtLinks();
 					}
 
-				} else if (poly2ContainsPoly1(outRec1.getPoints(),
-						outRec2.getPoints())) {
+				} else if (poly2ContainsPoly1(outRec1.getPoints(), outRec2.getPoints())) {
 					// outRec1 is contained by outRec2 ...
 					outRec2.isHole = outRec1.isHole;
 					outRec1.isHole = !outRec2.isHole;
@@ -1987,8 +1919,7 @@ public class DefaultClipper extends ClipperBase {
 						fixupFirstLefts2(outRec1, outRec2);
 					}
 
-					if ((outRec1.isHole ^ reverseSolution) == outRec1
-							.area() > 0) {
+					if ((outRec1.isHole ^ reverseSolution) == outRec1.area() > 0) {
 						outRec1.getPoints().reversePolyPtLinks();
 					}
 				} else {
@@ -2064,7 +1995,7 @@ public class DefaultClipper extends ClipperBase {
 				// 2. promote horizontal edges, otherwise update Curr.getX() and
 				// Curr.getY() ...
 				if (e.isIntermediate(topY) && e.nextInLML.isHorizontal()) {
-					final Edge[] t = new Edge[] { e };
+					final Edge[] t = new Edge[] {e};
 					updateEdgeIntoAEL(t);
 					e = t[0];
 					if (e.outIdx >= 0) {
@@ -2078,9 +2009,11 @@ public class DefaultClipper extends ClipperBase {
 
 				if (strictlySimple) {
 					final Edge ePrev = e.prevInAEL;
-					if (e.outIdx >= 0 && e.windDelta != 0 && ePrev != null
-							&& ePrev.outIdx >= 0 && ePrev.getCurrent()
-									.getX() == e.getCurrent().getX()
+					if (e.outIdx >= 0
+							&& e.windDelta != 0
+							&& ePrev != null
+							&& ePrev.outIdx >= 0
+							&& ePrev.getCurrent().getX() == e.getCurrent().getX()
 							&& ePrev.windDelta != 0) {
 						final DoublePoint ip = new DoublePoint(e.getCurrent());
 
@@ -2107,7 +2040,7 @@ public class DefaultClipper extends ClipperBase {
 				if (e.outIdx >= 0) {
 					op = addOutPt(e, e.getTop());
 				}
-				final Edge[] t = new Edge[] { e };
+				final Edge[] t = new Edge[] {e};
 				updateEdgeIntoAEL(t);
 				e = t[0];
 
@@ -2118,18 +2051,22 @@ public class DefaultClipper extends ClipperBase {
 				if (ePrev != null
 						&& ePrev.getCurrent().getX() == e.getBot().getX()
 						&& ePrev.getCurrent().getY() == e.getBot().getY()
-						&& op != null && ePrev.outIdx >= 0
+						&& op != null
+						&& ePrev.outIdx >= 0
 						&& ePrev.getCurrent().getY() > ePrev.getTop().getY()
-						&& Edge.slopesEqual(e, ePrev) && e.windDelta != 0
+						&& Edge.slopesEqual(e, ePrev)
+						&& e.windDelta != 0
 						&& ePrev.windDelta != 0) {
 					final OutPt op2 = addOutPt(ePrev, e.getBot());
 					addJoin(op, op2, e.getTop());
 				} else if (eNext != null
 						&& eNext.getCurrent().getX() == e.getBot().getX()
 						&& eNext.getCurrent().getY() == e.getBot().getY()
-						&& op != null && eNext.outIdx >= 0
+						&& op != null
+						&& eNext.outIdx >= 0
 						&& eNext.getCurrent().getY() > eNext.getTop().getY()
-						&& Edge.slopesEqual(e, eNext) && e.windDelta != 0
+						&& Edge.slopesEqual(e, eNext)
+						&& e.windDelta != 0
 						&& eNext.windDelta != 0) {
 					final OutPt op2 = addOutPt(eNext, e.getBot());
 					addJoin(op, op2, e.getTop());
@@ -2139,6 +2076,7 @@ public class DefaultClipper extends ClipperBase {
 		}
 	}
 
+	@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
 	private void processHorizontal(Edge horzEdge0, boolean isTopOfScanbeam) {
 
 		final Direction[] dir = new Direction[1];
@@ -2147,15 +2085,14 @@ public class DefaultClipper extends ClipperBase {
 		getHorzDirection(horzEdge, dir, horzLeft, horzRight);
 
 		Edge eLastHorz = horzEdge, eMaxPair = null;
-		while (eLastHorz.nextInLML != null
-				&& eLastHorz.nextInLML.isHorizontal()) {
+		while (eLastHorz.nextInLML != null && eLastHorz.nextInLML.isHorizontal()) {
 			eLastHorz = eLastHorz.nextInLML;
 		}
 		if (eLastHorz.nextInLML == null) {
 			eMaxPair = eLastHorz.getMaximaPair();
 		}
 
-		for (;;) {
+		for (; ; ) {
 			final boolean IsLastHorz = horzEdge == eLastHorz;
 			Edge e = horzEdge.getNextInAEL(dir[0]);
 			while (e != null) {
@@ -2170,20 +2107,17 @@ public class DefaultClipper extends ClipperBase {
 				}
 
 				final Edge eNext = e.getNextInAEL(dir[0]); // saves eNext for
-															// later
+				// later
 
-				if (dir[0] == Direction.LEFT_TO_RIGHT
-						&& e.getCurrent().getX() <= horzRight[0]
-						|| dir[0] == Direction.RIGHT_TO_LEFT
-								&& e.getCurrent().getX() >= horzLeft[0]) {
+				if (dir[0] == Direction.LEFT_TO_RIGHT && e.getCurrent().getX() <= horzRight[0]
+						|| dir[0] == Direction.RIGHT_TO_LEFT && e.getCurrent().getX() >= horzLeft[0]) {
 					// so far we're still in range of the horizontal Edge but
 					// make sure
 					// we're at the last of consec. horizontals when matching
 					// with eMaxPair
 					if (e == eMaxPair && IsLastHorz) {
 						if (horzEdge.outIdx >= 0) {
-							final OutPt op1 = addOutPt(horzEdge,
-									horzEdge.getTop());
+							final OutPt op1 = addOutPt(horzEdge, horzEdge.getTop());
 							Edge eNextHorz = sortedEdges;
 							while (eNextHorz != null) {
 								if (eNextHorz.outIdx >= 0
@@ -2192,44 +2126,37 @@ public class DefaultClipper extends ClipperBase {
 												horzEdge.getTop().getX(),
 												eNextHorz.getBot().getX(),
 												eNextHorz.getTop().getX())) {
-									final OutPt op2 = addOutPt(eNextHorz,
-											eNextHorz.getBot());
+									final OutPt op2 = addOutPt(eNextHorz, eNextHorz.getBot());
 									addJoin(op2, op1, eNextHorz.getTop());
 								}
 								eNextHorz = eNextHorz.nextInSEL;
 							}
 							addGhostJoin(op1, horzEdge.getBot());
-							addLocalMaxPoly(horzEdge, eMaxPair,
-									horzEdge.getTop());
+							addLocalMaxPoly(horzEdge, eMaxPair, horzEdge.getTop());
 						}
 						deleteFromAEL(horzEdge);
 						deleteFromAEL(eMaxPair);
 						return;
 					} else if (dir[0] == Direction.LEFT_TO_RIGHT) {
-						final DoublePoint Pt = new DoublePoint(
-								e.getCurrent().getX(),
-								horzEdge.getCurrent().getY());
+						final DoublePoint Pt =
+								new DoublePoint(e.getCurrent().getX(), horzEdge.getCurrent().getY());
 						intersectEdges(horzEdge, e, Pt);
 					} else {
-						final DoublePoint Pt = new DoublePoint(
-								e.getCurrent().getX(),
-								horzEdge.getCurrent().getY());
+						final DoublePoint Pt =
+								new DoublePoint(e.getCurrent().getX(), horzEdge.getCurrent().getY());
 						intersectEdges(e, horzEdge, Pt);
 					}
 					swapPositionsInAEL(horzEdge, e);
-				} else if (dir[0] == Direction.LEFT_TO_RIGHT
-						&& e.getCurrent().getX() >= horzRight[0]
-						|| dir[0] == Direction.RIGHT_TO_LEFT
-								&& e.getCurrent().getX() <= horzLeft[0]) {
+				} else if (dir[0] == Direction.LEFT_TO_RIGHT && e.getCurrent().getX() >= horzRight[0]
+						|| dir[0] == Direction.RIGHT_TO_LEFT && e.getCurrent().getX() <= horzLeft[0]) {
 					break;
 				}
 				e = eNext;
 			} // end while
 
-			if (horzEdge.nextInLML != null
-					&& horzEdge.nextInLML.isHorizontal()) {
+			if (horzEdge.nextInLML != null && horzEdge.nextInLML.isHorizontal()) {
 
-				final Edge[] t = new Edge[] { horzEdge };
+				final Edge[] t = new Edge[] {horzEdge};
 				updateEdgeIntoAEL(t);
 				horzEdge = t[0];
 
@@ -2248,7 +2175,7 @@ public class DefaultClipper extends ClipperBase {
 				if (isTopOfScanbeam) {
 					addGhostJoin(op1, horzEdge.getBot());
 				}
-				final Edge[] t = new Edge[] { horzEdge };
+				final Edge[] t = new Edge[] {horzEdge};
 				updateEdgeIntoAEL(t);
 				horzEdge = t[0];
 
@@ -2261,7 +2188,8 @@ public class DefaultClipper extends ClipperBase {
 				if (ePrev != null
 						&& ePrev.getCurrent().getX() == horzEdge.getBot().getX()
 						&& ePrev.getCurrent().getY() == horzEdge.getBot().getY()
-						&& ePrev.windDelta != 0 && ePrev.outIdx >= 0
+						&& ePrev.windDelta != 0
+						&& ePrev.outIdx >= 0
 						&& ePrev.getCurrent().getY() > ePrev.getTop().getY()
 						&& Edge.slopesEqual(horzEdge, ePrev)) {
 					final OutPt op2 = addOutPt(ePrev, horzEdge.getBot());
@@ -2269,14 +2197,15 @@ public class DefaultClipper extends ClipperBase {
 				} else if (eNext != null
 						&& eNext.getCurrent().getX() == horzEdge.getBot().getX()
 						&& eNext.getCurrent().getY() == horzEdge.getBot().getY()
-						&& eNext.windDelta != 0 && eNext.outIdx >= 0
+						&& eNext.windDelta != 0
+						&& eNext.outIdx >= 0
 						&& eNext.getCurrent().getY() > eNext.getTop().getY()
 						&& Edge.slopesEqual(horzEdge, eNext)) {
 					final OutPt op2 = addOutPt(eNext, horzEdge.getBot());
 					addJoin(op1, op2, horzEdge.getTop());
 				}
 			} else {
-				final Edge[] t = new Edge[] { horzEdge };
+				final Edge[] t = new Edge[] {horzEdge};
 				updateEdgeIntoAEL(t);
 				// horzEdge = t[0];
 			}
@@ -2332,10 +2261,8 @@ public class DefaultClipper extends ClipperBase {
 	private void processIntersectList() {
 		for (int i = 0; i < intersectList.size(); i++) {
 			final IntersectNode iNode = intersectList.get(i);
-			{
-				intersectEdges(iNode.edge1, iNode.Edge2, iNode.getPt());
-				swapPositionsInAEL(iNode.edge1, iNode.Edge2);
-			}
+			intersectEdges(iNode.edge1, iNode.Edge2, iNode.getPt());
+			swapPositionsInAEL(iNode.edge1, iNode.Edge2);
 		}
 		intersectList.clear();
 	}
@@ -2400,8 +2327,7 @@ public class DefaultClipper extends ClipperBase {
 	private void swapPositionsInAEL(Edge edge1, Edge edge2) {
 
 		// check that one or other edge hasn't already been removed from AEL ...
-		if (edge1.nextInAEL == edge1.prevInAEL
-				|| edge2.nextInAEL == edge2.prevInAEL) {
+		if (edge1.nextInAEL == edge1.prevInAEL || edge2.nextInAEL == edge2.prevInAEL) {
 			return;
 		}
 
@@ -2457,7 +2383,6 @@ public class DefaultClipper extends ClipperBase {
 		} else if (edge2.prevInAEL == null) {
 			activeEdges = edge2;
 		}
-
 	}
 
 	// ------------------------------------------------------------------------------;
@@ -2606,11 +2531,7 @@ public class DefaultClipper extends ClipperBase {
 				if (Math.abs(e.windCnt) > 1) {
 					// outside prev poly but still inside another.
 					// when reversing direction of prev poly use the same WC
-					if (e.windDelta * edge.windDelta < 0) {
-						edge.windCnt = e.windCnt;
-					} else {
-						edge.windCnt = e.windCnt + edge.windDelta;
-					}
+					edge.windCnt = e.windDelta * edge.windDelta < 0 ? e.windCnt : e.windCnt + edge.windDelta;
 				} else {
 					// now outside all polys of same polytype so set own WC ...
 					edge.windCnt = edge.windDelta == 0 ? 1 : edge.windDelta;
@@ -2619,8 +2540,7 @@ public class DefaultClipper extends ClipperBase {
 				// prev edge is 'increasing' WindCount (WC) away from zero
 				// so we're inside the previous polygon ...
 				if (edge.windDelta == 0) {
-					edge.windCnt = e.windCnt < 0 ? e.windCnt - 1
-							: e.windCnt + 1;
+					edge.windCnt = e.windCnt < 0 ? e.windCnt - 1 : e.windCnt + 1;
 				} else if (e.windDelta * edge.windDelta < 0) {
 					edge.windCnt = e.windCnt;
 				} else {
@@ -2648,5 +2568,4 @@ public class DefaultClipper extends ClipperBase {
 			}
 		}
 	}
-
 } // end Clipper

@@ -2,13 +2,13 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -38,9 +38,8 @@ import org.geogebra.common.util.StringUtil;
 import org.geogebra.desktop.gui.properties.UpdateablePropertiesPanel;
 import org.geogebra.desktop.main.AppD;
 
-class ComboPanel extends JPanel implements ActionListener,
-		SetLabels, UpdateFonts, UpdateablePropertiesPanel,
-		GeoComboListener {
+class ComboPanel extends JPanel
+		implements ActionListener, SetLabels, UpdateFonts, UpdateablePropertiesPanel, GeoComboListener {
 	private static final long serialVersionUID = 1L;
 	private final Localization loc;
 	private JLabel label;
@@ -49,12 +48,12 @@ class ComboPanel extends JPanel implements ActionListener,
 	private String title;
 	private AppD app;
 
-	public ComboPanel(AppD app, final String title) {
+	ComboPanel(AppD app, final String title) {
 		this.app = app;
 		this.loc = app.getLocalization();
 		this.title = title;
 		label = new JLabel();
-		comboBox = new JComboBox();
+		comboBox = new JComboBox<>();
 
 		setLayout(new FlowLayout(FlowLayout.LEFT));
 		if (hasLabel()) {
@@ -64,7 +63,7 @@ class ComboPanel extends JPanel implements ActionListener,
 		add(comboBox);
 	}
 
-	public ComboPanel(MultipleOptionsModel model, AppD app) {
+	ComboPanel(MultipleOptionsModel model, AppD app) {
 		this(app, model.getTitle());
 		setModel(model);
 		model.setListener(this);
@@ -82,7 +81,7 @@ class ComboPanel extends JPanel implements ActionListener,
 	/**
 	 * Rebuild combo items.
 	 */
-	public void rebuildItems() {
+	void rebuildItems() {
 		int selectedIndex = comboBox.getSelectedIndex();
 		comboBox.removeActionListener(this);
 		comboBox.removeAllItems();
@@ -145,31 +144,30 @@ class ComboPanel extends JPanel implements ActionListener,
 		Object source = e.getSource();
 		if (source == comboBox) {
 			if (isCommonOptionsModel()) {
-				((CommonOptionsModel) model).applyChanges(
-						comboBox.getSelectedItem());
+				((CommonOptionsModel) model).applyChanges(comboBox.getSelectedItem());
 			} else {
 				getMultipleModel().applyChanges(comboBox.getSelectedIndex());
 			}
 		}
 	}
 
-	protected boolean isCommonOptionsModel() {
+	private boolean isCommonOptionsModel() {
 		return model instanceof CommonOptionsModel;
 	}
 
-	public JLabel getLabel() {
+	JLabel getLabel() {
 		return label;
 	}
 
-	public MultipleOptionsModel getMultipleModel() {
+	MultipleOptionsModel getMultipleModel() {
 		return (MultipleOptionsModel) model;
 	}
 
-	public void setModel(OptionsModel model) {
+	void setModel(OptionsModel model) {
 		this.model = model;
 	}
 
-	public String getTitle() {
+	String getTitle() {
 		return loc.getMenu(title);
 	}
 

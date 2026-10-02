@@ -39,8 +39,10 @@ public class UpdateActionStore {
 
 	@Weak
 	protected final SelectionManager selection;
+
 	private final UndoManager undoManager;
 	private boolean stitching;
+	private boolean hasMeasurementTools;
 
 	/**
 	 * Constructor
@@ -67,25 +69,23 @@ public class UpdateActionStore {
 			if (geo.hasChangeableParent3D()) {
 				GeoNumeric num = geo.getChangeableParent3D().getNumber();
 				if (num.isLabelSet()) {
-					undoItems.add(new UndoItem(num, MoveMode.NUMERIC));
+					addUndoItem(num, MoveMode.NUMERIC);
 				} else {
-					undoItems.add(new UndoItem(geo.getChangeableParent3D().getSurface(),
-							defaultMode));
+					addUndoItem(geo.getChangeableParent3D().getSurface(), defaultMode);
 				}
 				continue;
 			}
-			if (geo.getParentAlgorithm() != null
-					&& !geo.isPointOnPath() && !geo.isPointInRegion()) {
+			if (geo.getParentAlgorithm() != null && !geo.isPointOnPath() && !geo.isPointInRegion()) {
 				addAll(geo.getParentAlgorithm().getDefinedAndLabeledInput(), defaultMode);
-			} else if (geo instanceof GeoImage) {
-				addAll(((GeoImage) geo).getDefinedAndLabeledStartPoints(), defaultMode);
+			} else if (geo instanceof GeoImage image) {
+				addAll(image.getDefinedAndLabeledStartPoints(), defaultMode);
 			}
-			undoItems.add(new UndoItem(geo, defaultMode));
+			addUndoItem(geo, defaultMode);
 		}
 	}
 
 	private void addAll(List<? extends GeoElement> geos, MoveMode mode) {
-		geos.forEach(geo -> undoItems.add(new UndoItem(geo, mode)));
+		geos.forEach(geo -> addUndoItem(geo, mode));
 	}
 
 	/**
@@ -95,7 +95,15 @@ public class UpdateActionStore {
 	 */
 	public void addIfNotPresent(GeoElement geo, MoveMode mode) {
 		if (undoItems.stream().noneMatch(it -> it.hasGeo(geo))) {
+			addUndoItem(geo, mode);
+		}
+	}
+
+	private void addUndoItem(GeoElement geo, MoveMode mode) {
+		if (!geo.isMeasurementTool()) {
 			undoItems.add(new UndoItem(geo, mode));
+		} else {
+			hasMeasurementTools = true;
 		}
 	}
 
@@ -112,6 +120,7 @@ public class UpdateActionStore {
 	 */
 	public void clear() {
 		undoItems.clear();
+		hasMeasurementTools = false;
 	}
 
 	/**
@@ -121,7 +130,7 @@ public class UpdateActionStore {
 		List<String> actions = new ArrayList<>(undoItems.size());
 		List<String> undoActions = new ArrayList<>(undoItems.size());
 		List<String> labels = new ArrayList<>(undoItems.size());
-		for (UndoItem item: undoItems) {
+		for (UndoItem item : undoItems) {
 			actions.add(item.content());
 			undoActions.add(item.previousContent());
 			labels.add(item.getLabel());
@@ -137,14 +146,15 @@ public class UpdateActionStore {
 	}
 
 	/**
-	 * Store undo
-	 * @return if there is items in undo list.
+	 * Store undo action.
+	 * @return {@code true} if there were any updated elements
+	 * (measurement tools count but do not produce an undo point themselves).
 	 */
 	public boolean storeUndo() {
 		if (!undoItems.isEmpty()) {
 			storeUpdateAction();
 		}
-		return undoItems.isEmpty();
+		return !undoItems.isEmpty() || hasMeasurementTools;
 	}
 
 	/**

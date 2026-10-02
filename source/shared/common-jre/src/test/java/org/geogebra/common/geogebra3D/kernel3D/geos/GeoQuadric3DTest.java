@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -17,7 +17,7 @@
 package org.geogebra.common.geogebra3D.kernel3D.geos;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 
@@ -30,9 +30,9 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.matrix.Coords;
 import org.geogebra.test.annotation.Issue;
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GeoQuadric3DTest extends BaseUnitTest {
+class GeoQuadric3DTest extends BaseUnitTest {
 
 	@Override
 	public AppCommon createAppCommon() {
@@ -40,7 +40,7 @@ public class GeoQuadric3DTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void eigenvectorsShouldUpdate() {
+	void eigenvectorsShouldUpdate() {
 		add("d=.5");
 		GeoQuadric3D quad = add("quad:1=x^(2) + (y^(2) + z^(2)) / (1 - d^(2))");
 		assertThat(quad.getEigenvec3D(0), hasCoords(1, 0, 0, 0));
@@ -54,7 +54,7 @@ public class GeoQuadric3DTest extends BaseUnitTest {
 	}
 
 	@Test
-	public void testObjectTypes() {
+	void testObjectTypes() {
 		assertThat(add("(x-z)(x+z)=0"), hasType("Intersecting Planes"));
 		assertThat(add("(x-z)(x-z-1)=0"), hasType("Parallel Planes"));
 		assertThat(add("(x-z)(x+z)=1"), hasType("Hyperbolic Cylinder"));
@@ -69,24 +69,27 @@ public class GeoQuadric3DTest extends BaseUnitTest {
 
 	@Test
 	@Issue("APPS-6570")
-	public void shouldLoadAsImplicitFromFile() {
+	void shouldLoadAsImplicitFromFile() {
 		add("a=1");
-		getApp().getGgbApi().evalXML(
-				"<expression label=\"b\" exp=\"a*x^2=z^2\" type=\"quadric\" />"
-				+ "<element type=\"quadric\" label=\"b\">"
-				+ "<show object=\"true\" label=\"false\" ev=\"7\"/>"
-				+ "</element>");
-		assertEquals(QuadraticEquationRepresentable.Form.IMPLICIT,
+		getApp()
+				.getGgbApi()
+				.evalXML("<expression label=\"b\" exp=\"a*x^2=z^2\" type=\"quadric\" />"
+						+ "<element type=\"quadric\" label=\"b\">"
+						+ "<show object=\"true\" label=\"false\" ev=\"7\"/>"
+						+ "</element>");
+		assertEquals(
+				QuadraticEquationRepresentable.Form.IMPLICIT,
 				((GeoQuadric3D) lookup("b")).getEquationForm());
-		assertThat(add("FormulaText(b,true,true)"),
-				hasValue("b\\mathpunct{:}\\,x² - z²\\, = \\,0"));
+		assertThat(add("FormulaText(b,true,true)"), hasValue("b\\mathpunct{:}\\,x² - z²\\, = \\,0"));
 	}
 
 	@Test
-	public void assignmentInLaTeXShouldHaveOnlyOneSpace() {
-		assertEquals("f\\mathpunct{:}\\,y\\, = \\,x^{2} + z",
+	void assignmentInLaTeXShouldHaveOnlyOneSpace() {
+		assertEquals(
+				"f\\mathpunct{:}\\,y\\, = \\,x^{2} + z",
 				add("y=x^2+z").toString(StringTemplate.latexTemplate));
-		assertEquals("g\\mathpunct{:}\\,y\\, = \\,x^{2} + z",
+		assertEquals(
+				"g\\mathpunct{:}\\,y\\, = \\,x^{2} + z",
 				add("y=x^2+z").getLaTeXAlgebraDescription(false, StringTemplate.latexTemplate));
 	}
 

@@ -24,7 +24,7 @@ import elemental2.dom.DomGlobal;
 /**
  * Connector for keyboard and text input dialog
  */
-public class TextEditPanelProcessing implements KeyboardListener {
+public final class TextEditPanelProcessing implements KeyboardListener {
 	private final GeoTextEditor field;
 
 	/**
@@ -104,4 +104,3 @@ public class TextEditPanelProcessing implements KeyboardListener {
 		return false;
 	}
 }
-

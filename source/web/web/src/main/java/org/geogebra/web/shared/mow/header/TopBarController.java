@@ -20,11 +20,10 @@ import static org.geogebra.common.euclidian.EuclidianConstants.MODE_SELECT_MOW;
 
 import java.util.function.Consumer;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.EuclidianConstants;
 import org.geogebra.common.euclidian.EuclidianController;
 import org.geogebra.common.euclidian.EuclidianView;
+import org.geogebra.common.euclidian.event.PointerEventType;
 import org.geogebra.common.gui.AccessibilityGroup;
 import org.geogebra.web.full.gui.ContextMenuGraphicsWindowW;
 import org.geogebra.web.full.gui.pagecontrolpanel.PageListPanel;
@@ -36,13 +35,14 @@ import org.geogebra.web.html5.gui.zoompanel.ZoomController;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.main.topbar.TopBarIcon;
 import org.geogebra.web.html5.main.topbar.TopBarIconResource;
+import org.jspecify.annotations.Nullable;
 
-public class TopBarController {
+public final class TopBarController {
 	private final AppW appW;
 	private final ZoomController zoomController;
 	private final EuclidianView view;
 	private ContextMenuGraphicsWindowW settingsContextMenu;
-	private @CheckForNull PageListPanel pageControlPanel;
+	private @Nullable PageListPanel pageControlPanel;
 	private final TopBarIconResource topBarIconResource;
 
 	/**
@@ -130,7 +130,7 @@ public class TopBarController {
 		if (isDragButtonActive) {
 			appW.setMode(MODE_SELECT_MOW);
 		} else {
-			appW.setMode(EuclidianConstants.MODE_TRANSLATEVIEW);
+			appW.setMode(EuclidianConstants.MODE_TRANSLATE_VIEW);
 			appW.hideMenu();
 			appW.closePopups();
 		}
@@ -184,9 +184,10 @@ public class TopBarController {
 	private Consumer<Boolean> getFullscreenBtnSelectCB(final IconButton fullscreenBtn) {
 		return fullScreenActive -> {
 			if (fullscreenBtn != null) {
-				fullscreenBtn.setIcon(fullScreenActive
-						? topBarIconResource.getImageResource(TopBarIcon.FULLSCREEN_OFF)
-						: topBarIconResource.getImageResource(TopBarIcon.FULLSCREEN_ON));
+				fullscreenBtn.setIcon(
+						fullScreenActive
+								? topBarIconResource.getImageResource(TopBarIcon.FULLSCREEN_OFF)
+								: topBarIconResource.getImageResource(TopBarIcon.FULLSCREEN_ON));
 			}
 		};
 	}
@@ -208,7 +209,7 @@ public class TopBarController {
 	}
 
 	private void toggleSettingsContextMenu(IconButton anchor) {
-		boolean settingsShowing  = getSettingsContextMenu().isShowing();
+		boolean settingsShowing = getSettingsContextMenu().isShowing();
 		if (settingsShowing) {
 			settingsContextMenu.getWrappedPopup().hide();
 		} else {
@@ -220,10 +221,16 @@ public class TopBarController {
 	}
 
 	private void showAndFocusMenuRelativeTo(IconButton anchor) {
-		settingsContextMenu.getWrappedPopup().showAtPoint((int) (anchor.getAbsoluteLeft()
-				- appW.getAbsLeft()), (int) (anchor.getAbsoluteTop()
-				+ anchor.getOffsetHeight() - appW.getAbsTop()));
-		settingsContextMenu.getWrappedPopup().getPopupMenu().getItemAt(0).getElement().focus();
+		settingsContextMenu
+				.getWrappedPopup()
+				.showAtPoint((int) (anchor.getAbsoluteLeft() - appW.getAbsLeft()), (int)
+						(anchor.getAbsoluteTop() + anchor.getOffsetHeight() - appW.getAbsTop()));
+		settingsContextMenu
+				.getWrappedPopup()
+				.getPopupMenu()
+				.getItemAt(0)
+				.getElement()
+				.focus();
 	}
 
 	private GPopupPanel getSettingsContextMenu() {
@@ -250,12 +257,15 @@ public class TopBarController {
 		getPageControlPanel().open();
 		appW.getPageController().updatePreviewImage();
 		appW.setMode(MODE_SELECT_MOW);
+		// reset to the same state we had on app start
+		appW.getActiveEuclidianView()
+				.getEuclidianController()
+				.setDefaultEventTypeForNewMode(PointerEventType.MOUSE);
 	}
 
 	private PageListPanel getPageControlPanel() {
 		if (pageControlPanel == null) {
-			pageControlPanel = ((AppWFull) appW).getAppletFrame()
-					.getPageControlPanel();
+			pageControlPanel = ((AppWFull) appW).getAppletFrame().getPageControlPanel();
 		}
 		return pageControlPanel;
 	}
@@ -282,8 +292,7 @@ public class TopBarController {
 	 * @param button - focusable widget
 	 * @return focusable widget
 	 */
-	public FocusableWidget getRegisteredFocusable(AccessibilityGroup group,
-			IconButton button) {
+	public FocusableWidget getRegisteredFocusable(AccessibilityGroup group, IconButton button) {
 		FocusableWidget focusableWidget = new FocusableWidget(group, null, button);
 		focusableWidget.attachTo(appW);
 		return focusableWidget;

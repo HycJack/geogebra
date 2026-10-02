@@ -16,19 +16,19 @@
 
 package org.geogebra.common.kernel.geos;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.euclidian.draw.HasTextFormat;
+import org.geogebra.common.kernel.kernelND.GeoElementND;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Construction element that has a text formatter.
  */
-public interface HasTextFormatter {
+public interface HasTextFormatter extends GeoElementND {
 
 	/**
 	 * @return formatter for this element
 	 */
-	@CheckForNull HasTextFormat getFormatter();
+	@Nullable HasTextFormat getFormatter();
 
 	/**
 	 * @param key formatting option name

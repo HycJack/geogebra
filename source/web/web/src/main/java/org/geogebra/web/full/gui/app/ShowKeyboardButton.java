@@ -38,8 +38,8 @@ import org.gwtproject.user.client.ui.SimplePanel;
  * A PopupPanel in the bottom left corner of the application which represents a
  * button to open the {@link OnscreenTabbedKeyboard}
  */
-public class ShowKeyboardButton extends SimplePanel {
-	
+public final class ShowKeyboardButton extends SimplePanel {
+
 	/**
 	 * @param listener
 	 *            {@link KeyboardCloseListener}
@@ -48,35 +48,32 @@ public class ShowKeyboardButton extends SimplePanel {
 	 * @param app
 	 *            app
 	 */
-	public ShowKeyboardButton(final GeoGebraFrameFull listener,
-			final DockManagerW dm, final AppWFull app) {
+	public ShowKeyboardButton(
+			final GeoGebraFrameFull listener, final DockManagerW dm, final AppWFull app) {
 		this.addStyleName("matOpenKeyboardBtn");
 		if (app.isApplet() || app.getConfig().getKeyboardType() == AppKeyboardType.SCIENTIFIC) {
 			addStyleName("cornerPosition");
 		}
-		NoDragImage showKeyboard = new NoDragImage(KeyboardResources.INSTANCE
-				.keyboard_show_material().getSafeUri().asString());
+		NoDragImage showKeyboard = new NoDragImage(
+				KeyboardResources.INSTANCE.keyboard_show_material().getSafeUri().asString());
+		showKeyboard.setAltText(app.getLocalization().getMenu("Keyboard"));
 		this.add(showKeyboard);
 		TestHarness.setAttr(this, "showKeyboardButton");
 
 		listener.add(this);
 
-		ClickStartHandler.init(this, new ClickStartHandler(
-				true, true) {
+		ClickStartHandler.init(this, new ClickStartHandler(true, true) {
 
 			@Override
 			public void onClickStart(int x, int y, PointerEventType type) {
 				BrowserStorage.LOCAL.setItem(BrowserStorage.KEYBOARD_WANTED, "true");
 				DockPanelW panel = dm.getPanelForKeyboard();
 				GuiManagerW guiManagerW = app.getGuiManager();
-				final MathKeyboardListener mathKeyboardListener = guiManagerW
-						.getKeyboardListener(panel);
-						
+				final MathKeyboardListener mathKeyboardListener = guiManagerW.getKeyboardListener(panel);
+
 				if (panel instanceof AlgebraPanelInterface) {
-					listener.doShowKeyboard(true,
-							((AlgebraPanelInterface) panel)
-									.updateKeyboardListener(
-											mathKeyboardListener));
+					listener.doShowKeyboard(
+							true, ((AlgebraPanelInterface) panel).updateKeyboardListener(mathKeyboardListener));
 				} else {
 					listener.doShowKeyboard(true, mathKeyboardListener);
 				}

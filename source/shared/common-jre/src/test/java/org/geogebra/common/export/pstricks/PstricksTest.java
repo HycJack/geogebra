@@ -34,14 +34,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class PstricksTest {
+class PstricksTest {
 	private static AppCommon3D app;
 	private static ArrayList<String> inputs;
-	private final ExportGraphicsFactory exportGraphicsFactory
-			= ExportGraphicsCommon::new;
+	private final ExportGraphicsFactory exportGraphicsFactory = ExportGraphicsCommon::new;
 
 	@BeforeEach
-	public void clear() {
+	void clear() {
 		app.getKernel().clearConstruction(true);
 		t("ShowAxes(false)");
 		t("ShowGrid(false)");
@@ -49,7 +48,7 @@ public class PstricksTest {
 
 	/** Set up the app */
 	@BeforeAll
-	public static void setUp() {
+	static void setUp() {
 		app = AppCommonFactory.create3D();
 		inputs = new ArrayList<>();
 		createObjects();
@@ -64,20 +63,19 @@ public class PstricksTest {
 	}
 
 	@Test
-	public void exportPstricks() {
+	void exportPstricks() {
 		GeoGebraExport ps = new GeoGebraToPstricks(app, exportGraphicsFactory);
 		testInputs(ps, "\\end{document}");
 	}
 
 	@Test
-	public void exportPgf() {
+	void exportPgf() {
 		GeoGebraExport ps = new GeoGebraToPgf(app, exportGraphicsFactory);
 		testInputs(ps, "\\end{document}");
-
 	}
 
 	@Test
-	public void exportAsymptote() {
+	void exportAsymptote() {
 		GeoGebraExport ps = new GeoGebraToAsymptote(app, exportGraphicsFactory);
 		testInputs(ps, "/* end of picture */");
 	}
@@ -86,8 +84,7 @@ public class PstricksTest {
 		String last = "";
 		EuclidianView ev = app.getActiveEuclidianView();
 
-		ExportFrameMinimal frame = new ExportFrameMinimal(ev.getYmin(),
-				ev.getYmax());
+		ExportFrameMinimal frame = new ExportFrameMinimal(ev.getYmin(), ev.getYmax());
 		frame.setKeepColor();
 		GeoElement slider = app.getKernel().lookupLabel("anim");
 		if (slider instanceof GeoNumeric) {
@@ -99,8 +96,7 @@ public class PstricksTest {
 			String out = generate(ps, frame);
 			assertNotEquals(cmd, out, last);
 			last = out;
-			assertEquals(string,
-					out.substring(out.length() - string.length()));
+			assertEquals(string, out.substring(out.length() - string.length()));
 		}
 	}
 
@@ -158,11 +154,9 @@ public class PstricksTest {
 		}
 	}
 
-	private static String generate(GeoGebraExport ps,
-			ExportFrameMinimal frame) {
+	private static String generate(GeoGebraExport ps, ExportFrameMinimal frame) {
 		ps.generateAllCode();
 		return frame.getCode();
-
 	}
 
 	private static class ExportGraphicsCommon extends GGraphicsCommon {
@@ -170,8 +164,7 @@ public class PstricksTest {
 		private final Inequality inequality;
 		private final FunctionalNVar geo;
 
-		public ExportGraphicsCommon(FunctionalNVar geo, Inequality inequality,
-				GeoGebraExport export) {
+		ExportGraphicsCommon(FunctionalNVar geo, Inequality inequality, GeoGebraExport export) {
 			this.export = export;
 			this.inequality = inequality;
 			this.geo = geo;

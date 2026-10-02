@@ -26,7 +26,7 @@ import org.geogebra.common.properties.Property;
 import org.geogebra.common.properties.impl.collections.AbstractPropertyCollection;
 
 public class RulingPropertiesCollection extends AbstractPropertyCollection<Property>
-	implements SettingsDependentProperty {
+		implements SettingsDependentProperty {
 
 	private final EuclidianSettings evSettings;
 
@@ -36,14 +36,14 @@ public class RulingPropertiesCollection extends AbstractPropertyCollection<Prope
 	 * @param settings euclidian settings
 	 * @param euclidianView euclidian view
 	 */
-	public RulingPropertiesCollection(Localization localization, EuclidianSettings settings,
-			EuclidianView euclidianView) {
+	public RulingPropertiesCollection(
+			Localization localization, EuclidianSettings settings, EuclidianView euclidianView) {
 		super(localization, "Ruling");
 		this.evSettings = settings;
 		ArrayList<Property> properties = new ArrayList<>();
 		properties.add(new RulingStyleProperty(localization, settings, euclidianView));
-		properties.add(new RulingGridColorProperty(localization, settings, true));
-		properties.add(new RulingGridLineStyleProperty(localization, settings, true));
+		properties.add(new RulingGridColorProperty(localization, settings));
+		properties.add(new RulingGridLineStyleProperty(localization, settings));
 		properties.add(new RulingGridBoldProperty(localization, settings));
 		setProperties(properties.toArray(new Property[0]));
 	}

@@ -24,7 +24,6 @@ import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.main.App;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.common.main.settings.ConstructionProtocolSettings;
 import org.geogebra.common.main.settings.SettingListener;
 import org.geogebra.common.util.debug.Log;
@@ -64,7 +63,7 @@ import org.gwtproject.user.client.ui.ScrollPanel;
  *
  */
 public class ConstructionProtocolViewW extends ConstructionProtocolView
-		implements SetLabels, SettingListener, PrintableW {
+		implements SetLabels, SettingListener<ConstructionProtocolSettings>, PrintableW {
 
 	/**
 	 * contains a scrollPanel with the {@link #table constructionstep-table}
@@ -72,6 +71,7 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 	private final FlowPanel cpPanel;
 	/** table with constructionsteps **/
 	protected CellTable<RowData> table;
+
 	ScrollPanel scrollPane;
 	ScrollPanel holderPanel;
 	/** possible drop index **/
@@ -82,13 +82,14 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 	protected Element draggedRow;
 	/** index of dragged row **/
 	protected int dragIndex;
+
 	GPopupMenuW popupMenu;
 
 	CellTable<RowData> headerTable;
 	ConsProtocolScrollPanel outerScrollPanel;
 
 	/**
-	 * 
+	 *
 	 * @param app
 	 *            {@link AppW}
 	 */
@@ -113,8 +114,7 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 
 		addHeaderClickHandler();
 
-		ConstructionProtocolSettings cps = app.getSettings()
-				.getConstructionProtocol();
+		ConstructionProtocolSettings cps = app.getSettings().getConstructionProtocol();
 		settingsChanged(cps);
 		cps.addListener(this);
 
@@ -135,23 +135,18 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		cpPanel.add(holderPanel);
 
 		outerScrollPanel = new ConsProtocolScrollPanel(); // used for horizontal
-											// scrolling
+		// scrolling
 		outerScrollPanel.addStyleName("outerScrollPanel");
 		outerScrollPanel.add(cpPanel);
 		table.addStyleName("hiddenheader");
 
 		scrollPane.addScrollHandler(event -> {
 			int scrollPosition = scrollPane.getHorizontalScrollPosition();
-			if (innerHolderPanel
-					.getOffsetWidth() < scrollPane.getOffsetWidth()
-							+ scrollPosition) {
-				innerHolderPanel.setWidth(
-						(scrollPane.getOffsetWidth() + scrollPosition)
-								+ "px");
+			if (innerHolderPanel.getOffsetWidth() < scrollPane.getOffsetWidth() + scrollPosition) {
+				innerHolderPanel.setWidth((scrollPane.getOffsetWidth() + scrollPosition) + "px");
 			}
 			holderPanel.setHorizontalScrollPosition(scrollPosition);
 		});
-
 	}
 
 	void initGUI() {
@@ -177,15 +172,13 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 
 		Scheduler.get().scheduleDeferred(() -> {
 			// TODO Auto-generated method stub
-			NodeList<Element> tableRows = table.getElement()
-					.getElementsByTagName("tbody").getItem(0)
-					.getElementsByTagName("tr");
+			NodeList<Element> tableRows =
+					table.getElement().getElementsByTagName("tbody").getItem(0).getElementsByTagName("tr");
 			if (tableRows.getLength() == 0) {
 				return;
 			}
 
-			NodeList<Element> firstRow = tableRows.getItem(0)
-					.getElementsByTagName("td");
+			NodeList<Element> firstRow = tableRows.getItem(0).getElementsByTagName("td");
 
 			for (int i = 0; i < table.getColumnCount(); i++) {
 				int w = firstRow.getItem(i).getOffsetWidth();
@@ -193,14 +186,11 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 			}
 
 			int tableWidth = table.getOffsetWidth();
-			headerTable.getElement().getStyle().setWidth(tableWidth,
-					Unit.PX);
-
+			headerTable.getElement().getStyle().setWidth(tableWidth, Unit.PX);
 		});
-
 	}
 
-	public class ConsProtocolScrollPanel extends ScrollPanel {
+	public final class ConsProtocolScrollPanel extends ScrollPanel {
 
 		@Override
 		public void onResize() {
@@ -212,22 +202,22 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 	 * adds handlers for dragging rows. Overridden for touch.
 	 */
 	protected void addDragDropHandlers() {
-		table.addDomHandler(event -> handleDrag(event.getNativeEvent().getClientY()),
-				DragStartEvent.getType());
+		table.addDomHandler(
+				event -> handleDrag(event.getNativeEvent().getClientY()), DragStartEvent.getType());
 
-		table.addDomHandler(event -> {
-			if (draggedRow != null) {
-				draggedRow.removeClassName("isDragging");
-			}
+		table.addDomHandler(
+				event -> {
+					if (draggedRow != null) {
+						draggedRow.removeClassName("isDragging");
+					}
 
-			if (event.getNativeEvent().getClientX() > table.getElement()
-					.getAbsoluteRight()
-					|| event.getNativeEvent().getClientX() < table
-							.getElement().getAbsoluteLeft()) {
-				return;
-			}
-			handleDrop(event.getNativeEvent().getClientY());
-		}, DragEndEvent.getType());
+					if (event.getNativeEvent().getClientX() > table.getElement().getAbsoluteRight()
+							|| event.getNativeEvent().getClientX() < table.getElement().getAbsoluteLeft()) {
+						return;
+					}
+					handleDrop(event.getNativeEvent().getClientY());
+				},
+				DragEndEvent.getType());
 	}
 
 	/**
@@ -257,9 +247,8 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		for (int i = 0; i < table.getRowCount(); i++) {
 			// row hit or y is far down and this is last row
 			if ((y > table.getRowElement(i).getAbsoluteTop()
-					&& y < table.getRowElement(i).getAbsoluteBottom())
-					|| (i == table.getRowCount() - 1 && y > table
-							.getRowElement(i).getAbsoluteBottom())) {
+							&& y < table.getRowElement(i).getAbsoluteBottom())
+					|| (i == table.getRowCount() - 1 && y > table.getRowElement(i).getAbsoluteBottom())) {
 				int dropIndex = data.getConstructionIndex(i);
 				if (dropIndex == dragIndex) {
 					// no changes necessary
@@ -268,12 +257,13 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 				if (dropIndex < minIndex || dropIndex > maxIndex) {
 					// drop not possible
 					// TODO change cursor style before releasing mouse
-					((AppW) app).getToolTipManager().showBottomMessage(
-							app.getLocalization().getMenu("Drop not possible"), (AppW) app);
+					((AppW) app)
+							.getToolTipManager()
+							.showBottomMessage(app.getLocalization().getMenu("Drop not possible"), (AppW) app);
 					return;
 				}
-				boolean kernelChanged = ((ConstructionTableDataW) data)
-						.moveInConstructionList(dragIndex, dropIndex);
+				boolean kernelChanged =
+						((ConstructionTableDataW) data).moveInConstructionList(dragIndex, dropIndex);
 				if (kernelChanged) {
 					app.storeUndoInfo();
 				}
@@ -313,17 +303,9 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 						insertPopup(tb, sb);
 
 					} else {
-						String headerTitle;
-						if ("ToolbarIcon".equals(title)) {
-							headerTitle = "Icon";
-						} else if ("Breakpoint".equals(title)) {
-							headerTitle = "Breakpoint.short";
-						} else {
-							headerTitle = title;
-						}
-						sb.append(SafeHtmlUtils.fromSafeConstant("<div>"
-								+ app.getLocalization().getMenu(headerTitle)
-								+ "</div>"));
+						String headerTitle = getHeaderTitle(title);
+						sb.append(SafeHtmlUtils.fromSafeConstant(
+								"<div>" + app.getLocalization().getMenu(headerTitle) + "</div>"));
 					}
 
 					tb.addColumn(col, sb.toSafeHtml());
@@ -332,32 +314,36 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		}
 	}
 
+	private String getHeaderTitle(String title) {
+		if ("ToolbarIcon".equals(title)) {
+			return "Icon";
+		} else if ("Breakpoint".equals(title)) {
+			return "Breakpoint.short";
+		} else {
+			return title;
+		}
+	}
+
 	private static void insertPopup(CellTable<RowData> tb, SafeHtmlBuilder sb) {
 		// if cp header fixed, we must insert the popup button
 		// only in headertable
 		if (tb.getStyleName().indexOf("headerTable") > 0) {
-			sb.append(SafeHtmlUtils
-					.fromSafeConstant("<div class=\"CP_popupImage\">"));
-			sb.append(AbstractImagePrototype.create(GuiResources.INSTANCE.menu_dots())
-					.getSafeHtml());
+			sb.append(SafeHtmlUtils.fromSafeConstant("<div class=\"CP_popupImage\">"));
+			sb.append(AbstractImagePrototype.create(GuiResources.INSTANCE.menu_dots()).getSafeHtml());
 			sb.append(SafeHtmlUtils.fromSafeConstant("</div>"));
 		}
-
 	}
 
 	protected void initPopupMenu() {
 		popupMenu = new GPopupMenuW((AppW) app);
 		popupMenu.getPopupPanel().addStyleName("contextSubMenu");
 
-		if (app.getGuiManager().getLayout().getDockManager()
-				.getNumberOfOpenViews() > 1) {
-			popupMenu.addItem(app.getLocalization().getMenu("Close"),
-					() -> {
-						app.getGuiManager().setShowView(false,
-								App.VIEW_CONSTRUCTION_PROTOCOL);
-						app.updateMenubar();
-						((AppW) app).fireViewsChangedEvent();
-					});
+		if (app.getGuiManager().getLayout().getDockManager().getNumberOfOpenViews() > 1) {
+			popupMenu.addItem(app.getLocalization().getMenu("Close"), () -> {
+				app.getGuiManager().setShowView(false, App.VIEW_CONSTRUCTION_PROTOCOL);
+				app.updateMenubar();
+				((AppW) app).fireViewsChangedEvent();
+			});
 
 			popupMenu.addVerticalSeparator();
 		}
@@ -372,27 +358,29 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 				final int j = k;
 				ScheduledCommand com = () -> {
 					if (breakpoint && !data.columns[j].isVisible()) {
-						app.getKernel().getConstruction()
-								.setShowOnlyBreakpoints(false);
+						app.getKernel().getConstruction().setShowOnlyBreakpoints(false);
 						data.initView();
 					}
-					data.columns[j]
-							.setVisible(!data.columns[j].isVisible());
+					data.columns[j].setVisible(!data.columns[j].isVisible());
 					initGUI();
 				};
 
-				GCheckmarkMenuItem columnItem = new GCheckmarkMenuItem((ResourcePrototype) null,
+				GCheckmarkMenuItem columnItem = new GCheckmarkMenuItem(
+						(ResourcePrototype) null,
 						data.columns[j].getTranslatedTitle(),
-						data.columns[j].isVisible(), com);
+						data.columns[j].isVisible(),
+						com);
 				popupMenu.addItem(columnItem);
 			}
 		}
 
 		popupMenu.addVerticalSeparator();
 
-		GCheckmarkMenuItem miShowOnlyBreakpoints = new GCheckmarkMenuItem((ResourcePrototype) null,
+		GCheckmarkMenuItem miShowOnlyBreakpoints = new GCheckmarkMenuItem(
+				(ResourcePrototype) null,
 				app.getLocalization().getMenu("ShowOnlyBreakpoints"),
-				app.getKernel().getConstruction().showOnlyBreakpoints(), null);
+				app.getKernel().getConstruction().showOnlyBreakpoints(),
+				null);
 
 		miShowOnlyBreakpoints.setCommand(() -> {
 			showOnlyBreakpointsAction();
@@ -405,28 +393,27 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 
 	private void addHeaderClickHandler() {
 		ClickHandler popupMenuClickHandler = event -> {
-			Element el = Element
-					.as(event.getNativeEvent().getEventTarget());
-			if (el != null && el.getParentNode() != null && el
-					.getParentElement().hasClassName("CP_popupImage")) { // three-dot
-																// menu
+			Element el = Element.as(event.getNativeEvent().getEventTarget());
+			if (el != null
+					&& el.getParentNode() != null
+					&& el.getParentElement().hasClassName("CP_popupImage")) { // three-dot
+				// menu
 				popupMenu.show(el, 0, el.getOffsetHeight());
 			}
 		};
 
 		headerTable.addHandler(popupMenuClickHandler, ClickEvent.getType());
-
 	}
 
 	/**
 	 * Get column of the table.
-	 * 
+	 *
 	 * @param title
 	 *            column title
 	 * @return column of data
 	 */
 	public Column<RowData, ?> getColumn(String title) {
-		Column<RowData, ?> col = null;
+		Column<RowData, ?> col;
 
 		if ("No.".equals(title)) {
 			col = getColumnId();
@@ -498,7 +485,6 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 			public SafeHtml getValue(RowData object) {
 				return SafeHtmlUtils.fromTrustedString(object.getName());
 			}
-
 		};
 	}
 
@@ -512,7 +498,6 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 			public SafeHtml getValue(RowData object) {
 				return SafeHtmlUtils.fromTrustedString(object.getDescription());
 			}
-
 		};
 	}
 
@@ -526,7 +511,6 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 			public SafeHtml getValue(RowData object) {
 				return SafeHtmlUtils.fromTrustedString(object.getAlgebra());
 			}
-
 		};
 	}
 
@@ -540,20 +524,17 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 			public SafeHtml getValue(RowData object) {
 				return SafeHtmlUtils.fromTrustedString(object.getDefinition());
 			}
-
 		};
 	}
 
 	private Column<RowData, String> getColumnCaptionSimple() {
 
-		Column<RowData, String> col = new Column<>(
-				new TextInputCell()) {
+		Column<RowData, String> col = new Column<>(new TextInputCell()) {
 
 			@Override
 			public String getValue(RowData object) {
 				return object.getGeo().getCaptionSimple();
 			}
-
 		};
 
 		col.setFieldUpdater((index, object, value) -> {
@@ -563,21 +544,18 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		});
 
 		return col;
-
 	}
 
 	/*
 	 * Add a text column to show the breakpoints.
 	 */
 	private Column<RowData, Boolean> getColumnBreakpoint() {
-		Column<RowData, Boolean> col = new Column<>(
-				new CheckboxCell()) {
+		Column<RowData, Boolean> col = new Column<>(new CheckboxCell()) {
 
 			@Override
 			public Boolean getValue(RowData object) {
 				return object.getGeo().isConsProtocolBreakpoint();
 			}
-
 		};
 
 		col.setFieldUpdater((index, object, value) -> {
@@ -590,10 +568,8 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 	}
 
 	@Override
-	public void settingsChanged(AbstractSettings settings) {
-		ConstructionProtocolSettings cps = (ConstructionProtocolSettings) settings;
-
-		boolean[] gcv = cps.getColsVisibility();
+	public void settingsChanged(ConstructionProtocolSettings settings) {
+		boolean[] gcv = settings.getColsVisibility();
 		if (gcv != null) {
 			if (gcv.length > 0) {
 				setColsVisibility(gcv);
@@ -631,7 +607,7 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 
 			int step = kernel.getConstructionStep();
 			int row = -1; // it's possible that ConsStep == 0, so we need index
-							// -1 to deselect all rows
+			// -1 to deselect all rows
 			for (int i = 0; i < rowCount; i++) {
 				if (data.getConstructionIndex(i) <= step) {
 					row = i;
@@ -646,7 +622,7 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 
 	/**
 	 * marks the rows (up to {@code index}) selected
-	 * 
+	 *
 	 * @param index
 	 *            int
 	 */
@@ -655,14 +631,12 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 			try {
 				if (i <= index) {
 					GColor color = data.getRow(i).getGeo().getAlgebraColor();
-					table.getRowElement(i).setAttribute("style",
-							"color:" + GColor.getColorString(color));
+					table.getRowElement(i).setAttribute("style", "color:" + GColor.getColorString(color));
 				} else {
 					table.getRowElement(i).setAttribute("style", "opacity:0.5");
 				}
 			} catch (IndexOutOfBoundsException e) {
-				Log.debug("OutOfBounds:" + i + "," + table.getRowCount() + ","
-						+ table.getPageStart());
+				Log.debug("OutOfBounds:" + i + "," + table.getRowCount() + "," + table.getPageStart());
 			}
 		}
 	}
@@ -720,7 +694,7 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		 * @param gui
 		 *            gui element on which we delegate setLabels
 		 */
-		public ConstructionTableDataW(SetLabels gui) {
+		ConstructionTableDataW(SetLabels gui) {
 			super(gui);
 			// ctDataImpl = new MyGAbstractTableModel();
 		}
@@ -736,7 +710,7 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		/**
 		 * If there are some updates since last repaint, update the table
 		 */
-		public void repaintIfNeeded() {
+		void repaintIfNeeded() {
 			if (this.rowsChanged) {
 				rowsChanged = false;
 				needsUpdate = false;
@@ -750,7 +724,6 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 				tableInit();
 			}
 			setHeaderSizes();
-
 		}
 
 		@Override
@@ -760,14 +733,14 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		}
 
 		/**
-		 * 
+		 *
 		 * @param fromIndex
 		 *            from
 		 * @param toIndex
 		 *            to
 		 * @return whether something changed
 		 */
-		public boolean moveInConstructionList(int fromIndex, int toIndex) {
+		boolean moveInConstructionList(int fromIndex, int toIndex) {
 			boolean changed = kernel.moveInConstructionList(fromIndex, toIndex);
 
 			// reorder rows in this view
@@ -781,21 +754,21 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 		}
 
 		@Override
-		public void fireTableRowsInserted(int firstRow, int lastRow) {
+		protected void fireTableRowsInserted(int firstRow, int lastRow) {
 			rowsChanged = true;
 			needsUpdate = true;
 			repaintView();
 		}
 
 		@Override
-		public void fireTableRowsUpdated(int firstRow, int lastRow) {
+		protected void fireTableRowsUpdated(int firstRow, int lastRow) {
 			// TODO: maybe it's not necessary to reinit the all table
 			needsUpdate = true;
 			repaintView();
 		}
 
 		@Override
-		public void fireTableRowsDeleted(int firstRow, int lastRow) {
+		protected void fireTableRowsDeleted(int firstRow, int lastRow) {
 			rowsChanged = true;
 			needsUpdate = true;
 			repaintView();
@@ -831,7 +804,6 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 
 			waitForRepaint--;
 			return true;
-
 		}
 	}
 
@@ -855,8 +827,8 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 	 * size of letters will be bigger, and there will be less GeoElement in a
 	 * page
 	 */
-	private void addTable(final FlowPanel printPanel, final double scaledWidth,
-			String stylename, int w) {
+	private void addTable(
+			final FlowPanel printPanel, final double scaledWidth, String stylename, int w) {
 		final CellTable<RowData> previewTable = new CellTable<>();
 		// width of table in pixel
 		addColumnsForTable(previewTable);
@@ -869,11 +841,11 @@ public class ConstructionProtocolViewW extends ConstructionProtocolView
 
 		Scheduler.get().scheduleDeferred(() -> {
 			Log.debug("width: " + previewTable.getOffsetWidth());
-			Log.debug(
-					"zoom: " + scaledWidth / previewTable.getOffsetWidth());
-			previewTable.getElement().getStyle().setProperty("zoom",
-					(scaledWidth / previewTable.getOffsetWidth()) + "");
+			Log.debug("zoom: " + scaledWidth / previewTable.getOffsetWidth());
+			previewTable
+					.getElement()
+					.getStyle()
+					.setProperty("zoom", (scaledWidth / previewTable.getOffsetWidth()) + "");
 		});
 	}
-
 }

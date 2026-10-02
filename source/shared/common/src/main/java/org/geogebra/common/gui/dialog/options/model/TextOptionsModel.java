@@ -8,7 +8,7 @@
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
@@ -17,7 +17,6 @@
 package org.geogebra.common.gui.dialog.options.model;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.geogebra.common.annotation.MissingDoc;
 import org.geogebra.common.awt.GFont;
@@ -34,7 +33,6 @@ import org.geogebra.common.kernel.geos.TextStyle;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.MyError.Errors;
-import org.geogebra.common.main.error.ErrorHandler;
 import org.geogebra.common.plugin.EventType;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.common.util.debug.Log;
@@ -71,10 +69,6 @@ public class TextOptionsModel extends OptionsModel {
 
 		@MissingDoc
 		void updatePreviewPanel();
-
-		@MissingDoc
-		void reinitEditor();
-
 	}
 
 	public TextOptionsModel(App app) {
@@ -110,8 +104,7 @@ public class TextOptionsModel extends OptionsModel {
 
 	public TextProperties getTextPropertiesAt(int index) {
 		Object objectAt = getObjectAt(index);
-		return objectAt instanceof TextProperties ? (TextProperties) objectAt
-				: null;
+		return objectAt instanceof TextProperties ? (TextProperties) objectAt : null;
 	}
 
 	public GeoText getGeoTextAt(int index) {
@@ -129,8 +122,7 @@ public class TextOptionsModel extends OptionsModel {
 		listener.updateWidgetVisibility();
 
 		TextStyle textStyleGeo = (TextStyle) geo;
-		listener.selectSize(GeoText
-				.getFontSizeIndex(textStyleGeo.getFontSizeMultiplier()));
+		listener.selectSize(GeoText.getFontSizeIndex(textStyleGeo.getFontSizeMultiplier()));
 		TextProperties geo0 = getTextPropertiesAt(0);
 		if (geo0 != null) {
 			setEditGeo(getGeoTextAt(0));
@@ -142,13 +134,15 @@ public class TextOptionsModel extends OptionsModel {
 			int selItem = -1;
 
 			int decimals = geo0.getPrintDecimals();
-			if (decimals > 0 && decimals < roundingOptions.decimalsLookupLength()
+			if (decimals > 0
+					&& decimals < roundingOptions.decimalsLookupLength()
 					&& !geo0.useSignificantFigures()) {
 				selItem = roundingOptions.decimalsLookup(decimals);
 			}
 
 			int figures = geo0.getPrintFigures();
-			if (figures > 0 && figures < roundingOptions.figuresLookupLength()
+			if (figures > 0
+					&& figures < roundingOptions.figuresLookupLength()
 					&& geo0.useSignificantFigures()) {
 				selItem = roundingOptions.figuresLookup(figures);
 			}
@@ -160,8 +154,7 @@ public class TextOptionsModel extends OptionsModel {
 		GeoText text0 = getGeoTextAt(0);
 		if (text0 != null) {
 			// Gives null for eg. table text
-			ArrayList<DynamicTextElement> a = dTProcessor
-					.buildDynamicTextList(text0);
+			ArrayList<DynamicTextElement> a = dTProcessor.buildDynamicTextList(text0);
 			if (a != null) {
 				listener.setEditorText(a);
 			}
@@ -214,7 +207,7 @@ public class TextOptionsModel extends OptionsModel {
 	}
 
 	public String[] getFonts() {
-		return new String[]{ loc.getMenu("SansSerif"), loc.getMenu("Serif") };
+		return new String[] {loc.getMenu("SansSerif"), loc.getMenu("Serif")};
 	}
 
 	public String[] getFontSizes() {
@@ -245,16 +238,13 @@ public class TextOptionsModel extends OptionsModel {
 		for (int i = 0; i < getGeosLength(); i++) {
 			TextProperties text = getTextPropertiesAt(i);
 			if (decimals < 8) { // decimal places
-				text.setPrintDecimals(roundingOptions.roundingMenuLookup(decimals),
-						true);
+				text.setPrintDecimals(roundingOptions.roundingMenuLookup(decimals), true);
 			} else { // significant figures
-				text.setPrintFigures(roundingOptions.roundingMenuLookup(decimals),
-						true);
+				text.setPrintFigures(roundingOptions.roundingMenuLookup(decimals), true);
 			}
 			text.updateRepaint();
 		}
 		listener.updatePreviewPanel();
-
 	}
 
 	public static int getFontStyle(boolean isBold, boolean isItalic) {
@@ -274,24 +264,8 @@ public class TextOptionsModel extends OptionsModel {
 		listener.updatePreviewPanel();
 	}
 
-	public String getGeoGebraString(ArrayList<DynamicTextElement> list,
-			boolean isLatex) {
-		return dTProcessor.buildGeoGebraString(list, isLatex);
-	}
-
-	public GeoText getEditGeo() {
-		return editGeo;
-	}
-
 	public void setEditGeo(GeoText editGeo) {
 		this.editGeo = editGeo;
-	}
-
-	public void applyEditedGeo(List<DynamicTextElement> text,
-			final boolean isLatex, ErrorHandler handler) {
-		GeoText geo0 = getGeoTextAt(0);
-		dTProcessor.process(text, geo0, isLatex, handler, () -> editGeo = null);
-		storeUndoInfo();
 	}
 
 	public void cancelEditGeo() {
@@ -321,7 +295,8 @@ public class TextOptionsModel extends OptionsModel {
 	}
 
 	public boolean isTextEditable() {
-		return getGeosLength() == 1 && getObjectAt(0) instanceof GeoText
+		return getGeosLength() == 1
+				&& getObjectAt(0) instanceof GeoText
 				&& !getGeoTextAt(0).isTextCommand()
 				&& !getGeoTextAt(0).isProtected(EventType.UPDATE);
 	}
@@ -333,12 +308,6 @@ public class TextOptionsModel extends OptionsModel {
 
 	public void setListener(ITextOptionsListener listener) {
 		this.listener = listener;
-	}
-
-	public void reinitEditor() {
-		if (listener != null) {
-			listener.reinitEditor();
-		}
 	}
 
 	public boolean hasFontStyle() {

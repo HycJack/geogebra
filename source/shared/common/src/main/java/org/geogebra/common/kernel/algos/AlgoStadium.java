@@ -18,8 +18,6 @@ package org.geogebra.common.kernel.algos;
 
 import java.util.ArrayList;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.euclidian.EuclidianConstants;
 import org.geogebra.common.euclidian.EuclidianViewInterfaceSlim;
 import org.geogebra.common.kernel.Construction;
@@ -30,6 +28,7 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.common.kernel.geos.GeoStadium;
+import org.jspecify.annotations.NonNull;
 
 public final class AlgoStadium extends AlgoElement {
 	private final GeoPoint p;
@@ -64,23 +63,22 @@ public final class AlgoStadium extends AlgoElement {
 
 	@Override
 	protected void setInputOutput() {
-		input = new GeoElement[]{p, q, height};
+		input = new GeoElement[] {p, q, height};
 		setOnlyOutput(stadium);
 		setDependencies();
 	}
 
 	private void updatePoints() {
-		int steps = 50;
-		double angleStep = Math.PI / steps;
 		double radius = height.getValue() / 2.0;
 		points.clear();
 		double dx = q.getX() - p.getX();
 		double dy = q.getY() - p.getY();
-		double baseAngle = Math.atan2(dy, dx);  // rotation angle of segment pq
+		double baseAngle = Math.atan2(dy, dx); // rotation angle of segment pq
 		double pi2 = -Math.PI / 2;
 		addAroundPoint(p, -radius, baseAngle + pi2, SegmentType.MOVE_TO);
 		lineAroundPoint(q, radius, baseAngle - pi2);
-
+		int steps = 50;
+		double angleStep = Math.PI / steps;
 		for (int i = steps; i > 0; i--) {
 			double angle = pi2 + i * angleStep;
 			lineAroundPoint(q, radius, baseAngle + angle);
@@ -90,7 +88,6 @@ public final class AlgoStadium extends AlgoElement {
 		for (int i = steps; i >= 0; i--) {
 			double angle = pi2 + i * angleStep;
 			lineAroundPoint(p, -radius, baseAngle + angle);
-
 		}
 		lineAroundPoint(p, -radius, baseAngle + pi2);
 	}
@@ -103,7 +100,6 @@ public final class AlgoStadium extends AlgoElement {
 		double x = p.getX() + radius * Math.cos(angle);
 		double y = p.getY() + radius * Math.sin(angle);
 		addPoint(x, y, segmentType);
-
 	}
 
 	private void addPoint(double x, double y, SegmentType segmentType) {
@@ -133,7 +129,7 @@ public final class AlgoStadium extends AlgoElement {
 		this.height.set(height);
 	}
 
-	public @Nonnull ArrayList<MyPoint> getPoints() {
+	public @NonNull ArrayList<MyPoint> getPoints() {
 		return points;
 	}
 

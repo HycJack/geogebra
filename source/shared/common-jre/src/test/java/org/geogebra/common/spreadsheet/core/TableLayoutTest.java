@@ -2,18 +2,18 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
  * You may obtain a copy of the licence at:
  * https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * 
+ *
  * Note: The overall GeoGebra software package is free to use for
  * non-commercial purposes only.
  * See https://www.geogebra.org/license for full licensing details
  */
- 
+
 package org.geogebra.common.spreadsheet.core;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,16 +23,16 @@ import org.geogebra.common.util.MouseCursor;
 import org.geogebra.common.util.shape.Point;
 import org.geogebra.common.util.shape.Rectangle;
 import org.geogebra.common.util.shape.Size;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TableLayoutTest {
+class TableLayoutTest {
 	private static final int ROW_HEIGHT = 20;
 	private static final int COLUMN_WIDTH = 40;
 
 	TableLayout layout = new TableLayout(5, 5, ROW_HEIGHT, COLUMN_WIDTH);
 
 	@Test
-	public void testFindColumn() {
+	void testFindColumn() {
 		assertThat(layout.findColumn(-5), equalTo(-1));
 		double rowHeaderWidth = layout.getRowHeaderWidth();
 		assertThat(layout.findColumn(rowHeaderWidth - 1), equalTo(-1));
@@ -44,7 +44,7 @@ public class TableLayoutTest {
 	}
 
 	@Test
-	public void testFindRow() {
+	void testFindRow() {
 		assertThat(layout.findRow(-5), equalTo(-1));
 		double columnHeaderHeight = layout.getColumnHeaderHeight();
 		assertThat(layout.findRow(columnHeaderHeight - 1), equalTo(-1));
@@ -56,27 +56,24 @@ public class TableLayoutTest {
 	}
 
 	@Test
-	public void testVisiblePortion() {
-		TableLayout.Portion pt = layout.getLayoutIntersecting(
-				new Rectangle(0, 100, 0, 100));
+	void testVisiblePortion() {
+		TableLayout.Portion pt = layout.getLayoutIntersecting(new Rectangle(0, 100, 0, 100));
 		assertThat(pt.fromRow, equalTo(0));
 		assertThat(pt.fromColumn, equalTo(0));
 		assertThat(pt.toRow, equalTo(4));
 		assertThat(pt.toColumn, equalTo(1));
 
-		pt = layout.getLayoutIntersecting(
-				new Rectangle(10, 100, 10, 100));
+		pt = layout.getLayoutIntersecting(new Rectangle(10, 100, 10, 100));
 		assertThat(pt.fromRow, equalTo(0));
 		assertThat(pt.fromColumn, equalTo(0));
 
-		pt = layout.getLayoutIntersecting(
-				new Rectangle(41, 100, 21, 100));
+		pt = layout.getLayoutIntersecting(new Rectangle(41, 100, 21, 100));
 		assertThat(pt.fromRow, equalTo(1));
 		assertThat(pt.fromColumn, equalTo(1));
 	}
 
 	@Test
-	public void testCursorInSelectAllCorner() {
+	void testCursorInSelectAllCorner() {
 		// note: mouse coordinates are window coordinates / are relative to the viewport
 		double columnHeaderHeight = layout.getColumnHeaderHeight();
 		double rowHeaderWidth = layout.getRowHeaderWidth();
@@ -85,41 +82,55 @@ public class TableLayoutTest {
 
 		// in the center of the corner, viewport at 0
 		Point viewportOrigin = new Point(0, 0);
-		assertThat(layout.getResizeAction(mouseX, columnHeaderHeight / 2,
-						new Rectangle(viewportOrigin, viewportSize)).cursor,
+		assertThat(
+				layout.getResizeAction(
+								mouseX, columnHeaderHeight / 2, new Rectangle(viewportOrigin, viewportSize))
+						.cursor,
 				equalTo(MouseCursor.DEFAULT));
 
 		// in the center of the corner, viewport scrolled vertically by columnHeaderHeight / 2
 		viewportOrigin = new Point(0, 0.5 * columnHeaderHeight);
-		assertThat(layout.getResizeAction(mouseX, columnHeaderHeight / 2,
-						new Rectangle(viewportOrigin, viewportSize)).cursor,
+		assertThat(
+				layout.getResizeAction(
+								mouseX, columnHeaderHeight / 2, new Rectangle(viewportOrigin, viewportSize))
+						.cursor,
 				equalTo(MouseCursor.DEFAULT));
 
 		// in the center of the corner, viewport scrolled vertically by columnHeaderHeight / 2
 		// + height of first row
 		viewportOrigin = new Point(0, 0.5 * columnHeaderHeight + ROW_HEIGHT);
-		assertThat(layout.getResizeAction(mouseX, columnHeaderHeight / 2,
-						new Rectangle(viewportOrigin, viewportSize)).cursor,
+		assertThat(
+				layout.getResizeAction(
+								mouseX, columnHeaderHeight / 2, new Rectangle(viewportOrigin, viewportSize))
+						.cursor,
 				equalTo(MouseCursor.DEFAULT));
 
 		// at the bottom edge of the corner, viewport at 0
 		viewportOrigin = new Point(0, 0);
-		assertThat(layout.getResizeAction(mouseX, columnHeaderHeight,
-						new Rectangle(viewportOrigin, viewportSize)).cursor,
+		assertThat(
+				layout.getResizeAction(
+								mouseX, columnHeaderHeight, new Rectangle(viewportOrigin, viewportSize))
+						.cursor,
 				equalTo(MouseCursor.DEFAULT));
 
 		// at the bottom edge of first visible row, viewport scrolled vertically by
 		// columnHeaderHeight
 		viewportOrigin = new Point(0, columnHeaderHeight);
-		assertThat(layout.getResizeAction(mouseX, columnHeaderHeight + ROW_HEIGHT,
-						new Rectangle(viewportOrigin, viewportSize)).cursor,
+		assertThat(
+				layout.getResizeAction(
+								mouseX,
+								columnHeaderHeight + ROW_HEIGHT,
+								new Rectangle(viewportOrigin, viewportSize))
+						.cursor,
 				equalTo(MouseCursor.RESIZE_Y));
 
 		// in the center of the corner, viewport scrolled horizontally by rowHeaderWidth / 2
 		// + width of first column
 		viewportOrigin = new Point(rowHeaderWidth / 2 + COLUMN_WIDTH, 0);
-		assertThat(layout.getResizeAction(mouseX, columnHeaderHeight / 2,
-						new Rectangle(viewportOrigin, viewportSize)).cursor,
+		assertThat(
+				layout.getResizeAction(
+								mouseX, columnHeaderHeight / 2, new Rectangle(viewportOrigin, viewportSize))
+						.cursor,
 				equalTo(MouseCursor.DEFAULT));
 	}
 }

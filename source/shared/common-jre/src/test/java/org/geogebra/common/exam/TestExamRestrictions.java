@@ -26,55 +26,41 @@ import static org.geogebra.common.plugin.Operation.OR;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.contextmenu.ContextMenuItemFilter;
 import org.geogebra.common.exam.restrictions.visibility.VisibilityRestriction;
 import org.geogebra.common.gui.toolcategorization.ToolCollectionFilter;
-import org.geogebra.common.gui.toolcategorization.ToolsProvider;
 import org.geogebra.common.gui.toolcategorization.impl.ToolCollectionSetFilter;
-import org.geogebra.common.gui.view.table.dialog.StatisticGroupsBuilder;
-import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.Kernel;
-import org.geogebra.common.kernel.ScheduledPreviewFromInputBar;
-import org.geogebra.common.kernel.algos.AlgoDispatcher;
 import org.geogebra.common.kernel.algos.DisabledAlgorithms;
 import org.geogebra.common.kernel.arithmetic.filter.ComplexExpressionFilter;
 import org.geogebra.common.kernel.arithmetic.filter.ExpressionFilter;
 import org.geogebra.common.kernel.arithmetic.filter.OperationFilter;
 import org.geogebra.common.kernel.arithmetic.filter.RadianGradianFilter;
-import org.geogebra.common.kernel.commands.AlgebraProcessor;
-import org.geogebra.common.kernel.commands.CommandDispatcher;
 import org.geogebra.common.kernel.commands.Commands;
 import org.geogebra.common.kernel.commands.filter.CommandArgumentFilter;
 import org.geogebra.common.kernel.commands.filter.ExamCommandArgumentFilter;
 import org.geogebra.common.kernel.commands.selector.CommandFilter;
 import org.geogebra.common.kernel.commands.selector.CommandNameFilter;
-import org.geogebra.common.main.Localization;
-import org.geogebra.common.main.localization.AutocompleteProvider;
-import org.geogebra.common.main.settings.Settings;
 import org.geogebra.common.main.syntax.suggestionfilter.LineSelectorSyntaxFilter;
 import org.geogebra.common.main.syntax.suggestionfilter.SyntaxFilter;
 import org.geogebra.common.plugin.Operation;
 import org.geogebra.common.properties.PropertyKey;
-import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
 import org.geogebra.common.properties.impl.general.AngleUnitProperty;
-import org.geogebra.common.restrictions.AlgebraOutputFiltering;
 import org.geogebra.common.restrictions.FeatureRestriction;
 import org.geogebra.common.restrictions.PropertyRestriction;
 import org.geogebra.common.restrictions.Restrictions;
-import org.geogebra.common.restrictions.Restrictions.ContextDependencies;
+import org.jspecify.annotations.NonNull;
 
 final class TestExamRestrictions extends Restrictions {
 
 	int appliedCount = 0;
 
 	TestExamRestrictions(ExamType examType) {
-		super(Set.of(SuiteSubApp.CAS),
+		super(
+				Set.of(SuiteSubApp.CAS),
 				SuiteSubApp.GRAPHING,
-				Set.of(FeatureRestriction.HIDE_SPECIAL_POINTS),
+				Set.of(FeatureRestriction.SPECIAL_POINTS_ONLY_ON_GRAPHICS_VIEW_SELECTION),
 				createExpressionFilters(),
 				null,
 				createCommandFilters(),
@@ -93,29 +79,39 @@ final class TestExamRestrictions extends Restrictions {
 	}
 
 	@Override
-	public void applyTo(@Nonnull ContextDependencies cd) {
+	public void applyTo(@NonNull ContextDependencies cd) {
 		super.applyTo(cd);
 		appliedCount++;
 	}
 
 	@Override
-	public void removeFrom(@Nonnull ContextDependencies cd) {
+	public void removeFrom(@NonNull ContextDependencies cd) {
 		super.removeFrom(cd);
 		appliedCount--;
 	}
 
 	private static Set<CommandFilter> createCommandFilters() {
-		CommandNameFilter nameFilter = new CommandNameFilter(true,
-				Commands.Derivative, Commands.NDerivative, Commands.Integral,
-				Commands.IntegralSymbolic, Commands.IntegralBetween, Commands.NIntegral,
-				Commands.Solve, Commands.SolveQuartic, Commands.SolveODE, Commands.SolveCubic,
-				Commands.Solutions, Commands.NSolve, Commands.NSolveODE, Commands.NSolutions);
+		CommandNameFilter nameFilter = new CommandNameFilter(
+				true,
+				Commands.Derivative,
+				Commands.NDerivative,
+				Commands.Integral,
+				Commands.IntegralSymbolic,
+				Commands.IntegralBetween,
+				Commands.NIntegral,
+				Commands.Solve,
+				Commands.SolveQuartic,
+				Commands.SolveODE,
+				Commands.SolveCubic,
+				Commands.Solutions,
+				Commands.NSolve,
+				Commands.NSolveODE,
+				Commands.NSolutions);
 		return Set.of(nameFilter);
 	}
 
 	private static Set<ExpressionFilter> createExpressionFilters() {
-		return Set.of(new ComplexExpressionFilter(),
-				new RadianGradianFilter());
+		return Set.of(new ComplexExpressionFilter(), new RadianGradianFilter());
 	}
 
 	private static ToolCollectionFilter createToolCollectionFilter() {
@@ -152,18 +148,19 @@ final class TestExamRestrictions extends Restrictions {
 	}
 
 	private static Map<PropertyKey, PropertyRestriction> createPropertyRestrictions() {
-		return Map.of(PropertyKey.of(AngleUnitProperty.class),
-				new PropertyRestriction(true, value ->
-				value != Integer.valueOf(Kernel.ANGLE_DEGREES_MINUTES_SECONDS)));
+		return Map.of(
+				PropertyKey.of(AngleUnitProperty.class),
+				new PropertyRestriction(
+						true, value -> value != Integer.valueOf(Kernel.ANGLE_DEGREES_MINUTES_SECONDS)));
 	}
 
 	static Set<VisibilityRestriction> createVisibilityRestrictions() {
-		return Set.of(geoElement -> geoElement.isGeoPoint() ? HIDE : IGNORE,
+		return Set.of(
+				geoElement -> geoElement.isGeoPoint() ? HIDE : IGNORE,
 				geoElement -> geoElement.isInequality() ? HIDE : IGNORE);
 	}
 
 	private static Set<DisabledAlgorithms> createDisabledAlgorithms() {
-		return Set.of(DisabledAlgorithms.TangentPointConic,
-				DisabledAlgorithms.TangentLineConic);
+		return Set.of(DisabledAlgorithms.TangentPointConic, DisabledAlgorithms.TangentLineConic);
 	}
 }

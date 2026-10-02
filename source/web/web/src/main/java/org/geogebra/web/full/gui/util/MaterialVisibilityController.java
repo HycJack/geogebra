@@ -20,7 +20,7 @@ import org.geogebra.common.main.MaterialVisibility;
 import org.geogebra.common.move.ggtapi.models.Material;
 import org.geogebra.common.move.ggtapi.operations.LogInOperation;
 
-public class MaterialVisibilityController {
+public final class MaterialVisibilityController {
 	private final LogInOperation logInOperation;
 
 	public MaterialVisibilityController(LogInOperation loginOperation) {
@@ -34,8 +34,7 @@ public class MaterialVisibilityController {
 	}
 
 	private boolean isOwnMaterial(Material material) {
-		return material != null
-				&& logInOperation.owns(material);
+		return material != null && logInOperation.owns(material);
 	}
 
 	MaterialVisibility getVisibility(int index) {

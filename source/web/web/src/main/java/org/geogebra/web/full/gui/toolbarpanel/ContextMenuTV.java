@@ -17,68 +17,63 @@
 package org.geogebra.web.full.gui.toolbarpanel;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.contextmenu.ContextMenuFactory;
 import org.geogebra.common.contextmenu.ContextMenuItemFilter;
 import org.geogebra.common.contextmenu.TableValuesContextMenuActionHandler;
-import org.geogebra.common.contextmenu.TableValuesContextMenuActionHandler.PlotActionHandler;
 import org.geogebra.common.contextmenu.TableValuesContextMenuItem;
-import org.geogebra.common.gui.view.table.TableUtil;
 import org.geogebra.common.gui.view.table.TableValuesView;
-import org.geogebra.common.gui.view.table.dialog.StatisticGroup;
-import org.geogebra.common.gui.view.table.regression.RegressionSpecification;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
 import org.geogebra.common.main.DialogManager;
 import org.geogebra.common.ownership.GlobalScope;
 import org.geogebra.common.ownership.SuiteScope;
 import org.geogebra.common.util.AttributedString;
-import org.geogebra.web.full.css.MaterialDesignResources;
 import org.geogebra.web.full.javax.swing.GPopupMenuW;
 import org.geogebra.web.full.main.AppWFull;
 import org.geogebra.web.html5.gui.GuiManagerInterfaceW;
 import org.geogebra.web.html5.gui.menu.AriaMenuItem;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.util.TestHarness;
-import org.geogebra.web.shared.components.dialog.ComponentDialog;
-import org.geogebra.web.shared.components.dialog.DialogData;
-import org.geogebra.web.shared.components.infoError.ComponentInfoErrorPanel;
-import org.geogebra.web.shared.components.infoError.InfoErrorData;
 import org.gwtproject.dom.client.Element;
 import org.gwtproject.user.client.Command;
 
 /**
  * Context menu which is opened with the table of values header 3dot button
  */
-public class ContextMenuTV implements TableValuesContextMenuActionHandler.Delegate {
+public final class ContextMenuTV implements TableValuesContextMenuActionHandler.Delegate {
 	private final TableValuesView view;
 	/**
 	 * popup for the context menu
 	 */
-	protected GPopupMenuW wrappedPopup;
+	private GPopupMenuW wrappedPopup;
 	/**
 	 * application
 	 */
-	protected AppWFull app;
+	private final AppWFull app;
+
 	private final int columnIdx;
 
 	/**
-	 * @param app
-	 *            see {@link AppW}
-	 * @param column
-	 *            index of column
+	 * @param app see {@link AppW}
+	 * @param view {@link TableValuesView}
+	 * @param column index of column
+	 * @param closeHandler should run when popup is closed
 	 */
-	public ContextMenuTV(AppWFull app, TableValuesView view, int column) {
+	public ContextMenuTV(AppWFull app, TableValuesView view, int column, Runnable closeHandler) {
 		this.app = app;
 		this.view = view;
 		this.columnIdx = column;
 		buildGui();
+		app.registerPopup(wrappedPopup.getPopupPanel());
+		wrappedPopup.getPopupPanel().addCloseHandler(event -> {
+			if (closeHandler != null) {
+				closeHandler.run();
+			}
+			app.unregisterPopup(wrappedPopup.getPopupPanel());
+		});
 	}
 
 	/**
@@ -101,20 +96,24 @@ public class ContextMenuTV implements TableValuesContextMenuActionHandler.Delega
 		GeoEvaluatable column = view.getEvaluatable(getColumnIdx());
 		SuiteScope suiteScope = GlobalScope.getSuiteScope(app);
 		Set<ContextMenuItemFilter> contextMenuFilters = suiteScope != null
-				? suiteScope.restrictionsController.getContextMenuItemFilters() : Set.of();
+				? suiteScope.restrictionsController.getContextMenuItemFilters()
+				: Set.of();
 		boolean isExamActive = suiteScope != null && suiteScope.examController.isExamActive();
-		List<TableValuesContextMenuItem> items = ContextMenuFactory
-				.makeTableValuesContextMenu(column, columnIdx, view.getTableValuesModel(),
+		List<TableValuesContextMenuItem> items = ContextMenuFactory.makeTableValuesContextMenu(
+				column,
+				columnIdx,
+				view.getTableValuesModel(),
 				app.getConfig().getVersion() == GeoGebraConstants.Version.SCIENTIFIC,
-						isExamActive, contextMenuFilters);
+				isExamActive,
+				contextMenuFilters);
 		TableValuesContextMenuActionHandler tableValuesContextMenuActionHandler =
-				new TableValuesContextMenuActionHandler(columnIdx, view, app,
-						app.getLocalization(), this);
-		for (TableValuesContextMenuItem item: items) {
+				new TableValuesContextMenuActionHandler(columnIdx, view, app, this);
+		for (TableValuesContextMenuItem item : items) {
 			if (item.getItem() == TableValuesContextMenuItem.Item.Separator) {
 				wrappedPopup.addVerticalSeparator();
 			} else {
-				addCommand(() -> tableValuesContextMenuActionHandler.handleSelectedItem(item),
+				addCommand(
+						() -> tableValuesContextMenuActionHandler.handleSelectedItem(item),
 						item.getLocalizedTitle(app.getLocalization()),
 						getTestTitle(item.getItem()));
 			}
@@ -123,31 +122,30 @@ public class ContextMenuTV implements TableValuesContextMenuActionHandler.Delega
 
 	private String getTestTitle(TableValuesContextMenuItem.Item item) {
 		switch (item) {
-		case Edit:
-			return "edit";
-		case ClearColumn:
-			return "clear";
-		case RemoveColumn:
-			return "delete";
-		case ShowPoints:
-		case HidePoints:
-			return "showhide";
-		case ImportData:
-			return "importData";
-		case Regression:
-			return "regression";
-		case Statistics1:
-		case Statistics2:
-			return "stats";
-		case Separator:
-			break;
+			case Edit:
+				return "edit";
+			case ClearColumn:
+				return "clear";
+			case RemoveColumn:
+				return "delete";
+			case ShowPoints:
+			case HidePoints:
+				return "showhide";
+			case ImportData:
+				return "importData";
+			case Regression:
+				return "regression";
+			case Statistics1:
+			case Statistics2:
+				return "stats";
+			case Separator:
+				break;
 		}
 		return "";
 	}
 
 	private void addCommand(Command command, AttributedString localizedName, String testTitle) {
-		AriaMenuItem item = new AriaMenuItem(localizedName,
-				null, command);
+		AriaMenuItem item = new AriaMenuItem(localizedName, null, command);
 		addItem(item, testTitle);
 	}
 
@@ -159,7 +157,7 @@ public class ContextMenuTV implements TableValuesContextMenuActionHandler.Delega
 
 	/**
 	 * Show the context menu at the (x, y) screen coordinates.
-	 * 
+	 *
 	 * @param x
 	 *            y coordinate.
 	 * @param y
@@ -195,38 +193,5 @@ public class ContextMenuTV implements TableValuesContextMenuActionHandler.Delega
 	@Override
 	public void startDataImport() {
 		app.getCsvHandler().execute();
-	}
-
-	@Override
-	public void showStatisticsDialog(@Nonnull String title, @Nonnull AttributedString header,
-			@Nonnull List<StatisticGroup> statisticGroups) {
-		DialogData data = new DialogData(title, TableUtil.toHtml(header), "Close", null);
-		StatsDialogTV dialog = new StatsDialogTV(app, data);
-		dialog.setRowsAndShow(statisticGroups);
-	}
-
-	@Override
-	public void showRegressionDialog(@Nonnull String title, @Nonnull AttributedString header,
-			@Nonnull Map<RegressionSpecification, List<StatisticGroup>> regressionGroups,
-			@CheckForNull PlotActionHandler plotActionHandler) {
-		DialogData data = new DialogData(title, TableUtil.toHtml(header), "Close",
-				plotActionHandler != null ? "Plot" : null);
-		StatsDialogTV dialog = new StatsDialogTV(app, data);
-		dialog.addRegressionChooser(regressionGroups, plotActionHandler);
-	}
-
-	@Override
-	public void showErrorDialog(@Nonnull String title, @Nonnull AttributedString header,
-			@Nonnull String errorMessage) {
-		DialogData errorDialogData = new DialogData(title, TableUtil.toHtml(header), "Close", null);
-		ComponentDialog dialog = new ComponentDialog(app, errorDialogData, true, true);
-		dialog.addStyleName("statistics error");
-		InfoErrorData errorData = new InfoErrorData(
-				app.getLocalization().getMenu("StatsDialog.NoData"),
-				errorMessage, null, MaterialDesignResources.INSTANCE.bar_chart_black());
-		ComponentInfoErrorPanel infoPanel = new ComponentInfoErrorPanel(app.getLocalization(),
-				errorData, null);
-		dialog.addDialogContent(infoPanel);
-		dialog.show();
 	}
 }

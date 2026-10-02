@@ -30,7 +30,7 @@ import org.geogebra.common.util.debug.Log;
 
 /**
  * Common class for substitution dialogs
- * 
+ *
  * @author balazs.bencze
  *
  */
@@ -71,8 +71,7 @@ public abstract class CASSubDialog {
 	 * @param editRow
 	 *            row to edit
 	 */
-	public CASSubDialog(String prefix, String evalText, String postfix,
-			int editRow) {
+	public CASSubDialog(String prefix, String evalText, String postfix, int editRow) {
 		this.prefix = prefix;
 		this.evalText = evalText;
 		this.postfix = postfix;
@@ -90,10 +89,8 @@ public abstract class CASSubDialog {
 	 */
 	protected void initData(GeoCasCell cell) {
 		HashSet<GeoElement> vars = new HashSet<>();
-		if (cell.getInputVE().getVariables(
-				SymbolicMode.NONE) != null) {
-			for (GeoElement var : cell.getInputVE().getVariables(
-					SymbolicMode.NONE)) {
+		if (cell.getInputVE().getVariables(SymbolicMode.NONE) != null) {
+			for (GeoElement var : cell.getInputVE().getVariables(SymbolicMode.NONE)) {
 				addVariables(var, vars);
 			}
 		}
@@ -108,14 +105,13 @@ public abstract class CASSubDialog {
 			row = new Vector<>(2);
 			GeoElement var = iter.next();
 			String nextVar = var.getLabel(StringTemplate.defaultTemplate);
-			int i = 0;
+			int i;
 			for (i = 0; i < data.size(); i++) {
 				if (data.get(i).firstElement().compareTo(nextVar) >= 0) {
 					break;
 				}
 			}
-			if (i == data.size()
-					|| !data.get(i).firstElement().equals(nextVar)) {
+			if (i == data.size() || !data.get(i).firstElement().equals(nextVar)) {
 				row.add(nextVar);
 				boolean added = false;
 				if (substList != null && !substList.isEmpty()) {
@@ -160,9 +156,6 @@ public abstract class CASSubDialog {
 	 * @return true iff any substitution applied
 	 */
 	protected boolean apply(String actionCommand) {
-
-		CASTable table = getCASView().getConsoleTable();
-
 		// create substitution list
 		StringBuilder substList = new StringBuilder("{");
 		StringBuilder substComment = new StringBuilder();
@@ -170,13 +163,12 @@ public abstract class CASSubDialog {
 		for (int i = 0; i < data.size(); i++) {
 			String fromExpr = data.get(i).get(0).trim();
 			String toExpr = data.get(i).get(1).trim();
-			if (!"".equals(fromExpr) && !"".equals(toExpr)) {
+			if (!fromExpr.isEmpty() && !toExpr.isEmpty()) {
 				if (substList.length() > 1) {
 					substList.append(',');
 					substComment.append(',');
 				}
-				fromExpr = getCASView().resolveCASrowReferences(fromExpr,
-						editRow);
+				fromExpr = getCASView().resolveCASrowReferences(fromExpr, editRow);
 				toExpr = getCASView().resolveCASrowReferences(toExpr, editRow);
 				substList.append(fromExpr);
 				substList.append('=');
@@ -205,6 +197,7 @@ public abstract class CASSubDialog {
 		}
 
 		try {
+			CASTable table = getCASView().getConsoleTable();
 			GeoCasCell currCell = table.getGeoCasCell(editRow);
 			StringBuilder oldXML = currCell.getConstruction().getCurrentUndoXML(false);
 			currCell.setProcessingInformation(prefix, subCmd, postfix);
@@ -222,5 +215,4 @@ public abstract class CASSubDialog {
 			return false;
 		}
 	}
-
 }

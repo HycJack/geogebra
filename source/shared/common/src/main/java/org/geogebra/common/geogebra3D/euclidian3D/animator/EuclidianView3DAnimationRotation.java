@@ -35,7 +35,7 @@ public class EuclidianView3DAnimationRotation extends EuclidianView3DAnimation {
 	private double bNew;
 
 	/**
-	 * 
+	 *
 	 * @param view3D 3D view
 	 * @param animator animator
 	 * @param aN new angle around Oz
@@ -43,8 +43,13 @@ public class EuclidianView3DAnimationRotation extends EuclidianView3DAnimation {
 	 * @param checkSameValues if we want to check when new values are equal to current
 	 * @param storeUndo if undo should be stored at the end of animation
 	 */
-	EuclidianView3DAnimationRotation(EuclidianView3D view3D, EuclidianView3DAnimator animator,
-			double aN, double bN, boolean checkSameValues, boolean storeUndo) {
+	EuclidianView3DAnimationRotation(
+			EuclidianView3D view3D,
+			EuclidianView3DAnimator animator,
+			double aN,
+			double bN,
+			boolean checkSameValues,
+			boolean storeUndo) {
 
 		super(view3D, animator, storeUndo);
 		this.checkSameValues = checkSameValues;
@@ -74,13 +79,12 @@ public class EuclidianView3DAnimationRotation extends EuclidianView3DAnimation {
 		}
 
 		if (checkSameValues) {
-			if (DoubleUtil.isEqual(aOld, aNew, Kernel.STANDARD_PRECISION)) {
-				if (DoubleUtil.isEqual(bOld, bNew, Kernel.STANDARD_PRECISION)) {
-					if (!DoubleUtil.isEqual(Math.abs(bNew), 90, Kernel.STANDARD_PRECISION)) {
-						aNew += 180;
-					}
-					bNew *= -1;
+			if (DoubleUtil.isEqual(aOld, aNew, Kernel.STANDARD_PRECISION)
+					&& DoubleUtil.isEqual(bOld, bNew, Kernel.STANDARD_PRECISION)) {
+				if (!DoubleUtil.isEqual(Math.abs(bNew), 90, Kernel.STANDARD_PRECISION)) {
+					aNew += 180;
 				}
+				bNew *= -1;
 			}
 		}
 

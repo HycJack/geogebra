@@ -30,7 +30,7 @@ import org.geogebra.web.shared.components.dialog.DialogData;
 /**
  * Dialog for dilate tool
  */
-public class InputDialogDilateW extends ComponentInputDialog {
+public final class InputDialogDilateW extends ComponentInputDialog {
 	private GeoPointND[] points;
 	private GeoElement[] selGeos;
 	private Kernel kernel;
@@ -52,11 +52,15 @@ public class InputDialogDilateW extends ComponentInputDialog {
 	 * @param ec
 	 *            euclidian controller
 	 */
-	public InputDialogDilateW(AppW app, DialogData data, InputHandler handler,
-			GeoPointND[] points, GeoElement[] selGeos, Kernel kernel, EuclidianController ec) {
-		super(app, data, false, false, handler,
-				app.getLocalization().getMenu("Dilate.Factor"), ""
-		);
+	public InputDialogDilateW(
+			AppW app,
+			DialogData data,
+			InputHandler handler,
+			GeoPointND[] points,
+			GeoElement[] selGeos,
+			Kernel kernel,
+			EuclidianController ec) {
+		super(app, data, false, false, handler, app.getLocalization().getMenu("Dilate.Factor"), "");
 		setInputHandler(handler);
 		addStyleName("dilate");
 
@@ -71,8 +75,7 @@ public class InputDialogDilateW extends ComponentInputDialog {
 	 */
 	@Override
 	protected void toolAction() {
-		DialogManager.doDilate(kernel,
-				((NumberInputHandler) getInputHandler()).getNum(), points,
-				selGeos, ec);
+		DialogManager.doDilate(
+				kernel, ((NumberInputHandler) getInputHandler()).getNum(), points, selGeos, ec);
 	}
 }

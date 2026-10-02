@@ -31,7 +31,7 @@ import org.geogebra.common.kernel.matrix.Coords;
  * @author mathieu
  *
  */
-public class DrawHalo extends DrawableTexture3D {
+public final class DrawHalo extends DrawableTexture3D {
 
 	private final Coords color = new Coords(4);
 
@@ -59,8 +59,8 @@ public class DrawHalo extends DrawableTexture3D {
 	 * @param fgColor color
 	 * @param radius halo radius
 	 */
-	public void update(Coords v,
-			float xOffset0, float yOffset0, float zOffset0, GColor fgColor, int radius) {
+	public void update(
+			Coords v, float xOffset0, float yOffset0, float zOffset0, GColor fgColor, int radius) {
 		if (!view.drawsLabels()) {
 			return;
 		}
@@ -93,11 +93,10 @@ public class DrawHalo extends DrawableTexture3D {
 	 *            buffered image
 	 * @return graphics2D
 	 */
-	protected GGraphics2D createGraphics2D(GBufferedImage bimg) {
+	private GGraphics2D createGraphics2D(GBufferedImage bimg) {
 		GGraphics2D g2d = bimg.createGraphics();
 		g2d.setColor(GColor.BLACK);
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		return g2d;
 	}
@@ -105,13 +104,13 @@ public class DrawHalo extends DrawableTexture3D {
 	/**
 	 * @return buffered image with label drawn in it
 	 */
-	protected GBufferedImage createImage(double size) {
+	private GBufferedImage createImage(double size) {
 		GBufferedImage img = view.getRenderer().createBufferedImage(this);
 		GGraphics2D g2d = createGraphics2D(img);
 		double thickness = 3;
 		g2d.setStroke(AwtFactory.getPrototype().newBasicStroke(thickness));
-		g2d.draw(AwtFactory.getPrototype().newEllipse2DDouble(thickness / 2, thickness / 2,
-				size - thickness, size - thickness));
+		g2d.draw(AwtFactory.getPrototype()
+				.newEllipse2DDouble(thickness / 2, thickness / 2, size - thickness, size - thickness));
 
 		return img;
 	}

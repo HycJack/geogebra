@@ -2,7 +2,7 @@
  * GeoGebra - Dynamic Mathematics for Everyone
  * Copyright (c) GeoGebra GmbH, Altenbergerstr. 69, 4040 Linz, Austria
  * https://www.geogebra.org
- * 
+ *
  * This file is licensed by GeoGebra GmbH under the EUPL 1.2 licence and
  * may be used under the EUPL 1.2 in compatible projects (see Article 5
  * and the Appendix of EUPL 1.2 for details).
@@ -25,7 +25,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * together with any if/guard statements.
  */
 public enum PreviewFeature {
-
 	ALL_LANGUAGES,
 	RESOURCES_API_BETA,
 	IMPLICIT_SURFACES,
@@ -40,15 +39,7 @@ public enum PreviewFeature {
 	/** GGB-2255 */
 	GEOMETRIC_DISCOVERY,
 	/** APPS-5641 */
-	IB_EXAM,
-	/**
-	 * APPS-6759
-	 */
-	SETTINGS_VIEW,
-	/**
-	 * APPS-7232
-	 */
-	TEXT_DIALOG;
+	IB_EXAM;
 
 	/**
 	 * Global flag to activate preview features.

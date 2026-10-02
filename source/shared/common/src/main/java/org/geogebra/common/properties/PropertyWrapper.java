@@ -19,6 +19,7 @@ package org.geogebra.common.properties;
 import java.util.List;
 import java.util.function.Function;
 
+import org.geogebra.common.gui.view.properties.PropertiesView;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.undo.UndoActionObserver;
@@ -37,8 +38,8 @@ public class PropertyWrapper {
 	 * @param activeGeoList initial list of elements
 	 * @return mutable collection of properties
 	 */
-	public PropertySupplier withStrokeSplitting(Function<List<GeoElement>, Property> map,
-			List<GeoElement> activeGeoList) {
+	public PropertySupplier withStrokeSplitting(
+			Function<List<GeoElement>, Property> map, List<GeoElement> activeGeoList) {
 
 		return new PropertySupplier() {
 
@@ -46,12 +47,12 @@ public class PropertyWrapper {
 
 			@Override
 			public Property updateAndGet() {
-				if (!app.getActiveEuclidianView()
-						.getEuclidianController().splitSelectedStrokes(true)) {
+				if (!app.getActiveEuclidianView().getEuclidianController().splitSelectedStrokes(true)) {
 					return current;
 				}
 				current = map.apply(app.getSelectionManager().getSelectedGeos());
-				addUndoActionObserver(new PropertySupplier[]{current},
+				addActionObservers(
+						new PropertySupplier[] {current},
 						app.getSelectionManager().getSelectedGeos(),
 						UndoActionType.STYLE);
 				return current;
@@ -65,20 +66,26 @@ public class PropertyWrapper {
 	}
 
 	/**
-	 * Adds undo action observer to each supplied property.
+	 * Adds undo and properties view action observers to each supplied property.
 	 * @param properties collection of properties
 	 * @param geos list of elements
 	 * @param undoActionType undoable action type, determines which properties need to be stored
 	 */
-	public void addUndoActionObserver(PropertySupplier[] properties, List<GeoElement> geos,
-			UndoActionType undoActionType) {
-		for (PropertySupplier propertySupplier: properties) {
+	public void addActionObservers(
+			PropertySupplier[] properties, List<GeoElement> geos, UndoActionType undoActionType) {
+		for (PropertySupplier propertySupplier : properties) {
 			Property property = propertySupplier.get();
-			if (property instanceof ValuedProperty) {
-				((ValuedProperty<?>) property).addValueObserver(
-						new UndoActionObserver(geos, undoActionType));
+			if (property instanceof ValuedProperty valuedProperty) {
+				valuedProperty.addValueObserver(new UndoActionObserver(geos, undoActionType));
+				valuedProperty.addValueObserver((prop) -> updatePropertiesView());
 			}
 		}
 	}
 
+	private void updatePropertiesView() {
+		if (app.getGuiManager() != null
+				&& app.getGuiManager().getPropertiesView() instanceof PropertiesView propView) {
+			propView.updateSelection();
+		}
+	}
 }

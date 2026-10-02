@@ -19,7 +19,7 @@ package org.geogebra.web.editor;
 import org.geogebra.editor.web.MathFieldW;
 import org.geogebra.web.html5.bridge.AttributeProvider;
 
-public class EditorParams {
+public final class EditorParams {
 	private final AttributeProvider element;
 	private final MathFieldW mathField;
 
@@ -74,13 +74,16 @@ public class EditorParams {
 		if (!"".equals(attribute)) {
 			try {
 				return Double.parseDouble(attribute);
-			} catch (NumberFormatException ex) {
+			} catch (NumberFormatException expected) {
 				// fallback
 			}
 		}
 		return fallback;
 	}
 
+	/**
+	 * @return whether the editor should prevent focus on initialization.
+	 */
 	public boolean isPreventFocus() {
 		return isTrue("preventfocus");
 	}

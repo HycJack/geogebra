@@ -16,10 +16,9 @@
 
 package org.geogebra.web.full.gui.components;
 
-import static org.geogebra.common.properties.PropertyView.*;
+import static org.geogebra.common.properties.PropertyView.Checkbox;
 
 import org.geogebra.common.gui.SetLabels;
-import org.geogebra.common.main.settings.AbstractSettings;
 import org.geogebra.keyboard.web.KeyboardResources;
 import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.gui.util.AriaHelper;
@@ -32,7 +31,7 @@ import org.gwtproject.user.client.ui.Widget;
 
 import elemental2.dom.KeyboardEvent;
 
-public class ComponentExpandableList extends FlowPanel implements SetLabels {
+public final class ComponentExpandableList extends FlowPanel implements SetLabels {
 	private final AppW appW;
 	private final String titleTransKey;
 	private Checkbox booleanProperty;
@@ -82,25 +81,30 @@ public class ComponentExpandableList extends FlowPanel implements SetLabels {
 	private void addArrowTo(FlowPanel header) {
 		SimplePanel arrow = new SimplePanel();
 		arrow.addStyleName("headerArrow");
-		arrow.getElement().setInnerHTML(KeyboardResources.INSTANCE.keyboard_arrowRight_black()
-				.getSVG());
+		arrow
+				.getElement()
+				.setInnerHTML(KeyboardResources.INSTANCE.keyboard_arrowRight_black().getSVG());
 		AriaHelper.setAriaHidden(arrow);
 		header.add(arrow);
 	}
 
 	private void addTitleTo(FlowPanel header) {
-		title = BaseWidgetFactory.INSTANCE.newPrimaryText(appW.getLocalization()
-				.getMenu(titleTransKey), "title");
+		title = BaseWidgetFactory.INSTANCE.newPrimaryText(
+				appW.getLocalization().getMenu(titleTransKey), "title");
 		header.add(title);
 	}
 
 	private void addCheckBoxTo(FlowPanel header) {
-		checkbox = new ComponentCheckbox(appW.getLocalization(), booleanProperty, "",
+		checkbox = new ComponentCheckbox(
+				appW.getLocalization(),
+				booleanProperty,
+				"",
 				value -> {
-			booleanProperty.setSelected(value);
-			expanded = value;
-			updateUISelectedState();
-		}, true);
+					booleanProperty.setSelected(value);
+					expanded = value;
+					updateUISelectedState();
+				},
+				true);
 		AriaHelper.setLabel(this, appW.getLocalization().getMenu(titleTransKey));
 		header.add(checkbox);
 	}
@@ -113,6 +117,7 @@ public class ComponentExpandableList extends FlowPanel implements SetLabels {
 			if ("Enter".equals(e.code) || "Space".equals(e.code)) {
 				if (Dom.getActiveElement() == header.getElement()) {
 					toggleComponent();
+					e.preventDefault(); // prevent scroll of panel on SPACE
 				}
 			}
 		});
@@ -136,6 +141,21 @@ public class ComponentExpandableList extends FlowPanel implements SetLabels {
 	}
 
 	/**
+	 * @param expanded Whether the list should be expanded
+	 */
+	public void setExpanded(boolean expanded) {
+		this.expanded = expanded;
+		updateUISelectedState();
+	}
+
+	/**
+	 * @return Whether the list is currently expanded
+	 */
+	public boolean isExpanded() {
+		return expanded;
+	}
+
+	/**
 	 * Fills the content with given UI element.
 	 * @param widget UI element
 	 */
@@ -147,7 +167,7 @@ public class ComponentExpandableList extends FlowPanel implements SetLabels {
 	 * Check if settings update affects this property and update UI if needed.
 	 */
 	@SuppressWarnings("unused")
-	private void updateCheckbox(AbstractSettings settings) {
+	private void updateCheckbox() {
 		boolean selected = booleanProperty.isSelected();
 		if (checkbox.isSelected() != selected) {
 			if (!selected) {

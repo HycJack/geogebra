@@ -16,6 +16,10 @@
 
 package org.geogebra.editor.share.util;
 
+/**
+ * Greek letters, lowercase and uppercase.
+ * Only one constant per letter, even if variants exist.
+ */
 public enum Greek {
 	alpha('\u03B1', false),
 
@@ -129,18 +133,16 @@ public enum Greek {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the LaTeX name WITHOUT the leading \
 	 */
 	public String getLaTeX() {
-
-		if (this.equals(phi)) {
-			return "var" + name();
-		}
-
-		return name();
+		return this == phi ? "var" + name() : name();
 	}
 
+	/**
+	 * @return the HTML entity representing this Greek letter, e.g. "&amp;alpha;"
+	 */
 	public String getHTML() {
 		return "&" + name() + ";";
 	}
@@ -178,9 +180,12 @@ public enum Greek {
 		}
 
 		return greekLowerCaseNoPi;
-
 	}
 
+	/**
+	 * @return the non-curly variant of this letter's Unicode code point
+	 *     (phi is normalized to its non-curly symbol, other letters are unchanged)
+	 */
 	public char getUnicodeNonCurly() {
 		return unicode == Unicode.phi ? Unicode.phi_symbol : unicode;
 	}
@@ -203,7 +208,5 @@ public enum Greek {
 		}
 
 		return greekUpperCase;
-
 	}
-
 }

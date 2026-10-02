@@ -16,6 +16,7 @@
 
 package org.geogebra.web.full.gui.dialog.image;
 
+import org.geogebra.gwtutil.JsObject;
 import org.geogebra.web.html5.Browser;
 import org.gwtproject.canvas.client.Canvas;
 
@@ -24,6 +25,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLVideoElement;
 import elemental2.dom.MediaStream;
 import elemental2.dom.MediaStreamConstraints;
+import elemental2.dom.MediaStreamTrack;
 import elemental2.dom.MediaTrackConstraints;
 import jsinterop.base.Js;
 
@@ -32,10 +34,10 @@ import jsinterop.base.Js;
  * @author laszlo
  *
  */
-public class WebCamAPI {
+public final class WebCamAPI {
 	private static final int MAX_CANVAS_WIDTH = 640;
 	private static final int MAX_CANVAS_HEIGHT = (int) Math.round(0.75 * MAX_CANVAS_WIDTH);
-	
+
 	private WebCamInputPanel webCamInputPanel;
 	private MediaStream stream;
 	private HTMLVideoElement videoElement;
@@ -86,12 +88,11 @@ public class WebCamAPI {
 		try {
 			w = Integer.parseInt(video.getAttribute("width"));
 			h = Integer.parseInt(video.getAttribute("height"));
-		} catch (NumberFormatException e) {
+		} catch (NumberFormatException ignored) {
 			// w, h = 0
 		} finally {
 			int width = Math.max(w, MAX_CANVAS_WIDTH);
-			int height = h != 0 ? (int) Math.round(width * h / ((double) w))
-					: MAX_CANVAS_HEIGHT;
+			int height = h != 0 ? (int) Math.round(width * h / ((double) w)) : MAX_CANVAS_HEIGHT;
 			c.setPixelSize(width, height);
 			c.setCoordinateSpaceHeight(height);
 			c.setCoordinateSpaceWidth(width);
@@ -134,29 +135,38 @@ public class WebCamAPI {
 		MediaStreamConstraints constraints = MediaStreamConstraints.create();
 		constraints.setVideo(trackConstraints);
 
-		DomGlobal.window.navigator.mediaDevices.getUserMedia(constraints)
-			.then((mediaStream) -> {
-				browserAlreadyAllowed = true;
-				onCameraSuccess(mediaStream);
-				return null;
-			}).catch_((err) -> {
-				accessDenied = true;
-				onCameraError((String) Js.asPropertyMap(err).get("name"));
-				return null;
-			});
+		DomGlobal.window
+				.navigator
+				.mediaDevices
+				.getUserMedia(constraints)
+				.then((mediaStream) -> {
+					browserAlreadyAllowed = true;
+					onCameraSuccess(mediaStream);
+					return null;
+				})
+				.catch_((err) -> {
+					accessDenied = true;
+					onCameraError((String) JsObject.of(err).get("name"));
+					return null;
+				});
 
-		DomGlobal.setTimeout((x) -> {
-			if (!browserAlreadyAllowed && !accessDenied) {
-				onRequest();
-			}
-		}, 400);
+		DomGlobal.setTimeout(
+				(x) -> {
+					if (!browserAlreadyAllowed && !accessDenied) {
+						onRequest();
+					}
+				},
+				400);
 	}
 
 	private void stopVideo() {
 		if (stream == null) {
 			return;
 		}
-		stream.getVideoTracks().getAt(0).stop();
+		MediaStreamTrack track = stream.getVideoTracks().getAt(0);
+		if (track != null) {
+			track.stop();
+		}
 		stream = null;
 	}
 

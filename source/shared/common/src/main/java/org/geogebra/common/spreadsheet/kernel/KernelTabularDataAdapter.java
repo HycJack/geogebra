@@ -22,11 +22,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.ModeSetter;
+import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.UpdateLocationView;
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoBoolean;
@@ -45,6 +43,8 @@ import org.geogebra.common.spreadsheet.core.SpreadsheetCoords;
 import org.geogebra.common.spreadsheet.core.TabularData;
 import org.geogebra.common.spreadsheet.core.TabularDataChangeListener;
 import org.geogebra.common.spreadsheet.core.TabularDataPasteInterface;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Listens to changes of spreadsheet data (=GeoElements) in Kernel and passes
@@ -52,25 +52,25 @@ import org.geogebra.common.spreadsheet.core.TabularDataPasteInterface;
  */
 public final class KernelTabularDataAdapter implements UpdateLocationView, TabularData<GeoElement> {
 
-	private final @Nonnull App app;
-	private final @Nonnull Kernel kernel;
-	private final @Nonnull KernelTabularDataProcessor processor;
-	private final @Nonnull SpreadsheetCellProcessor cellProcessor;
+	private final @NonNull App app;
+	private final @NonNull Kernel kernel;
+	private final @NonNull KernelTabularDataProcessor processor;
+	private final @NonNull SpreadsheetCellProcessor cellProcessor;
 	private final List<TabularDataChangeListener> changeListeners = new ArrayList<>();
 	private final Map<Integer, Map<Integer, GeoElement>> data = new HashMap<>();
 
 	/**
 	 * @param app the App
 	 */
-	public KernelTabularDataAdapter(@Nonnull App app) {
+	public KernelTabularDataAdapter(@NonNull App app) {
 		this.app = app;
 		// careful: the SpreadsheetSettings instance may change at runtime, don't store a reference!
 		SpreadsheetSettings spreadsheetSettings = app.getSettings().getSpreadsheet();
 		// OK: the SpreadsheetSettings listeners are carried over when a new instance is created
 		spreadsheetSettings.addListener((settings) -> {
 			// changeListeners is really just the Spreadsheet instance
-			for (TabularDataChangeListener listener: changeListeners) {
-				listener.tabularDataDimensionsDidChange((SpreadsheetSettings) settings);
+			for (TabularDataChangeListener listener : changeListeners) {
+				listener.tabularDataDimensionsDidChange(settings);
 			}
 		});
 		this.kernel = app.getKernel();
@@ -163,7 +163,7 @@ public final class KernelTabularDataAdapter implements UpdateLocationView, Tabul
 	}
 
 	// Helpers
-	
+
 	private void removeByLabel(String labelSimple) {
 		SpreadsheetCoords pt = GeoElementSpreadsheet.getSpreadsheetCoordsSafe(labelSimple);
 		if (pt != null && pt.column != -1) {
@@ -188,7 +188,7 @@ public final class KernelTabularDataAdapter implements UpdateLocationView, Tabul
 	/**
 	 * Sets default visibility (false for texts, true for other objects) for graphics
 	 * and auxiliary flag (always true) for AV .
-	 * @see org.geogebra.common.gui.view.spreadsheet.RelativeCopy#setVisibilityFlags(GeoElementND) 
+	 * @see org.geogebra.common.gui.view.spreadsheet.RelativeCopy#setVisibilityFlags(GeoElementND)
 	 * @param geo the element to be modified
 	 */
 	public static void setEuclidianVisibilityAndAuxiliaryFlag(GeoElementND geo) {
@@ -202,7 +202,7 @@ public final class KernelTabularDataAdapter implements UpdateLocationView, Tabul
 	// -- HasTabularValues --
 
 	@Override
-	public @CheckForNull GeoElement contentAt(int row, int column) {
+	public @Nullable GeoElement contentAt(int row, int column) {
 		return data.get(row) != null ? data.get(row).get(column) : null;
 	}
 
@@ -219,7 +219,7 @@ public final class KernelTabularDataAdapter implements UpdateLocationView, Tabul
 	// -- TabularData --
 
 	@Override
-	public @Nonnull SpreadsheetCellProcessor getCellProcessor() {
+	public @NonNull SpreadsheetCellProcessor getCellProcessor() {
 		return cellProcessor;
 	}
 
@@ -234,7 +234,7 @@ public final class KernelTabularDataAdapter implements UpdateLocationView, Tabul
 	}
 
 	@Override
-	public void addChangeListener(@Nonnull TabularDataChangeListener changeListener) {
+	public void addChangeListener(@NonNull TabularDataChangeListener changeListener) {
 		changeListeners.add(changeListener);
 	}
 
@@ -267,17 +267,23 @@ public final class KernelTabularDataAdapter implements UpdateLocationView, Tabul
 	}
 
 	@Override
-	public void setContent(int row, int column, Object content) {
-		if (content != null) {
-			GeoElement geo = (GeoElement) content;
+	public void setContent(int row, int column, GeoElement geo) {
+		if (geo != null) {
 			unfixSymbolic(geo);
 			setLabel(geo, row, column);
 			data.computeIfAbsent(row, ignore -> new HashMap<>()).put(column, geo);
+			boolean dimensionsChanged = false;
 			if (numberOfRows() <= row) {
 				app.getSettings().getSpreadsheet().setRowsNoFire(row + 1);
+				dimensionsChanged = true;
 			}
 			if (numberOfColumns() <= column) {
 				app.getSettings().getSpreadsheet().setColumnsNoFire(column + 1);
+				dimensionsChanged = true;
+			}
+			if (dimensionsChanged) {
+				changeListeners.forEach(listener ->
+						listener.tabularDataDimensionsDidChange(app.getSettings().getSpreadsheet()));
 			}
 		} else {
 			data.computeIfAbsent(row, ignore -> new HashMap<>()).put(column, null);
@@ -304,10 +310,23 @@ public final class KernelTabularDataAdapter implements UpdateLocationView, Tabul
 	}
 
 	@Override
-	public @Nonnull String serializeContentAt(int row, int column) {
+	public @NonNull String serializeContentAt(int row, int column, SerializationFormat format) {
 		GeoElement geoElement = contentAt(row, column);
-		return geoElement == null ? ""
-				: geoElement.getRedefineString(true, false);
+		if (geoElement == null) {
+			return "";
+		}
+		return switch (format) {
+			case FORMULAS -> geoElement.getRedefineString(true, false);
+			case VALUES -> geoElement.toValueString(StringTemplate.editTemplate);
+		};
+	}
+
+	@Override
+	public boolean hasFormulaAt(int row, int column) {
+		GeoElement geo = contentAt(row, column);
+		return geo != null
+				&& (geo.getParentAlgorithm() != null
+						|| (geo.getDefinition() != null && geo.getDefinition().hasOperations()));
 	}
 
 	@Override

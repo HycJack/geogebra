@@ -17,26 +17,28 @@
 package org.geogebra.common.properties.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
 
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.EnumeratedProperty;
 import org.geogebra.common.properties.ValueFilter;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Base class for enumerated properties. When overriding this class, make sure to call
  * {@link AbstractEnumeratedProperty#setValues(List)} at some point in the constructor.
  * @param <V> value type
  */
-public abstract class AbstractEnumeratedProperty<V> extends AbstractValuedProperty<V> implements
-		EnumeratedProperty<V> {
+public abstract class AbstractEnumeratedProperty<V> extends AbstractValuedProperty<V>
+		implements EnumeratedProperty<V> {
 
 	private int[] groupDividerIndices = null;
 	private List<V> values = new ArrayList<>();
 	private final List<ValueFilter> valueFilters = new ArrayList<>();
+	private final Set<ValueFilter.Observer> valueFilterObservers = new HashSet<>();
 
 	/**
 	 * Constructs an AbstractEnumeratedProperty.
@@ -47,36 +49,60 @@ public abstract class AbstractEnumeratedProperty<V> extends AbstractValuedProper
 		super(localization, name);
 	}
 
-	protected void setValues(@Nonnull List<V> values) {
+	protected void setValues(@NonNull List<V> values) {
 		this.values = values;
 	}
 
 	@Override
-	public @Nonnull List<V> getValues() {
+	public @NonNull List<V> getValues() {
 		return values.stream().filter(this::filterValues).collect(Collectors.toList());
 	}
 
 	protected boolean filterValues(V value) {
-		return valueFilters.stream().allMatch(filter ->
-				filter.isValueAllowed(value));
+		return valueFilters.stream().allMatch(filter -> filter.isValueAllowed(value));
 	}
 
 	@Override
-	public void addValueFilter(@Nonnull ValueFilter valueFilter) {
+	public final void addValueFilter(@NonNull ValueFilter valueFilter) {
 		valueFilters.add(valueFilter);
+		onValueFiltersChanged();
+		valueFilterObservers.forEach(ValueFilter.Observer::onValueFiltersChanged);
 	}
 
 	@Override
-	public void removeValueFilter(@Nonnull ValueFilter valueFilter) {
+	public final void removeValueFilter(@NonNull ValueFilter valueFilter) {
 		valueFilters.remove(valueFilter);
+		onValueFiltersChanged();
+		valueFilterObservers.forEach(ValueFilter.Observer::onValueFiltersChanged);
+	}
+
+	/**
+	 * Adds an observer for value filter updates.
+	 * @param observer value filter observer
+	 */
+	public final void addValueFilterObserver(ValueFilter.@NonNull Observer observer) {
+		valueFilterObservers.add(observer);
+	}
+
+	/**
+	 * Removes a previously added value filter observer.
+	 * @param observer value filter observer
+	 */
+	public final void removeValueFilterObserver(ValueFilter.@NonNull Observer observer) {
+		valueFilterObservers.remove(observer);
+	}
+
+	/** Called after value filters change and before observers are notified. */
+	protected void onValueFiltersChanged() {
+		// To be overridden by subclasses that derive additional configuration from filters.
 	}
 
 	@Override
 	public void setIndex(int index) {
 		ensureValuesPresent();
 		if (index < 0 || index >= getValues().size()) {
-			throw new IndexOutOfBoundsException("Index " + index + " must be between 0 and "
-					+ (values.size() - 1) + ".");
+			throw new IndexOutOfBoundsException(
+					"Index " + index + " must be between 0 and " + (values.size() - 1) + ".");
 		}
 		setValue(getValues().get(index));
 	}
@@ -89,11 +115,10 @@ public abstract class AbstractEnumeratedProperty<V> extends AbstractValuedProper
 
 	private void ensureValuesPresent() {
 		if (values == null) {
-			throw new RuntimeException("Set values must be called in the constructor for "
-					+ getName());
+			throw new RuntimeException("Set values must be called in the constructor for " + getName());
 		}
 	}
-	
+
 	@Override
 	public int[] getGroupDividerIndices() {
 		return groupDividerIndices;

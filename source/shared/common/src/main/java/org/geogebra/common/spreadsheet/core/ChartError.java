@@ -18,7 +18,7 @@ package org.geogebra.common.spreadsheet.core;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Enumeration representing possible validation errors when generating charts
@@ -74,8 +74,10 @@ public enum ChartError {
 		if (ranges.size() == 2) {
 			TabularRange r1 = ranges.get(0);
 			TabularRange r2 = ranges.get(1);
-			if (r1.getWidth() == 1 && r2.getWidth() == 1
-					&& r1.getMinRow() == r2.getMinRow() && r1.getMaxRow() == r2.getMaxRow()) {
+			if (r1.getWidth() == 1
+					&& r2.getWidth() == 1
+					&& r1.getMinRow() == r2.getMinRow()
+					&& r1.getMaxRow() == r2.getMaxRow()) {
 				return NONE;
 			}
 		}
@@ -115,7 +117,7 @@ public enum ChartError {
 	 * in which case there must only be one range.
 	 * @return {@link #NONE} if the ranges are valid, or a validation error otherwise.
 	 */
-	public static ChartError validateRangesForBoxPlot(@Nonnull List<TabularRange> ranges) {
+	public static ChartError validateRangesForBoxPlot(@NonNull List<TabularRange> ranges) {
 		if (ranges.isEmpty()) {
 			return ChartError.NoData; // not enough ranges
 		}
@@ -131,9 +133,11 @@ public enum ChartError {
 		}
 		if (ranges.size() == 2) {
 			TabularRange range2 = ranges.get(1);
-			if (range2.isEntireColumn() || range2.isEntireRow()
+			if (range2.isEntireColumn()
+					|| range2.isEntireRow()
 					// if we have 2 ranges, they must not be wider than 1 row or column
-					|| !range2.is1D() || !range1.is1D()) {
+					|| !range2.is1D()
+					|| !range1.is1D()) {
 				return ChartError.InvalidData; // too many cells
 			}
 			int size1 = range1.isPartialColumn() ? range1.getHeight() : range1.getWidth();

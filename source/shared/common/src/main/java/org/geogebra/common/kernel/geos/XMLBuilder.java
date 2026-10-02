@@ -31,6 +31,7 @@ import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.main.App;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Helper class for XML export
@@ -40,17 +41,17 @@ public class XMLBuilder {
 
 	/**
 	 * Appends visual tags to string builder
-	 * 
+	 *
 	 * @param geo
 	 *            geo
-	 * 
+	 *
 	 * @param sb
 	 *            string builder
 	 * @param withLabelOffset
 	 *            true to include label offsets
 	 */
-	protected static void getXMLVisualTags(GeoElement geo,
-			final XMLStringBuilder sb, final boolean withLabelOffset) {
+	protected static void getXMLVisualTags(
+			GeoElement geo, final XMLStringBuilder sb, final boolean withLabelOffset) {
 		final boolean isDrawable = geo.isDrawable();
 
 		// show object and/or label in EuclidianView
@@ -80,26 +81,26 @@ public class XMLBuilder {
 
 			if (geo.hasDrawable3D()) {
 				switch (geo.visibleInView3D) {
-				case TRUE:
-					EVs += 4;
-					break;
-				case FALSE:
-					EVs += 8; // we have to store it to distinguish from not set
-					break;
-				case UNKNOWN:
-					break;
+					case TRUE:
+						EVs += 4;
+						break;
+					case FALSE:
+						EVs += 8; // we have to store it to distinguish from not set
+						break;
+					case UNKNOWN:
+						break;
 				}
 
 				switch (geo.getVisibleInViewForPlane()) {
-				case TRUE:
-					EVs += 16;
-					break;
-				case FALSE:
-					EVs += 32; // we have to store it to distinguish from not
-								// set
-					break;
-				case UNKNOWN:
-					break;
+					case TRUE:
+						EVs += 16;
+						break;
+					case FALSE:
+						EVs += 32; // we have to store it to distinguish from not
+						// set
+						break;
+					case UNKNOWN:
+						break;
 				}
 			}
 
@@ -121,8 +122,7 @@ public class XMLBuilder {
 		// AlgebraView, Spreadsheet
 
 		geo.appendObjectColorXML(sb);
-		if (geo instanceof GeoEvaluatable
-				&& ((GeoEvaluatable) geo).getTableColumn() >= 0) {
+		if (geo instanceof GeoEvaluatable && ((GeoEvaluatable) geo).getTableColumn() >= 0) {
 			sb.startTag("tableview")
 					.attr("column", ((GeoEvaluatable) geo).getTableColumn())
 					.attr("points", ((GeoEvaluatable) geo).isPointsVisible())
@@ -150,8 +150,7 @@ public class XMLBuilder {
 			sb.startTag("autocolor").attr("val", geo.isAutoColor()).endTag();
 		}
 
-		if (withLabelOffset
-				&& ((geo.labelOffsetX != 0) || (geo.labelOffsetY != 0))) {
+		if (withLabelOffset && ((geo.labelOffsetX != 0) || (geo.labelOffsetY != 0))) {
 			sb.startTag("labelOffset");
 			sb.attr("x", geo.labelOffsetX);
 			sb.attr("y", geo.labelOffsetY);
@@ -159,7 +158,8 @@ public class XMLBuilder {
 		}
 
 		if (geo.isDrawable()) {
-			if (!geo.isGeoNumeric() || geo.getDefinition() == null
+			if (!geo.isGeoNumeric()
+					|| geo.getDefinition() == null
 					|| geo.labelMode != GeoElement.LABEL_NAME_VALUE) {
 				sb.startTag("labelMode").attr("val", geo.labelMode).endTag();
 			}
@@ -213,33 +213,33 @@ public class XMLBuilder {
 	 * @param parameter
 	 *            parameter name
 	 */
-	public static void appendEquationTypeLine(XMLStringBuilder sb,
-			LinearEquationRepresentable.Form equationForm,
-			String parameter) {
+	public static void appendEquationTypeLine(
+			XMLStringBuilder sb, LinearEquationRepresentable.Form equationForm, String parameter) {
 		if (equationForm == null) {
 			return;
 		}
 		switch (equationForm) {
-		case PARAMETRIC:
-			sb.startTag("eqnStyle").attrRaw("style", "parametric")
-					.attr("parameter", parameter).endTag();
-			break;
-		case IMPLICIT:
-			appendType(sb, "implicit");
-			break;
-		case EXPLICIT:
-			appendType(sb, "explicit");
-			break;
-		case GENERAL:
-			appendType(sb, "general");
-			break;
-		case USER:
-			appendType(sb, "user");
-			break;
-		default:
-			break;
+			case PARAMETRIC:
+				sb.startTag("eqnStyle")
+						.attrRaw("style", "parametric")
+						.attr("parameter", parameter)
+						.endTag();
+				break;
+			case IMPLICIT:
+				appendType(sb, "implicit");
+				break;
+			case EXPLICIT:
+				appendType(sb, "explicit");
+				break;
+			case GENERAL:
+				appendType(sb, "general");
+				break;
+			case USER:
+				appendType(sb, "user");
+				break;
+			default:
+				break;
 		}
-
 	}
 
 	/**
@@ -260,34 +260,34 @@ public class XMLBuilder {
 	 * @param parameter
 	 *            parameter name
 	 */
-	public static void appendEquationTypeConic(XMLStringBuilder sb,
-			QuadraticEquationRepresentable.Form equationForm, String parameter) {
+	public static void appendEquationTypeConic(
+			XMLStringBuilder sb, QuadraticEquationRepresentable.Form equationForm, String parameter) {
 		if (equationForm == null) { // null handled the same as default branch for compatibility
 			XMLBuilder.appendType(sb, "implicit");
 			return;
 		}
 		switch (equationForm) {
-		case SPECIFIC:
-			XMLBuilder.appendType(sb, "specific");
-			break;
-		case EXPLICIT:
-			XMLBuilder.appendType(sb, "explicit");
-			break;
-		case USER:
-			XMLBuilder.appendType(sb, "user");
-			break;
-		case VERTEX:
-			XMLBuilder.appendType(sb, "vertex");
-			break;
-		case CONICFORM:
-			XMLBuilder.appendType(sb, "conic");
-			break;
-		case PARAMETRIC:
-			XMLBuilder.appendType(sb, "parametric");
-			break;
+			case SPECIFIC:
+				XMLBuilder.appendType(sb, "specific");
+				break;
+			case EXPLICIT:
+				XMLBuilder.appendType(sb, "explicit");
+				break;
+			case USER:
+				XMLBuilder.appendType(sb, "user");
+				break;
+			case VERTEX:
+				XMLBuilder.appendType(sb, "vertex");
+				break;
+			case CONICFORM:
+				XMLBuilder.appendType(sb, "conic");
+				break;
+			case PARAMETRIC:
+				XMLBuilder.appendType(sb, "parametric");
+				break;
 
-		default:
-			XMLBuilder.appendType(sb, "implicit");
+			default:
+				XMLBuilder.appendType(sb, "implicit");
 		}
 	}
 
@@ -300,8 +300,8 @@ public class XMLBuilder {
 	 *            corners
 	 * @param isAbsolute whether the position is in screen pixels
 	 */
-	public static void getCornerPointXML(XMLStringBuilder sb, int number, GeoPointND[] corners,
-			boolean isAbsolute) {
+	public static void getCornerPointXML(
+			XMLStringBuilder sb, int number, GeoPointND[] corners, boolean isAbsolute) {
 		if (corners[number] == null) {
 			return;
 		}
@@ -322,7 +322,7 @@ public class XMLBuilder {
 
 	/**
 	 * Add the &lt;dimension&gt; tag
-	 * 
+	 *
 	 * @param sb
 	 *            XML builder
 	 * @param width
@@ -331,8 +331,7 @@ public class XMLBuilder {
 	 *            height
 	 */
 	public static void dimension(XMLStringBuilder sb, String width, String height) {
-		sb.startTag("dimensions").attr("width", width)
-				.attr("height", height).endTag();
+		sb.startTag("dimensions").attr("width", width).attr("height", height).endTag();
 	}
 
 	/**
@@ -368,8 +367,8 @@ public class XMLBuilder {
 	 * @param symbolicMode element with symbolic mode
 	 * @param defaultMode the default symbolic mode
 	 */
-	public static void appendSymbolicMode(XMLStringBuilder builder, HasSymbolicMode symbolicMode,
-			boolean defaultMode) {
+	public static void appendSymbolicMode(
+			XMLStringBuilder builder, HasSymbolicMode symbolicMode, boolean defaultMode) {
 		boolean isSymbolicMode = symbolicMode.isSymbolicMode();
 		if (isSymbolicMode != defaultMode) {
 			builder.startTag("symbolic").attr("val", isSymbolicMode).endTag();
@@ -384,8 +383,8 @@ public class XMLBuilder {
 	 * @param emphasizeRightAngle
 	 *            whether to show special symbol for right angle
 	 */
-	public static void appendAngleStyle(XMLStringBuilder sb,
-			AngleStyle angleStyle, boolean emphasizeRightAngle) {
+	public static void appendAngleStyle(
+			XMLStringBuilder sb, AngleStyle angleStyle, boolean emphasizeRightAngle) {
 		sb.startTag("angleStyle").attr("val", angleStyle.getXmlVal()).endTag();
 		if (!emphasizeRightAngle) {
 			// only store emphasizeRightAngle if "false"
@@ -410,10 +409,10 @@ public class XMLBuilder {
 		double height;
 		boolean convertToRw = !(inline instanceof GeoAudio);
 		if (convertToRw) {
-			width = inline.getWidth() / inline.getKernel().getApplication()
-					.getActiveEuclidianView().getXscale();
-			height = inline.getHeight() / inline.getKernel().getApplication()
-					.getActiveEuclidianView().getYscale();
+			width = inline.getWidth()
+					/ inline.getKernel().getApplication().getActiveEuclidianView().getXscale();
+			height = inline.getHeight()
+					/ inline.getKernel().getApplication().getActiveEuclidianView().getYscale();
 		} else {
 			width = inline.getWidth();
 			height = inline.getHeight();
@@ -434,8 +433,8 @@ public class XMLBuilder {
 	 * @param text inline text
 	 * @param alignment vertical alignment
 	 */
-	public static void appendBorderAndAlignment(XMLStringBuilder sb, GeoInline text,
-			VerticalAlignment alignment) {
+	public static void appendBorderAndAlignment(
+			XMLStringBuilder sb, GeoInline text, VerticalAlignment alignment) {
 		GColor borderColor = text.getBorderColor();
 		if (borderColor != null) {
 			sb.startTag("borderColor");
@@ -454,12 +453,13 @@ public class XMLBuilder {
 	 * @param node parent node
 	 * @param alignment alignment
 	 */
-	public static void appendParent(XMLStringBuilder sb, GeoMindMapNode node,
-			GeoMindMapNode.NodeAlignment alignment) {
+	public static void appendParent(
+			XMLStringBuilder sb, GeoMindMapNode node, GeoMindMapNode.NodeAlignment alignment) {
 		if (node != null) {
 			sb.startTag("parent")
 					.attr("val", node.getLabel(StringTemplate.xmlTemplate))
-					.attr("align", alignment.toString()).endTag();
+					.attr("align", alignment.toString())
+					.endTag();
 		}
 	}
 
@@ -471,5 +471,36 @@ public class XMLBuilder {
 		sb.startTag("incrementY")
 				.attr("val", verticalIncrement.getLabel(StringTemplate.xmlTemplate))
 				.endTag();
+	}
+
+	/**
+	 * Append element type for the &lt;expression&gt; element.
+	 * Unlike for &lt;element&gt;, this is only needed if evaluation of
+	 * expression could be ambiguous.
+	 * @param geo construction element
+	 * @param sb XML string builder
+	 */
+	public static void appendExpressionType(@NonNull GeoElement geo, @NonNull XMLStringBuilder sb) {
+		if (geo.isGeoPoint()) {
+			sb.attrRaw("type", "point");
+		} else if (geo.isGeoVector()) {
+			sb.attrRaw("type", "vector");
+		} else if (geo.isGeoLine()) {
+			sb.attrRaw("type", "line");
+		} else if (geo.isGeoPlane()) {
+			sb.attrRaw("type", "plane");
+		} else if (geo.isGeoConic()) {
+			sb.attrRaw("type", "conic");
+		} else if (geo.isGeoQuadric()) {
+			sb.attrRaw("type", "quadric");
+		} else if (geo.isGeoImplicitCurve()) {
+			sb.attrRaw("type", "implicitpoly");
+		} else if (geo.isGeoImplicitSurface()) {
+			sb.attrRaw("type", "implicitsurface");
+		} else if (geo.isGeoSurfaceCartesian()) {
+			sb.attrRaw("type", "surfacecartesian");
+		} else if (geo.isGeoList()) {
+			sb.attrRaw("type", "list");
+		}
 	}
 }

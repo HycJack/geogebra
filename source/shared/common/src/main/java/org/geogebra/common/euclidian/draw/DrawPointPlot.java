@@ -31,7 +31,7 @@ import org.geogebra.common.kernel.statistics.AlgoDotPlot;
 
 /**
  * Drawable representation of a point plot
- * 
+ *
  */
 public class DrawPointPlot extends Drawable {
 
@@ -70,8 +70,7 @@ public class DrawPointPlot extends Drawable {
 	 * @param drawType
 	 *            type
 	 */
-	public DrawPointPlot(EuclidianView view, GeoList pointList,
-			DrawType drawType) {
+	public DrawPointPlot(EuclidianView view, GeoList pointList, DrawType drawType) {
 		this.view = view;
 		this.drawType = drawType;
 		geo = pointList;
@@ -90,9 +89,8 @@ public class DrawPointPlot extends Drawable {
 	 * Returns the bounding box of this Drawable in screen coordinates.
 	 */
 	@Override
-	final public GRectangle getBounds() {
-		if (!geo.isDefined() || !geo.isEuclidianVisible()
-				|| drawPoints == null) {
+	public final GRectangle getBounds() {
+		if (!geo.isDefined() || !geo.isEuclidianVisible() || drawPoints == null) {
 			return null;
 		}
 
@@ -107,8 +105,7 @@ public class DrawPointPlot extends Drawable {
 	public void draw(GGraphics2D g2) {
 		if (isVisible) {
 
-			for (int i = 0; i < drawPoints.size()
-					&& i < pointList.size(); i++) {
+			for (int i = 0; i < drawPoints.size() && i < pointList.size(); i++) {
 				pointList.get(i).setHighlighted(isHighlighted());
 				drawPoints.get(i).draw(g2);
 			}
@@ -232,7 +229,7 @@ public class DrawPointPlot extends Drawable {
 			}
 		} else if (n < drawPoints.size()) {
 			// remove
-			for (int i = n; n < drawPoints.size();) {
+			for (int i = n; n < drawPoints.size(); ) {
 				drawPoints.remove(i);
 			}
 		}
@@ -240,7 +237,7 @@ public class DrawPointPlot extends Drawable {
 
 	/**
 	 * Sets the real world height of a point so that it fits in a stack of dots
-	 * 
+	 *
 	 * @param pt
 	 *            point
 	 * @param dotCount
@@ -265,12 +262,9 @@ public class DrawPointPlot extends Drawable {
 	 * Wilkinson's algorithm.
 	 */
 	private void doDotDensity() {
-
 		pointSize = pointList.getPointSize();
 		double h = 2 * pointSize * view.getInvXscale();
 		scaleFactor = algo.getScaleFactor();
-
-		GeoPoint pt = null;
 		GeoList xList = algo.getUniqueXList();
 		GeoList freqList = algo.getFrequencyList();
 
@@ -279,7 +273,6 @@ public class DrawPointPlot extends Drawable {
 		double stackX = ((GeoNumeric) xList.get(xIndex)).getDouble();
 
 		for (int i = 0; i < xList.size(); i++) {
-
 			double x = ((GeoNumeric) xList.get(i)).getDouble();
 			int freq = (int) ((GeoNumeric) freqList.get(i)).getDouble();
 
@@ -289,7 +282,7 @@ public class DrawPointPlot extends Drawable {
 			}
 
 			for (int k = 0; k < freq; k++) {
-				pt = (GeoPoint) pointList.get(xIndex);
+				GeoPoint pt = (GeoPoint) pointList.get(xIndex);
 				pt.setX(stackX);
 				pt.updateCoords();
 				setDotHeight(pt, dotCount);
@@ -305,8 +298,7 @@ public class DrawPointPlot extends Drawable {
 	 */
 	public void setToolTipForPoint(int index) {
 		double x = getDotPlotX(index);
-		String text = view.getKernel().format(x,
-				StringTemplate.defaultTemplate);
+		String text = view.getKernel().format(x, StringTemplate.defaultTemplate);
 		algo.setToolTipPointText(text);
 
 		// force automatic tool tip update

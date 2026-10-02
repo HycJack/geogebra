@@ -16,8 +16,6 @@
 
 package org.geogebra.web.full.gui.pagecontrolpanel;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.gui.SetLabels;
 import org.geogebra.common.io.MyXMLio;
 import org.geogebra.common.util.StringUtil;
@@ -31,12 +29,12 @@ import org.geogebra.web.html5.util.ArchiveEntry;
 import org.gwtproject.dom.style.shared.Unit;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Page Preview Card showing preview of EuclidianView
  */
-public class PagePreviewCard extends FlowPanel
-		implements SetLabels {
+public final class PagePreviewCard extends FlowPanel implements SetLabels {
 
 	/** Margin of the cards. */
 	static final int MARGIN = 16;
@@ -57,7 +55,7 @@ public class PagePreviewCard extends FlowPanel
 	/**
 	 * ggb file
 	 */
-	protected GgbFile file;
+	private GgbFile file;
 
 	/**
 	 * @param app
@@ -76,21 +74,20 @@ public class PagePreviewCard extends FlowPanel
 
 	/**
 	 * Duplicates card with pageIndex incremented by 1.
-	 * 
+	 *
 	 * @param source
 	 *            to duplicate.
 	 * @param targetID
 	 *            ID of the new slide
 	 * @return The duplicated card.
 	 */
-	public static PagePreviewCard pasteAfter(PagePreviewCard source,
-			@Nonnull String targetID, String json) {
+	public static PagePreviewCard pasteAfter(
+			PagePreviewCard source, @NonNull String targetID, String json) {
 		GgbFile file = new GgbFile(targetID);
 		source.app.getArchiveLoader().setFileFromJsonString(json, file);
-		return new PagePreviewCard(source.app, source.getPageIndex() + 1,
-				file);
+		return new PagePreviewCard(source.app, source.getPageIndex() + 1, file);
 	}
-	
+
 	private void initGUI() {
 		resetTop();
 		addStyleName("cardRow");
@@ -141,8 +138,7 @@ public class PagePreviewCard extends FlowPanel
 
 	private boolean setPreviewImage(ArchiveEntry image) {
 		if (image != null && !image.createUrl().isEmpty()) {
-			imagePanel.getElement().getStyle().setBackgroundImage(
-					"url(" + image.createUrl() + ")");
+			imagePanel.getElement().getStyle().setBackgroundImage("url(" + image.createUrl() + ")");
 			return true;
 		}
 		return false;
@@ -164,7 +160,7 @@ public class PagePreviewCard extends FlowPanel
 
 	/**
 	 * get the index of the page
-	 * 
+	 *
 	 * @return page index
 	 */
 	public int getPageIndex() {
@@ -174,7 +170,7 @@ public class PagePreviewCard extends FlowPanel
 	/**
 	 * set index of page
 	 * note: this will also update the title of the page
-	 * 
+	 *
 	 * @param index
 	 *            new index
 	 */
@@ -190,7 +186,7 @@ public class PagePreviewCard extends FlowPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @param top
 	 *            to set.
 	 */
@@ -206,7 +202,7 @@ public class PagePreviewCard extends FlowPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @param y
 	 *            the top position of the drag.
 	 * @return top of the card after drag
@@ -216,7 +212,7 @@ public class PagePreviewCard extends FlowPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the bottom of the card.
 	 */
 	public int getBottom() {
@@ -225,7 +221,7 @@ public class PagePreviewCard extends FlowPanel
 
 	/**
 	 * Checks if (x, y) is within the card.
-	 * 
+	 *
 	 * @param x
 	 *            coordinate to check.
 	 * @param y
@@ -243,7 +239,7 @@ public class PagePreviewCard extends FlowPanel
 
 	/**
 	 * Make card grabbed (by pointer) at y.
-	 * 
+	 *
 	 * @param y
 	 *            coordinate where user has grabbed the card.
 	 */
@@ -259,6 +255,9 @@ public class PagePreviewCard extends FlowPanel
 		return MARGIN + index * TOTAL_HEIGHT;
 	}
 
+	/**
+	 * @return top offset computed from this card's page index.
+	 */
 	public int getComputedTop() {
 		return computeTop(getPageIndex());
 	}
@@ -300,6 +299,9 @@ public class PagePreviewCard extends FlowPanel
 		infoPanel.setCardTitle(title);
 	}
 
+	/**
+	 * @return the title of this card.
+	 */
 	public String getCardTitle() {
 		return infoPanel.getCardTitle();
 	}
@@ -318,6 +320,9 @@ public class PagePreviewCard extends FlowPanel
 		return setPreviewImage(getFile().get("geogebra_thumbnail.png"));
 	}
 
+	/**
+	 * @return the ID of the file associated with this card.
+	 */
 	public String getID() {
 		return file.getID();
 	}

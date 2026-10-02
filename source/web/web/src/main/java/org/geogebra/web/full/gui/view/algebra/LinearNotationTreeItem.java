@@ -32,12 +32,12 @@ import org.gwtproject.event.dom.client.KeyDownEvent;
 import org.gwtproject.event.dom.client.KeyDownHandler;
 import org.gwtproject.user.client.ui.Widget;
 
-public class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHandler {
+public final class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHandler {
 
 	AutoCompleteTextFieldW textField;
 
 	/**
-	 * Minimal constructor
+	 * Creates an item for the input.
 	 * @param kernel {@link Kernel}
 	 * @param av {@link AlgebraViewW}
 	 */
@@ -46,8 +46,13 @@ public class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHand
 		ensureTextField();
 	}
 
+	/**
+	 * Creates an item for an existing object.
+	 * @param geo construction element
+	 */
 	public LinearNotationTreeItem(GeoElement geo) {
 		super(geo);
+		buildGui();
 	}
 
 	private void createTextField() {
@@ -65,7 +70,8 @@ public class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHand
 	}
 
 	private void setDefaultAriaLabel() {
-		AriaHelper.setLabel(textField.getTextField(),
+		AriaHelper.setLabel(
+				textField.getTextField(),
 				geo != null ? null : app.getLocalization().getMenu("EnterExpression"));
 	}
 
@@ -131,7 +137,7 @@ public class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHand
 		insertHelpToggle();
 		new FocusableWidget(AccessibilityGroup.ALGEBRA_ITEM, null, content) {
 			@Override
-			public void focus(Widget widget) {
+			protected void focus(Widget widget) {
 				setFocus(true);
 			}
 
@@ -203,7 +209,7 @@ public class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHand
 		if (geo == null) {
 			initInput();
 		}
-		setFocusedStyle(focus, false);
+		setFocusedStyle(focus, !app.getSelectionManager().hasPointerFocus());
 		textField.setFocus(focus);
 	}
 
@@ -264,7 +270,8 @@ public class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHand
 			getController().onEnter(true);
 			event.preventDefault();
 			return;
-		} else if (event.getNativeKeyCode() == GWTKeycodes.KEY_TAB) {
+		} else if (event.getNativeKeyCode() == GWTKeycodes.KEY_TAB
+				&& !isInputTreeItem()) { // skip input, let the text field handle it
 			getController().onTab(event.getNativeEvent().getShiftKey());
 			event.preventDefault();
 			return;
@@ -278,8 +285,9 @@ public class LinearNotationTreeItem extends RadioTreeItem implements KeyDownHand
 
 	@Override
 	protected void updatePreview() {
-		kernel.getInputPreviewHelper().updatePreviewFromInputBar(
-				textField.getText(), AlgebraInputW.getWarningHandler(this, app));
+		kernel
+				.getInputPreviewHelper()
+				.updatePreviewFromInputBar(textField.getText(), AlgebraInputW.getWarningHandler(this, app));
 	}
 
 	@Override

@@ -24,13 +24,12 @@ import static org.geogebra.common.kernel.kernelND.GeoElementND.LABEL_VALUE;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoText;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@code Property} responsible for setting an element's caption in the graphics view.
@@ -42,8 +41,8 @@ import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
  * </ul>
  * The suggested elements are the text labels: the potential dynamic caption values.
  */
-public class CaptionProperty extends AbstractValuedProperty<String> implements
-		StringPropertyWithSuggestions {
+public class CaptionProperty extends AbstractValuedProperty<String>
+		implements StringPropertyWithSuggestions {
 	private final GeoElement geoElement;
 
 	/**
@@ -56,7 +55,7 @@ public class CaptionProperty extends AbstractValuedProperty<String> implements
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
+	public @Nullable String validateValue(String value) {
 		return null;
 	}
 

@@ -18,11 +18,10 @@ package org.geogebra.web.editor;
 
 import org.geogebra.common.util.AbstractSyntaxAdapter;
 
-public class EditorSyntaxAdapter extends AbstractSyntaxAdapter {
+public final class EditorSyntaxAdapter extends AbstractSyntaxAdapter {
 
 	@Override
 	public boolean isFunction(String casName) {
 		return false;
 	}
-
 }

@@ -17,6 +17,7 @@
 package org.geogebra.web.full.gui;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.MaterialVisibility;
@@ -30,7 +31,8 @@ import org.geogebra.common.move.ggtapi.models.Pagination;
 import org.geogebra.common.move.ggtapi.requests.MaterialCallbackI;
 import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.common.util.StringUtil;
-import org.geogebra.common.util.TextObject;
+import org.geogebra.common.util.debug.AccessibilityAnalytics;
+import org.geogebra.common.util.debug.AccessibilityAnalyticsContext;
 import org.geogebra.common.util.debug.Log;
 import org.geogebra.gwtutil.FileSystemAPI;
 import org.geogebra.web.full.gui.dialog.DialogManagerW;
@@ -47,11 +49,11 @@ import jsinterop.base.JsPropertyMap;
 
 /**
  * Class to handle material saving.
- * 
+ *
  * @author laszlo
  *
  */
-public class SaveControllerW implements SaveController {
+public final class SaveControllerW implements SaveController {
 
 	private final AppW app;
 	private final Localization loc;
@@ -65,7 +67,7 @@ public class SaveControllerW implements SaveController {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param app
 	 *            The application.
 	 */
@@ -109,8 +111,7 @@ public class SaveControllerW implements SaveController {
 	@Override
 	public void ensureTypeOtherThan(MaterialType type) {
 		Material activeMaterial = app.getActiveMaterial();
-		if (activeMaterial != null
-				&& activeMaterial.getType() == type) {
+		if (activeMaterial != null && activeMaterial.getType() == type) {
 			app.getKernel().getConstruction().setTitle(null);
 			app.setActiveMaterial(null);
 		}
@@ -119,14 +120,12 @@ public class SaveControllerW implements SaveController {
 	@Override
 	public void showDialogIfNeeded(AsyncOperation<Boolean> saveCallback, boolean addTempCheckBox) {
 		app.getShareController().setAssign(false);
-		SaveDialogI saveDialog = ((DialogManagerW) app.getDialogManager())
-				.getSaveCheckDialog();
+		SaveDialogI saveDialog = ((DialogManagerW) app.getDialogManager()).getSaveCheckDialog();
 		AsyncOperation<Boolean> callback = saved -> {
 			app.getShareController().disconnectMultiuser();
 			saveCallback.callback(saved);
 		};
-		showDialogIfNeeded(callback, !app.isSaved(),
-				true, addTempCheckBox);
+		showDialogIfNeeded(callback, !app.isSaved(), true, addTempCheckBox);
 
 		if (!addTempCheckBox) {
 			saveDialog.setDiscardMode();
@@ -135,15 +134,20 @@ public class SaveControllerW implements SaveController {
 
 	@Override
 	public void showLocalSaveDialog(Runnable afterSave) {
+		logSaveDialogShownIfNeeded();
 		if (!FileSystemAPI.isSupported()) {
 			app.getFileManager().export(app);
+			logSaveCompleted();
 			return;
 		}
 
 		JsPropertyMap<Object> options = localSaveOptions.asPropertyMap();
 
 		FileSystemAPI.showSaveFilePicker(options).then(handle -> {
-			((FileManager) app.getFileManager()).saveAs(handle, afterSave);
+			((FileManager) app.getFileManager()).saveAs(handle, () -> {
+				afterSave.run();
+				logSaveCompleted();
+			});
 			return null;
 		});
 	}
@@ -158,8 +162,11 @@ public class SaveControllerW implements SaveController {
 	 * @param addTempCheckBox
 	 *         true if checkbox should be visible
 	 */
-	public void showDialogIfNeeded(final AsyncOperation<Boolean> runnable, boolean needed,
-			boolean doYouWantSaveChanges, boolean addTempCheckBox) {
+	public void showDialogIfNeeded(
+			final AsyncOperation<Boolean> runnable,
+			boolean needed,
+			boolean doYouWantSaveChanges,
+			boolean addTempCheckBox) {
 		if (needed && !app.getLAF().isEmbedded()) {
 			final Material oldActiveMaterial = app.getActiveMaterial();
 			final String oldTitle = app.getKernel().getConstruction().getTitle();
@@ -172,6 +179,7 @@ public class SaveControllerW implements SaveController {
 				runnable.callback(saved);
 			});
 			DialogManagerW dm = (DialogManagerW) app.getDialogManager();
+			logSaveDialogShownIfNeeded();
 			if (doYouWantSaveChanges) {
 				dm.getSaveCheckDialog().show();
 			} else {
@@ -183,13 +191,33 @@ public class SaveControllerW implements SaveController {
 		}
 	}
 
+	private void logSaveDialogShownIfNeeded() {
+		AccessibilityAnalyticsContext context = app.getAccessibilityAnalyticsContext();
+		if (context.isSaveDialogShown()) {
+			return;
+		}
+		if (AccessibilityAnalytics.Value.UNSET.equals(context.getFlow())) {
+			context.setFlow(AccessibilityAnalytics.Value.DIRECT);
+		}
+		context.markSaveDialogShown();
+		AccessibilityAnalytics.logSaveShown(context.getTrigger(), context.getFlow());
+	}
+
+	private void logSaveCompleted() {
+		AccessibilityAnalyticsContext context = app.getAccessibilityAnalyticsContext();
+		if (context.isSaveDialogShown()) {
+			AccessibilityAnalytics.logSaveCompleted(context.getTrigger(), context.getFlow());
+			context.resetSave();
+		}
+	}
+
 	@Override
 	public void saveAs(String name, MaterialVisibility visibility, SaveListener l) {
 		this.listener = l;
 		this.fileName = name;
 		if (app.isOffline()) {
-			app.getToolTipManager().showBottomMessage(loc
-					.getMenu("phone_loading_materials_offline"), app);
+			app.getToolTipManager()
+					.showBottomMessage(loc.getMenu("phone_loading_materials_offline"), app);
 			showLocalSaveDialog(() -> {});
 		} else if (app.getFileManager().getFileProvider() == Material.Provider.GOOGLE) {
 			uploadToDrive();
@@ -206,8 +234,7 @@ public class SaveControllerW implements SaveController {
 		if (activeMaterial == null) {
 			activeMaterial = new Material(saveType);
 			app.setActiveMaterial(activeMaterial);
-		} else if (!app.getLoginOperation()
-				.owns(activeMaterial)) {
+		} else if (!app.getLoginOperation().owns(activeMaterial)) {
 			activeMaterial.setSharingKey(null);
 		}
 
@@ -229,8 +256,8 @@ public class SaveControllerW implements SaveController {
 	 * sync-problems with a file, a new one is generated on ggt.
 	 */
 	private void uploadToGgt(final String visibility, boolean isMultiuser) {
-		final boolean titleChanged = !fileName
-				.equals(app.getKernel().getConstruction().getTitle());
+		final boolean titleChanged =
+				!fileName.equals(app.getKernel().getConstruction().getTitle());
 		app.getKernel().getConstruction().setTitle(fileName);
 		Material mat = app.getActiveMaterial();
 		if (!titleChanged && mat != null) {
@@ -240,13 +267,11 @@ public class SaveControllerW implements SaveController {
 			if (titleChanged && (isWorksheet() || savedAsTemplate())) {
 				Log.debug("SAVE filename changed");
 				getAppW().updateMaterialURL(null, null);
-				doUploadToGgt(getAppW().getTubeId(), visibility, base64,
-						newMaterialCB(base64, false),
-						isMultiuser);
+				doUploadToGgt(
+						getAppW().getTubeId(), visibility, base64, newMaterialCB(base64, false), isMultiuser);
 			} else if (StringUtil.emptyOrZero(getAppW().getTubeId())) {
 				Log.debug("SAVE had no Tube ID");
-				doUploadToGgt(null, visibility, base64,
-						newMaterialCB(base64, false), isMultiuser);
+				doUploadToGgt(null, visibility, base64, newMaterialCB(base64, false), isMultiuser);
 			} else {
 
 				handleSync(base64, visibility, isMultiuser);
@@ -268,7 +293,7 @@ public class SaveControllerW implements SaveController {
 
 	/**
 	 * GoogleDrive upload
-	 * 
+	 *
 	 */
 	void doUploadToDrive() {
 		String saveName = fileName;
@@ -277,7 +302,8 @@ public class SaveControllerW implements SaveController {
 			app.getKernel().getConstruction().setTitle(saveName);
 			saveName += prefix;
 		} else {
-			app.getKernel().getConstruction()
+			app.getKernel()
+					.getConstruction()
 					.setTitle(saveName.substring(0, saveName.length() - prefix.length()));
 		}
 		StringConsumer callback = ((GoogleDriveOperationW) app.getGoogleDriveOperation())
@@ -292,67 +318,66 @@ public class SaveControllerW implements SaveController {
 	 *            "P" - private / "O" - public / "S" - shared
 	 */
 	void handleSync(final String base64, final String visibility, boolean isMultiuser) {
-		app.getLoginOperation().getResourcesAPI().getItem(app.getTubeId() + "",
-				new MaterialCallback() {
+		app.getLoginOperation().getResourcesAPI().getItem(app.getTubeId() + "", new MaterialCallback() {
 
-					@Override
-					public void onLoaded(final List<Material> parseResponse,
-							Pagination meta) {
-						MaterialCallbackI materialCallback;
-						if (parseResponse.size() == 1) {
-							if (parseResponse.get(0).getModified() > getAppW()
-									.getSyncStamp()) {
-								Log.debug("SAVE MULTIPLE" + parseResponse.get(0).getModified() + ":"
-										+ getAppW().getSyncStamp());
-								getAppW().updateMaterialURL(null, null);
-								materialCallback = newMaterialCB(base64, true);
-							} else {
-								materialCallback = newMaterialCB(base64, false);
-							}
-							String key = parseResponse.get(0).getSharingKeySafe();
-							doUploadToGgt(key, visibility,
-									base64,
-									materialCallback, isMultiuser);
-						} else {
-							// if the file was deleted meanwhile
-							// (parseResponse.size() == 0)
-							getAppW().setTubeId(null);
-							materialCallback = newMaterialCB(base64, false);
-							doUploadToGgt(getAppW().getTubeId(), visibility,
-									base64,
-									materialCallback, isMultiuser);
-						}
+			@Override
+			public void onLoaded(final List<Material> parseResponse, Pagination meta) {
+				MaterialCallbackI materialCallback;
+				if (parseResponse.size() == 1) {
+					if (parseResponse.get(0).getModified() > getAppW().getSyncStamp()) {
+						Log.debug("SAVE MULTIPLE" + parseResponse.get(0).getModified() + ":"
+								+ getAppW().getSyncStamp());
+						getAppW().updateMaterialURL(null, null);
+						materialCallback = newMaterialCB(base64, true);
+					} else {
+						materialCallback = newMaterialCB(base64, false);
 					}
+					String key = parseResponse.get(0).getSharingKeySafe();
+					doUploadToGgt(key, visibility, base64, materialCallback, isMultiuser);
+				} else {
+					// if the file was deleted meanwhile
+					// (parseResponse.size() == 0)
+					getAppW().setTubeId(null);
+					materialCallback = newMaterialCB(base64, false);
+					doUploadToGgt(getAppW().getTubeId(), visibility, base64, materialCallback, isMultiuser);
+				}
+			}
 
-					@Override
-					public void onError(final Throwable exception) {
-						getAppW().showError(Errors.SaveFileFailed);
-					}
-				});
+			@Override
+			public void onError(final Throwable exception) {
+				getAppW().showError(Errors.SaveFileFailed);
+			}
+		});
 	}
 
 	/**
 	 * Does the upload of the actual opened file to GeoGebraTube
-	 * 
+	 *
 	 * @param tubeID
 	 *            id in materials platform
 	 * @param visibility
 	 *            visibility string
 	 * @param base64
 	 *            material base64
-	 * 
+	 *
 	 * @param materialCallback
 	 *            {@link MaterialCallback}
 	 */
-	private void doUploadToGgt(String tubeID, String visibility, String base64,
-			MaterialCallbackI materialCallback, boolean isMultiuser) {
-		app.getLoginOperation().getGeoGebraTubeAPI().uploadMaterial(tubeID, visibility,
-				fileName, base64, materialCallback, this.saveType, isMultiuser);
+	private void doUploadToGgt(
+			String tubeID,
+			String visibility,
+			String base64,
+			MaterialCallbackI materialCallback,
+			boolean isMultiuser) {
+		app.getLoginOperation()
+				.getGeoGebraTubeAPI()
+				.uploadMaterial(
+						tubeID, visibility, fileName, base64, materialCallback, this.saveType, isMultiuser);
 	}
 
 	@Override
 	public boolean isWorksheet() {
-		return MaterialType.ggb.equals(saveType) || MaterialType.ggs.equals(saveType);
+		return MaterialType.ggb == saveType || MaterialType.ggs == saveType;
 	}
 
 	/**
@@ -377,7 +402,7 @@ public class SaveControllerW implements SaveController {
 
 	@Override
 	public boolean savedAsTemplate() {
-		return MaterialType.ggsTemplate.equals(getSaveType());
+		return MaterialType.ggsTemplate == getSaveType();
 	}
 
 	/**
@@ -395,10 +420,8 @@ public class SaveControllerW implements SaveController {
 				if (isWorksheet() || savedAsTemplate()) {
 					if (parseResponse.size() == 1) {
 						Material newMat = parseResponse.get(0);
-						newMat.setThumbnailBase64(
-								app.getGgbApi().getThumbnailDataURL());
-						getAppW().getKernel().getConstruction()
-								.setTitle(getFileName());
+						newMat.setThumbnailBase64(app.getGgbApi().getThumbnailDataURL());
+						getAppW().getKernel().getConstruction().setTitle(getFileName());
 
 						// last synchronization is equal to last modified
 						getAppW().setSyncStamp(newMat.getModified());
@@ -409,26 +432,21 @@ public class SaveControllerW implements SaveController {
 
 						getAppW().setActiveMaterial(newMat);
 						getAppW().setSyncStamp(newMat.getModified());
-						saveLocalIfNeeded(newMat.getModified(),
-								forked ? SaveState.FORKED : SaveState.OK);
+						saveLocalIfNeeded(newMat.getModified(), forked ? SaveState.FORKED : SaveState.OK);
 						// if we got there via file => new, do the file =>new
 						// now
 						runAfterSaveCallback(true);
 						runAutoSaveCallback();
 					} else {
 						resetCallback();
-						saveLocalIfNeeded(
-								SaveControllerW.getCurrentTimestamp(getAppW()),
-								SaveState.ERROR);
+						saveLocalIfNeeded(SaveControllerW.getCurrentTimestamp(getAppW()), SaveState.ERROR);
 					}
 				} else {
 					if (parseResponse.size() == 1) {
-						SaveCallback.onSaved(getAppW(), SaveState.OK,
-								false);
+						SaveCallback.onSaved(getAppW(), SaveState.OK, false);
 						runAutoSaveCallback();
 					} else {
-						SaveCallback.onSaved(getAppW(), SaveState.ERROR,
-								false);
+						SaveCallback.onSaved(getAppW(), SaveState.ERROR, false);
 					}
 				}
 				if (getListener() != null) {
@@ -443,9 +461,7 @@ public class SaveControllerW implements SaveController {
 				if (exception.getMessage().contains("auth")) {
 					getAppW().getLoginOperation().performTokenLogin();
 				}
-				saveLocalIfNeeded(
-						SaveControllerW.getCurrentTimestamp(getAppW()),
-						SaveState.ERROR);
+				saveLocalIfNeeded(SaveControllerW.getCurrentTimestamp(getAppW()), SaveState.ERROR);
 				if (getListener() != null) {
 					getListener().hide();
 				}
@@ -453,13 +469,12 @@ public class SaveControllerW implements SaveController {
 
 			private void saveLocalIfNeeded(long modified, SaveState state) {
 				FileManager fileManager = (FileManager) getAppW().getFileManager();
-				if (isWorksheet() && (fileManager.shouldKeep(0)
-						|| fileManager.isOfflinePlatform()
-						|| state == SaveState.ERROR)) {
-					getAppW().getKernel().getConstruction()
-							.setTitle(getFileName());
-					fileManager.saveFile(base64,
-							modified, new SaveCallback(getAppW(), state));
+				if (isWorksheet()
+						&& (fileManager.shouldKeep(0)
+								|| fileManager.isOfflinePlatform()
+								|| state == SaveState.ERROR)) {
+					getAppW().getKernel().getConstruction().setTitle(getFileName());
+					fileManager.saveFile(base64, modified, new SaveCallback(getAppW(), state));
 				} else {
 					SaveCallback.onSaved(getAppW(), state, false);
 				}
@@ -494,6 +509,7 @@ public class SaveControllerW implements SaveController {
 
 	@Override
 	public void dontSave() {
+		app.getAccessibilityAnalyticsContext().reset();
 		if (isWorksheet()) {
 			app.setSaved();
 			// run only if material active/created
@@ -503,6 +519,7 @@ public class SaveControllerW implements SaveController {
 
 	@Override
 	public void cancel() {
+		app.getAccessibilityAnalyticsContext().reset();
 		if (isWorksheet()) {
 			// run only if material active/created
 			runAfterSaveCallback(app.getActiveMaterial() != null);
@@ -519,22 +536,21 @@ public class SaveControllerW implements SaveController {
 	}
 
 	@Override
-	public void updateSaveTitle(TextObject title, String fallback) {
+	public void updateSaveTitle(Consumer<String> title, String fallback) {
 		String consTitle = app.getKernel().getConstruction().getTitle();
 		if (!StringUtil.empty(consTitle)) {
 			if (consTitle.startsWith(MaterialsManager.FILE_PREFIX)) {
 				consTitle = getTitleOnly(consTitle);
 			}
 			Material activeMaterial = app.getActiveMaterial();
-			if (activeMaterial != null && !app.getLoginOperation()
-					.owns(activeMaterial)) {
+			if (activeMaterial != null && !app.getLoginOperation().owns(activeMaterial)) {
 				consTitle = MaterialRestAPI.getCopyTitle(loc, consTitle);
-				title.setText(consTitle);
+				title.accept(consTitle);
 				return;
 			}
-			title.setText(consTitle);
+			title.accept(consTitle);
 		} else {
-			title.setText(fallback);
+			title.accept(fallback);
 		}
 	}
 }

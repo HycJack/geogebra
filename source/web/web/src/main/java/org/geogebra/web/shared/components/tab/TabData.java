@@ -19,7 +19,7 @@ package org.geogebra.web.shared.components.tab;
 import org.geogebra.web.html5.gui.util.AriaHelper;
 import org.gwtproject.user.client.ui.Widget;
 
-public class TabData {
+public final class TabData {
 	private String tabTitle;
 	private Widget tabPanel;
 
@@ -31,6 +31,7 @@ public class TabData {
 	public TabData(String tabTitle, Widget tabPanel) {
 		setTabTitle(tabTitle);
 		setTabPanel(tabPanel);
+		tabPanel.addStyleName("tabPanel");
 	}
 
 	private void setTabTitle(String tabTitle) {
@@ -42,6 +43,9 @@ public class TabData {
 		AriaHelper.setRole(tabPanel, "tabpanel");
 	}
 
+	/**
+	 * @return translation key for title
+	 */
 	public String getTabTitle() {
 		return tabTitle;
 	}

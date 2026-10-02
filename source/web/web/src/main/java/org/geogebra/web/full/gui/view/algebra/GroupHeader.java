@@ -24,18 +24,19 @@ import org.gwtproject.user.client.ui.TreeItem;
 /**
  * AV group header
  */
-public class GroupHeader extends FlowPanel {
-	
+public final class GroupHeader extends FlowPanel {
+
 	/**
 	 * label
 	 */
-	protected GroupNameLabel il;
+	private final GroupNameLabel il;
 
 	/**
 	 * +/- button
 	 */
-	protected OpenButton open;
-	private String label;
+	private final OpenButton open;
+
+	private final String label;
 
 	/**
 	 * @param selection
@@ -51,12 +52,17 @@ public class GroupHeader extends FlowPanel {
 	 * @param hiddenUrl
 	 *            image when collapsed
 	 */
-	public GroupHeader(SelectionManager selection, TreeItem parent,
-			String label, String key, SafeUri showUrl, SafeUri hiddenUrl) {
-		
+	public GroupHeader(
+			SelectionManager selection,
+			TreeItem parent,
+			String label,
+			String key,
+			SafeUri showUrl,
+			SafeUri hiddenUrl) {
+
 		this.setStyleName("elemHeading");
 		this.label = key;
-		
+
 		add(open = new OpenButton(showUrl, hiddenUrl, parent, "algebraOpenButton"));
 		add(il = new GroupNameLabel(selection, parent, label));
 	}

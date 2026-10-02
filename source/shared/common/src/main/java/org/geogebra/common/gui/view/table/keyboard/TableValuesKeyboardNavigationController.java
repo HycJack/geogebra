@@ -16,8 +16,6 @@
 
 package org.geogebra.common.gui.view.table.keyboard;
 
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.gui.view.table.TableValues;
 import org.geogebra.common.gui.view.table.TableValuesCell;
 import org.geogebra.common.gui.view.table.TableValuesModel;
@@ -25,6 +23,7 @@ import org.geogebra.common.kernel.geos.GeoList;
 import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
 import org.geogebra.common.ownership.NonOwning;
 import org.geogebra.common.util.StringUtil;
+import org.jspecify.annotations.NonNull;
 
 import com.google.j2objc.annotations.Weak;
 
@@ -54,7 +53,13 @@ public final class TableValuesKeyboardNavigationController {
 	 * Keys handled by navigation controller.
 	 */
 	public enum Key {
-		ARROW_LEFT, ARROW_RIGHT, ARROW_UP, ARROW_DOWN, RETURN;
+		ARROW_LEFT,
+		ARROW_RIGHT,
+		ARROW_UP,
+		ARROW_DOWN,
+		RETURN,
+		CONTEXT_MENU,
+		COPY;
 	}
 
 	@NonOwning
@@ -62,9 +67,10 @@ public final class TableValuesKeyboardNavigationController {
 	public TableValuesKeyboardNavigationControllerDelegate delegate;
 
 	@NonOwning
-	private final @Nonnull TableValues tableValuesView;
+	private final @NonNull TableValues tableValuesView;
+
 	@NonOwning
-	private final @Nonnull TableValuesModel tableValuesModel;
+	private final @NonNull TableValuesModel tableValuesModel;
 
 	private boolean isReadonly = false;
 	private int selectedRow = -1;
@@ -78,7 +84,8 @@ public final class TableValuesKeyboardNavigationController {
 	 * @param delegate The delegate (can be null here, but must be supplied through
 	 * the public writable field before use).
 	 */
-	public TableValuesKeyboardNavigationController(@Nonnull TableValues tableValuesView,
+	public TableValuesKeyboardNavigationController(
+			@NonNull TableValues tableValuesView,
 			TableValuesKeyboardNavigationControllerDelegate delegate) {
 		this.tableValuesView = tableValuesView;
 		this.tableValuesModel = tableValuesView.getTableValuesModel();
@@ -86,21 +93,21 @@ public final class TableValuesKeyboardNavigationController {
 	}
 
 	/**
-	 * Prevent selection and navigation.
+	 * Prevent editing while keeping existing cells available for keyboard navigation.
 	 */
 	public void setReadonly(boolean readonly) {
 		isReadonly = readonly;
 	}
 
 	/**
-	 * @return The selected column index, or -1 if no cell is selected.
+	 * @return The selected row index, or -1 if no cell is selected.
 	 */
 	public int getSelectedRow() {
 		return selectedRow;
 	}
 
 	/**
-	 * @return The selected row index, or -1 if no cell is selected.
+	 * @return The selected column index, or -1 if no cell is selected.
 	 */
 	public int getSelectedColumn() {
 		return selectedColumn;
@@ -138,20 +145,18 @@ public final class TableValuesKeyboardNavigationController {
 	 * different color in the UI, for example.
 	 */
 	public boolean isColumnEditable(int column) {
-		return tableValuesModel.isColumnEditable(column)
-				|| (tableValuesModel.allowsAddingColumns()
-				&& column == tableValuesModel.getColumnCount());
+		return !isReadonly
+				&& (tableValuesModel.isColumnEditable(column)
+						|| (tableValuesModel.allowsAddingColumns()
+								&& column == tableValuesModel.getColumnCount()));
 	}
-	
+
 	/**
 	 * Select a cell.
 	 * @param row the row index to select, or -1 to clear any selection.
 	 * @param column the column index to select, or -1 to clear any selection.
 	 */
 	public void select(int row, int column) {
-		if (isReadonly) {
-			return;
-		}
 		boolean changed = selectedRow != row || selectedColumn != column;
 		if (!changed) {
 			if (delegate != null && selectedRow != -1 && selectedColumn != -1) {
@@ -185,8 +190,7 @@ public final class TableValuesKeyboardNavigationController {
 				selectedRow = tableValuesModel.getRowCount();
 			}
 		}
-		// are we trying to focus a cell that has become non-editable after committing changes?
-		if (!isColumnEditable(selectedColumn)) {
+		if (!isCellNavigable(selectedRow, selectedColumn)) {
 			selectedRow = -1;
 			selectedColumn = -1;
 		}
@@ -201,7 +205,7 @@ public final class TableValuesKeyboardNavigationController {
 			}
 		}
 	}
-	
+
 	/**
 	 * Clear (remove) any selection.
 	 *
@@ -227,21 +231,27 @@ public final class TableValuesKeyboardNavigationController {
 			return; // see apiNote
 		}
 		switch (key) {
-		case ARROW_LEFT:
-			handleArrowLeft();
-			break;
-		case ARROW_RIGHT:
-			handleArrowRight();
-			break;
-		case ARROW_UP:
-			handleArrowUp();
-			break;
-		case ARROW_DOWN:
-			handleArrowDown();
-			break;
-		case RETURN:
-			handleArrowDown();
-			break;
+			case ARROW_LEFT:
+				handleArrowLeft();
+				break;
+			case ARROW_RIGHT:
+				handleArrowRight();
+				break;
+			case ARROW_UP:
+				handleArrowUp();
+				break;
+			case ARROW_DOWN:
+				handleArrowDown();
+				break;
+			case RETURN:
+				handleArrowDown();
+				break;
+			case CONTEXT_MENU:
+				handleContextMenu();
+				break;
+			case COPY:
+				handleCopy();
+				break;
 		}
 	}
 
@@ -250,7 +260,10 @@ public final class TableValuesKeyboardNavigationController {
 			// arrow left in first column -> no change in selection
 			return;
 		}
-		select(selectedRow, findFirstFocusableColumnLeftOf(selectedColumn));
+		int previousColumn = findNavigableColumn(selectedColumn, -1);
+		if (previousColumn >= 0) {
+			select(selectedRow, previousColumn);
+		}
 	}
 
 	private void handleArrowRight() {
@@ -263,7 +276,7 @@ public final class TableValuesKeyboardNavigationController {
 			select(selectedRow, selectedColumn + 1);
 			return;
 		}
-		int nextColumn = findFirstFocusableColumnRightOf(selectedColumn);
+		int nextColumn = findNavigableColumn(selectedColumn, 1);
 		if (nextColumn == -1) {
 			if (tableValuesModel.allowsAddingColumns() && !addedPlaceholderColumn) {
 				addedPlaceholderColumn = true;
@@ -283,6 +296,9 @@ public final class TableValuesKeyboardNavigationController {
 	}
 
 	private void handleArrowDown() {
+		if (!isColumnEditable(selectedColumn) && selectedRow == tableValuesModel.getRowCount() - 1) {
+			return;
+		}
 		if (isEditingPlaceholderColumn()) {
 			if (selectedRow == tableValuesModel.getRowCount()
 					&& isCellEmpty(selectedRow, selectedColumn)) {
@@ -300,6 +316,14 @@ public final class TableValuesKeyboardNavigationController {
 		select(selectedRow + 1, selectedColumn);
 	}
 
+	private void handleContextMenu() {
+		delegate.showContextMenu(selectedColumn);
+	}
+
+	private void handleCopy() {
+		delegate.copyContent(selectedRow, selectedColumn);
+	}
+
 	private boolean isFirstRow(int row) {
 		return row == 0;
 	}
@@ -308,18 +332,11 @@ public final class TableValuesKeyboardNavigationController {
 		return column == 0;
 	}
 
-	private int findFirstFocusableColumnLeftOf(int column) {
-		for (int index = column - 1; index >= 0; index--) {
-			if (tableValuesModel.isColumnEditable(index)) {
-				return index;
-			}
-		}
-		return -1;
-	}
-
-	private int findFirstFocusableColumnRightOf(int column) {
-		for (int index = column + 1; index < getMaxColumnIndex(); index++) {
-			if (tableValuesModel.isColumnEditable(index)) {
+	private int findNavigableColumn(int column, int direction) {
+		for (int index = column + direction;
+				index >= 0 && index < getMaxColumnIndex();
+				index += direction) {
+			if (isCellNavigable(selectedRow, index)) {
 				return index;
 			}
 		}
@@ -328,7 +345,10 @@ public final class TableValuesKeyboardNavigationController {
 
 	// note: the returned end index is exclusive!
 	private int getMaxRowIndex(int column) {
-		if (!tableValuesModel.isColumnEditable(column)) {
+		if (addedPlaceholderColumn && column == getMaxColumnIndex() - 1) {
+			return tableValuesModel.getRowCount() + 1;
+		}
+		if (!isColumnEditable(column)) {
 			return tableValuesModel.getRowCount();
 		}
 		return tableValuesModel.getRowCount() + (addedPlaceholderRow ? 1 : 0);
@@ -337,6 +357,13 @@ public final class TableValuesKeyboardNavigationController {
 	// note: the returned end index is exclusive!
 	private int getMaxColumnIndex() {
 		return tableValuesModel.getColumnCount() + (addedPlaceholderColumn ? 1 : 0);
+	}
+
+	private boolean isCellNavigable(int row, int column) {
+		if (row < 0 || column < 0 || column >= getMaxColumnIndex()) {
+			return false;
+		}
+		return row < getMaxRowIndex(column);
 	}
 
 	private boolean isCellEmpty(int row, int column) {
@@ -348,7 +375,7 @@ public final class TableValuesKeyboardNavigationController {
 		if (selectedRow == -1 || selectedColumn == -1) {
 			return;
 		}
-		if (isEditingPlaceholderColumn() || tableValuesModel.isColumnEditable(selectedColumn)) {
+		if (isEditingPlaceholderColumn() || isColumnEditable(selectedColumn)) {
 			String cellContent = delegate.getCellEditorContent(selectedRow, selectedColumn);
 			if (cellContent == null) {
 				cellContent = "";
@@ -377,10 +404,16 @@ public final class TableValuesKeyboardNavigationController {
 
 	// Test support
 
+	/**
+	 * @return whether the currently selected column is the placeholder column that was just added
+	 */
 	public boolean isEditingPlaceholderColumn() {
 		return addedPlaceholderColumn && selectedColumn == getMaxColumnIndex() - 1;
 	}
 
+	/**
+	 * @return whether the currently selected row is the placeholder row that was just added
+	 */
 	public boolean isEditingPlaceholderRow() {
 		return addedPlaceholderRow && selectedRow == getMaxRowIndex(selectedColumn) - 1;
 	}

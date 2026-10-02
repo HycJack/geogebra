@@ -40,10 +40,10 @@ import org.gwtproject.user.client.ui.SimplePanel;
 /**
  * Glass pane is used to draw the drag-preview area on the panels if the user
  * enters the drag'n'drop mode.
- * 
+ *
  * @author Florian Sonner, adapted by G.Sturr
  */
-public class DockGlassPaneW extends AbsolutePanel
+public final class DockGlassPaneW extends AbsolutePanel
 		implements MouseMoveHandler, TouchMoveHandler {
 
 	private boolean dragInProgress = false;
@@ -76,10 +76,8 @@ public class DockGlassPaneW extends AbsolutePanel
 		setStyleName("DockGlassPane");
 
 		previewPanel = new SimplePanel();
-		previewPanel.getElement().getStyle()
-			.setBorderWidth(BORDER_WIDTH, Unit.PX);
-		previewPanel.getElement().getStyle()
-				.setBorderStyle(BorderStyle.SOLID);
+		previewPanel.getElement().getStyle().setBorderWidth(BORDER_WIDTH, Unit.PX);
+		previewPanel.getElement().getStyle().setBorderStyle(BorderStyle.SOLID);
 		previewPanel.getElement().getStyle().setBorderColor("gray");
 
 		previewPanel.setVisible(false);
@@ -87,7 +85,10 @@ public class DockGlassPaneW extends AbsolutePanel
 
 		this.getElement().getStyle().setZIndex(5000);
 	}
-	
+
+	/**
+	 * @param element parent element of the applet
+	 */
 	public void setGeoGebraElement(GeoGebraElement element) {
 		this.ae = element;
 	}
@@ -117,7 +118,7 @@ public class DockGlassPaneW extends AbsolutePanel
 
 	/**
 	 * Start the dragging process by adding the mouse listeners.
-	 * 
+	 *
 	 * @param state
 	 *            drag state
 	 */
@@ -128,16 +129,14 @@ public class DockGlassPaneW extends AbsolutePanel
 		setVisible(true);
 		reg0 = addBitlessDomHandler(this, TouchMoveEvent.getType());
 		reg1 = addDomHandler(this, MouseMoveEvent.getType());
-		reg2 =
-		ClickEndHandler.init(this, new ClickEndHandler() {
+		reg2 = ClickEndHandler.init(this, new ClickEndHandler() {
 
 			@Override
 			public void onClickEnd(int x, int y, PointerEventType type) {
 				onMouseUp();
-
 			}
 		});
-		
+
 		// this.getElement().getStyle().setZIndex(50);
 		if (dragInProgress) {
 			return;
@@ -158,7 +157,8 @@ public class DockGlassPaneW extends AbsolutePanel
 			// window for the drag'n'drop
 			if (dockPanel.isVisible()) {
 				// tmpRect = dockPanels[i].getBounds();
-				Rectangle tmpRect = new Rectangle(dockPanel.getAbsoluteLeft(),
+				Rectangle tmpRect = new Rectangle(
+						dockPanel.getAbsoluteLeft(),
 						dockPanel.getAbsoluteTop(),
 						dockPanel.getOffsetWidth(),
 						dockPanel.getOffsetHeight());
@@ -211,25 +211,21 @@ public class DockGlassPaneW extends AbsolutePanel
 
 	/**
 	 * Calculate where the panel would be placed if the mouse is released.
-	 * 
+	 *
 	 * @param mouseX
 	 *            mouse x-coord
 	 * @param mouseY
 	 *            mouse y-coord
 	 */
 	public void mouseDragged(int mouseX, int mouseY) {
-
-		int x2, y2, w, h;
 		boolean update = false;
 
 		// Check if the mouse intersects with any DockPanel
 		for (int i = 0; i < dockPanelsBounds.length; ++i) {
 			if (mouseX >= dockPanelsBounds[i].getX()
-					&& mouseX <= dockPanelsBounds[i].getX()
-							+ dockPanelsBounds[i].getWidth()
+					&& mouseX <= dockPanelsBounds[i].getX() + dockPanelsBounds[i].getWidth()
 					&& mouseY >= dockPanelsBounds[i].getY()
-					&& mouseY <= dockPanelsBounds[i].getY()
-							+ dockPanelsBounds[i].getHeight()) {
+					&& mouseY <= dockPanelsBounds[i].getY() + dockPanelsBounds[i].getHeight()) {
 				update = true;
 				dndState.setTarget(dockPanels[i]);
 				break;
@@ -237,165 +233,169 @@ public class DockGlassPaneW extends AbsolutePanel
 		}
 
 		if (update) {
-			DockPanelW target = dndState.getTarget();
-
-			x2 = (int) (target.getAbsoluteLeft() / ae.getScaleX());
-			y2 = (int) (target.getAbsoluteTop() / ae.getScaleY());
-			w = target.getOffsetWidth();
-			h = target.getOffsetHeight();
-
-			int relativeLeft = mouseX - x2;
-			int relativeTop = mouseY - y2;
-
-			int orientation = ((DockSplitPaneW) target.getParent()).getOrientation();
-
-			double leftPercent = relativeLeft * 1.0 / target.getOffsetWidth();
-			double topPercent = relativeTop * 1.0 / target.getOffsetHeight();
-			double maxDist = 0.35;
-
-			color = COLOR_DEFAULT;
-
-			// calculate the preview rectangle
-			if (orientation == SwingConstants.VERTICAL_SPLIT) {
-
-				if (leftPercent < maxDist) {
-					if (leftPercent < maxDist / 2) {
-						dndState.setRegion(DnDState.LEFT_OUT);
-						setColorEnoughWidth(target);
-
-						DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
-						x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
-						y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
-
-						w *= maxDist / 2;
-						h = splitPane.getOffsetHeight();
-					} else {
-						dndState.setRegion(DnDState.LEFT);
-						setColorEnoughWidth(target);
-						w *= maxDist;
-					}
-
-				} else if (leftPercent > 1 - maxDist) {
-					if (leftPercent > 1 - maxDist / 2) {
-						dndState.setRegion(DnDState.RIGHT_OUT);
-						setColorEnoughWidth(target);
-
-						DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
-						x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
-						y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
-
-						x2 += w * (1 - maxDist / 2);
-						w *= maxDist / 2;
-						h = splitPane.getOffsetHeight();
-					} else {
-						dndState.setRegion(DnDState.RIGHT);
-						setColorEnoughWidth(target);
-
-						x2 += w * (1 - maxDist);
-						w *= maxDist;
-					}
-
-				} else {
-					if (topPercent < 0.5) {
-						dndState.setRegion(DnDState.TOP);
-						setColorEnoughHeight(target);
-
-						h *= 0.5f;
-					} else {
-						dndState.setRegion(DnDState.BOTTOM);
-						setColorEnoughHeight(target);
-
-						y2 += h * 0.5f;
-						h *= 0.5f;
-					}
-				}
-
-			} else {
-				if (topPercent < maxDist) {
-					if (topPercent < maxDist / 2) {
-						dndState.setRegion(DnDState.TOP_OUT);
-						setColorEnoughHeight(target);
-
-						DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
-						x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
-						y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
-						h *= maxDist / 2;
-						w = splitPane.getOffsetWidth();
-
-					} else {
-						dndState.setRegion(DnDState.TOP);
-						setColorEnoughHeight(target);
-
-						h *= maxDist;
-					}
-				} else if (topPercent > 1 - maxDist) {
-					if (topPercent > 1 - maxDist / 2) {
-						dndState.setRegion(DnDState.BOTTOM_OUT);
-						setColorEnoughHeight(target);
-
-						DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
-						x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
-						y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
-						y2 += h * (1 - maxDist / 2);
-						h *= maxDist / 2;
-						w = splitPane.getOffsetWidth();
-					} else {
-						dndState.setRegion(DnDState.BOTTOM);
-						setColorEnoughHeight(target);
-
-						y2 += h * (1 - maxDist);
-						h *= maxDist;
-					}
-				} else {
-					if (leftPercent < 0.5) {
-						dndState.setRegion(DnDState.LEFT);
-						setColorEnoughWidth(target);
-
-						w *= 0.5f;
-					} else {
-						dndState.setRegion(DnDState.RIGHT);
-						setColorEnoughWidth(target);
-
-						x2 += w * 0.5f;
-						w *= 0.5f;
-					}
-				}
-			}
-
-			// nothing changed
-			if (target == dndState.getSource() && !dndState.isRegionOut()) {
-				x2 = (int) (target.getAbsoluteLeft() / ae.getScaleX());
-				y2 = (int) (target.getAbsoluteTop() / ae.getScaleY());
-				w = target.getOffsetWidth();
-				h = target.getOffsetHeight();
-
-				color = COLOR_SAME_PLACE;
-			}
-
-			// x2 += (int) (Math.ceil(stroke.getLineWidth() / 2));
-			// y2 += (int) (Math.ceil(stroke.getLineWidth() / 2));
-			w -= 2 * BORDER_WIDTH;
-			h -= 2 * BORDER_WIDTH;
-
-			setWidgetPosition(previewPanel, x2
-					- (int) (this.getAbsoluteLeft() / ae.getScaleX()), y2
-					- (int) (this.getAbsoluteTop() / ae.getScaleY()));
-			previewPanel.setPixelSize(w, h);
-			previewPanel.getElement().getStyle().setBackgroundColor(color);
-			previewPanel.getElement().getStyle().setOpacity(0.6f);
-			previewPanel.setVisible(true);
-
+			updateForMouseDrag(mouseX, mouseY);
 		} else {
 			dndState.setTarget(null);
 			previewPanel.setVisible(false);
 		}
 	}
 
+	private void updateForMouseDrag(int mouseX, int mouseY) {
+		DockPanelW target = dndState.getTarget();
+		int x2 = (int) (target.getAbsoluteLeft() / ae.getScaleX());
+		int y2 = (int) (target.getAbsoluteTop() / ae.getScaleY());
+		int w = target.getOffsetWidth();
+		int h = target.getOffsetHeight();
+
+		int relativeLeft = mouseX - x2;
+		int relativeTop = mouseY - y2;
+
+		int orientation = ((DockSplitPaneW) target.getParent()).getOrientation();
+
+		double leftPercent = relativeLeft * 1.0 / w;
+		double topPercent = relativeTop * 1.0 / h;
+		double maxDist = 0.35;
+
+		color = COLOR_DEFAULT;
+
+		// calculate the preview rectangle
+		if (orientation == SwingConstants.VERTICAL_SPLIT) {
+
+			if (leftPercent < maxDist) {
+				if (leftPercent < maxDist / 2) {
+					dndState.setRegion(DnDState.LEFT_OUT);
+					setColorEnoughWidth(target);
+
+					DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
+					x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
+					y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
+
+					w *= maxDist / 2;
+					h = splitPane.getOffsetHeight();
+				} else {
+					dndState.setRegion(DnDState.LEFT);
+					setColorEnoughWidth(target);
+					w *= maxDist;
+				}
+
+			} else if (leftPercent > 1 - maxDist) {
+				if (leftPercent > 1 - maxDist / 2) {
+					dndState.setRegion(DnDState.RIGHT_OUT);
+					setColorEnoughWidth(target);
+
+					DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
+					x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
+					y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
+
+					x2 += w * (1 - maxDist / 2);
+					w *= maxDist / 2;
+					h = splitPane.getOffsetHeight();
+				} else {
+					dndState.setRegion(DnDState.RIGHT);
+					setColorEnoughWidth(target);
+
+					x2 += w * (1 - maxDist);
+					w *= maxDist;
+				}
+
+			} else {
+				if (topPercent < 0.5) {
+					dndState.setRegion(DnDState.TOP);
+					setColorEnoughHeight(target);
+
+					h *= 0.5f;
+				} else {
+					dndState.setRegion(DnDState.BOTTOM);
+					setColorEnoughHeight(target);
+
+					y2 += h * 0.5f;
+					h *= 0.5f;
+				}
+			}
+
+		} else {
+			if (topPercent < maxDist) {
+				if (topPercent < maxDist / 2) {
+					dndState.setRegion(DnDState.TOP_OUT);
+					setColorEnoughHeight(target);
+
+					DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
+					x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
+					y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
+					h *= maxDist / 2;
+					w = splitPane.getOffsetWidth();
+
+				} else {
+					dndState.setRegion(DnDState.TOP);
+					setColorEnoughHeight(target);
+
+					h *= maxDist;
+				}
+			} else if (topPercent > 1 - maxDist) {
+				if (topPercent > 1 - maxDist / 2) {
+					dndState.setRegion(DnDState.BOTTOM_OUT);
+					setColorEnoughHeight(target);
+
+					DockSplitPaneW splitPane = (DockSplitPaneW) target.getParent();
+					x2 = (int) (splitPane.getAbsoluteLeft() / ae.getScaleX());
+					y2 = (int) (splitPane.getAbsoluteTop() / ae.getScaleY());
+					y2 += h * (1 - maxDist / 2);
+					h *= maxDist / 2;
+					w = splitPane.getOffsetWidth();
+				} else {
+					dndState.setRegion(DnDState.BOTTOM);
+					setColorEnoughHeight(target);
+
+					y2 += h * (1 - maxDist);
+					h *= maxDist;
+				}
+			} else {
+				if (leftPercent < 0.5) {
+					dndState.setRegion(DnDState.LEFT);
+					setColorEnoughWidth(target);
+
+					w *= 0.5f;
+				} else {
+					dndState.setRegion(DnDState.RIGHT);
+					setColorEnoughWidth(target);
+
+					x2 += w * 0.5f;
+					w *= 0.5f;
+				}
+			}
+		}
+
+		// nothing changed
+		if (target == dndState.getSource() && !dndState.isRegionOut()) {
+			x2 = (int) (target.getAbsoluteLeft() / ae.getScaleX());
+			y2 = (int) (target.getAbsoluteTop() / ae.getScaleY());
+			w = target.getOffsetWidth();
+			h = target.getOffsetHeight();
+
+			color = COLOR_SAME_PLACE;
+		}
+
+		// x2 += (int) (Math.ceil(stroke.getLineWidth() / 2));
+		// y2 += (int) (Math.ceil(stroke.getLineWidth() / 2));
+		w -= 2 * BORDER_WIDTH;
+		h -= 2 * BORDER_WIDTH;
+
+		setWidgetPosition(
+				previewPanel,
+				x2 - (int) (this.getAbsoluteLeft() / ae.getScaleX()),
+				y2 - (int) (this.getAbsoluteTop() / ae.getScaleY()));
+		previewPanel.setPixelSize(w, h);
+		previewPanel.getElement().getStyle().setBackgroundColor(color);
+		previewPanel.getElement().getStyle().setOpacity(0.6f);
+		previewPanel.setVisible(true);
+	}
+
 	@Override
 	public void onMouseMove(MouseMoveEvent event) {
 		if (dragInProgress) {
 			// Use getClientX rather than getX, see #4049
-			mouseDragged(event.getClientX() + NavigatorUtil.getWindowScrollLeft(),
+			mouseDragged(
+					event.getClientX() + NavigatorUtil.getWindowScrollLeft(),
 					event.getClientY() + NavigatorUtil.getWindowScrollTop());
 		}
 	}
@@ -406,10 +406,8 @@ public class DockGlassPaneW extends AbsolutePanel
 			if (event.getTouches().length() == 1) {
 				event.preventDefault();
 				mouseDragged(
-						event.getTouches().get(0).getClientX()
-								+ NavigatorUtil.getWindowScrollLeft(), event.getTouches()
-								.get(0).getClientY()
-								+ NavigatorUtil.getWindowScrollTop());
+						event.getTouches().get(0).getClientX() + NavigatorUtil.getWindowScrollLeft(),
+						event.getTouches().get(0).getClientY() + NavigatorUtil.getWindowScrollTop());
 			}
 		}
 	}
@@ -426,5 +424,4 @@ public class DockGlassPaneW extends AbsolutePanel
 	public GeoGebraElement getGeoGebraElement() {
 		return ae;
 	}
-
 }

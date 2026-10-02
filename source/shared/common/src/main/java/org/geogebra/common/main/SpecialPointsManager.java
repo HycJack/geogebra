@@ -57,6 +57,7 @@ import org.geogebra.common.plugin.EuclidianStyleConstants;
 import org.geogebra.common.plugin.Event;
 import org.geogebra.common.plugin.EventListener;
 import org.geogebra.common.plugin.EventType;
+import org.jspecify.annotations.Nullable;
 
 import com.google.j2objc.annotations.Weak;
 
@@ -68,11 +69,13 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 
 	@Weak
 	private Kernel kernel;
+
 	private List<GeoElement> specPoints;
 	private List<SpecialPointsListener> specialPointsListeners = new ArrayList<>();
 	private GeoPoint defaultPoint;
 	private boolean isUpdating = false;
-	boolean isEnabled = true;
+	private boolean restrictedToGraphicsViewSelection = false;
+	private @Nullable GeoElement graphicsViewSelectedGeo;
 	/**
 	 * storing the special points parent algos: needed for iOS as GeoElement as only weak
 	 * reference to its parent algo
@@ -86,7 +89,9 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 	public SpecialPointsManager(Kernel kernel) {
 		this.kernel = kernel;
 		specPointAlgos = new ArrayList<>();
-		defaultPoint = (GeoPoint) kernel.getConstruction().getConstructionDefaults()
+		defaultPoint = (GeoPoint) kernel
+				.getConstruction()
+				.getConstructionDefaults()
 				.getDefaultGeo(ConstructionDefaults.DEFAULT_POINT_PREVIEW);
 		App app = kernel.getApplication();
 		app.getSelectionManager().addListener(this);
@@ -102,19 +107,51 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 	 */
 	public void updateSpecialPoints(GeoElement geo) {
 		App application = kernel.getApplication();
-		if (!application.getConfig().hasPreviewPoints() || !isEnabled || isUpdating) {
+		if (!application.getConfig().hasPreviewPoints() || isUpdating) {
 			return;
 		}
 		// Prevent calling update special points recursively
 		isUpdating = true;
 
 		clearSpecPoints();
-		if (EuclidianConstants.isMoveOrSelectionMode(application.getMode())) {
+		if (EuclidianConstants.isMoveOrSelectionMode(application.getMode())
+				&& isAllowedForGeo(getGeoForSpecialPoints(geo))) {
 			updateSpecialPointsInternal(geo);
+		} else {
+			// the selection changed outside of the Graphics View
+			graphicsViewSelectedGeo = null;
 		}
 		fireSpecialPointsChangedEvent();
 
 		isUpdating = false;
+	}
+
+	/**
+	 * Restricts the special points to those of the geo that the user selected in the
+	 * Graphics View: special points are never shown automatically (APPS-7931).
+	 *
+	 * @param restricted whether to apply the restriction
+	 */
+	public void setRestrictedToGraphicsViewSelection(boolean restricted) {
+		restrictedToGraphicsViewSelection = restricted;
+		graphicsViewSelectedGeo = null;
+	}
+
+	/**
+	 * Notifies the manager that the user selected a geo by clicking or tapping on it in
+	 * the Graphics View. Call this before the selection itself is updated.
+	 *
+	 * @param geo geo hit in the Graphics View, or null if none was hit
+	 */
+	public void setGraphicsViewSelectedGeo(@Nullable GeoElement geo) {
+		graphicsViewSelectedGeo = geo;
+	}
+
+	private boolean isAllowedForGeo(@Nullable GeoElement geo) {
+		if (!restrictedToGraphicsViewSelection) {
+			return true;
+		}
+		return geo != null && geo == graphicsViewSelectedGeo;
 	}
 
 	private void updateSpecialPointsInternal(GeoElement geo0) {
@@ -150,20 +187,19 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 	}
 
 	private GeoElement getGeoForSpecialPoints(GeoElement geo) {
-		List<GeoElement> selectedGeos = kernel.getApplication()
-				.getSelectionManager().getSelectedGeos();
-		return geo == null && selectedGeos != null
-				&& !selectedGeos.isEmpty() ? selectedGeos.get(0) : geo;
+		List<GeoElement> selectedGeos =
+				kernel.getApplication().getSelectionManager().getSelectedGeos();
+		return geo == null && selectedGeos != null && !selectedGeos.isEmpty()
+				? selectedGeos.get(0)
+				: geo;
 	}
 
 	private void getSpecPoints(GeoElementND geo, ArrayList<GeoElement> retList) {
 		if (!shouldShowSpecialPoints(geo)) {
 			return;
 		}
-		boolean xAxis = kernel.getApplication().getActiveEuclidianView()
-				.getShowAxis(0);
-		boolean yAxis = kernel.getApplication().getActiveEuclidianView()
-				.getShowAxis(1);
+		boolean xAxis = kernel.getApplication().getActiveEuclidianView().getShowAxis(0);
+		boolean yAxis = kernel.getApplication().getActiveEuclidianView().getShowAxis(1);
 		if (!xAxis && !yAxis) {
 			return;
 		}
@@ -182,7 +218,7 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 			if (hasIntersectsBetween(geo)) {
 				getIntersectsBetween(geo, retList);
 			}
-		} catch (Throwable exception) {
+		} catch (Throwable ignored) {
 			// ignore
 		} finally {
 			unwrapped.setCanBeRemovedAsInput(true);
@@ -191,9 +227,10 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 		}
 	}
 
-	private void doGetSpecialPoints(GeoElementND geo, boolean xAxis,
-									boolean yAxis, ArrayList<GeoElement> retList) {
-		if (geo instanceof GeoFunction && !Algos.isUsedFor(Commands.LineGraph, geo)
+	private void doGetSpecialPoints(
+			GeoElementND geo, boolean xAxis, boolean yAxis, ArrayList<GeoElement> retList) {
+		if (geo instanceof GeoFunction
+				&& !Algos.isUsedFor(Commands.LineGraph, geo)
 				&& !geo.isInequality()) {
 			getFunctionSpecialPoints((GeoFunction) geo, xAxis, yAxis, retList);
 		} else if (geo instanceof EquationValue) {
@@ -205,40 +242,30 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 				}
 			});
 		}
-
 	}
 
-	private void getFunctionSpecialPoints(GeoFunction geo, boolean xAxis, boolean yAxis,
-								  ArrayList<GeoElement> retList) {
-		PolyFunction poly = geo.getFunction()
-				.expandToPolyFunction(
-						geo.getFunctionExpression(), false,
-						true);
+	private void getFunctionSpecialPoints(
+			GeoFunction geo, boolean xAxis, boolean yAxis, ArrayList<GeoElement> retList) {
+		PolyFunction poly =
+				geo.getFunction().expandToPolyFunction(geo.getFunctionExpression(), false, true);
 		if (xAxis && (poly == null || poly.getDegree() > 0)) {
-			if (!geo.isPolynomialFunction(true)
-					&& geo.isDefined()) {
-				EuclidianViewInterfaceCommon view = kernel.getApplication()
-						.getActiveEuclidianView();
+			if (!geo.isPolynomialFunction(true) && geo.isDefined()) {
+				EuclidianViewInterfaceCommon view = kernel.getApplication().getActiveEuclidianView();
 
-				AlgoRoots algoRoots = new AlgoRoots(kernel.getConstruction(),
-						null, geo, view.getXminObject(),
-						view.getXmaxObject(), false);
+				AlgoRoots algoRoots = new AlgoRoots(
+						kernel.getConstruction(), null, geo, view.getXminObject(), view.getXmaxObject(), false);
 				processAlgo(geo, algoRoots, retList);
 			} else {
-				AlgoRootsPolynomial algoRootsPolynomial = new AlgoRootsPolynomial(
-						kernel.getConstruction(), null, geo,
-						false);
+				AlgoRootsPolynomial algoRootsPolynomial =
+						new AlgoRootsPolynomial(kernel.getConstruction(), null, geo, false);
 				processAlgo(geo, algoRootsPolynomial, retList);
 			}
 		}
 		if (poly == null || poly.getDegree() > 1) {
-			if (!geo.isPolynomialFunction(true)
-					|| (poly != null && poly.isMaxDegreeReached())) {
-				EuclidianViewInterfaceCommon view = this.kernel.getApplication()
-						.getActiveEuclidianView();
+			if (!geo.isPolynomialFunction(true) || (poly != null && poly.isMaxDegreeReached())) {
+				EuclidianViewInterfaceCommon view = this.kernel.getApplication().getActiveEuclidianView();
 				AlgoExtremumMulti algoExtremumMulti = new AlgoExtremumMulti(
-						kernel.getConstruction(), null, geo,
-						view.getXminObject(), view.getXmaxObject(), false);
+						kernel.getConstruction(), null, geo, view.getXminObject(), view.getXmaxObject(), false);
 				processAlgo(geo, algoExtremumMulti, retList);
 			} else {
 				addExtremumPoly(geo, retList);
@@ -246,25 +273,24 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 		}
 		AlgoRemovableDiscontinuity algoRemovableDiscontinuity =
 				new AlgoRemovableDiscontinuity(kernel.getConstruction(), geo, null, false, false);
-		processAlgo(geo, algoRemovableDiscontinuity, retList,
-				EuclidianStyleConstants.POINT_STYLE_CIRCLE);
+		processAlgo(
+				geo, algoRemovableDiscontinuity, retList, EuclidianStyleConstants.POINT_STYLE_CIRCLE);
 
 		if (yAxis) {
 			AlgoIntersectPolynomialLine algoPolynomialLine = new AlgoIntersectPolynomialLine(
-					kernel.getConstruction(), geo,
-					kernel.getConstruction().getYAxis());
+					kernel.getConstruction(), geo, kernel.getConstruction().getYAxis());
 			processAlgo(geo, algoPolynomialLine, retList);
 		}
 	}
 
 	private void addExtremumPoly(GeoFunctionable geo, ArrayList<GeoElement> retList) {
-		AlgoExtremumPolynomial algoExtremumPolynomial = new AlgoExtremumPolynomial(
-				kernel.getConstruction(), null, geo, false);
+		AlgoExtremumPolynomial algoExtremumPolynomial =
+				new AlgoExtremumPolynomial(kernel.getConstruction(), null, geo, false);
 		processAlgo(geo, algoExtremumPolynomial, retList);
 	}
 
-	private void getEquationSpecialPoints(GeoElementND geo, boolean xAxis,
-			boolean yAxis, ArrayList<GeoElement> retList) {
+	private void getEquationSpecialPoints(
+			GeoElementND geo, boolean xAxis, boolean yAxis, ArrayList<GeoElement> retList) {
 		GeoLine xAxisLine = kernel.getXAxis();
 		GeoLine yAxisLine = kernel.getYAxis();
 		if (geo == xAxisLine || geo == yAxisLine) {
@@ -284,8 +310,7 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 		}
 	}
 
-	private void getIntersectsBetween(GeoElementND geo,
-			ArrayList<GeoElement> retList) {
+	private void getIntersectsBetween(GeoElementND geo, ArrayList<GeoElement> retList) {
 		Construction cons = kernel.getConstruction();
 		GeoLine xAxisLine = kernel.getXAxis();
 		GeoLine yAxisLine = kernel.getYAxis();
@@ -296,17 +321,19 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 		CmdIntersect intersect = new CmdIntersect(kernel);
 
 		Set<GeoElement> elements = new TreeSet<>(cons.getGeoSetConstructionOrder());
-		for (GeoElement element: elements) {
+		for (GeoElement element : elements) {
 			if (hasIntersectsBetween(element) && element != geo && element.isEuclidianVisible()) {
 				getSpecialPointsIntersect(geo, element, intersect, cmd, retList);
 			}
 		}
 	}
 
-	private void getSpecialPointsIntersect(GeoElementND element,
+	private void getSpecialPointsIntersect(
+			GeoElementND element,
 			GeoElement secondElement,
-										   CmdIntersect intersect, Command cmd,
-										   ArrayList<GeoElement> retList) {
+			CmdIntersect intersect,
+			Command cmd,
+			ArrayList<GeoElement> retList) {
 		AlgoDispatcher dispatcher = kernel.getAlgoDispatcher();
 		boolean oldValue = dispatcher.isIntersectCacheEnabled();
 		dispatcher.setIntersectCacheEnabled(false);
@@ -314,20 +341,17 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 		List<AlgoElement> algoElements = element.getAlgorithmList();
 		List<AlgoElement> oldAlgoList = new ArrayList<>(algoElements);
 		try {
-			GeoElement[] elements = intersect
-					.intersect2(new GeoElement[] { element.toGeoElement(),
-							secondElement }, cmd);
+			GeoElement[] elements =
+					intersect.intersect2(new GeoElement[] {element.toGeoElement(), secondElement}, cmd);
 			List<AlgoElement> newAlgoList = new ArrayList<>(element.getAlgorithmList());
-			newAlgoList.stream()
-					.filter(algo -> !oldAlgoList.contains(algo))
-					.forEach(algo -> {
+			newAlgoList.stream().filter(algo -> !oldAlgoList.contains(algo)).forEach(algo -> {
 				element.removeAlgorithm(algo);
 				secondElement.removeAlgorithm(algo);
 				storeAlgo(algo);
 			});
 
 			add(elements, retList);
-		} catch (Throwable exception) {
+		} catch (Throwable ignored) {
 			// ignore
 		} finally {
 			dispatcher.setIntersectCacheEnabled(oldValue);
@@ -337,15 +361,20 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 	private static boolean shouldShowSpecialPoints(GeoElementND geo) {
 		GeoElementND geoTwin = geo.unwrapSymbolic();
 		return geo.isEuclidianShowable()
-				&& (geoTwin instanceof GeoFunction || geoTwin instanceof EquationValue
-				|| geoTwin instanceof GeoSymbolic || isPointList(geoTwin))
-				&& !(geoTwin.isGeoSegment())
-				&& geoTwin.isVisible() && geoTwin.isDefined()
-				&& geoTwin.isEuclidianVisible() && !geoTwin.isGeoElement3D();
+				&& (geoTwin instanceof GeoFunction
+						|| geoTwin instanceof EquationValue
+						|| geoTwin instanceof GeoSymbolic
+						|| isPointList(geoTwin))
+				&& !geoTwin.isGeoSegment()
+				&& geoTwin.isVisible()
+				&& geoTwin.isDefined()
+				&& geoTwin.isEuclidianVisible()
+				&& !geoTwin.isGeoElement3D();
 	}
 
 	private static boolean isPointList(GeoElementND geo) {
-		return geo instanceof GeoList && geo.getDefinition() != null
+		return geo instanceof GeoList
+				&& geo.getDefinition() != null
 				&& geo.getDefinition().unwrap() instanceof MyVecNode;
 	}
 
@@ -353,13 +382,16 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 		return element instanceof EquationValue || element instanceof Functional;
 	}
 
-	private void processAlgo(GeoElementND element, AlgoElement algoElement,
-			ArrayList<GeoElement> retList) {
+	private void processAlgo(
+			GeoElementND element, AlgoElement algoElement, ArrayList<GeoElement> retList) {
 		processAlgo(element, algoElement, retList, defaultPoint.getPointStyle());
 	}
 
-	private void processAlgo(GeoElementND element, AlgoElement algoElement,
-			ArrayList<GeoElement> retList, int pointStyle) {
+	private void processAlgo(
+			GeoElementND element,
+			AlgoElement algoElement,
+			ArrayList<GeoElement> retList,
+			int pointStyle) {
 		storeAlgo(algoElement);
 		element.removeAlgorithm(algoElement);
 		GeoElement[] outputElements = algoElement.getOutput();
@@ -371,7 +403,7 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 	}
 
 	private void add(GeoElement[] elements, ArrayList<GeoElement> retList, int pointStyle) {
-		for (GeoElement outputElement: elements) {
+		for (GeoElement outputElement : elements) {
 			if (outputElement != null) {
 				outputElement.remove();
 				outputElement.setAdvancedVisualStyle(defaultPoint);
@@ -433,7 +465,7 @@ public class SpecialPointsManager implements UpdateSelection, EventListener, Coo
 	}
 
 	private void fireSpecialPointsChangedEvent() {
-		for (SpecialPointsListener listener: specialPointsListeners) {
+		for (SpecialPointsListener listener : specialPointsListeners) {
 			listener.specialPointsChanged(this, specPoints);
 		}
 	}

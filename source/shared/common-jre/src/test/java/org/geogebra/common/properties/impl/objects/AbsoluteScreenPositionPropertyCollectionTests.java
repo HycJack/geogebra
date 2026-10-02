@@ -18,6 +18,7 @@ package org.geogebra.common.properties.impl.objects;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -34,37 +35,36 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class AbsoluteScreenPositionPropertyCollectionTests extends BaseAppTestSetup {
+class AbsoluteScreenPositionPropertyCollectionTests extends BaseAppTestSetup {
 	private final GeoElementPropertiesFactory propertiesFactory = new GeoElementPropertiesFactory();
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"(1, 2)",
-			"f(x) = x^2",
-			"a = 1 + 2",
-	})
-	public void testNotApplicableObjects(String expression) {
+	@ValueSource(strings = {"(1, 2)", "f(x) = x^2", "a = 1 + 2", "BarChart({1,2,3},{4,5,6})"})
+	void testNotApplicableObjects(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoElement geoElement = evaluateGeoElement(expression);
-		assertThrows(NotApplicablePropertyException.class, () ->
-				new AbsoluteScreenPositionPropertyCollection(
+		assertThrows(
+				NotApplicablePropertyException.class,
+				() -> new AbsoluteScreenPositionPropertyCollection(
 						propertiesFactory, getLocalization(), List.of(geoElement)));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-			"Slider(-5, 5, 1)",
-			"true",
-			"\"abc\"",
-	})
-	public void testApplicableObjects(String expression) {
+	@ValueSource(
+			strings = {
+				"Slider(-5, 5, 1)", // number slider
+				"Slider(0, 10, 0.1, 0.1, 100, true, true, false, false)", // angle slider
+				"true",
+				"\"abc\"",
+			})
+	void testApplicableObjects(String expression) {
 		setupApp(SuiteSubApp.GRAPHING);
 		assertDoesNotThrow(() -> new AbsoluteScreenPositionPropertyCollection(
 				propertiesFactory, getLocalization(), List.of(evaluateGeoElement(expression))));
 	}
 
 	@Test
-	public void testSettingConstantValues() {
+	void testSettingConstantValues() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoText geoText = evaluateGeoElement("\"abc\"");
 		geoText.setAbsoluteScreenLocActive(true);
@@ -80,7 +80,20 @@ public class AbsoluteScreenPositionPropertyCollectionTests extends BaseAppTestSe
 	}
 
 	@Test
-	public void testSettingDynamicValuesWithSlider() {
+	void testAbsoluteScreenPositionWithUnbalancedBracketsIsInvalid() {
+		setupApp(SuiteSubApp.GRAPHING);
+		GeoText geoText = evaluateGeoElement("\"abc\"");
+		geoText.setAbsoluteScreenLocActive(true);
+		AbsoluteScreenPositionPropertyCollection absoluteScreenPositionPropertyCollection =
+				assertDoesNotThrow(() -> new AbsoluteScreenPositionPropertyCollection(
+						propertiesFactory, getLocalization(), List.of(geoText)));
+
+		assertNotNull(assertDoesNotThrow(
+				() -> absoluteScreenPositionPropertyCollection.getProperties()[0].validateValue("(")));
+	}
+
+	@Test
+	void testSettingDynamicValuesWithSlider() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoNumeric slider = evaluateGeoElement("a = Slider(0, 500, 1)");
 		GeoText geoText = evaluateGeoElement("\"abc\"");
@@ -99,7 +112,7 @@ public class AbsoluteScreenPositionPropertyCollectionTests extends BaseAppTestSe
 	}
 
 	@Test
-	public void testSettingDynamicValuesWithAnyObjectThatEvaluatesToNumber() {
+	void testSettingDynamicValuesWithAnyObjectThatEvaluatesToNumber() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoNumeric slider = evaluateGeoElement("a = Slider(0, 500, 1)");
 		evaluate("A = (a, 200)");
@@ -110,8 +123,7 @@ public class AbsoluteScreenPositionPropertyCollectionTests extends BaseAppTestSe
 						propertiesFactory, getLocalization(), List.of(geoText)));
 
 		absoluteScreenPositionPropertyCollection.getProperties()[0].setValue("x(A)");
-		assertEquals("x(A)", absoluteScreenPositionPropertyCollection
-				.getProperties()[0].getValue());
+		assertEquals("x(A)", absoluteScreenPositionPropertyCollection.getProperties()[0].getValue());
 		assertEquals(0.0, ((GeoPoint) geoText.getStartPoint()).getX(), 0.001);
 
 		slider.setValue(500.0);

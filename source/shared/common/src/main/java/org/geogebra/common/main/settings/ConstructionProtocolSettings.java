@@ -21,7 +21,7 @@ import java.util.LinkedList;
 /**
  * Settings for the construction protocol.
  */
-public class ConstructionProtocolSettings extends AbstractSettings {
+public class ConstructionProtocolSettings extends AbstractSettings<ConstructionProtocolSettings> {
 	/**
 	 * Show construction protocol.
 	 */
@@ -45,15 +45,18 @@ public class ConstructionProtocolSettings extends AbstractSettings {
 	/**
 	 * Show the visibility of construction protocol's columns
 	 */
-	private static final boolean[] defaultCpColumnsVisible = { true, true,
-			false, true, false, true, true, false };
+	private static final boolean[] defaultCpColumnsVisible = {
+		true, true, false, true, false, true, true, false
+	};
+
 	private boolean[] cpColumnsVisible = defaultCpColumnsVisible;
 
 	/**
 	 * @param listeners
 	 *            settings listeners
 	 */
-	public ConstructionProtocolSettings(LinkedList<SettingListener> listeners) {
+	public ConstructionProtocolSettings(
+			LinkedList<SettingListener<ConstructionProtocolSettings>> listeners) {
 		super(listeners);
 	}
 
@@ -145,7 +148,7 @@ public class ConstructionProtocolSettings extends AbstractSettings {
 
 	/**
 	 * Copy column visibility settings.
-	 * 
+	 *
 	 * @param cpColumnsVisible
 	 *            columns visibility
 	 */
@@ -164,6 +167,5 @@ public class ConstructionProtocolSettings extends AbstractSettings {
 		}
 
 		settingChanged();
-
 	}
 }

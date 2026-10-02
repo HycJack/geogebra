@@ -16,8 +16,6 @@
 
 package org.geogebra.common.properties.impl.objects;
 
-import javax.annotation.CheckForNull;
-
 import org.geogebra.common.kernel.geos.GProperty;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.properties.FillType;
@@ -26,6 +24,7 @@ import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.impl.AbstractValuedProperty;
 import org.geogebra.common.properties.impl.objects.delegate.FillableDelegate;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
+import org.jspecify.annotations.Nullable;
 
 public class FillSymbolProperty extends AbstractValuedProperty<String>
 		implements StringProperty, GeoElementDependentProperty {
@@ -37,14 +36,14 @@ public class FillSymbolProperty extends AbstractValuedProperty<String>
 	 * @param element construction element
 	 * @throws NotApplicablePropertyException if filling is not "symbol"
 	 */
-	public FillSymbolProperty(Localization loc, GeoElement element) throws
-			NotApplicablePropertyException {
+	public FillSymbolProperty(Localization loc, GeoElement element)
+			throws NotApplicablePropertyException {
 		super(loc, "Filling.Symbol");
 		delegate = new FillableDelegate(element);
 	}
 
 	@Override
-	public @CheckForNull String validateValue(String value) {
+	public @Nullable String validateValue(String value) {
 		return null;
 	}
 

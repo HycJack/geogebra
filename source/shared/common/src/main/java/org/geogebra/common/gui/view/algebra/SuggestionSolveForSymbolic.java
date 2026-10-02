@@ -24,7 +24,9 @@ import java.util.TreeSet;
 
 import org.geogebra.common.gui.view.algebra.scicalc.LabelHiderCallback;
 import org.geogebra.common.kernel.arithmetic.Equation;
+import org.geogebra.common.kernel.arithmetic.ExpressionNode;
 import org.geogebra.common.kernel.arithmetic.ExpressionValue;
+import org.geogebra.common.kernel.arithmetic.FunctionVariable;
 import org.geogebra.common.kernel.arithmetic.SymbolicMode;
 import org.geogebra.common.kernel.geos.GeoDummyVariable;
 import org.geogebra.common.kernel.geos.GeoElement;
@@ -32,6 +34,7 @@ import org.geogebra.common.kernel.geos.GeoSymbolic;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.scientific.LabelController;
 import org.geogebra.common.util.StringUtil;
+import org.jspecify.annotations.Nullable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -56,8 +59,9 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 		labelGeosIfNeeded();
 		String command = getCommandText();
 		geo.getApp().getAsyncManager().scheduleCallback(() -> {
-			geo.getKernel().getAlgebraProcessor().processAlgebraCommand(
-					command, false, new LabelHiderCallback());
+			geo.getKernel()
+					.getAlgebraProcessor()
+					.processAlgebraCommand(command, false, new LabelHiderCallback());
 			geo.getKernel().storeUndoInfo();
 		});
 	}
@@ -108,7 +112,7 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 		}
 
 		List<String> labels = new ArrayList<>();
-		for (GeoElementND geo: geos) {
+		for (GeoElementND geo : geos) {
 			labels.add(geo.getLabelSimple());
 		}
 
@@ -116,7 +120,7 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 			return labels.get(0);
 		}
 
-		return  "{" + StringUtil.join(", ", labels) + "}";
+		return "{" + StringUtil.join(", ", labels) + "}";
 	}
 
 	/**
@@ -134,7 +138,8 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 	 *            construction element
 	 * @return suggestion if applicable
 	 */
-	@SuppressFBWarnings(value = "HSM_HIDING_METHOD",
+	@SuppressFBWarnings(
+			value = "HSM_HIDING_METHOD",
 			justification = "Move getting suggestions to common first.")
 	public static Suggestion get(GeoElement geo) {
 		if (!isValid(geo)) {
@@ -163,16 +168,30 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 	}
 
 	private static void addVars(Set<String> varStrings, GeoElementND geo) {
-		ExpressionValue symbolicValue = ((GeoSymbolic) geo).getValue();
-		Set<GeoElement> varSet = symbolicValue != null
-				? symbolicValue.getVariables(SymbolicMode.SYMBOLIC) : Set.of();
+		Equation equation = getEquation(geo);
+		if (equation == null) {
+			return;
+		}
 
-		for (GeoElement var : varSet) {
+		for (GeoElement var : equation.getVariables(SymbolicMode.SYMBOLIC)) {
 			String varName = var instanceof GeoDummyVariable
 					? ((GeoDummyVariable) var).getVarName()
 					: var.getLabelSimple();
 			varStrings.add(varName);
 		}
+		// An equation taken from the definition holds function variables rather than dummies,
+		// and those are not reported by getVariables.
+		addFunctionVars(varStrings, equation.getLHS());
+		addFunctionVars(varStrings, equation.getRHS());
+	}
+
+	private static void addFunctionVars(Set<String> varStrings, ExpressionNode node) {
+		node.any(value -> {
+			if (value instanceof FunctionVariable) {
+				varStrings.add(((FunctionVariable) value).getSetVarString());
+			}
+			return false;
+		});
 	}
 
 	private static boolean isAlgebraEquation(GeoElementND geo) {
@@ -180,11 +199,27 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 	}
 
 	private static boolean isEquation(GeoElementND geo) {
+		return getEquation(geo) != null;
+	}
+
+	/**
+	 * @param geo element
+	 * @return the equation represented by the element, or null if it does not represent one
+	 */
+	private static @Nullable Equation getEquation(GeoElementND geo) {
 		if (!(geo instanceof GeoSymbolic)) {
-			return false;
+			return null;
 		}
 		ExpressionValue value = ((GeoSymbolic) geo).getValue();
-		return value != null && value.unwrap() instanceof Equation;
+		if (value != null && value.unwrap() instanceof Equation equation) {
+			return equation;
+		}
+		// Fallback to the definition to get an Equation
+		ExpressionValue definition = geo.getDefinition();
+		if (definition != null && definition.unwrap() instanceof Equation equation) {
+			return equation;
+		}
+		return null;
 	}
 
 	private static Suggestion getMulti(GeoElement geo) {
@@ -202,7 +237,7 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 			next = getNext(next);
 		}
 		Set<String> variables = new TreeSet<>();
-		for (int last =  prevGeos - 1; last < geos.size(); last++) {
+		for (int last = prevGeos - 1; last < geos.size(); last++) {
 			for (int first = last - 1; first >= 0; first--) {
 				variables.clear();
 				List<GeoElementND> sublist = geos.subList(first, last + 1);
@@ -211,8 +246,7 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 					break;
 				}
 				if (sublist.size() == variables.size()) {
-					return new SuggestionSolveForSymbolic(sublist,
-							variables.toArray(new String[0]));
+					return new SuggestionSolveForSymbolic(sublist, variables.toArray(new String[0]));
 				}
 			}
 		}
@@ -220,17 +254,14 @@ public final class SuggestionSolveForSymbolic extends SuggestionSolve {
 	}
 
 	private static GeoElementND getPrevious(final GeoElementND geo) {
-		return geo.getConstruction().getPrevious(geo,
-				SuggestionSolveForSymbolic::isUnsolvedEquation);
+		return geo.getConstruction().getPrevious(geo, SuggestionSolveForSymbolic::isUnsolvedEquation);
 	}
 
 	private static GeoElementND getNext(final GeoElementND geo) {
-		return geo.getConstruction().getNext(geo,
-				SuggestionSolveForSymbolic::isUnsolvedEquation);
+		return geo.getConstruction().getNext(geo, SuggestionSolveForSymbolic::isUnsolvedEquation);
 	}
 
 	private static boolean isUnsolvedEquation(GeoElementND var) {
-		return isAlgebraEquation(var)
-				&& !SuggestionSolve.checkDependentAlgo(var, SINGLE_SOLVE, null);
+		return isAlgebraEquation(var) && !SuggestionSolve.checkDependentAlgo(var, SINGLE_SOLVE, null);
 	}
 }

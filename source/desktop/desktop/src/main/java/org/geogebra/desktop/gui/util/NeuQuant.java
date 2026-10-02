@@ -22,6 +22,8 @@
 
 package org.geogebra.desktop.gui.util;
 
+import org.geogebra.desktop.awt.Log;
+
 // Ported to Java 12/00 K Weiner
 class NeuQuant {
 
@@ -74,8 +76,7 @@ class NeuQuant {
 	 * beta = 1/1024
 	 */
 
-	protected static final int betagamma = intbias << (gammashift
-			- betashift);
+	protected static final int betagamma = intbias << (gammashift - betashift);
 
 	/* defs for decreasing radius factor */
 	protected static final int initrad = netsize >> 3; /*
@@ -141,7 +142,7 @@ class NeuQuant {
 	 * Initialise network in range (0,0,0) to (255,255,255) and set parameters
 	 * -----------------------------------------------------------------------
 	 */
-	public NeuQuant(byte[] thepic, int len, int sample) {
+	NeuQuant(byte[] thepic, int len, int sample) {
 
 		int i;
 		int[] p;
@@ -160,7 +161,7 @@ class NeuQuant {
 		}
 	}
 
-	public byte[] colorMap() {
+	byte[] colorMap() {
 		byte[] map = new byte[3 * netsize];
 		int[] index = new int[netsize];
 		for (int i = 0; i < netsize; i++) {
@@ -169,9 +170,9 @@ class NeuQuant {
 		int k = 0;
 		for (int i = 0; i < netsize; i++) {
 			int j = index[i];
-			map[k++] = (byte) (network[j][0]);
-			map[k++] = (byte) (network[j][1]);
-			map[k++] = (byte) (network[j][2]);
+			map[k++] = (byte) network[j][0];
+			map[k++] = (byte) network[j][1];
+			map[k++] = (byte) network[j][2];
 		}
 		return map;
 	}
@@ -182,7 +183,7 @@ class NeuQuant {
 	 * ------------------------------------------------------------------
 	 * -------------
 	 */
-	public void inxbuild() {
+	void inxbuild() {
 
 		int i, j, smallpos, smallval;
 		int[] p;
@@ -198,7 +199,8 @@ class NeuQuant {
 			/* find smallest in i..netsize-1 */
 			for (j = i + 1; j < netsize; j++) {
 				q = network[j];
-				if (q[1] < smallval) { /* index on g */
+				if (q[1] < smallval) {
+					/* index on g */
 					smallpos = j;
 					smallval = q[1]; /* index on g */
 				}
@@ -238,7 +240,7 @@ class NeuQuant {
 	/*
 	 * Main Learning Loop ------------------
 	 */
-	public void learn() {
+	void learn() {
 		int delta, samplepixels;
 		byte[] p;
 		int pix, lim;
@@ -261,8 +263,7 @@ class NeuQuant {
 		}
 		int i;
 		for (i = 0; i < rad; i++) {
-			radpower[i] = alpha
-					* (((rad * rad - i * i) * radbias) / (rad * rad));
+			radpower[i] = alpha * ((rad * rad - i * i) * radbias / (rad * rad));
 		}
 
 		// fprintf(stderr,"beginning 1D learning: initial radius=%d\n", rad);
@@ -313,8 +314,7 @@ class NeuQuant {
 					rad = 0;
 				}
 				for (j = 0; j < rad; j++) {
-					radpower[j] = alpha
-							* (((rad * rad - j * j) * radbias) / (rad * rad));
+					radpower[j] = alpha * ((rad * rad - j * j) * radbias / (rad * rad));
 				}
 			}
 		}
@@ -328,7 +328,7 @@ class NeuQuant {
 	 * --------------------------------------------------------------------
 	 * --------
 	 */
-	public int map(int b, int g, int r) {
+	int map(int b, int g, int r) {
 
 		int i, j, dist, a, bestd;
 		int[] p;
@@ -400,7 +400,7 @@ class NeuQuant {
 		return best;
 	}
 
-	public byte[] process() {
+	byte[] process() {
 		learn();
 		unbiasnet();
 		inxbuild();
@@ -413,7 +413,7 @@ class NeuQuant {
 	 * ----------------------------------------------------------
 	 * -------------------------
 	 */
-	public void unbiasnet() {
+	void unbiasnet() {
 
 		int i;
 
@@ -453,21 +453,21 @@ class NeuQuant {
 			if (j < hi) {
 				p = network[j++];
 				try {
-					p[0] -= (a * (p[0] - b)) / alpharadbias;
-					p[1] -= (a * (p[1] - g)) / alpharadbias;
-					p[2] -= (a * (p[2] - r)) / alpharadbias;
+					p[0] -= a * (p[0] - b) / alpharadbias;
+					p[1] -= a * (p[1] - g) / alpharadbias;
+					p[2] -= a * (p[2] - r) / alpharadbias;
 				} catch (Exception e) {
-					e.printStackTrace();
+					Log.debug(e);
 				} // prevents 1.3 miscompilation
 			}
 			if (k > lo) {
 				p = network[k--];
 				try {
-					p[0] -= (a * (p[0] - b)) / alpharadbias;
-					p[1] -= (a * (p[1] - g)) / alpharadbias;
-					p[2] -= (a * (p[2] - r)) / alpharadbias;
+					p[0] -= a * (p[0] - b) / alpharadbias;
+					p[1] -= a * (p[1] - g) / alpharadbias;
+					p[2] -= a * (p[2] - r) / alpharadbias;
 				} catch (Exception e) {
-					e.printStackTrace();
+					Log.debug(e);
 				}
 			}
 		}
@@ -481,9 +481,9 @@ class NeuQuant {
 
 		/* alter hit neuron */
 		int[] n = network[i];
-		n[0] -= (alpha * (n[0] - b)) / initalpha;
-		n[1] -= (alpha * (n[1] - g)) / initalpha;
-		n[2] -= (alpha * (n[2] - r)) / initalpha;
+		n[0] -= alpha * (n[0] - b) / initalpha;
+		n[1] -= alpha * (n[1] - g) / initalpha;
+		n[2] -= alpha * (n[2] - r) / initalpha;
 	}
 
 	/*
@@ -528,7 +528,7 @@ class NeuQuant {
 				bestd = dist;
 				bestpos = i;
 			}
-			biasdist = dist - ((bias[i]) >> (intbiasshift - netbiasshift));
+			biasdist = dist - (bias[i] >> (intbiasshift - netbiasshift));
 			if (biasdist < bestbiasd) {
 				bestbiasd = biasdist;
 				bestbiaspos = i;

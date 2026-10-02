@@ -19,6 +19,7 @@ package org.geogebra.web.full.gui.properties.ui.panel;
 import static org.geogebra.common.properties.PropertyView.*;
 
 import org.geogebra.common.awt.MyImage;
+import org.geogebra.web.awt.MyImageW;
 import org.geogebra.web.full.css.MaterialDesignResources;
 import org.geogebra.web.full.gui.dialog.image.UploadImagePanel;
 import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.IconButton;
@@ -31,7 +32,7 @@ import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Image;
 import org.gwtproject.user.client.ui.Label;
 
-public class ImagePickerPanel extends FlowPanel {
+public final class ImagePickerPanel extends FlowPanel implements ConfigurationUpdateDelegate {
 	private final AppW appW;
 	private final ImagePicker imagePicker;
 	private StandardButton fileChooser;
@@ -53,11 +54,13 @@ public class ImagePickerPanel extends FlowPanel {
 	}
 
 	private void buildImagePicker() {
-		fileChooser = new StandardButton(appW.getLocalization()
-				.getMenu(imagePicker.getChooseFromFileLabel()));
-		fileChooser.addStyleName("materialOutlinedButton");
-		fileChooser.addFastClickHandler(event -> UploadImagePanel.getUploadButton(appW,
-				this::uploadImageUpdateUI).click());
+		fileChooser = BaseWidgetFactory.INSTANCE.newOutlinedButton(
+				appW.getLocalization().getMenu(imagePicker.getChooseFromFileLabel()));
+		if (imagePicker.getButtonAlignment() == ImagePicker.ButtonAlignment.START) {
+			fileChooser.addStyleName("buttonAlignmentStart");
+		}
+		fileChooser.addFastClickHandler(event ->
+				UploadImagePanel.getUploadButton(appW, this::uploadImageUpdateUI).click());
 		add(fileChooser);
 
 		buildFileEditPanel();
@@ -73,19 +76,26 @@ public class ImagePickerPanel extends FlowPanel {
 		customIconButtonPanel.add(imagePreview);
 		customIconButtonPanel.add(imageName);
 
-		IconButton editButton = new IconButton(appW, () -> UploadImagePanel.getUploadButton(appW,
-				this::uploadImageUpdateUI).click(),
-				new ImageIconSpec(MaterialDesignResources.INSTANCE.edit_black()), "edit");
+		IconButton editButton = new IconButton(
+				appW,
+				() -> UploadImagePanel.getUploadButton(appW, this::uploadImageUpdateUI).click(),
+				new ImageIconSpec(MaterialDesignResources.INSTANCE.edit_black()),
+				"edit");
 		customIconButtonPanel.add(editButton);
 
-		IconButton deleteButton = new IconButton(appW, () -> {
-			imagePicker.clearImage();
-			updateCustomIconPanelVisibility(true);
-		}, new ImageIconSpec(MaterialDesignResources.INSTANCE.delete_black()), "delete");
+		IconButton deleteButton = new IconButton(
+				appW,
+				() -> {
+					imagePicker.clearImage();
+					updateCustomIconPanelVisibility(true);
+				},
+				new ImageIconSpec(MaterialDesignResources.INSTANCE.delete_black()),
+				"delete");
 		customIconButtonPanel.add(deleteButton);
 
 		add(customIconButtonPanel);
-		updateCustomIconPanelVisibility(true);
+		syncFromProperty();
+		imagePicker.setConfigurationUpdateDelegate(this);
 	}
 
 	private void uploadImageUpdateUI(String name, String data) {
@@ -104,22 +114,27 @@ public class ImagePickerPanel extends FlowPanel {
 		}
 	}
 
-	/**
-	 * Update image preview.
-	 * @param previewUrl image preview URL
-	 */
-	public void updatePreview(String previewUrl) {
+	private void updatePreview(String previewUrl) {
 		imagePreview.setUrl(previewUrl);
 		imageName.setText(imagePicker.getFileName());
 	}
 
-	/**
-	 * Updates the visibility of file chooser button/custom file panel.
-	 * @param fileChooserShown whether the choose file button should be shows,
-	 * or the custom file panel
-	 */
-	public void updateCustomIconPanelVisibility(boolean fileChooserShown) {
+	private void updateCustomIconPanelVisibility(boolean fileChooserShown) {
 		fileChooser.setVisible(fileChooserShown);
 		customIconButtonPanel.setVisible(!fileChooserShown);
+	}
+
+	@Override
+	public void configurationUpdated() {
+		syncFromProperty();
+	}
+
+	private void syncFromProperty() {
+		if (imagePicker.getImage() instanceof MyImageW imageW) {
+			updatePreview(imageW.getImage().src);
+			updateCustomIconPanelVisibility(false);
+		} else {
+			updateCustomIconPanelVisibility(true);
+		}
 	}
 }

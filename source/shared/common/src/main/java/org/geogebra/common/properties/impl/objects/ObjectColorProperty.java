@@ -45,15 +45,27 @@ public class ObjectColorProperty extends AbstractEnumeratedProperty<GColor>
 	 */
 	public ObjectColorProperty(Localization localization, GeoElement geoElement)
 			throws NotApplicablePropertyException {
+		this(localization, geoElement, DefaultColorValues.BRIGHT);
+	}
+
+	/**
+	 * Constructs a property for the object's color
+	 * @param localization localization for property name
+	 * @param geoElement GeoElement to create property for
+	 * @param colors applicable colors
+	 * @throws NotApplicablePropertyException if the property is not applicable to the element
+	 */
+	public ObjectColorProperty(Localization localization, GeoElement geoElement, List<GColor> colors)
+			throws NotApplicablePropertyException {
 		super(localization, "Color");
 		if (ColorPropertyType.forElement(geoElement) != ColorPropertyType.OPAQUE
-			&& ColorPropertyType.forElement(geoElement) != ColorPropertyType.WITH_OPACITY
-			// Handled in ChartStyleGeoColorProperty
-			|| geoElement instanceof ChartStyleGeo) {
+						&& ColorPropertyType.forElement(geoElement) != ColorPropertyType.WITH_OPACITY
+				// Handled in ChartStyleGeoColorProperty
+				|| geoElement instanceof ChartStyleGeo) {
 			throw new NotApplicablePropertyException(geoElement);
 		}
 		this.geoElement = geoElement;
-		setValues(DefaultColorValues.BRIGHT);
+		setValues(colors);
 	}
 
 	@Override

@@ -30,7 +30,7 @@ import org.gwtproject.core.client.Scheduler;
 /**
  * UI builder for context menu and style bar menus.
  */
-public class SpreadsheetMenuBuilder {
+public final class SpreadsheetMenuBuilder {
 
 	private final Localization loc;
 	private final Runnable hideCallback;
@@ -85,37 +85,38 @@ public class SpreadsheetMenuBuilder {
 
 	private SVGResource getActionIcon(ContextMenuItem.Identifier action) {
 		MaterialDesignResources res = MaterialDesignResources.INSTANCE;
-		switch (action) {
-		case CUT:
-			return res.cut_black();
-		case COPY:
-			return res.copy_black();
-		case PASTE:
-			return res.paste_black();
-		case DELETE:
-			return res.delete_black();
-		case CALCULATE:
-			return res.calculate();
-		case CREATE_CHART:
-			return res.insert_chart();
-		case LINE_CHART:
-			return res.table_line_chart();
-		case BAR_CHART:
-			return res.table_bar_chart();
-		case HISTOGRAM:
-			return res.table_histogram();
-		case BOX_PLOT:
-			return res.table_boxplot();
-		case PIE_CHART:
-			return res.table_pie_chart();
-		case INSERT_ROW_ABOVE:
-		case INSERT_ROW_BELOW:
-		case DELETE_ROW:
-		case INSERT_COLUMN_LEFT:
-		case INSERT_COLUMN_RIGHT:
-		case DELETE_COLUMN:
-		default:
-			return null;
-		}
+		return switch (action) {
+			case CUT -> res.cut_black();
+			case COPY -> res.copy_black();
+			case PASTE -> res.paste_black();
+			case DELETE -> res.delete_black();
+			case CALCULATE -> res.calculate();
+			case CREATE_CHART -> res.insert_chart();
+			case LINE_CHART -> res.table_line_chart();
+			case BAR_CHART -> res.table_bar_chart();
+			case HISTOGRAM -> res.table_histogram();
+			case BOX_PLOT -> res.table_boxplot();
+			case PIE_CHART -> res.table_pie_chart();
+			case STATISTICS -> res.statistics();
+			case INSERT_ROW_ABOVE -> res.add_row_above();
+			case INSERT_ROW_BELOW -> res.add_row_below();
+			case DELETE_COLUMN, DELETE_ROW -> res.delete_outline();
+			case INSERT_COLUMN_LEFT -> res.add_column_left();
+			case INSERT_COLUMN_RIGHT -> res.add_column_right();
+			case SUM,
+					SD,
+					MIN,
+					Q1,
+					MEDIAN,
+					SAMPLE_SD,
+					MEAN,
+					Q3,
+					MAX,
+					STATISTICS_ONE_VARIABLE,
+					STATISTICS_TWO_VARIABLES,
+					STATISTICS_FREQUENCY_TABLE,
+					STATISTICS_REGRESSION,
+					DIVIDER -> null;
+		};
 	}
 }

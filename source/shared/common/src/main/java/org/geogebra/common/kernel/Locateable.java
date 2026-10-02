@@ -33,7 +33,7 @@ public interface Locateable extends GeoElementND {
 
 	/**
 	 * Unregisters start point
-	 * 
+	 *
 	 * @param p
 	 *            start point to remove
 	 */
@@ -45,7 +45,7 @@ public interface Locateable extends GeoElementND {
 
 	/**
 	 * Returns (first) start point
-	 * 
+	 *
 	 * @return start point
 	 */
 	GeoPointND getStartPoint();
@@ -58,9 +58,11 @@ public interface Locateable extends GeoElementND {
 	 * @throws CircularDefinitionException
 	 *             in case the start point depends on this object
 	 */
-	void setStartPoint(GeoPointND p, int number)
-			throws CircularDefinitionException;
+	void setStartPoint(GeoPointND p, int number) throws CircularDefinitionException;
 
+	/**
+	 * @return number of start points (corners) this object has
+	 */
 	default int getStartPointCount() {
 		return 1;
 	}
@@ -76,7 +78,7 @@ public interface Locateable extends GeoElementND {
 	/**
 	 * Sets the startpoint without performing any checks. This is needed for
 	 * macros.
-	 * 
+	 *
 	 * @param p
 	 *            start point
 	 * @param number
@@ -107,5 +109,4 @@ public interface Locateable extends GeoElementND {
 	 * Update that does not change value, but only location
 	 */
 	void updateLocation();
-
 }

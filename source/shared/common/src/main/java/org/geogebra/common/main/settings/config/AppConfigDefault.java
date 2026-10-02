@@ -28,9 +28,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.gui.toolcategorization.AppType;
 import org.geogebra.common.io.layout.DockPanelData;
@@ -48,6 +45,8 @@ import org.geogebra.common.main.settings.LabelVisibility;
 import org.geogebra.common.main.syntax.suggestionfilter.SyntaxFilter;
 import org.geogebra.common.properties.factory.ClassicPropertiesFactory;
 import org.geogebra.common.properties.factory.PropertiesFactory;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Config for Classic and derived apps (MR)
@@ -96,9 +95,12 @@ public class AppConfigDefault extends AbstractAppConfig {
 	 * @return whether app name is one of the unbundled apps
 	 */
 	public static boolean isUnbundled(String appName) {
-		return GRAPHING_APPCODE.equals(appName) || GEOMETRY_APPCODE.equals(appName)
-				|| CAS_APPCODE.equals(appName) || G3D_APPCODE.equals(appName)
-				|| SCIENTIFIC_APPCODE.equals(appName) || SUITE_APPCODE.equals(appName);
+		return GRAPHING_APPCODE.equals(appName)
+				|| GEOMETRY_APPCODE.equals(appName)
+				|| CAS_APPCODE.equals(appName)
+				|| G3D_APPCODE.equals(appName)
+				|| SCIENTIFIC_APPCODE.equals(appName)
+				|| SUITE_APPCODE.equals(appName);
 	}
 
 	/**
@@ -146,12 +148,12 @@ public class AppConfigDefault extends AbstractAppConfig {
 
 	@Override
 	public int[] getDecimalPlaces() {
-		return new int[]{0, 1, 2, 3, 4, 5, 10, 15};
+		return new int[] {0, 1, 2, 3, 4, 5, 10, 15};
 	}
 
 	@Override
 	public int[] getSignificantFigures() {
-		return new int[]{3, 5, 10, 15};
+		return new int[] {3, 5, 10, 15};
 	}
 
 	@Override
@@ -220,7 +222,7 @@ public class AppConfigDefault extends AbstractAppConfig {
 	}
 
 	@Override
-	public @Nonnull AlgebraStyle getDefaultAlgebraStyle() {
+	public @NonNull AlgebraStyle getDefaultAlgebraStyle() {
 		return AlgebraStyle.DEFINITION_AND_VALUE;
 	}
 
@@ -245,7 +247,7 @@ public class AppConfigDefault extends AbstractAppConfig {
 	}
 
 	@Override
-	public @CheckForNull SyntaxFilter newCommandSyntaxFilter() {
+	public @Nullable SyntaxFilter newCommandSyntaxFilter() {
 		return null;
 	}
 

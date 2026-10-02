@@ -27,7 +27,7 @@ import org.geogebra.web.shared.components.dialog.ComponentDialog;
 import org.geogebra.web.shared.components.dialog.DialogData;
 import org.gwtproject.user.client.ui.FlowPanel;
 
-public class HyperlinkDialog extends ComponentDialog {
+public final class HyperlinkDialog extends ComponentDialog {
 	private String hyperlinkText;
 	private MediaInputPanel textInputPanel;
 	private MediaInputPanel linkInputPanel;
@@ -89,7 +89,9 @@ public class HyperlinkDialog extends ComponentDialog {
 	}
 
 	private static String normalizeUrl(String url) {
-		if (url.startsWith(GeoGebraConstants.HTTP) || url.startsWith(GeoGebraConstants.HTTPS)) {
+		if (url.startsWith(GeoGebraConstants.HTTP)
+				|| url.startsWith(GeoGebraConstants.HTTPS)
+				|| url.startsWith(GeoGebraConstants.MAILTO)) {
 			return url;
 		}
 
@@ -99,7 +101,6 @@ public class HyperlinkDialog extends ComponentDialog {
 	@Override
 	public void hide() {
 		super.hide();
-		app.getGuiManager().setMode(EuclidianConstants.MODE_SELECT_MOW,
-				ModeSetter.TOOLBAR);
+		app.getGuiManager().setMode(EuclidianConstants.MODE_SELECT_MOW, ModeSetter.TOOLBAR);
 	}
 }

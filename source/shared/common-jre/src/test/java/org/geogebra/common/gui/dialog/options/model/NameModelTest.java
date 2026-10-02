@@ -16,8 +16,8 @@
 
 package org.geogebra.common.gui.dialog.options.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.geogebra.common.AppCommonFactory;
 import org.geogebra.common.gui.dialog.options.model.NameValueModel.INameValueListener;
@@ -25,11 +25,11 @@ import org.geogebra.common.jre.headless.AppCommon;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoPoint;
 import org.geogebra.test.TestErrorHandler;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class NameModelTest {
+class NameModelTest {
 
 	private static AppCommon app;
 	private static NameValueModel model;
@@ -37,8 +37,8 @@ public class NameModelTest {
 	/**
 	 * Create app and model.
 	 */
-	@BeforeClass
-	public static void setup() {
+	@BeforeAll
+	static void setup() {
 		app = AppCommonFactory.create3D();
 		model = new NameValueModel(app, new INameValueListener() {
 
@@ -91,19 +91,17 @@ public class NameModelTest {
 			}
 
 			@Override
-			public void update(boolean isEqualVal, boolean isEqualMode,
-					int mode) {
+			public void update(boolean isEqualVal, boolean isEqualMode, int mode) {
 				// TODO Auto-generated method stub
 
 			}
 		});
-
 	}
 
 	@Test
-	public void labelChangeShouldNotChangeCaption() {
+	void labelChangeShouldNotChangeCaption() {
 		GeoPoint p = makePoint("P");
-		model.setGeos(new Object[] { p });
+		model.setGeos(new Object[] {p});
 		model.updateProperties();
 		model.applyNameChange("Q", TestErrorHandler.INSTANCE);
 		assertEquals("Q", p.getLabelSimple());
@@ -111,9 +109,9 @@ public class NameModelTest {
 	}
 
 	@Test
-	public void labelChangeToSameShouldHaveNoEffect() {
+	void labelChangeToSameShouldHaveNoEffect() {
 		GeoPoint p = makePoint("P");
-		model.setGeos(new Object[] { p });
+		model.setGeos(new Object[] {p});
 		model.updateProperties();
 		model.applyNameChange("P", TestErrorHandler.INSTANCE);
 		assertNull(p.getCaptionSimple());
@@ -122,42 +120,38 @@ public class NameModelTest {
 	}
 
 	@Test
-	public void labelCollisionShouldChangeCaption() {
+	void labelCollisionShouldChangeCaption() {
 		makePoint("P");
 		GeoPoint r = makePoint("R");
 
-		model.setGeos(new Object[] { r });
+		model.setGeos(new Object[] {r});
 		model.updateProperties();
 		model.applyNameChange("P", TestErrorHandler.INSTANCE);
 		assertEquals("R", r.getLabelSimple());
 
-		model.setGeos(new Object[] { r });
+		model.setGeos(new Object[] {r});
 		model.updateProperties();
 		model.applyNameChange("T", TestErrorHandler.INSTANCE);
 		assertEquals("R", r.getLabelSimple());
 	}
 
 	@Test
-	public void invalidLabelShouldSetCaption() {
+	void invalidLabelShouldSetCaption() {
 		GeoPoint r = makePoint("R");
 
-		model.setGeos(new Object[] { r });
+		model.setGeos(new Object[] {r});
 		model.updateProperties();
 		model.applyNameChange("P Q", TestErrorHandler.INSTANCE);
 		assertEquals("R", r.getLabelSimple());
-		assertEquals("P Q",
-				r.getCaption(StringTemplate.defaultTemplate));
+		assertEquals("P Q", r.getCaption(StringTemplate.defaultTemplate));
 		model.applyNameChange("!!!", TestErrorHandler.INSTANCE);
 		assertEquals("R", r.getLabelSimple());
-		assertEquals("!!!",
-				r.getCaption(StringTemplate.defaultTemplate));
-
+		assertEquals("!!!", r.getCaption(StringTemplate.defaultTemplate));
 	}
 
-	@Before
-	public void cleanup() {
+	@BeforeEach
+	void cleanup() {
 		app.getKernel().clearConstruction(true);
-
 	}
 
 	private static GeoPoint makePoint(String string) {
@@ -166,5 +160,4 @@ public class NameModelTest {
 		p.setLabel(string);
 		return p;
 	}
-
 }
