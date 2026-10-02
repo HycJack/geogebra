@@ -19,6 +19,7 @@ package org.geogebra.common.kernel.commands;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.scripting.CmdButton;
 import org.geogebra.common.kernel.scripting.CmdCenterView;
+import org.geogebra.common.kernel.scripting.CmdExecuteBatch;
 import org.geogebra.common.kernel.scripting.CmdCheckbox;
 import org.geogebra.common.kernel.scripting.CmdDelete;
 import org.geogebra.common.kernel.scripting.CmdExecute;
@@ -184,6 +185,8 @@ public class ScriptingCommandProcessorFactory implements CommandProcessorFactory
 			return new CmdButton(kernel);
 		case Execute:
 			return new CmdExecute(kernel);
+		case ExecuteBatch:
+			return new CmdExecuteBatch(kernel);
 		case GetTime:
 			return new CmdGetTime(kernel);
 		case ShowLabel:

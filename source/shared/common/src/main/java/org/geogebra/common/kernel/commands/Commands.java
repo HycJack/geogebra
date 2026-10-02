@@ -889,6 +889,8 @@ public enum Commands implements CommandsConstants,
 
 	Execute(TABLE_SCRIPTING),
 
+	ExecuteBatch(TABLE_SCRIPTING),
+
 	GetTime(TABLE_SCRIPTING),
 
 	ShowLabel(TABLE_SCRIPTING),

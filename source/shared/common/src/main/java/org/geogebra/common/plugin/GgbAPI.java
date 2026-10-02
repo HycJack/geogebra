@@ -2495,6 +2495,56 @@ public abstract class GgbAPI implements JavaScriptAPI {
 		app.setViewShowAllObjects();
 	}
 
+	@Override
+	public synchronized String evalCommands(String commands) {
+		return evalCommands(commands, false);
+	}
+
+	@Override
+	public synchronized String evalCommands(String commands, boolean stopOnError) {
+		org.geogebra.common.gui.dialog.BatchCommandExecutor executor = 
+				new org.geogebra.common.gui.dialog.BatchCommandExecutor(app);
+		executor.setStopOnError(stopOnError);
+		java.util.List<org.geogebra.common.gui.dialog.BatchCommandExecutor.ExecutionResult> results = 
+				executor.executeBatch(commands);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("{\"results\":[");
+
+		for (int i = 0; i < results.size(); i++) {
+			org.geogebra.common.gui.dialog.BatchCommandExecutor.ExecutionResult result = results.get(i);
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append("{\"command\":");
+			sb.append(result.getCommand() != null ? "\"" + escapeJson(result.getCommand()) + "\"" : "null");
+			sb.append(",\"success\":").append(result.isSuccess());
+			if (result.getErrorMessage() != null) {
+				sb.append(",\"error\":\"").append(escapeJson(result.getErrorMessage())).append("\"");
+			}
+			sb.append("}");
+		}
+
+		sb.append("],\"summary\":{");
+		sb.append("\"total\":").append(executor.getTotalCount());
+		sb.append(",\"success\":").append(executor.getSuccessCount());
+		sb.append(",\"errors\":").append(executor.getErrorCount());
+		sb.append("}}");
+
+		return sb.toString();
+	}
+
+	private String escapeJson(String str) {
+		if (str == null) {
+			return "";
+		}
+		return str.replace("\\", "\\\\")
+				.replace("\"", "\\\"")
+				.replace("\n", "\\n")
+				.replace("\r", "\\r")
+				.replace("\t", "\\t");
+	}
+
 	protected JsObjectWrapper getAxisOptions(int axisNo, EuclidianSettings es) {
 		JsObjectWrapper axisOptions = createWrapper();
 		axisOptions.setProperty("visible", es.getShowAxis(axisNo));

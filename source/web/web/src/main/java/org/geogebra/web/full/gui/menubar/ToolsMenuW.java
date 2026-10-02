@@ -20,6 +20,7 @@ import org.geogebra.common.exam.ExamController;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.ownership.GlobalScope;
 import org.geogebra.web.full.css.MaterialDesignResources;
+import org.geogebra.web.full.gui.dialog.BatchCommandDialogW;
 import org.geogebra.web.full.gui.dialog.tools.ToolCreationDialogW;
 import org.geogebra.web.full.gui.dialog.tools.ToolManagerDialogW;
 import org.geogebra.web.html5.main.AppW;
@@ -93,6 +94,18 @@ public class ToolsMenuW extends Submenu {
 						}
 					}));
 		}
+
+		addItem(MainMenu.getMenuBarItem(
+				MaterialDesignResources.INSTANCE.tools_black(),
+				loc.getMenuDefault("BatchCommand", "Batch Command"),
+				new MenuCommand(getApp()) {
+
+					@Override
+					public void doExecute() {
+						BatchCommandDialogW batchCommandDialog = new BatchCommandDialogW(getApp());
+						batchCommandDialog.show();
+					}
+				}));
 	}
 
 	@Override

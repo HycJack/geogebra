@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
+import org.geogebra.desktop.gui.dialog.BatchCommandDialog;
 import org.geogebra.desktop.gui.dialog.ToolCreationDialogD;
 import org.geogebra.desktop.gui.dialog.ToolManagerDialogD;
 import org.geogebra.desktop.main.AppD;
@@ -34,6 +35,7 @@ class ToolsMenuD extends BaseMenu {
 	private AbstractAction toolbarConfigAction;
 	private AbstractAction showCreateToolsAction;
 	private AbstractAction showManageToolsAction;
+	private AbstractAction showBatchCommandAction;
 
 	/**
 	 * Creates tools menu
@@ -63,6 +65,8 @@ class ToolsMenuD extends BaseMenu {
 		addSeparator();
 		add(showCreateToolsAction);
 		add(showManageToolsAction);
+		addSeparator();
+		add(showBatchCommandAction);
 
 		// support for right-to-left languages
 		app.setComponentOrientation(this);
@@ -105,6 +109,18 @@ class ToolsMenuD extends BaseMenu {
 			public void actionPerformed(ActionEvent e) {
 				ToolManagerDialogD tmd = new ToolManagerDialogD(app);
 				tmd.setVisible(true);
+			}
+		};
+
+		showBatchCommandAction = new AbstractAction(
+				loc.getMenuDefault("BatchCommand", "Batch Command") + " ...",
+				app.getEmptyIcon()) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				BatchCommandDialog bcd = new BatchCommandDialog(app);
+				bcd.setVisible(true);
 			}
 		};
 	}

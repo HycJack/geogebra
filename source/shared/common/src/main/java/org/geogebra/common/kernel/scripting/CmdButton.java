@@ -24,9 +24,12 @@ import org.geogebra.common.kernel.geos.GeoButton;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoText;
 import org.geogebra.common.main.MyError;
+import org.geogebra.common.plugin.EventType;
+import org.geogebra.common.plugin.ScriptType;
+import org.geogebra.common.plugin.script.Script;
 
 /**
- * Button[],Button[caption]
+ * Button[], Button[caption], Button[caption, script]
  * 
  * @author Zbynek
  *
@@ -48,11 +51,33 @@ public class CmdButton extends CommandProcessor {
 		int n = c.getArgumentNumber();
 		GeoElement[] arg;
 
-		// dummy
-
 		switch (n) {
+		case 2:
+			arg = resArgs(c, info);
+			if (arg[0].isGeoText() && arg[1].isGeoText()) {
+				String caption = ((GeoText) arg[0]).getTextString();
+				String scriptText = ((GeoText) arg[1]).getTextString();
+				
+				GeoButton gb = new GeoButton(cons);
+				gb.setLabelVisible(true);
+				gb.setCaption(caption);
+				gb.setLabel(c.getLabel());
+				
+				// 设置点击脚本
+				if (scriptText != null && !scriptText.isEmpty()) {
+					ScriptType scriptType = ScriptType.GGBSCRIPT;
+					if (scriptText.indexOf("ggbApplet.") > -1) {
+						scriptType = ScriptType.JAVASCRIPT;
+					}
+					Script script = app.createScript(scriptType, scriptText, true);
+					gb.setScript(script, EventType.CLICK);
+				}
+				
+				return new GeoElement[] { gb };
+			}
+			throw argErr(c, arg[0]);
+			
 		case 1:
-
 			arg = resArgs(c, info);
 			if (arg[0].isGeoText()) {
 				String caption = ((GeoText) arg[0]).getTextString();
@@ -63,6 +88,7 @@ public class CmdButton extends CommandProcessor {
 				return new GeoElement[] { gb };
 			}
 			throw argErr(c, arg[0]);
+			
 		case 0:
 			GeoButton gb = new GeoButton(cons);
 			gb.setLabelVisible(true);
@@ -72,6 +98,5 @@ public class CmdButton extends CommandProcessor {
 		default:
 			throw argNumErr(c);
 		}
-
 	}
 }

@@ -1347,4 +1347,25 @@ public interface JavaScriptAPI {
 	 * Show all objects in EuclidianView
 	 */
 	void showAllObjects();
+
+	/**
+	 * Executes multiple GeoGebra commands in batch mode.
+	 * Lines starting with # or // are treated as comments.
+	 * 
+	 * @param commands
+	 *            multiple commands separated by newline characters
+	 * @return JSON string containing execution results
+	 */
+	String evalCommands(String commands);
+
+	/**
+	 * Executes multiple GeoGebra commands in batch mode.
+	 * 
+	 * @param commands
+	 *            multiple commands separated by newline characters
+	 * @param stopOnError
+	 *            if true, stops execution when an error occurs
+	 * @return JSON string containing execution results
+	 */
+	String evalCommands(String commands, boolean stopOnError);
 }
