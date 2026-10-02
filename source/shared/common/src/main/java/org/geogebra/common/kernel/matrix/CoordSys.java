@@ -590,7 +590,7 @@ public class CoordSys {
 	 * negative, then change signs
 	 * 
 	 */
-	final private void checkEquationVectorHasJustOneNegativeCoeff() {
+	private void checkEquationVectorHasJustOneNegativeCoeff() {
 
 		int zeros = 0;
 		boolean negative = false;
@@ -925,7 +925,7 @@ public class CoordSys {
 	 * @param v
 	 *            translation vector
 	 */
-	static final public void translateEquationVector(Coords eqV, Coords v) {
+	public static void translateEquationVector(Coords eqV, Coords v) {
 		eqV.setW(eqV.getW() - v.dotproduct(eqV));
 	}
 

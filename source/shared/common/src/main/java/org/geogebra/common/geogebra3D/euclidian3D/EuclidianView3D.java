@@ -319,6 +319,7 @@ public abstract class EuclidianView3D extends EuclidianView
 	private EuclidianView3DAnimator animator;
 
 	//Mixed Reality and Augmented Reality
+	private EuclidianView3DDelegate delegate;
 	private boolean mIsXRDrawing;
 	private boolean mIsXREnabled;
 	protected boolean mIsUnity;
@@ -370,7 +371,7 @@ public abstract class EuclidianView3D extends EuclidianView
 		Log.warn("!!! 3D View being initialized !!!");
 	}
 
-	final private static void changeCoords(CoordMatrix mat, Coords vInOut) {
+	private static void changeCoords(CoordMatrix mat, Coords vInOut) {
 		Coords v1 = vInOut.getCoordsLast1();
 		vInOut.set(mat.mul(v1));
 	}
@@ -765,7 +766,7 @@ public abstract class EuclidianView3D extends EuclidianView
 
 	}
 
-	final private DrawSurface3D newDrawSurface3D(SurfaceEvaluable surface) {
+	private DrawSurface3D newDrawSurface3D(SurfaceEvaluable surface) {
 		if (renderer.useShaders()) {
 			return new DrawSurface3DElements(this, surface);
 		}
@@ -3992,8 +3993,7 @@ public abstract class EuclidianView3D extends EuclidianView
 		}
 	}
 
-	final private void updateProjectionPerspectiveEyeDistance() {
-
+	private void updateProjectionPerspectiveEyeDistance() {
 		renderer.setNear(projectionPerspectiveEyeDistance[0],
 				projectionPerspectiveEyeDistance[1]);
 	}
@@ -5042,6 +5042,13 @@ public abstract class EuclidianView3D extends EuclidianView
 	}
 
 	/**
+	 * @return number of latitude-wise splits for curve plotting
+	 */
+	public int getLatitudes() {
+		return 8;
+	}
+
+	/**
 	 * @param isXRDrawing
 	 *            whether XR is active
 	 */
@@ -5125,7 +5132,10 @@ public abstract class EuclidianView3D extends EuclidianView
 	 */
 	public void setXREnabled(boolean isXREnabled) {
 		mIsXREnabled = isXREnabled;
-        if (euclidianController.isCreatingPointAR()) {
+		if (delegate != null) {
+			delegate.onXrEnabledChanged(isXREnabled);
+		}
+		if (euclidianController.isCreatingPointAR()) {
             target.updateType(this);
         }
 		updateMatrixForCursor3D();
@@ -5319,6 +5329,10 @@ public abstract class EuclidianView3D extends EuclidianView
 		return arRatioMetricSystem;
 	}
 
+	public void setDelegate(EuclidianView3DDelegate delegate) {
+		this.delegate = delegate;
+	}
+
 	private void set3DCoordSystem(double xzero, double yzero, double zzero, double xscale,
 			double yscale, double zscale) {
 		if (Double.isNaN(xscale) || (xscale < Kernel.MAX_DOUBLE_PRECISION)
@@ -5406,5 +5420,13 @@ public abstract class EuclidianView3D extends EuclidianView
 			return GeoNumeric.isChangeable(zmaxObject);
 		}
 		return false;
+	}
+
+	public interface EuclidianView3DDelegate {
+		/**
+		 * Notifies delegate that the isXrEnabled flag changed
+		 * @param isXrEnabled true if xr is enabled
+		 */
+		void onXrEnabledChanged(boolean isXrEnabled);
 	}
 }

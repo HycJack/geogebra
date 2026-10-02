@@ -30,24 +30,24 @@ public interface AlgebraView extends Editing, SetLabels {
 	 * 
 	 * @return whether this view is currently visible
 	 */
-	public boolean isVisible();
+	boolean isVisible();
 
 	/**
 	 * Start editing an element
 	 * @param geo construction element
 	 */
-	public void startEditItem(GeoElement geo);
+	void startEditItem(GeoElement geo);
 
 	/**
 	 * @return whether any item is being edited
 	 */
-	public boolean isEditItem();
+	boolean isEditItem();
 
 	/**
 	 * (Web only, moved here because of WebSimple)
 	 * @return element dragged from AV to graphics
 	 */
-	public GeoElement getDraggedGeo();
+	GeoElement getDraggedGeo();
 
 	/**
 	 * DEPENDENCY: Tree mode where the objects are categorized by their
@@ -57,7 +57,7 @@ public interface AlgebraView extends Editing, SetLabels {
 	 * their value is computed (xOyPlane, space, ...) ORDER: Construction
 	 * Protocol order
 	 */
-	public static enum SortMode {
+	enum SortMode {
 		DEPENDENCY {
 			@Override
 			public String toString() {
@@ -125,7 +125,7 @@ public interface AlgebraView extends Editing, SetLabels {
 	 * Focus or blur the view.
 	 * @param b true to focus
 	 */
-	public void setFocus(boolean b);
+	void setFocus(boolean b);
 
 	/**
 	 * @return last selected element

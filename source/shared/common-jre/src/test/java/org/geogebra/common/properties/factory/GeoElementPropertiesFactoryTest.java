@@ -26,8 +26,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.geogebra.common.SuiteSubApp;
+import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.common.kernel.geos.GeoAngle;
 import org.geogebra.common.kernel.geos.GeoConic;
+import org.geogebra.common.kernel.geos.GeoInlineTable;
+import org.geogebra.common.kernel.geos.GeoInlineText;
 import org.geogebra.common.kernel.geos.GeoLine;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.kernel.geos.GeoPoint;
@@ -35,6 +38,8 @@ import org.geogebra.common.properties.Property;
 import org.geogebra.common.properties.impl.facade.NamedEnumeratedPropertyListFacade;
 import org.geogebra.common.properties.impl.objects.LinearEquationFormProperty;
 import org.geogebra.common.properties.impl.objects.QuadraticEquationFormProperty;
+import org.geogebra.common.properties.impl.objects.TextStylePropertyCollection;
+import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.test.BaseAppTestSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +62,7 @@ public class GeoElementPropertiesFactoryTest extends BaseAppTestSetup {
 
 		assertAll(
 				() -> assertEquals("Name", pointProperties[0].getName()),
-				() -> assertEquals("Show", pointProperties[1].getName()),
+				() -> assertEquals("Show Object", pointProperties[1].getName()),
 				() -> assertEquals("Set color", pointProperties[2].getName()),
 				() -> assertEquals("Point Style", pointProperties[3].getName()),
 				() -> assertEquals("Size", pointProperties[4].getName()),
@@ -78,7 +83,7 @@ public class GeoElementPropertiesFactoryTest extends BaseAppTestSetup {
 						List.of(zeroPoint, onePoint));
 		List<String> basicProperties = Arrays.stream(propertiesArray.get(0).getProperties())
 				.map(Property::getName).collect(Collectors.toList());
-		assertEquals(List.of("Name", "Caption", "Label", "Show", "Show trace", "Fix Object",
+		assertEquals(List.of("Name", "Caption", "Label", "Show Object", "Show trace", "Fix Object",
 				"Auxiliary Object"), basicProperties);
 	}
 
@@ -90,7 +95,7 @@ public class GeoElementPropertiesFactoryTest extends BaseAppTestSetup {
 						getApp().getLocalization(), getApp().getImageManager(), List.of(angle));
 		List<String> basicProperties = Arrays.stream(propertiesArray.get(0).getProperties())
 				.map(Property::getName).collect(Collectors.toList());
-		assertEquals(List.of("Name", "Definition", "Caption", "Label", "Show",
+		assertEquals(List.of("Name", "Definition", "Caption", "Label", "Show Object",
 				"Auxiliary Object"), basicProperties);
 	}
 
@@ -102,7 +107,7 @@ public class GeoElementPropertiesFactoryTest extends BaseAppTestSetup {
 						getApp().getLocalization(), getApp().getImageManager(), List.of(number));
 		List<String> basicProperties = Arrays.stream(propertiesArray.get(0).getProperties())
 				.map(Property::getName).collect(Collectors.toList());
-		assertEquals(List.of("Name", "Definition", "Caption", "Label", "Show", "Fix Object",
+		assertEquals(List.of("Name", "Definition", "Caption", "Label", "Show Object", "Fix Object",
 				"Auxiliary Object"), basicProperties);
 	}
 
@@ -116,7 +121,7 @@ public class GeoElementPropertiesFactoryTest extends BaseAppTestSetup {
 						List.of(numeric1, numeric2));
 		List<String> basicProperties = Arrays.stream(propertiesArray.get(0).getProperties())
 				.map(Property::getName).collect(Collectors.toList());
-		assertEquals(List.of("Name", "Caption", "Label", "Show", "Fix Object",
+		assertEquals(List.of("Name", "Caption", "Label", "Show Object", "Fix Object",
 				"Auxiliary Object"), basicProperties);
 	}
 
@@ -135,6 +140,40 @@ public class GeoElementPropertiesFactoryTest extends BaseAppTestSetup {
 				getAlgebraProcessor(), getApp().getLocalization(), List.of(circle));
 		assertFalse(containsLinearEquationFormProperty(circleProperties));
 		assertTrue(containsQuadraticEquationFormProperty(circleProperties));
+	}
+
+	@Test
+	public void testInlineTableTextProperties() {
+		GeoInlineTable table = new GeoInlineTable(getKernel().getConstruction(), new GPoint2D());
+		try {
+			TextStylePropertyCollection textStylePropertyCollection
+					= new TextStylePropertyCollection(new GeoElementPropertiesFactory(),
+					getLocalization(), List.of(table));
+			List<String> textStylePropertyNames = Arrays.stream(
+							textStylePropertyCollection.getProperties()).map(Property::getName)
+					.toList();
+			assertEquals(List.of("Color", "Font", "Font Size", "Text style", "Alignment",
+					"Layout"), textStylePropertyNames);
+		} catch (NotApplicablePropertyException e) {
+			throw new AssertionError(e);
+		}
+	}
+
+	@Test
+	public void testInlineTextTextProperties() {
+		GeoInlineText table = new GeoInlineText(getKernel().getConstruction(), new GPoint2D());
+		try {
+			TextStylePropertyCollection textStylePropertyCollection
+					= new TextStylePropertyCollection(new GeoElementPropertiesFactory(),
+					getLocalization(), List.of(table));
+			List<String> textStylePropertyNames = Arrays.stream(
+							textStylePropertyCollection.getProperties()).map(Property::getName)
+					.toList();
+			assertEquals(List.of("Color", "Font", "Font Size", "Text style", "Alignment"),
+					textStylePropertyNames);
+		} catch (NotApplicablePropertyException e) {
+			throw new AssertionError(e);
+		}
 	}
 
 	private boolean containsLinearEquationFormProperty(PropertiesArray array) {

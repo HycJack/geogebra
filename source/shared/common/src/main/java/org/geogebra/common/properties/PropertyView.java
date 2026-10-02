@@ -19,6 +19,7 @@ package org.geogebra.common.properties;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ import org.geogebra.common.properties.aliases.ColorProperty;
 import org.geogebra.common.properties.aliases.ImageProperty;
 import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.factory.PropertiesArray;
+import org.geogebra.common.properties.impl.collections.AbstractPropertyCollection;
 import org.geogebra.common.properties.impl.collections.ActionablePropertyCollection;
 import org.geogebra.common.properties.impl.facade.AbstractPropertyListFacade;
 import org.geogebra.common.properties.impl.facade.ImagePropertyListFacade;
@@ -63,16 +65,23 @@ import org.geogebra.common.properties.impl.graphics.NavigationBarPropertiesColle
 import org.geogebra.common.properties.impl.graphics.SettingsDependentProperty;
 import org.geogebra.common.properties.impl.objects.AbsoluteScreenPositionPropertyCollection;
 import org.geogebra.common.properties.impl.objects.AlgebraViewVisibilityPropertyCollection;
+import org.geogebra.common.properties.impl.objects.AlignmentPropertyCollection;
 import org.geogebra.common.properties.impl.objects.BackgroundColorPropertyCollection;
+import org.geogebra.common.properties.impl.objects.BorderStylePropertyCollection;
+import org.geogebra.common.properties.impl.objects.ButtonIconPropertyCollection;
+import org.geogebra.common.properties.impl.objects.ChartSegmentFillCategoryProperty;
+import org.geogebra.common.properties.impl.objects.ChartSegmentSelection;
 import org.geogebra.common.properties.impl.objects.ChartSegmentSelectionDependentProperty;
-import org.geogebra.common.properties.impl.objects.ChartSegmentSelectionProperty.ChartSegmentSelection;
 import org.geogebra.common.properties.impl.objects.DynamicColorSpaceProperty;
 import org.geogebra.common.properties.impl.objects.FillCategoryProperty;
+import org.geogebra.common.properties.impl.objects.FontProperty;
 import org.geogebra.common.properties.impl.objects.GeoElementDependentProperty;
+import org.geogebra.common.properties.impl.objects.LayoutPropertyCollection;
 import org.geogebra.common.properties.impl.objects.LocationPropertyCollection;
 import org.geogebra.common.properties.impl.objects.ObjectAllEventsProperty;
 import org.geogebra.common.properties.impl.objects.ObjectEventProperty;
 import org.geogebra.common.properties.impl.objects.SliderTrackColorPropertyCollection;
+import org.geogebra.common.properties.impl.objects.StyledItemProperty;
 import org.geogebra.common.properties.util.StringPropertyWithSuggestions;
 
 import com.google.j2objc.annotations.Weak;
@@ -216,7 +225,7 @@ public abstract class PropertyView {
 		}
 
 		@Override
-		public void selectedChartUpdated() {
+		public void chartSegmentSelectionUpdated() {
 			notifyUpdateDelegates();
 		}
 
@@ -313,8 +322,17 @@ public abstract class PropertyView {
 	 * Representation of a dropdown menu with a label and a list of possible items.
 	 */
 	public static final class Dropdown extends PropertyBackedView<NamedEnumeratedProperty<?>> {
+		private final Map<Integer, FontProperty.FontFamily> fontFamilies;
+
 		Dropdown(NamedEnumeratedProperty<?> namedEnumeratedProperty) {
 			super(namedEnumeratedProperty);
+			fontFamilies = Map.of();
+		}
+
+		Dropdown(NamedEnumeratedProperty<?> namedEnumeratedProperty,
+				Map<Integer, FontProperty.FontFamily> fontFamilies) {
+			super(namedEnumeratedProperty);
+			this.fontFamilies = fontFamilies;
 		}
 
 		/**
@@ -329,6 +347,10 @@ public abstract class PropertyView {
 		 */
 		public @Nonnull List<String> getItems() {
 			return List.of(property.getValueNames());
+		}
+
+		public @Nonnull Map<Integer, FontProperty.FontFamily> getFontFamilies() {
+			return fontFamilies;
 		}
 
 		/**
@@ -348,7 +370,7 @@ public abstract class PropertyView {
 		}
 
 		/**
-		 * @return an array of indices where a divider must be inserted 
+		 * @return an array of indices where a divider must be inserted
 		 * or {@code null} if no dividers should be inserted.
 		 */
 		public @CheckForNull int[] getGroupDividerIndices() {
@@ -630,7 +652,6 @@ public abstract class PropertyView {
 	public static final class Slider extends PropertyBackedView<RangeProperty<Integer>> {
 		Slider(RangeProperty<Integer> rangeProperty) {
 			super(rangeProperty);
-			assert rangeProperty.getMin() != null && rangeProperty.getMax() != null;
 		}
 
 		/**
@@ -668,6 +689,23 @@ public abstract class PropertyView {
 		}
 
 		/**
+		 * Signals the start of a slider drag interaction.
+		 * Subsequent {@link #setValue(int)} calls are treated as part of one
+		 * continuous update sequence until {@link #onDragStopped()} is called.
+		 */
+		public void onDragStarted() {
+			property.beginSetValue();
+		}
+
+		/**
+		 * Signals the end of a slider drag interaction.
+		 * Completes the update sequence started by {@link #onDragStarted()}.
+		 */
+		public void onDragStopped() {
+			property.endSetValue();
+		}
+
+		/**
 		 * @return the minimum value
 		 */
 		public int getMin() {
@@ -686,8 +724,9 @@ public abstract class PropertyView {
 		/**
 		 * @return the step or increment between values
 		 */
-		public @CheckForNull Integer getStep() {
-			return property.getStep();
+		public int getStep() {
+			Integer step = property.getStep();
+			return step != null ? step : 1;
 		}
 	}
 
@@ -1013,6 +1052,81 @@ public abstract class PropertyView {
 	}
 
 	/**
+	 * Editor for all button icon related property: row of icon with default icons,
+	 * file chooser for custom icon.
+	 */
+	public static final class ButtonIconEditor extends PropertyBackedView<BooleanProperty> {
+		private final BooleanProperty leadProperty;
+		private final IconsEnumeratedProperty<String> iconsEnumeratedProperty;
+		private final SingleSelectionIconRow leadingIconButtonRow;
+		private final ImagePicker trailingImagePicker;
+
+		/**
+		 * Editor for button icon property.
+		 * @param buttonIconProperty {@link ButtonIconPropertyCollection}
+		 */
+		ButtonIconEditor(ButtonIconPropertyCollection buttonIconProperty) {
+			super(buttonIconProperty.leadProperty);
+			leadProperty = buttonIconProperty.leadProperty;
+			iconsEnumeratedProperty = (IconsEnumeratedProperty<String>) buttonIconProperty
+					.getProperties()[0];
+			leadingIconButtonRow = new PropertyView.SingleSelectionIconRow(
+					iconsEnumeratedProperty);
+			trailingImagePicker = new PropertyView.ImagePicker((ImageProperty) buttonIconProperty
+					.getProperties()[1]);
+		}
+
+		/**
+		 * @return lead {@link BooleanProperty}
+		 */
+		public BooleanProperty getLeadProperty() {
+			return leadProperty;
+		}
+
+		/**
+		 * @return {@link SingleSelectionIconRow} of default icons
+		 */
+		public SingleSelectionIconRow getLeadingIconButtonRow() {
+			return leadingIconButtonRow;
+		}
+
+		public ImagePicker getTrailingImagePicker() {
+			return trailingImagePicker;
+		}
+
+		/**
+		 * @param fileName file name of icon with extension
+		 */
+		public void setDefaultIcon(String fileName) {
+			iconsEnumeratedProperty.setValue(fileName);
+		}
+
+		/**
+		 * @return index of selected default icon.
+		 */
+		public Integer getSelectedIndex() {
+			return iconsEnumeratedProperty.getIndex();
+		}
+
+		/**
+		 * Sets the new selected index.
+		 * @param index selected index
+		 */
+		public void setSelectedIndex(int index) {
+			iconsEnumeratedProperty.setIndex(index);
+		}
+
+		/**
+		 * Returns one of the default icons at given index.
+		 * @param index given index
+		 * @return icon at index
+		 */
+		public PropertyResource getIconAt(int index) {
+			return iconsEnumeratedProperty.getValueIcons()[index];
+		}
+	}
+
+	/**
 	 * Representation of a property-specific view, displaying two text fields separated by a colon
 	 * in a row with a trailing lock icon that can be either open or closed, and a label above.
 	 */
@@ -1176,12 +1290,19 @@ public abstract class PropertyView {
 	}
 
 	/**
-	 * Representation of a row of buttons, each with a label, one of which is can be selected.
+	 * Representation of a row of buttons, each with a label, one of which can be selected.
 	 */
 	public static final class ConnectedButtonGroup
 			extends PropertyBackedView<NamedEnumeratedProperty<?>> {
 		ConnectedButtonGroup(@Nonnull NamedEnumeratedProperty<?> property) {
 			super(property);
+		}
+
+		/**
+		 * @return the number of buttons
+		 */
+		public int count() {
+			return getButtonLabels().size();
 		}
 
 		/**
@@ -1259,12 +1380,34 @@ public abstract class PropertyView {
 		}
 	}
 
+	public static final class GroupedIconButtonRow extends PropertyView {
+		private final AbstractPropertyCollection propertyCollection;
+		private final List<SingleSelectionIconRow> iconRowList = new ArrayList<>();
+
+		protected GroupedIconButtonRow(AbstractPropertyCollection propertyCollection) {
+			this.propertyCollection = propertyCollection;
+			for (Property property : propertyCollection.getProperties()) {
+				if (property instanceof IconsEnumeratedProperty<?> iconsEnumeratedProperty) {
+					iconRowList.add((SingleSelectionIconRow) of(iconsEnumeratedProperty));
+				}
+			}
+		}
+
+		public String getLabel() {
+			return propertyCollection.getName();
+		}
+
+		public List<SingleSelectionIconRow> getIconRowList() {
+			return iconRowList;
+		}
+	}
+
 	/**
 	 * Representation of an image picker that displays either a "choose from file" button
 	 * or a preview of the selected image with its name and actions to change or remove it.
 	 */
 	public static final class ImagePicker extends PropertyBackedView<ImageProperty> {
-		
+
 		ImagePicker(@Nonnull ImageProperty property) {
 			super(property);
 		}
@@ -1285,7 +1428,7 @@ public abstract class PropertyView {
 		}
 
 		/**
-		 * Gets the selected image. 
+		 * Gets the selected image.
 		 * @return image or {@code null}
 		 */
 		public @CheckForNull MyImage getImage() {
@@ -1328,13 +1471,18 @@ public abstract class PropertyView {
 	public static @CheckForNull PropertyView of(Property property) {
 		if (property instanceof BooleanProperty booleanProperty) {
 			return new Checkbox(booleanProperty);
+		} else if (property instanceof AlignmentPropertyCollection
+			|| property instanceof LayoutPropertyCollection
+			|| property instanceof BorderStylePropertyCollection) {
+			return new GroupedIconButtonRow((AbstractPropertyCollection) property);
 		} else if (property instanceof DynamicColorSpaceProperty
 				|| (property instanceof NamedEnumeratedPropertyListFacade<?, ?> facade
 				&& (facade.getFirstProperty() instanceof DynamicColorSpaceProperty
-				|| facade.getFirstProperty() instanceof FillCategoryProperty))) {
+				|| facade.getFirstProperty() instanceof FillCategoryProperty
+				|| facade.getFirstProperty() instanceof ChartSegmentFillCategoryProperty))) {
 			return new ConnectedButtonGroup((NamedEnumeratedProperty<?>) property);
 		} else if (property instanceof NamedEnumeratedProperty<?> namedEnumeratedProperty) {
-			return new Dropdown(namedEnumeratedProperty);
+			return createDropdown(namedEnumeratedProperty);
 		} else if (property instanceof StringPropertyWithSuggestions stringProperty) {
 			return new ComboBox(stringProperty);
 		} else if (property instanceof ImagePropertyListFacade imagePropertyListFacade) {
@@ -1343,10 +1491,7 @@ public abstract class PropertyView {
 			return new TextField(stringProperty);
 		} else if (property instanceof IconsEnumeratedProperty<?> iconsEnumeratedProperty) {
 			return new SingleSelectionIconRow(iconsEnumeratedProperty);
-		} else if (property instanceof RangeProperty<?> rangeProperty
-				// Sliders only make sense when min and max are defined.
-				&& rangeProperty.getMin() != null
-				&& rangeProperty.getMax() != null) {
+		} else if (property instanceof RangeProperty<?>) {
 			return new Slider((RangeProperty<Integer>) property);
 		} else if (property instanceof AxisDistancePropertyCollection
 				|| property instanceof AxisCrossPropertyCollection
@@ -1367,6 +1512,9 @@ public abstract class PropertyView {
 		} else if (property instanceof BackgroundColorPropertyCollection collection) {
 			return new ExpandableList(collection, List.of(new RelatedPropertyViewCollection(
 					null, propertyViewListOf(collection), 8)));
+		} else if (property instanceof ButtonIconPropertyCollection buttonIconPropertyCollection) {
+			return new ExpandableList(buttonIconPropertyCollection,
+					List.of(new ButtonIconEditor(buttonIconPropertyCollection)));
 		} else if (property instanceof ActionableIconPropertyCollection actionableIconProperty) {
 			return new IconButtonRow(actionableIconProperty);
 		} else if (property instanceof ColorProperty colorProperty) {
@@ -1442,6 +1590,17 @@ public abstract class PropertyView {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * @param namedEnumeratedProperty property
+	 * @return dropdown for given property
+	 */
+	private static Dropdown createDropdown(NamedEnumeratedProperty<?> namedEnumeratedProperty) {
+		if (namedEnumeratedProperty instanceof StyledItemProperty styled) {
+			return new Dropdown(namedEnumeratedProperty, styled.getFontFamilies());
+		}
+		return new Dropdown(namedEnumeratedProperty);
 	}
 
 	private static List<PropertyView> propertyViewListOf(PropertyCollection<?> propertyCollection) {

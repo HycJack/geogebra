@@ -38,8 +38,8 @@ public class SpreadsheetSelectionControllerTest {
 
 	private final SpreadsheetSelectionController selectionController =
 			new SpreadsheetSelectionController();
-	private final int numberOfRows = 100;
-	private final int numberOfColumns = 100;
+	private static final int numberOfRows = 100;
+	private static final int numberOfColumns = 100;
 
 	@Test
 	public void testMove() {
@@ -350,14 +350,9 @@ public class SpreadsheetSelectionControllerTest {
 
 	@Test
 	public void testSelectionChangeNotifications() {
-		final Box<Integer> numberOfNotifications = new Box<Integer>(0);
+		final Box<Integer> numberOfNotifications = new Box<>(0);
 		MulticastEvent.Listener<MulticastEvent.Void> listener =
-				new MulticastEvent.Listener<MulticastEvent.Void>() {
-					@Override
-					public void notify(MulticastEvent.Void unused) {
-						numberOfNotifications.value++;
-					}
-				};
+				unused -> numberOfNotifications.value++;
 		selectionController.selectionsChanged.addListener(listener);
 
 		selectionController.selectCell(0, 0, false, false);

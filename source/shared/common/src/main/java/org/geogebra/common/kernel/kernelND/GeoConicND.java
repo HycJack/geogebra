@@ -398,8 +398,8 @@ public abstract class GeoConicND extends GeoQuadricND
 	 *            path parameter of the point
 	 */
 	public void pointChangedUnlimited(Coords pt, PathParameter parameter) {
-		double px, py, ha, hb, hc_2;
-		double abspx, abspy; // for parabola and hyperbola
+		double px, py;
+		double abspy; // for parabola
 		double tolerance = Kernel.STANDARD_PRECISION; // required precision
 														// (robustness not
 														// proven)
@@ -471,139 +471,10 @@ public abstract class GeoConicND extends GeoQuadricND
 			coordsEVtoRW(pt);
 			break;
 		case CONIC_ELLIPSE:
-			// transform to eigenvector coord-system
-			coordsRWtoEV(pt);
-
-			// calc parameter
-			px = pt.getX() / pt.getZ();
-			py = pt.getY() / pt.getZ();
-			abspx = Math.abs(px);
-			abspy = Math.abs(py);
-			ha = halfAxes[0];
-			hb = halfAxes[1];
-			hc_2 = ha * ha - hb * hb;
-
-			// special case handling from:
-			// http://cdserv1.wbut.ac.in/81-8147-617-4/Linux/MagicSoftware/WildMagic2/Documentation/DistancePointToEllipse2.pdf
-			if (abspx < Kernel.STANDARD_PRECISION) {
-				// pp.setT(Math.asin(Math.max(-1,-hb*abspy/hc_2)));
-				if (abspy < Kernel.STANDARD_PRECISION) {
-					if (hb < ha) {
-						parameter.setT(Math.PI / 2);
-					} else {
-						parameter.setT(0);
-					}
-				} else {
-					if (hb < ha) {
-						parameter.setT(Math.PI / 2);
-					} else {
-						if (abspy * hb < hc_2) {
-							parameter.setT(Math.asin(hb * abspy / hc_2));
-						} else {
-							parameter.setT(Math.PI / 2);
-						}
-					}
-				}
-			} else if (abspy < Kernel.STANDARD_PRECISION) {
-				// pp.setT(Math.acos(Math.min(1,ha*abspx/hc_2)));
-				if (ha < hb) {
-					parameter.setT(0);
-				} else {
-					if (abspx * ha < hc_2) {
-						parameter.setT(Math.acos(ha * abspx / hc_2));
-					} else {
-						parameter.setT(0);
-					}
-				}
-			} else {
-				// To solve (1-u^2)*(b*py + (a^2-b^2)*u)^2-a^2*px^2*u^2 = 0,
-				// where u = sin(theta)
-				double[] roots = getPerpendicularParams(abspx, abspy);
-
-				if (roots[0] > 0) {
-					parameter.setT(Math.asin(roots[0]));
-				} else if (roots[1] > 0) {
-					parameter.setT(Math.asin(roots[1]));
-				} else if (roots[2] > 0) {
-					parameter.setT(Math.asin(roots[2]));
-				} else {
-					parameter.setT(Math.asin(roots[3]));
-				}
-			}
-
-			// transform the parameter if (px,py) is not in the first quadrant.
-			if (px < 0) {
-				parameter.setT(Math.PI - parameter.getT());
-			}
-			if (py < 0) {
-				parameter.setT(-parameter.getT());
-			}
-
-			pt.setX(ha * Math.cos(parameter.getT()));
-			pt.setY(hb * Math.sin(parameter.getT()));
-			pt.setZ(1.0);
-			// transform back to real world coord system
-			coordsEVtoRW(pt);
+			pointChangedUnlimitedEllipse(pt, parameter);
 			break;
 		case CONIC_HYPERBOLA:
-			/*
-			 * For hyperbolas, we use the parameter ranges right branch: t =
-			 * (-1, 1) left branch: t = (1, 3) and get this from s = (-inf, inf)
-			 * using right branch: s = t /(1 - abs(t)) where we use the
-			 * parameter form (a*cosh(s), b*sinh(s)) for the right branch of the
-			 * hyperbola.
-			 */
-
-			// transform to eigenvector coord-system
-			coordsRWtoEV(pt);
-
-			// calc parameter
-			px = pt.getX() / pt.getZ();
-			py = pt.getY() / pt.getZ();
-			abspx = Math.abs(px);
-			abspy = Math.abs(py);
-			ha = halfAxes[0];
-			hb = halfAxes[1];
-			hc_2 = ha * ha + hb * hb;
-			double s;
-
-			if (abspy < Kernel.STANDARD_PRECISION) {
-				s = MyMath.acosh(Math.max(1, ha * abspx / hc_2));
-			} else {
-				// To solve (1+u^2)*(-(b^2+a^2)*u +b*py)^2 - a^2*px^2, where
-				// u=sinh(t)
-
-				double[] roots = getPerpendicularParams(abspx, abspy);
-
-				if (roots[0] > 0) {
-					s = MyMath.asinh(roots[0]);
-				} else if (roots[1] > 0) {
-					s = MyMath.asinh(roots[1]);
-				} else if (roots[2] > 0) {
-					s = MyMath.asinh(roots[2]);
-				} else {
-					s = MyMath.asinh(roots[3]);
-				}
-			}
-
-			// transform the s-parameter if (px,py) is not in the first
-			// quadrant.
-			if (py < 0) { // lower-half plane
-				s = -s;
-			}
-			// compute t in (-1,1) from s in (-inf, inf)
-			parameter.setT(PathNormalizer.inverseInfFunction(s));
-			pt.setX(ha * Math.cosh(s));
-			pt.setY(hb * Math.sinh(s));
-			pt.setZ(1.0);
-
-			if (px < 0) { // left branch
-				parameter.setT(parameter.getT() + 2); // convert (-1,1) to (1,3)
-				pt.setX(-pt.getX());
-			}
-
-			// transform back to real world coord system
-			coordsEVtoRW(pt);
+			pointChangedUnlimitedHyperbola(pt, parameter);
 			break;
 
 		case CONIC_PARABOLA:
@@ -645,38 +516,172 @@ public abstract class GeoConicND extends GeoQuadricND
 		}
 	}
 
-	/**
-	 * @param P
-	 *            point
-	 * @return array of parameters t such that Line[point[this,t],P] is
-	 *         perpendicular to this
-	 */
-	public double[] getPerpendicularParams(Coords P) {
-		coordsRWtoEV(P);
+	private void pointChangedUnlimitedEllipse(Coords pt, PathParameter parameter) {
+		// transform to eigenvector coord-system
+		coordsRWtoEV(pt);
 
 		// calc parameter
-		double px = P.getX() / P.getZ();
-		double py = P.getY() / P.getZ();
+		double px = pt.getX() / pt.getZ();
+		double py = pt.getY() / pt.getZ();
 		double abspx = Math.abs(px);
 		double abspy = Math.abs(py);
-		return getPerpendicularParams(abspx, abspy);
-	}
-
-	private double[] getPerpendicularParams(double abspx, double abspy) {
 		double ha = halfAxes[0];
 		double hb = halfAxes[1];
-		double bpy = hb * abspy;
+		double hc_2 = ha * ha - hb * hb;
+
+		// special case handling from:
+		// http://cdserv1.wbut.ac.in/81-8147-617-4/Linux/MagicSoftware/WildMagic2/Documentation/DistancePointToEllipse2.pdf
+		if (abspx < Kernel.STANDARD_PRECISION) {
+			// pp.setT(Math.asin(Math.max(-1,-hb*abspy/hc_2)));
+			if (abspy < Kernel.STANDARD_PRECISION) {
+				if (hb < ha) {
+					parameter.setT(Math.PI / 2);
+				} else {
+					parameter.setT(0);
+				}
+			} else {
+				if (hb < ha) {
+					parameter.setT(Math.PI / 2);
+				} else {
+					if (abspy * hb < hc_2) {
+						parameter.setT(Math.asin(hb * abspy / hc_2));
+					} else {
+						parameter.setT(Math.PI / 2);
+					}
+				}
+			}
+		} else if (abspy < Kernel.STANDARD_PRECISION) {
+			// pp.setT(Math.acos(Math.min(1,ha*abspx/hc_2)));
+			if (ha < hb) {
+				parameter.setT(0);
+			} else {
+				if (abspx * ha < hc_2) {
+					parameter.setT(Math.acos(ha * abspx / hc_2));
+				} else {
+					parameter.setT(0);
+				}
+			}
+		} else {
+			// To solve (1-u^2)*(b*py + (a^2-b^2)*u)^2-a^2*px^2*u^2 = 0,
+			// where u = sin(theta)
+			double[] roots = getPerpendicularParams(abspx, abspy);
+
+			if (roots[0] > 0) {
+				parameter.setT(Math.asin(roots[0]));
+			} else if (roots[1] > 0) {
+				parameter.setT(Math.asin(roots[1]));
+			} else if (roots[2] > 0) {
+				parameter.setT(Math.asin(roots[2]));
+			} else {
+				parameter.setT(Math.asin(roots[3]));
+			}
+		}
+
+		// transform the parameter if (px,py) is not in the first quadrant.
+		if (px < 0) {
+			parameter.setT(Math.PI - parameter.getT());
+		}
+		if (py < 0) {
+			parameter.setT(-parameter.getT());
+		}
+
+		pt.setX(ha * Math.cos(parameter.getT()));
+		pt.setY(hb * Math.sin(parameter.getT()));
+		pt.setZ(1.0);
+		// transform back to real world coord system
+		coordsEVtoRW(pt);
+	}
+
+	private void pointChangedUnlimitedHyperbola(Coords pt, PathParameter parameter) {
+		/*
+		 * For hyperbolas, we use the parameter ranges right branch: t =
+		 * (-1, 1) left branch: t = (1, 3) and get this from s = (-inf, inf)
+		 * using right branch: s = t /(1 - abs(t)) where we use the
+		 * parameter form (a*cosh(s), b*sinh(s)) for the right branch of the
+		 * hyperbola.
+		 */
+
+		// transform to eigenvector coord-system
+		coordsRWtoEV(pt);
+
+		// calc parameter
+		double px = pt.getX() / pt.getZ();
+		double py = pt.getY() / pt.getZ();
+		double absPX = Math.abs(px);
+		double absPY = Math.abs(py);
+		double ha = halfAxes[0];
+		double hb = halfAxes[1];
+		double hc_2 = ha * ha + hb * hb;
+		double s;
+
+		if (absPY < Kernel.STANDARD_PRECISION) {
+			s = MyMath.acosh(Math.max(1, ha * absPX / hc_2));
+		} else if (absPX < Kernel.STANDARD_PRECISION) {
+			// taking the polynomial solver route is unstable because of a double root
+			s = MyMath.asinh(hb * absPY / hc_2);
+		} else {
+			// To solve (1+u^2)*(-(b^2+a^2)*u +b*py)^2 - a^2*px^2, where
+			// u=sinh(t)
+
+			double[] roots = getPerpendicularParams(absPX, absPY);
+
+			if (roots[0] > 0) {
+				s = MyMath.asinh(roots[0]);
+			} else if (roots[1] > 0) {
+				s = MyMath.asinh(roots[1]);
+			} else if (roots[2] > 0) {
+				s = MyMath.asinh(roots[2]);
+			} else {
+				s = MyMath.asinh(roots[3]);
+			}
+		}
+
+		// transform the s-parameter if (px,py) is not in the first
+		// quadrant.
+		if (py < 0) { // lower-half plane
+			s = -s;
+		}
+		// compute t in (-1,1) from s in (-inf, inf)
+		parameter.setT(PathNormalizer.inverseInfFunction(s));
+		pt.setX(ha * Math.cosh(s));
+		pt.setY(hb * Math.sinh(s));
+		pt.setZ(1.0);
+
+		// if original point is in left half-plane, take the left branch;
+		// for points on axistake the right one
+		if (px < 0) {
+			parameter.setT(parameter.getT() + 2); // convert (-1,1) to (1,3)
+			pt.setX(-pt.getX());
+		}
+
+		// transform back to real world coord system
+		coordsEVtoRW(pt);
+	}
+
+	/**
+	 * Computes array of parameters t such that Line[point[this,t],P] is
+	 * perpendicular to this. Does not handle degenerate cases absPX=0 or absPY=0.
+	 *
+	 * @param absPX absolute point x-coordinate in eigenvector space
+	 * @param absPY absolute point y-coordinate in eigenvector space
+	 *
+	 * @return feet of perpendicular lines from a point to this curve
+	 */
+	private double[] getPerpendicularParams(double absPX, double absPY) {
+		double ha = halfAxes[0];
+		double hb = halfAxes[1];
+		double bpy = hb * absPY;
 		double[] roots = { 0, 0, 0, 0 };
 		double[] eqn;
 		if (type == CONIC_ELLIPSE) {
 			double hc_2 = ha * ha - hb * hb;
 			eqn = new double[] { bpy * bpy, 2 * bpy * hc_2,
-					-bpy * bpy + hc_2 * hc_2 - ha * ha * abspx * abspx,
-					-2 * bpy * hc_2, -hc_2 * hc_2 };
+						-bpy * bpy + hc_2 * hc_2 - ha * ha * absPX * absPX,
+						-2 * bpy * hc_2, -hc_2 * hc_2 };
 		} else {
 			double hc_2 = ha * ha + hb * hb;
 			eqn = new double[] { bpy * bpy, -2 * bpy * hc_2,
-					bpy * bpy + hc_2 * hc_2 - ha * ha * abspx * abspx,
+					bpy * bpy + hc_2 * hc_2 - ha * ha * absPX * absPX,
 					-2 * bpy * hc_2, hc_2 * hc_2 };
 		}
 		cons.getKernel().getEquationSolver().solveQuartic(eqn, roots,
@@ -1382,7 +1387,7 @@ public abstract class GeoConicND extends GeoQuadricND
 	 * returns false if conic's matrix is the zero matrix or has infinite or NaN
 	 * values
 	 */
-	final private boolean checkDefined() {
+	private boolean checkDefined() {
 		boolean allZero = true;
 		double maxCoeffAbs = 0;
 
@@ -2331,7 +2336,7 @@ public abstract class GeoConicND extends GeoQuadricND
 	 * @param phi
 	 *            angle
 	 */
-	final protected static void rotateMatrix(double[] matrix, double phi) {
+	protected static void rotateMatrix(double[] matrix, double phi) {
 		double sum = matrix[0] + matrix[1];
 		double diff = matrix[0] - matrix[1];
 		double cos = Math.cos(phi);
@@ -2528,7 +2533,7 @@ public abstract class GeoConicND extends GeoQuadricND
 		eigenvectorsSetOnLoad = false;
 	}
 
-	final private void setParabolicEigenvectors() {
+	private void setParabolicEigenvectors() {
 		// fist eigenvector of parabola must not be changed
 
 		// newly calculated first eigenvector = (eigenvecX, eigenvecY)
@@ -2665,7 +2670,7 @@ public abstract class GeoConicND extends GeoQuadricND
 	 * midpoint conics
 	 *************************************/
 
-	final private void classifyMidpointConic(boolean degenerate) {
+	private void classifyMidpointConic(boolean degenerate) {
 		// calc eigenvalues and eigenvectors
 		if (DoubleUtil.isZero(matrix[3])) {
 			// special case: submatrix S is already diagonal
@@ -2751,7 +2756,7 @@ public abstract class GeoConicND extends GeoQuadricND
 		halfAxes[1] = 0;
 	}
 
-	final private void intersectingLines(double[] mu1) {
+	private void intersectingLines(double[] mu1) {
 		type = GeoConicNDConstants.CONIC_INTERSECTING_LINES;
 
 		// set intersecting lines
@@ -2781,7 +2786,7 @@ public abstract class GeoConicND extends GeoQuadricND
 		setStartPointsForLines();
 	}
 
-	final private void ellipse(double[] mu1) {
+	private void ellipse(double[] mu1) {
 
 		// circle
 		if (DoubleUtil.isEqual(mu1[0] / mu1[1], 1.0)) {
@@ -2821,7 +2826,7 @@ public abstract class GeoConicND extends GeoQuadricND
 		}
 	}
 
-	final private void hyperbola(double[] mu1) {
+	private void hyperbola(double[] mu1) {
 		type = GeoConicNDConstants.CONIC_HYPERBOLA;
 		if (mu1[0] < 0) {
 			// swap eigenvectors and mu
@@ -2848,7 +2853,7 @@ public abstract class GeoConicND extends GeoQuadricND
 	 * parabolic conics
 	 *************************************/
 
-	final private void classifyParabolicConic(boolean degenerate) {
+	private void classifyParabolicConic(boolean degenerate) {
 		// calc eigenvalues and first eigenvector
 		if (DoubleUtil.isZero(matrix[3])) {
 			// special cases: submatrix S is already diagonal
@@ -2917,7 +2922,7 @@ public abstract class GeoConicND extends GeoQuadricND
 
 	}
 
-	final private void doubleLine() {
+	private void doubleLine() {
 		type = GeoConicNDConstants.CONIC_DOUBLE_LINE;
 
 		// set double line
@@ -2947,7 +2952,7 @@ public abstract class GeoConicND extends GeoQuadricND
 	}
 
 	// if S is the zero matrix, set conic as double line or empty
-	final private void handleSzero() {
+	private void handleSzero() {
 		// conic is line 2*A[4] * x + 2*A[5] * y + A[2] = 0
 		if (DoubleUtil.isZero(matrix[4])) {
 			if (DoubleUtil.isZero(matrix[5])) {
@@ -3066,7 +3071,7 @@ public abstract class GeoConicND extends GeoQuadricND
 
 	}
 
-	final private void parabola() {
+	private void parabola() {
 		type = GeoConicNDConstants.CONIC_PARABOLA;
 
 		// calc vertex = b
@@ -3778,14 +3783,14 @@ public abstract class GeoConicND extends GeoQuadricND
 
 	private double[][] getImplicitCoeff() {
 		double[][] coeff = new double[3][3];
-                coeff[0][0] = matrix[2];
-                coeff[1][1] = 2 * matrix[3];
-                coeff[2][2] = 0;
-                coeff[1][0] = 2 * matrix[4];
-                coeff[0][1] = 2 * matrix[5];
-                coeff[2][0] = matrix[0];
-                coeff[0][2] = matrix[1];
-                coeff[2][1] = coeff[1][2] = 0;
+		coeff[0][0] = matrix[2];
+		coeff[1][1] = 2 * matrix[3];
+		coeff[2][2] = 0;
+		coeff[1][0] = 2 * matrix[4];
+		coeff[0][1] = 2 * matrix[5];
+		coeff[2][0] = matrix[0];
+		coeff[0][2] = matrix[1];
+		coeff[2][1] = coeff[1][2] = 0;
 		return coeff;
 	}
 
@@ -4115,7 +4120,7 @@ public abstract class GeoConicND extends GeoQuadricND
 		return ExtendedBoolean.FALSE;
 	}
 
-	final private void createTmpCoords() {
+	private void createTmpCoords() {
 		if (tmpCoords1 == null) {
 			tmpCoords1 = new Coords(3);
 			tmpCoords2 = new Coords(3);

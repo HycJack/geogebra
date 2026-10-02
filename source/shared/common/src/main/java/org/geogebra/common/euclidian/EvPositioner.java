@@ -208,7 +208,7 @@ public abstract class EvPositioner {
         return euclidianView;
     }
 
-    protected static class ViewDestroyedException extends IllegalStateException {
+    public static class ViewDestroyedException extends IllegalStateException {
 
         public ViewDestroyedException() {
             super("The view is destroyed.");

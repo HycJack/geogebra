@@ -23,22 +23,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.geogebra.common.SuiteSubApp;
+import org.geogebra.common.exam.BaseExamTestSetup;
 import org.geogebra.common.exam.ExamType;
-import org.geogebra.common.exam.restrictions.ExamFeatureRestriction;
 import org.geogebra.common.gui.view.table.TableValuesView;
 import org.geogebra.common.kernel.StringTemplate;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoList;
+import org.geogebra.common.restrictions.FeatureRestriction;
 import org.geogebra.editor.share.util.Unicode;
 import org.geogebra.test.BaseAppTestSetup;
+import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class RegressionSpecificationTest extends BaseAppTestSetup {
+public class RegressionSpecificationTest extends BaseExamTestSetup {
 	private TableValuesView view;
 	private GeoList listY;
 	private int column = 1;
@@ -73,8 +73,20 @@ public class RegressionSpecificationTest extends BaseAppTestSetup {
 	}
 
 	@Test
+	@Issue("APPS-7328")
+	public void testLinearRegressionNegative() {
+		GeoList listY3 = evaluateGeoElement("{-1,-8,-27,-64}");
+		view.add(listY3);
+		view.showColumn(listY3);
+		column = 3;
+		assertEquals("y = a\\ x+b, a = -20.8, b = 27, R\u00b2 = 0.91, r = -0.95",
+				getRegressionValues(0));
+		assertEquals("-20.8x + 27", getRegressionFormula(0));
+	}
+
+	@Test
 	public void testLogRegression() {
-		assertEquals("y = a + b\\cdot \\log(x), a = -7.59, b = 41.02, R\u00b2 = 0.76",
+		assertEquals("y = a + b\\cdot \\ln(x), a = -7.59, b = 41.02, R\u00b2 = 0.76",
 				getRegressionValues(1));
 		assertEquals("-7.59 + 41.02ln(x)", getRegressionFormula(1));
 	}
@@ -152,23 +164,26 @@ public class RegressionSpecificationTest extends BaseAppTestSetup {
 			"11:9.27x⁻²:a = 9.27, r = ?",
 			"12:18.71x^0.5:a = 18.71, r = 0.65"}, delimiter = ':')
 	public void testCustomRegressions(int index, String expected, String expectedVals) {
+		startExam(ExamType.MMS);
 		getApp().getRegressionSpecBuilder().applyRestrictions(
-				Set.of(ExamFeatureRestriction.CUSTOM_MMS_REGRESSION_MODELS), ExamType.MMS);
+				Set.of(FeatureRestriction.CUSTOM_MMS_REGRESSION_MODELS));
 		assertEquals(expected, getRegressionFormula(index));
 		assertEquals(expectedVals, getRegressionValues(index));
 	}
 
 	@Test
 	public void testCustomRegressionCount() {
+		startExam(ExamType.MMS);
 		getApp().getRegressionSpecBuilder().applyRestrictions(
-				Set.of(ExamFeatureRestriction.CUSTOM_MMS_REGRESSION_MODELS), ExamType.MMS);
+				Set.of(FeatureRestriction.CUSTOM_MMS_REGRESSION_MODELS));
 		assertEquals(13, getApp().getRegressionSpecBuilder()
 				.getForListSize(listY.size()).size());
 	}
 
 	private String getRegressionFormula(int spec) {
 		GeoElement plot = view.plotRegression(column, getSpec(spec));
-		return plot.toValueString(StringTemplate.defaultTemplate);
+		return plot.toValueString(
+				StringTemplate.defaultTemplate.deriveWithoutCoefficientSimplification());
 	}
 
 	private String getRegressionValues(int spec) {

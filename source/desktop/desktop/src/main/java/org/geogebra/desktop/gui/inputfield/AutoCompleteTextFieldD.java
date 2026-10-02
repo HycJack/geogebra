@@ -69,6 +69,7 @@ import org.geogebra.desktop.gui.autocompletion.CommandCompletionListCellRenderer
 import org.geogebra.desktop.gui.autocompletion.CompletionsPopup;
 import org.geogebra.desktop.gui.util.GeoGebraIconD;
 import org.geogebra.desktop.main.AppD;
+import org.geogebra.desktop.main.ScaledIcon;
 
 public class AutoCompleteTextFieldD extends MathTextField
 		implements AutoComplete, AutoCompleteTextField {
@@ -210,8 +211,9 @@ public class AutoCompleteTextFieldD extends MathTextField
 				historyPopup.showPopup();
 			}
 		};
-		setBorderButton(1, GeoGebraIconD.createUpDownTriangleIcon(false, true),
-				al);
+		ScaledIcon upDownTriangleIcon = GeoGebraIconD.createUpDownTriangleIcon(false, true,
+				app.getImageManager().getPixelRatio());
+		setBorderButton(1, upDownTriangleIcon, al);
 		this.setBorderButtonVisible(1, false);
 	}
 
@@ -1106,14 +1108,13 @@ public class AutoCompleteTextFieldD extends MathTextField
 	}
 
 	private static GColor getBorderColor(GColor backgroundColor, DrawInputBox drawInputBox) {
-		GColor borderColor;
-		if (backgroundColor == GColor.WHITE) {
-			borderColor = drawInputBox.isEditing() ? GeoGebraColorConstants.PURPLE_600
+		if (drawInputBox.usesDisabledStyle()) {
+			return GeoGebraColorConstants.NEUTRAL_300;
+		} else if (backgroundColor == GColor.WHITE) {
+			return drawInputBox.isEditing() ? GeoGebraColorConstants.PURPLE_600
 					: GeoGebraColorConstants.NEUTRAL_500;
-		} else {
-			borderColor = GColor.getBorderColorFrom(backgroundColor);
 		}
-		return borderColor;
+		return GColor.getBorderColorFrom(backgroundColor);
 	}
 
 	/**

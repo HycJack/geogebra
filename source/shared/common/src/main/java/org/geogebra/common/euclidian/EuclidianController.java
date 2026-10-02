@@ -76,7 +76,9 @@ import org.geogebra.common.kernel.Path;
 import org.geogebra.common.kernel.QuadraticEquationRepresentable;
 import org.geogebra.common.kernel.Region;
 import org.geogebra.common.kernel.StringTemplate;
+import org.geogebra.common.kernel.algos.AlgoBoxPlot;
 import org.geogebra.common.kernel.algos.AlgoCirclePointRadius;
+import org.geogebra.common.kernel.algos.AlgoDependentListExpression;
 import org.geogebra.common.kernel.algos.AlgoDispatcher;
 import org.geogebra.common.kernel.algos.AlgoDynamicCoordinatesInterface;
 import org.geogebra.common.kernel.algos.AlgoElement;
@@ -193,6 +195,7 @@ import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.common.util.MyMath;
 import org.geogebra.common.util.StringUtil;
+import org.geogebra.common.util.debug.Analytics;
 import org.geogebra.common.util.debug.Log;
 
 import com.google.j2objc.annotations.Weak;
@@ -5569,7 +5572,7 @@ public abstract class EuclidianController implements SpecialPointsListener {
 	 * selected.
 	 */
 	public void toolCompleted() {
-		// not used in common, overwritten for other projects
+		Analytics.logToolCreated();
 	}
 
 	/**
@@ -6513,10 +6516,13 @@ public abstract class EuclidianController implements SpecialPointsListener {
 	protected boolean overComboBox(AbstractEvent event, GeoElement hit) {
 		if (hit.isGeoList()) {
 			DrawableND dl = view.getDrawableFor(hit);
-			if (dl instanceof DrawDropDownList) {
-				((DrawDropDownList) dl).onOptionOver(event.getX(),
-						event.getY());
-				return true;
+			if (dl instanceof DrawDropDownList dropDown) {
+				int x = event.getX();
+				int y = event.getY();
+				if (dropDown.hit(x, y, app.getCapturingThreshold(event.getType()))) {
+					dropDown.onOptionOver(x, y);
+					return true;
+				}
 			}
 		}
 		return false;
@@ -6862,7 +6868,8 @@ public abstract class EuclidianController implements SpecialPointsListener {
 				|| geo instanceof GeoPieChart
 				|| geo.isGeoConic()
 				|| geo.isGeoImage()
-				|| geo.isGeoList()
+				|| (geo.isGeoList()
+					&& !(geo.getParentAlgorithm() instanceof AlgoDependentListExpression))
 				|| geo.isGeoVector()
 				|| geo instanceof GeoStadium
 				|| geo instanceof GeoLocusStroke;
@@ -7156,7 +7163,7 @@ public abstract class EuclidianController implements SpecialPointsListener {
 
 				initxRW = Double.NaN;
 				initFactor = Double.NaN;
-				LinkedList<PolyFunction> factors = movedGeoFunction
+				List<PolyFunction> factors = movedGeoFunction
 						.getFunction().getPolynomialFactors(false, true);
 				if (factors != null) {
 
@@ -7365,6 +7372,13 @@ public abstract class EuclidianController implements SpecialPointsListener {
 					}
 				}
 			}
+		}
+
+		// box plot
+		else if (movedGeoElement.isGeoNumeric()
+				&& movedGeoElement.getParentAlgorithm() instanceof AlgoBoxPlot) {
+			moveMode = MoveMode.BOX_PLOT;
+			setDragCursor();
 		}
 	}
 
@@ -7755,10 +7769,27 @@ public abstract class EuclidianController implements SpecialPointsListener {
 			}
 			break;
 
+		case BOX_PLOT:
+			moveBoxPlot();
+			break;
+
 		default: // do nothing
 		}
 
 		kernel.notifyRepaint();
+	}
+
+	private void moveBoxPlot() {
+		if (movedGeoElement != null
+				&& movedGeoElement.isGeoNumeric()
+				&& movedGeoElement.getParentAlgorithm() instanceof AlgoBoxPlot boxPlot) {
+			GeoElementND element = boxPlot.getInput(0);
+			if (element instanceof GeoNumeric offsetX
+					&& offsetX.isIndependent()) {
+				offsetX.setValue(getSnappedRealCoordY());
+				offsetX.updateCascade();
+			}
+		}
 	}
 
 	private void disableLiveFeedback() {
@@ -12557,11 +12588,11 @@ public abstract class EuclidianController implements SpecialPointsListener {
 		return null;
 	}
 
-	private static class EmulatedEvent extends AbstractEvent {
+	private static final class EmulatedEvent extends AbstractEvent {
 		private final GPoint lastLoc;
 		private final boolean shiftDown;
 
-		public EmulatedEvent(GPoint lastLoc, boolean shiftDown) {
+		private EmulatedEvent(GPoint lastLoc, boolean shiftDown) {
 			this.lastLoc = lastLoc;
 			this.shiftDown = shiftDown;
 		}

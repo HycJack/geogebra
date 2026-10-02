@@ -50,6 +50,7 @@ import org.geogebra.common.main.settings.AlgebraSettings;
 import org.geogebra.common.main.settings.AlgebraStyle;
 import org.geogebra.common.main.settings.SettingListener;
 import org.geogebra.common.ownership.GlobalScope;
+import org.geogebra.common.ownership.SuiteScope;
 import org.geogebra.common.plugin.EventType;
 import org.geogebra.common.util.debug.GeoGebraProfiler;
 import org.geogebra.common.util.debug.Log;
@@ -191,7 +192,10 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 		selectionCtrl = new AVSelectionController(app);
 		algCtrl.setView(this);
 		initGUI(algCtrl);
-		GlobalScope.examController.registerRestrictable(selectionCallback);
+		SuiteScope suiteScope = GlobalScope.getSuiteScope(app);
+		if (suiteScope != null) {
+			suiteScope.restrictionsController.registerRestrictable(selectionCallback);
+		}
 		app.getSelectionManager()
 				.addSelectionListener((geo, addToSelection) -> updateSelection());
 		app.getGgbApi().setEditor(new AlgebraMathEditorAPI(this));
@@ -233,6 +237,7 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 		// as arrow keys are prevented in super.onBrowserEvent,
 		// we need to handle arrow key events before that
 		int eventType = DOM.eventGetType(event);
+		boolean activeCompositeFocus = hasActiveCompositeFocus();
 		switch (eventType) {
 		default:
 			// do nothing
@@ -248,11 +253,21 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 			case KeyCodes.KEY_RIGHT:
 				// this may be enough for Safari too, because it is not
 				// onkeypress
-				if (!(editItem || Browser.isTabletBrowser())) {
-					app.getGlobalKeyDispatcher()
-							.handleSelectedGeosKeys(event);
-					event.stopPropagation();
-					event.preventDefault();
+				if (!(editItem || Browser.isTabletBrowser()) && !activeCompositeFocus) {
+					dispatchToGeosAndKill(event);
+					return;
+				}
+			}
+			break;
+		case Event.ONKEYDOWN:
+			// put this on keydown to prevent focus jump when entering to composite (win)
+			switch (event.getKeyCode()) {
+			case KeyCodes.KEY_UP:
+			case KeyCodes.KEY_DOWN:
+			case KeyCodes.KEY_LEFT:
+			case KeyCodes.KEY_RIGHT:
+				if (activeCompositeFocus) {
+					dispatchToGeosAndKill(event);
 					return;
 				}
 			}
@@ -275,6 +290,22 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 			}
 			super.onBrowserEvent(event);
 		}
+	}
+
+	private void dispatchToGeosAndKill(Event event) {
+		app.getGlobalKeyDispatcher()
+				.handleSelectedGeosKeys(event);
+		event.stopPropagation();
+		event.preventDefault();
+	}
+
+	private boolean hasActiveCompositeFocus() {
+		List<GeoElement> geos = selectionCtrl.getSelectedGeos();
+		if (geos.size() == 1) {
+			RadioTreeItem ri = nodeTable.get(geos.get(0));
+			return ri.hasActiveCompositeFocus();
+		}
+		return false;
 	}
 
 	/**
@@ -725,7 +756,7 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 
 	@Override
 	public void settingsChanged(AbstractSettings settings) {
-
+		app.getAccessibilityManager().clearActiveCompositeFocus();
 		AlgebraSettings algebraSettings = (AlgebraSettings) settings;
 		setTreeMode(algebraSettings.getTreeMode());
 		showAuxiliaryObjectsSettings = algebraSettings
@@ -742,6 +773,17 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 			}
 			styleInputPanel();
 			addItem(inputPanelTreeItem);
+		}
+
+		rebuildComposites();
+	}
+
+	private void rebuildComposites() {
+		for (int i = 0; i < getItemCount(); i++) {
+			TreeItem item = getItem(i);
+			if (item instanceof RadioTreeItem ri) {
+				ri.rebuild();
+			}
 		}
 	}
 
@@ -1084,6 +1126,9 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 	private void removeFromModel(TreeItem node) {
 		node.remove();
 		nodeTable.remove(node.getUserObject());
+		if (node instanceof RadioTreeItem ri) {
+			ri.unregisterCompositeFocus();
+		}
 
 		// remove the type branch if there are no more children
 		switch (treeMode) {
@@ -1271,13 +1316,14 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 		for (int i = removeIndex; i < this.getItemCount(); i++) {
 			TreeItem row = this.getItem(i);
 			if (row instanceof RadioTreeItem) {
-				((RadioTreeItem) row).getHelpToggle().setIndex(i + 1);
+				((RadioTreeItem) row).setIndex(i + 1);
 			}
 		}
 	}
 
 	@Override
 	public void clearView() {
+		unregisterAllCompositeFocus();
 		nodeTable.clear();
 		addOnRepaint.clear();
 		scrollOnRepaint = false;
@@ -1289,6 +1335,11 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 		}
 		showAlgebraInput(false);
 		maxItemWidth = 0;
+	}
+
+	private void unregisterAllCompositeFocus() {
+		nodeTable.values()
+				.forEach(RadioTreeItem::unregisterCompositeFocus);
 	}
 
 	/**
@@ -1884,29 +1935,6 @@ public class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 						updateAndSetLabels(ti.getChild(j));
 					}
 				}
-			}
-		}
-		this.repaintView();
-	}
-
-	/**
-	 * Resets all data-test attributes of the tree items after the deleted one
-	 * to support unique values that depends on the actual row
-	 * index after deleting a row.
-	 * FIXME: assumes that the tree is flat
-	 */
-	public void resetDataTestOnDelete(GeoElement geo) {
-		TreeItem node = nodeTable.get(geo);
-		if (node == null) {
-			return;
-		}
-
-		for (int i = indexOf(node) + 1; i < getItemCount(); i++) {
-			TreeItem ti = getItem(i);
-			if (ti instanceof RadioTreeItem) {
-				RadioTreeItem item = RadioTreeItem.as(ti);
-				item.setIndex(i);
-				item.updateDataTest();
 			}
 		}
 		this.repaintView();

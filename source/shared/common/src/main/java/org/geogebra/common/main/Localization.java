@@ -677,12 +677,7 @@ public abstract class Localization extends LocalizationI {
 	public String[] getRoundingMenu() {
 		List<String> list = new ArrayList<>();
 		for (int decimalPlaces : decimalPlacesOptions) {
-			String key = "ADecimalPlaces";
-			// zero is singular in eg French
-			if (decimalPlaces == 0 && !isZeroPlural()) {
-				key = "ADecimalPlace";
-			}
-			list.add(getPlain(key, String.valueOf(decimalPlaces)));
+			list.add(localizeDecimalPlaces(decimalPlaces));
 		}
 		list.add(ROUNDING_MENU_SEPARATOR);
 		for (int significantFigures : significantFiguresOptions) {
@@ -696,11 +691,28 @@ public abstract class Localization extends LocalizationI {
 	}
 
 	/**
-	 * in French, zero is singular, eg 0 dcimale rather than 0 decimal places
-	 * 
-	 * @return whether 0 is plural
+	 * Localize "X decimal places"; uses a different key for plural and singular.
+	 * @param decimalPlaces number of decimal places
+	 * @return localized option
 	 */
-	public boolean isZeroPlural() {
+	public String localizeDecimalPlaces(int decimalPlaces) {
+		if (decimalPlaces < 0) {
+			return "";
+		}
+		String key = "ADecimalPlaces";
+		// zero is singular in eg French
+		if (decimalPlaces == 1 || decimalPlaces == 0 && isZeroSingular()) {
+			key = "ADecimalPlace";
+		}
+		return getPlain(key, String.valueOf(decimalPlaces));
+	}
+
+	/**
+	 * in French, zero is singular, eg 0 decimale rather than 0 decimal places
+	 * 
+	 * @return whether 0 is singular
+	 */
+	private boolean isZeroSingular() {
 		return languageIs("fr");
 	}
 
@@ -1191,5 +1203,13 @@ public abstract class Localization extends LocalizationI {
 	 */
 	public String getLanguageTagForLogin() {
 		return getLanguageTag().replace("-", "_");
+	}
+
+	/**
+	 * @return whether digits outside the ASCII range are used
+	 * (checks both the user preference and the current language)
+	 */
+	public boolean usesNonAsciiDigits() {
+		return !isUsingLocalizedDigits() || getZero() != '0';
 	}
 }

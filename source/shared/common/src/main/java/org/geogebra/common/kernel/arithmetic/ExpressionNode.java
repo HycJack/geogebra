@@ -374,7 +374,7 @@ public class ExpressionNode extends ValidExpression
 	 * Replaces all Command objects in tree by their evaluated GeoElement
 	 * objects.
 	 */
-	final private void simplifyAndEvalCommands(EvalInfo info) {
+	private void simplifyAndEvalCommands(EvalInfo info) {
 		// don't evaluate any commands for the CAS here
 		if (info.getSymbolicMode() != SymbolicMode.NONE) {
 			return;
@@ -1337,7 +1337,7 @@ public class ExpressionNode extends ValidExpression
 	 *            left or right side of the expression
 	 * @return if expansion is required
 	 */
-	final private boolean expandForOGP(ExpressionValue ev) {
+	private boolean expandForOGP(ExpressionValue ev) {
 		// The following types of operations and GeoElements are supported.
 		// See also the OGP code for the available (parsable) expressions.
 		if (operation.equals(Operation.EQUAL_BOOLEAN)
@@ -1642,7 +1642,7 @@ public class ExpressionNode extends ValidExpression
 	 *            expression value to compare with val
 	 * @return true iff output of ev and val are the same
 	 */
-	final public static boolean isEqualString(ExpressionValue ev, double val,
+	public static boolean isEqualString(ExpressionValue ev, double val,
 			boolean symbolic) {
 		if (ev.isLeaf() && (ev instanceof NumberValue)) {
 			// function variables need to be kept
@@ -3773,5 +3773,28 @@ public class ExpressionNode extends ValidExpression
 		ExpressionValue def = value.unwrap();
 		return !(def instanceof MyDouble && def.isConstant()
 				&& Double.isNaN(def.evaluateDouble()));
+	}
+
+	@Override
+	public Integer getAngleDimension() {
+		Integer leftDimension = left == null ? null : left.getAngleDimension();
+		if (operation == Operation.NO_OPERATION) {
+			return leftDimension;
+		}
+		Integer rightDimension = right == null ? null : right.getAngleDimension();
+		if (leftDimension == null) {
+			return null;
+		}
+		return switch (operation) {
+			case PLUS, MINUS -> leftDimension.equals(rightDimension) ? leftDimension : null;
+			case MULTIPLY -> rightDimension == null ? null : leftDimension + rightDimension;
+			case DIVIDE -> rightDimension == null ? null : leftDimension - rightDimension;
+			default -> {
+				if (operation.hasDegreeInput()) { // sin, cos
+					yield 0;
+				}
+				yield null;
+			}
+		};
 	}
 }

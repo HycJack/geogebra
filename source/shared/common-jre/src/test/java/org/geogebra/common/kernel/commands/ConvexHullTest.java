@@ -54,6 +54,8 @@ public final class ConvexHullTest {
 
 	/*---- Fixed test vectors ----*/
 
+	private static final Random rand = new Random();
+
 	@Test
 	public void testEmpty() {
 		List<Point2D> points = Collections.emptyList();
@@ -155,18 +157,21 @@ public final class ConvexHullTest {
 			List<Point2D> points = new ArrayList<>();
 			if (rand.nextBoolean()) {
 				double y = rand.nextGaussian();
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(rand.nextGaussian(), y));
+				}
 			} else {
 				int y = rand.nextInt(20) - 10;
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(rand.nextInt(30), y));
+				}
 			}
 			List<Point2D> actual = ConvexHull.makeHull(points);
 			List<Point2D> expected = new ArrayList<>();
 			expected.add(Collections.min(points));
-			if (!Collections.max(points).equals(expected.get(0)))
+			if (!Collections.max(points).equals(expected.get(0))) {
 				expected.add(Collections.max(points));
+			}
 			assertEquals(expected, actual);
 		}
 	}
@@ -179,18 +184,21 @@ public final class ConvexHullTest {
 			List<Point2D> points = new ArrayList<>();
 			if (rand.nextBoolean()) {
 				double x = rand.nextGaussian();
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(x, rand.nextGaussian()));
+				}
 			} else {
 				int x = rand.nextInt(20) - 10;
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(x, rand.nextInt(30)));
+				}
 			}
 			List<Point2D> actual = ConvexHull.makeHull(points);
 			List<Point2D> expected = new ArrayList<>();
 			expected.add(Collections.min(points));
-			if (!Collections.max(points).equals(expected.get(0)))
+			if (!Collections.max(points).equals(expected.get(0))) {
 				expected.add(Collections.max(points));
+			}
 			assertEquals(expected, actual);
 		}
 	}
@@ -202,12 +210,14 @@ public final class ConvexHullTest {
 			int len = rand.nextInt(100);
 			List<Point2D> points = new ArrayList<>();
 			if (rand.nextBoolean()) {
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(rand.nextGaussian(),
 							rand.nextGaussian()));
+				}
 			} else {
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(rand.nextInt(10), rand.nextInt(10)));
+				}
 			}
 			List<Point2D> actual = ConvexHull.makeHull(points);
 			List<Point2D> expected = makeHullNaive(points);
@@ -224,25 +234,29 @@ public final class ConvexHullTest {
 			int len = rand.nextInt(100);
 			List<Point2D> points = new ArrayList<>();
 			if (rand.nextBoolean()) {
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(rand.nextGaussian(),
 							rand.nextGaussian()));
+				}
 			} else {
-				for (int j = 0; j < len; j++)
+				for (int j = 0; j < len; j++) {
 					points.add(new Point2D(rand.nextInt(10), rand.nextInt(10)));
+				}
 			}
 
 			// Compute hull and check properties
 			List<Point2D> hull = ConvexHull.makeHull(points);
 			assertTrue(isPolygonConvex(hull));
-			for (Point2D p : points)
+			for (Point2D p : points) {
 				assertTrue(isPointInConvexPolygon(hull, p));
+			}
 
 			// Add duplicate points and check new hull
 			if (!points.isEmpty()) {
 				int dupe = rand.nextInt(10) + 1;
-				for (int j = 0; j < dupe; j++)
+				for (int j = 0; j < dupe; j++) {
 					points.add(points.get(rand.nextInt(points.size())));
+				}
 				List<Point2D> nextHull = ConvexHull.makeHull(points);
 				assertEquals(hull, nextHull);
 			}
@@ -250,8 +264,9 @@ public final class ConvexHullTest {
 	}
 
 	private static List<Point2D> makeHullNaive(List<Point2D> points) {
-		if (points.size() <= 1)
+		if (points.size() <= 1) {
 			return new ArrayList<>(points);
+		}
 		List<Point2D> result = new ArrayList<>();
 
 		// Jarvis march / gift wrapping algorithm
@@ -266,8 +281,9 @@ public final class ConvexHullTest {
 				double by = p.y - point.y;
 				double cross = ax * by - ay * bx;
 				if (cross > 0
-						|| cross == 0 && bx * bx + by * by > ax * ax + ay * ay)
+						|| cross == 0 && bx * bx + by * by > ax * ax + ay * ay) {
 					next = p;
+				}
 			}
 			point = next;
 		} while (!point.equals(result.get(0)));
@@ -321,7 +337,5 @@ public final class ConvexHullTest {
 			return 0;
 		}
 	}
-
-	private static final Random rand = new Random();
 
 }

@@ -21,7 +21,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import org.geogebra.common.awt.GColor;
-import org.geogebra.common.gui.MayHaveFocus;
+import org.geogebra.common.gui.FocusableComponent;
 import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.localization.AutocompleteProvider;
@@ -96,6 +96,7 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 					textAlignment == CellFormat.ALIGN_LEFT ? TextAlign.LEFT : TextAlign.RIGHT);
 			mathField.setVisible(true);
 			mathField.editorClicked();
+			mathField.scrollCursorVisibleHorizontally();
 			Scheduler.get().scheduleDeferred(mathField::requestFocus);
 		}
 
@@ -158,7 +159,7 @@ public class SpreadsheetControlsDelegateW implements SpreadsheetControlsDelegate
 		this.parent = parent;
 		contextMenu = new GPopupMenuW(app) {
 			@Override
-			public void returnFocus(MayHaveFocus anchor) {
+			public void returnFocus(FocusableComponent anchor) {
 				parent.requestFocus();
 			}
 		};

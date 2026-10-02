@@ -23,7 +23,6 @@ import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.aliases.ColorProperty;
 import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
 import org.geogebra.common.properties.impl.DefaultColorValues;
-import org.geogebra.common.properties.impl.objects.ChartSegmentSelectionProperty.ChartSegmentSelection;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 
 /**
@@ -39,7 +38,7 @@ public class ChartStyleGeoColorProperty extends AbstractEnumeratedProperty<GColo
 	 * Constructs the color property for chart style geos.
 	 * @param localization localization for translating property names
 	 * @param geoElement the element to create the property for
-	 * @param chartSegmentSelection the selection owner from which to read the selected bar/slice
+	 * @param chartSegmentSelection the selection from which to read the selected bar/slice index
 	 * @throws NotApplicablePropertyException if the property is not applicable for the given element
 	 */
 	public ChartStyleGeoColorProperty(Localization localization, GeoElement geoElement,
@@ -56,28 +55,15 @@ public class ChartStyleGeoColorProperty extends AbstractEnumeratedProperty<GColo
 
 	@Override
 	protected void doSetValue(GColor value) {
-		if (chartSegmentSelection.getIndex() == 0) {
-			for (int selection = 1; selection < chartStyleGeo.getIntervals() + 1; selection++) {
-				chartStyleGeo.getStyle().setBarColor(value, selection);
-			}
-		} else {
-			chartStyleGeo.getStyle().setBarColor(value, chartSegmentSelection.getIndex());
-		}
+		chartSegmentSelection.forEachSelectedSegment(chartStyleGeo.getIntervals(),
+				index -> chartStyleGeo.getStyle().setBarColor(value, index));
 		((GeoElement) chartStyleGeo).getKernel().notifyRepaint();
 	}
 
 	@Override
 	public GColor getValue() {
-		if (chartSegmentSelection.getIndex() == 0) {
-			GColor firstColor = chartStyleGeo.getStyle().getBarColor(1);
-			for (int selection = 2; selection < chartStyleGeo.getIntervals() + 1; selection++) {
-				if (chartStyleGeo.getStyle().getBarColor(selection) != firstColor) {
-					return null;
-				}
-			}
-			return firstColor;
-		}
-		return chartStyleGeo.getStyle().getBarColor(chartSegmentSelection.getIndex());
+		return chartSegmentSelection.getUniformValueOrNull(chartStyleGeo.getIntervals(),
+				index -> chartStyleGeo.getStyle().getBarColor(index));
 	}
 
 	@Override

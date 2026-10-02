@@ -46,6 +46,7 @@ import org.geogebra.common.awt.MyImage;
 public class GGraphics2DD implements GGraphics2D {
 
 	private final Stack<Shape> clipStack;
+	private final Stack<AffineTransform> affineTransformStack;
 	private Graphics2D impl;
 
 	/**
@@ -56,6 +57,7 @@ public class GGraphics2DD implements GGraphics2D {
 	public GGraphics2DD(Graphics2D g2Dtemp) {
 		impl = g2Dtemp;
 		clipStack = new Stack<>();
+		affineTransformStack = new Stack<>();
 	}
 
 	@Override
@@ -229,11 +231,6 @@ public class GGraphics2DD implements GGraphics2D {
 	}
 
 	@Override
-	public void setClip(GShape shape, boolean saveContext) {
-		setClip(shape);
-	}
-
-	@Override
 	public void setClip(GShape shape) {
 		if (shape == null) {
 			resetClip();
@@ -263,19 +260,19 @@ public class GGraphics2DD implements GGraphics2D {
 	}
 
 	@Override
-	public void setClip(int x, int y, int width, int height,
+	public void setClip(double x, double y, double width, double height,
 			boolean saveContext) {
 		setClip(x, y, width, height);
 	}
 
 	@Override
-	public void setClip(int x, int y, int width, int height) {
+	public void setClip(double x, double y, double width, double height) {
 		Shape oldClip = impl.getClip();
 		if (oldClip == null) {
-			impl.setClip(x, y, width, height);
+			impl.setClip((int) x, (int) y, (int) width, (int) height);
 			return;
 		}
-		impl.clipRect(x, y, width, height);
+		impl.clipRect((int) x, (int) y, (int) width, (int) height);
 		clipStack.push(oldClip);
 	}
 
@@ -435,20 +432,14 @@ public class GGraphics2DD implements GGraphics2D {
 		}
 	}
 
-	private AffineTransform affineTransform;
-
 	@Override
 	public void saveTransform() {
-		affineTransform = impl.getTransform();
+		affineTransformStack.push(impl.getTransform());
 	}
 
 	@Override
 	public void restoreTransform() {
-		if (affineTransform == null) {
-			throw new RuntimeException("Save transform was not called!");
-		}
-		impl.setTransform(affineTransform);
-		affineTransform = null;
+		impl.setTransform(affineTransformStack.pop());
 	}
 
 	@Override

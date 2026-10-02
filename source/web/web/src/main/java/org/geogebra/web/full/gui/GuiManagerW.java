@@ -35,7 +35,6 @@ import org.geogebra.common.euclidian.TextRendererSettings;
 import org.geogebra.common.euclidian.event.AbstractEvent;
 import org.geogebra.common.exam.ExamController;
 import org.geogebra.common.exam.ExamState;
-import org.geogebra.common.gui.Editing;
 import org.geogebra.common.gui.GuiManager;
 import org.geogebra.common.gui.Layout;
 import org.geogebra.common.gui.SetLabels;
@@ -123,9 +122,7 @@ import org.geogebra.web.full.gui.view.consprotocol.ConstructionProtocolNavigatio
 import org.geogebra.web.full.gui.view.data.DataAnalysisViewW;
 import org.geogebra.web.full.gui.view.probcalculator.ProbabilityCalculatorViewW;
 import org.geogebra.web.full.gui.view.probcalculator.TabbedProbCalcView;
-import org.geogebra.web.full.gui.view.spreadsheet.MyTableW;
-import org.geogebra.web.full.gui.view.spreadsheet.SpreadsheetContextMenuW;
-import org.geogebra.web.full.gui.view.spreadsheet.SpreadsheetViewW;
+import org.geogebra.web.full.gui.view.spreadsheet.SpreadsheetToolbarManagerW;
 import org.geogebra.web.full.html5.AttachedToDOM;
 import org.geogebra.web.full.main.AppWFull;
 import org.geogebra.web.full.main.BrowserDevice;
@@ -169,7 +166,6 @@ public class GuiManagerW extends GuiManager
 
 	private AlgebraControllerW algebraController;
 	private AlgebraViewW algebraView;
-	private SpreadsheetViewW spreadsheetView;
 	private final ArrayList<EuclidianViewW> euclidianView2 = new ArrayList<>();
 	protected BrowseViewI browseGUI;
 	protected LayoutW layout;
@@ -189,7 +185,6 @@ public class GuiManagerW extends GuiManager
 	private PropertiesViewW propertiesView;
 	private DataAnalysisViewW dataAnalysisView = null;
 	private boolean listeningToLogin = false;
-	private ToolBarW toolbarForUpdate = null;
 	private final GeoGebraFrameFull frame;
 
 	private ColorPanel colorPanel;
@@ -202,7 +197,6 @@ public class GuiManagerW extends GuiManager
 
 	private Runnable runAfterLogin;
 	private InputKeyboardButtonW inputKeyboardButton = null;
-	private static final ExamController examController = GlobalScope.examController;
 	private ExamLogAndExitDialog examInfoDialog;
 
 	/**
@@ -285,19 +279,6 @@ public class GuiManagerW extends GuiManager
 		// clear highlighting and selections in views
 		getApp().getActiveEuclidianView().resetMode();
 		getPopupMenu(geos).showScaled(invoker.getElement(), x, y);
-	}
-
-	/**
-	 * @param mt
-	 *            spreadsheet table
-	 * @return spreadsheet context menu
-	 */
-	public SpreadsheetContextMenuW getSpreadsheetContextMenu(final MyTableW mt) {
-		removePopup();
-		final SpreadsheetContextMenuW contextMenu = new SpreadsheetContextMenuW(
-				mt);
-		currentPopup = contextMenu.getMenuContainer();
-		return contextMenu;
 	}
 
 	/**
@@ -454,7 +435,7 @@ public class GuiManagerW extends GuiManager
 	@Override
 	public void updateFonts() {
 		if (hasCasView()) {
-			((CASViewW) getCasView()).updateFonts();
+			getCasView().updateFonts();
 		}
 	}
 
@@ -484,13 +465,13 @@ public class GuiManagerW extends GuiManager
 
 	@Override
 	public boolean hasSpreadsheetView() {
-		return spreadsheetView != null && spreadsheetView.isShowing();
+		DockPanelW panel = layout.getDockManager().getPanel(App.VIEW_SPREADSHEET);
+		return panel != null && panel.isAttached();
 	}
 
 	@Override
 	public void attachSpreadsheetView() {
-		getSpreadsheetView();
-		spreadsheetView.attachView();
+		// not needed in web (KernelTabularDataAdapter is the one that needs to be attached)
 	}
 
 	@Override
@@ -538,13 +519,6 @@ public class GuiManagerW extends GuiManager
 		if (!showView(viewId)) {
 			layout.getDockManager().show(viewId);
 		}
-
-		if (viewId == App.VIEW_SPREADSHEET) {
-			getSpreadsheetView().requestFocus();
-		}
-		if (viewId == App.VIEW_DATA_ANALYSIS) {
-			getSpreadsheetView().requestFocus();
-		}
 	}
 
 	private void hideViewWith(int viewId, boolean isPermanent) {
@@ -568,7 +542,7 @@ public class GuiManagerW extends GuiManager
 	}
 
 	@Override
-	public Editing getCasView() {
+	public CASViewW getCasView() {
 		if (casView == null) {
 			casView = new CASViewW(getApp());
 		}
@@ -578,16 +552,6 @@ public class GuiManagerW extends GuiManager
 	@Override
 	public boolean hasCasView() {
 		return casView != null;
-	}
-
-	@Override
-	public SpreadsheetViewW getSpreadsheetView() {
-		// init spreadsheet view
-		if (spreadsheetView == null) {
-			spreadsheetView = new SpreadsheetViewW(getApp());
-		}
-
-		return spreadsheetView;
 	}
 
 	@Override
@@ -611,6 +575,33 @@ public class GuiManagerW extends GuiManager
 	@Override
 	public void updateSpreadsheetColumnWidths() {
 		// unimplemented in web
+	}
+
+	@Override
+	public void scrollSpreadsheetToCell(GeoElement geo, String labelNew) {
+		if (hasSpreadsheetView()) {
+			DockPanelW panel = getLayout().getDockManager().getPanel(App.VIEW_SPREADSHEET);
+			if (panel instanceof SpreadsheetDockPanelW spreadsheetDockPanel) {
+				spreadsheetDockPanel
+						.scrollIfNeeded(geo, labelNew);
+			}
+		}
+	}
+
+	@Override
+	public void setScrollToShow(boolean scrollToShow) {
+		DockPanelW panel = getLayout().getDockManager().getPanel(App.VIEW_SPREADSHEET);
+		if (panel instanceof SpreadsheetDockPanelW spreadsheetDockPanel) {
+			spreadsheetDockPanel.setScrollToShow(scrollToShow);
+		}
+	}
+
+	@Override
+	public void setMode(int mode, ModeSetter modeSetter) {
+		super.setMode(mode, modeSetter);
+		if (modeSetter == ModeSetter.TOOLBAR) {
+			new SpreadsheetToolbarManagerW(getApp()).handleModeChange(mode);
+		}
 	}
 
 	@Override
@@ -1028,7 +1019,7 @@ public class GuiManagerW extends GuiManager
 
 	@Override
 	public boolean save() {
-		if (!examController.isIdle()) {
+		if (GlobalScope.isExamActive(getApp())) {
 			SaveExamAction.showExamSaveDialog(getApp());
 		} else {
 			getApp().getFileManager().save(getApp());
@@ -1073,6 +1064,10 @@ public class GuiManagerW extends GuiManager
 
 	@Override
 	public void startEditing(final GeoElement geoElement) {
+		if (app.getAccessibilityManager().handlesEnterInComposite()) {
+			return;
+		}
+
 		switchToolsToAV();
 		if (this.algebraView != null) {
 			algebraView.startEditItem(geoElement);
@@ -1087,7 +1082,8 @@ public class GuiManagerW extends GuiManager
 
 	@Override
 	public void openFile() {
-		if (examController.isIdle() && getApp().enableOnlineFileFeatures()
+		if (!GlobalScope.isExamActive(getApp())
+				&& getApp().enableOnlineFileFeatures()
 				&& getApp().showMenuBar()) {
 			getApp().openSearch("");
 		}
@@ -1176,13 +1172,6 @@ public class GuiManagerW extends GuiManager
 		return getApp().getEuclidianView1();
 	}
 
-	/**
-	 * Clear data analysis
-	 */
-	public void clearDataAnalysisView() {
-		dataAnalysisView = null;
-	}
-
 	@Override
 	public View getDataAnalysisView() {
 		if (dataAnalysisView == null) {
@@ -1232,9 +1221,7 @@ public class GuiManagerW extends GuiManager
 
 	@Override
 	public void detachSpreadsheetView() {
-		if (spreadsheetView != null) {
-			spreadsheetView.detachView();
-		}
+		// only in desktop
 	}
 
 	@Override
@@ -1257,20 +1244,6 @@ public class GuiManagerW extends GuiManager
 			listener.setFocus(true);
 		} else {
 			app.getActiveEuclidianView().requestFocus();
-		}
-	}
-
-	@Override
-	public void resetSpreadsheet() {
-		if (spreadsheetView != null) {
-			spreadsheetView.restart();
-		}
-	}
-
-	@Override
-	public void setScrollToShow(final boolean b) {
-		if (spreadsheetView != null) {
-			spreadsheetView.setScrollToShow(b);
 		}
 	}
 
@@ -1411,7 +1384,8 @@ public class GuiManagerW extends GuiManager
 
 	@Override
 	public void updateFrameSize() {
-		if (!getApp().getAppletParameters().getDataParamApp() || !examController.isIdle()) {
+		if (!getApp().getAppletParameters().getDataParamApp()
+				|| GlobalScope.isExamActive(getApp())) {
 			return;
 		}
 		// get frame size from layout manager
@@ -1422,16 +1396,6 @@ public class GuiManagerW extends GuiManager
 
 		if (getApp().getDevice() != null) {
 			getApp().getDevice().resizeView(width, height);
-		}
-	}
-
-	@Override
-	public void getSpreadsheetViewXML(final XMLStringBuilder sb,
-			final boolean asPreference) {
-		if (spreadsheetView != null) {
-			spreadsheetView.getXML(sb, asPreference);
-		} else {
-			super.getSpreadsheetViewXML(sb, asPreference);
 		}
 	}
 
@@ -1477,7 +1441,7 @@ public class GuiManagerW extends GuiManager
 		// only do this if toolbar string not null, otherwise this may
 		DockPanel dp = layout.getDockManager().getPanel(toolbarID);
 		String def = dp == null ? null : dp.getToolbarString();
-		if ((def == null || "".equals(def))
+		if (StringUtil.empty(def)
 				&& this.generalToolbarDefinition != null) {
 			def = this.generalToolbarDefinition;
 		}
@@ -1707,12 +1671,7 @@ public class GuiManagerW extends GuiManager
 			return mode;
 		}
 
-		final int ret = toolbarPanel.setMode(mode, m);
-		if (this.toolbarForUpdate != null) {
-			this.toolbarForUpdate.buildGui();
-		}
-		// layout.getDockManager().setToolbarMode(mode);
-		return ret;
+		return toolbarPanel.setMode(mode, m);
 	}
 
 	@Override
@@ -1750,14 +1709,6 @@ public class GuiManagerW extends GuiManager
 		return (EuclidianViewW) probCalculator.getPlotPanel();
 	}
 
-	public boolean isConsProtNavigationPlayButtonVisible() {
-		return getConstructionProtocolNavigation().isPlayButtonVisible();
-	}
-
-	public boolean isConsProtNavigationProtButtonVisible() {
-		return getConstructionProtocolNavigation().isConsProtButtonVisible();
-	}
-
 	@Override
 	public void detachView(final int viewId) {
 		if (viewId == App.VIEW_FUNCTION_INSPECTOR) {
@@ -1788,7 +1739,7 @@ public class GuiManagerW extends GuiManager
 	}
 
 	private BrowseViewI createBrowseView(AppWFull app) {
-		if (!examController.isIdle()) {
+		if (GlobalScope.isExamActive(app)) {
 			return new OpenTemporaryFileView(app);
 		} else {
 			BrowserDevice.FileOpenButton fileOpenButton =
@@ -1857,15 +1808,6 @@ public class GuiManagerW extends GuiManager
 			((ProbabilityCalculatorViewW) getProbabilityCalculator()).getPlotPanel()
 			.getEuclidianController().calculateEnvironment();
 		}
-	}
-
-	/**
-	 *
-	 * @param toolBar
-	 *            will be updated every time setMode(int) is called
-	 */
-	public void setToolBarForUpdate(final ToolBarW toolBar) {
-		this.toolbarForUpdate = toolBar;
 	}
 
 	/**
@@ -1982,10 +1924,11 @@ public class GuiManagerW extends GuiManager
 			this.getAlgebraView().setPixelRatio(ratio);
 		}
 		if (hasCasView()) {
-			((CASViewW) getCasView()).setPixelRatio(ratio);
+			getCasView().setPixelRatio(ratio);
 		}
-		if (hasSpreadsheetView()) {
-			getSpreadsheetView().setPixelRatio(ratio);
+		DockPanelW panel = getLayout().getDockManager().getPanel(App.VIEW_SPREADSHEET);
+		if (panel != null) {
+			panel.onResize();
 		}
 	}
 
@@ -2021,8 +1964,10 @@ public class GuiManagerW extends GuiManager
 	 * @return whether keyboard may be shown at startup
 	 */
 	public static boolean mayForceKeyboard(AppW app) {
+		ExamController examController = GlobalScope.getExamController(app);
 		return !app.isStartedWithFile()
 				&& !app.getAppletParameters().preventFocus()
+				&& examController != null
 				&& examController.getState() != ExamState.PREPARING;
 	}
 
@@ -2195,15 +2140,6 @@ public class GuiManagerW extends GuiManager
 	@Override
 	public void addGeoToTV(GeoElement geo) {
 		getTableValuesView().addAndShow(geo);
-	}
-
-	@Override
-	public void showTableValuesView(GeoElement geo) {
-		if (getTableValuesView().isEmpty()) {
-			app.getDialogManager().openTableViewDialog(geo);
-		} else {
-			addGeoToTableValuesView(geo);
-		}
 	}
 
 	@Override

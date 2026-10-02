@@ -22,19 +22,19 @@ import static org.junit.Assert.assertTrue;
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.exam.BaseExamTestSetup;
 import org.geogebra.common.gui.view.algebra.filter.AlgebraOutputFilter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CvteAlgebraOutputFilterTests extends BaseExamTestSetup {
 
-    @Before
+    @BeforeEach
     public void setup() {
         setupApp(SuiteSubApp.GRAPHING);
     }
 
     @Test
     public void testAlgebraOutputRestrictions() {
-        AlgebraOutputFilter outputFilter = new CvteAlgebraOutputFilter(null);
+        AlgebraOutputFilter outputFilter = new CvteAlgebraOutputFilter();
 
         // For Lines, Rays, Conics, Implicit Equations and Functions created with command or tool,
         // we do not show the calculated equation.

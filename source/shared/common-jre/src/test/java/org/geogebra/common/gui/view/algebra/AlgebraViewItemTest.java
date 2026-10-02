@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.geogebra.common.SuiteSubApp;
-import org.geogebra.common.contextmenu.ContextMenuFactory;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.test.BaseAppTestSetup;
@@ -31,8 +30,6 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings({"checkstyle:LineLengthCheck",
 		"checkstyle:variableDeclarationUsageDistanceCheck"})
 public class AlgebraViewItemTest extends BaseAppTestSetup {
-
-	private final ContextMenuFactory contextMenuFactory = new ContextMenuFactory();
 
 	@Test
 	public void testPointInGraphing() {
@@ -87,8 +84,8 @@ public class AlgebraViewItemTest extends BaseAppTestSetup {
 	@Test
 	public void testTangentInGraphing() {
 		setupApp(SuiteSubApp.GRAPHING);
-		GeoElement circle = evaluateGeoElement("c: Circle((0, 0), 5)");
-		GeoElement a = evaluateGeoElement("A = (6, 6)");
+		evaluateGeoElement("c: Circle((0, 0), 5)");
+		evaluateGeoElement("A = (6, 6)");
 		// this will create two output rows, tangents f & g
 		GeoElementND[] geos = evaluate("Tangent(A, c)");
 		AlgebraViewItem f = new AlgebraViewItem((GeoElement) geos[0]);

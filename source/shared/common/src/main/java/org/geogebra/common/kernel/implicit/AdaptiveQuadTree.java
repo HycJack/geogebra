@@ -37,7 +37,7 @@ class AdaptiveQuadTree extends QuadTree {
 	private final Timer timer = new Timer();
 	private static int fastDrawThreshold = 10;
 
-	public static void setFastDrawThreshold(int threshold) {
+	static void setFastDrawThreshold(int threshold) {
 		fastDrawThreshold = threshold;
 	}
 
@@ -49,18 +49,18 @@ class AdaptiveQuadTree extends QuadTree {
 			this.now = System.currentTimeMillis();
 		}
 
-        void record() {
+		void record() {
 			this.elapse = System.currentTimeMillis() - now;
 		}
 	}
 
-	public AdaptiveQuadTree(GeoImplicitCurve curve) {
+	AdaptiveQuadTree(GeoImplicitCurve curve) {
 		super();
 		this.curve = curve;
 	}
 
 	@Override
-	public void updatePath() {
+	void updatePath() {
 		for (int factor = 0; factor < curve.factorLength(); ++factor) {
 			try {
 				curve.evaluateImplicitCurve(0, 0, factor);
@@ -180,7 +180,7 @@ class AdaptiveQuadTree extends QuadTree {
 		return false;
 	}
 
-	public void createTree(ImplicitCurveMarchingRect r, int depth, int factor) {
+	void createTree(ImplicitCurveMarchingRect r, int depth, int factor) {
 		ImplicitCurveMarchingRect[] n = r.split(curve, factor);
 		plot(n[0], depth, factor);
 		plot(n[1], depth, factor);
@@ -188,7 +188,7 @@ class AdaptiveQuadTree extends QuadTree {
 		plot(n[3], depth, factor);
 	}
 
-	public void plot(ImplicitCurveMarchingRect r, int depth, int factor) {
+	void plot(ImplicitCurveMarchingRect r, int depth, int factor) {
 		if (depth < segmentCheckDepth) {
 			createTree(r, depth + 1, factor);
 			return;

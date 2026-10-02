@@ -19,7 +19,7 @@ package org.geogebra.web.geogebra3D.web.euclidian3D.openGL;
 import java.util.ArrayList;
 
 import org.geogebra.common.geogebra3D.euclidian3D.EuclidianView3D;
-import org.geogebra.common.geogebra3D.euclidian3D.draw.DrawLabel3D;
+import org.geogebra.common.geogebra3D.euclidian3D.draw.DrawableTexture3D;
 import org.geogebra.common.geogebra3D.euclidian3D.openGL.GLBuffer;
 import org.geogebra.common.geogebra3D.euclidian3D.openGL.GLBufferIndices;
 import org.geogebra.common.geogebra3D.euclidian3D.openGL.Manager;
@@ -290,8 +290,8 @@ public class RendererImplShadersW extends RendererImplShaders {
 	}
 	
 	@Override
-	protected void glViewPort(int width, int height) {
-		glContext.viewport(0, 0, width, height);
+	protected void glViewPort(int x, int y, int width, int height) {
+		glContext.viewport(x, y, width, height);
 	}
 
 	@Override
@@ -435,7 +435,7 @@ public class RendererImplShadersW extends RendererImplShaders {
 	* @param bimg
 	*            buffered image
 	*/
-	public void createAlphaTexture(DrawLabel3D label, HTMLImageElement image,
+	public void createAlphaTexture(DrawableTexture3D label, HTMLImageElement image,
 			GBufferedImageW bimg) {
 
 		if (label.isPickable()) {
@@ -524,7 +524,7 @@ public class RendererImplShadersW extends RendererImplShaders {
 		createAlphaTexture(-1, null, new GBufferedImageW(2, 2, 1));
 	}
 
-	private static void updatePickingDimension(DrawLabel3D label,
+	private static void updatePickingDimension(DrawableTexture3D label,
 			ImageData data) {
 		int xmin = label.getWidth(), xmax = 0, ymin = label.getHeight(),
 				ymax = 0;

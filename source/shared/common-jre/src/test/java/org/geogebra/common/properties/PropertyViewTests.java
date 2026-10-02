@@ -34,9 +34,9 @@ import org.geogebra.common.euclidian.EuclidianView;
 import org.geogebra.common.jre.headless.MyImageCommon;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoNumeric;
+import org.geogebra.common.main.App;
 import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.common.main.settings.EuclidianSettings;
-import org.geogebra.common.ownership.GlobalScope;
 import org.geogebra.common.properties.aliases.ImageProperty;
 import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
 import org.geogebra.common.properties.factory.PropertiesArray;
@@ -51,14 +51,21 @@ import org.geogebra.common.properties.impl.objects.FillImageProperty;
 import org.geogebra.common.properties.impl.objects.LinearEquationFormProperty;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 import org.geogebra.common.util.ImageManagerCommon;
+import org.geogebra.common.util.MockedCasValues;
+import org.geogebra.common.util.MockedCasValuesExtension;
 import org.geogebra.test.BaseAppTestSetup;
 import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
+@SuppressWarnings({"variableDeclarationUsageDistanceCheck", "RegexpSinglelineCheck"})
+@ExtendWith(MockedCasValuesExtension.class)
 public class PropertyViewTests extends BaseAppTestSetup {
+
 	@BeforeAll
 	public static void enablePreviewFeatures() {
 		PreviewFeature.setPreviewFeaturesEnabled(true);
@@ -73,8 +80,9 @@ public class PropertyViewTests extends BaseAppTestSetup {
 	public void testGridTypeDependentLineStyleVisibility() {
 		setupApp(SuiteSubApp.GRAPHING);
 
-		PropertiesArray graphicsProperties = getApp().getConfig().createPropertiesFactory()
-				.createProperties(getApp(), getLocalization(), GlobalScope.propertiesRegistry)
+		App app = getApp();
+		PropertiesArray graphicsProperties = app.getConfig().createPropertiesFactory()
+				.createProperties(app, getLocalization(), app.appScope.propertiesRegistry)
 				.get(2);
 		PropertyView.ExpandableList gridPropertyView = (PropertyView.ExpandableList)
 				PropertyViewFactory.propertyViewListOf(graphicsProperties).get(1);
@@ -149,8 +157,9 @@ public class PropertyViewTests extends BaseAppTestSetup {
 	public void testOrdinalPositionsOfExpandableListsInGraphicsSettings() {
 		setupApp(SuiteSubApp.GRAPHING);
 
-		PropertiesArray graphicsProperties = getApp().getConfig().createPropertiesFactory()
-				.createProperties(getApp(), getLocalization(), GlobalScope.propertiesRegistry)
+		App app = getApp();
+		PropertiesArray graphicsProperties = app.getConfig().createPropertiesFactory()
+				.createProperties(getApp(), getLocalization(), app.appScope.propertiesRegistry)
 				.get(2);
 		List<PropertyView> graphicsPropertyViews =
 				PropertyViewFactory.propertyViewListOf(graphicsProperties);
@@ -276,12 +285,13 @@ public class PropertyViewTests extends BaseAppTestSetup {
 		animatablePoint.setIntervalMax(10);
 
 		PropertiesArray array = new PropertiesArray(null, getLocalization(),
-				new AnimationPropertyCollection(GlobalScope.geoElementPropertiesFactory,
+				new AnimationPropertyCollection(
+						suiteScope.geoElementPropertiesFactory,
 						getAlgebraProcessor(), getLocalization(), List.of(animatablePoint)));
 		List<PropertyView> propertyViews = PropertyViewFactory.propertyViewListOf(array);
 
 		assertAll(() -> assertFalse(propertyViews.get(0) instanceof PropertyView.ExpandableList),
-				() -> assertTrue(propertyViews.size() == 2)
+				() -> assertEquals(2, propertyViews.size())
 		);
 	}
 
@@ -308,6 +318,28 @@ public class PropertyViewTests extends BaseAppTestSetup {
 		assertEquals("image", row.getFileName());
 		property.setValue(null);
 		assertEquals(null, row.getFileName());
+	}
+
+	@ParameterizedTest
+	@Issue("APPS-7499")
+	@CsvSource(delimiterString = "->", value = {
+			"(1, 2)			-> Point",
+			"f(x) = x^2		-> Function",
+			"x^2 + y^2 = 5	-> Circle"
+	})
+	@MockedCasValues({
+			"Evaluate((1, 2)) 		-> (1,2)",
+			"Evaluate(x²) 			-> x^2",
+			"Evaluate(x² + y² = 5) 	-> x^2+y^2=5",
+	})
+	public void testTabbedPageSelectorTitleForCasElements(
+			String element, String expectedTitleTransKey) {
+		setupApp(SuiteSubApp.CAS);
+		getApp().getSelectionManager().setSelectedGeos(List.of(evaluateGeoElement(element)));
+		PropertyView.TabbedPageSelector tabbedPageSelector =
+				PropertyViewFactory.propertyViewOfObjectSettings(getApp());
+		assertEquals(getLocalization().getMenu(expectedTitleTransKey),
+				tabbedPageSelector.getTitle());
 	}
 
 	private EuclidianView getEuclidianView() {

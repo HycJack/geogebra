@@ -17,6 +17,8 @@
 package org.geogebra.common.properties.impl.objects;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
@@ -37,10 +39,10 @@ import org.geogebra.common.util.ImageManager;
  * symbol, image, and inverse fill) for a list of {@link GeoElement}s.
  */
 public class FillingPropertyCollection extends AbstractPropertyCollection<Property> {
-
 	/**
 	 * @param propertiesFactory factory for creating property facades
 	 * @param localization localization
+	 * @param imageManager image manager for the image filling property
 	 * @param elements geo elements
 	 * @throws NotApplicablePropertyException if the elements do not support filling
 	 */
@@ -48,28 +50,31 @@ public class FillingPropertyCollection extends AbstractPropertyCollection<Proper
 			Localization localization, ImageManager imageManager, List<GeoElement> elements)
 			throws NotApplicablePropertyException {
 		super(localization, "Filling");
-		setProperties(new Property[]{
+		setProperties(Stream.<Property>of(
 				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new InverseFillProperty(localization, element),
 						BooleanPropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new FillCategoryProperty(localization, element),
 						NamedEnumeratedPropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new FillSymbolProperty(localization, element),
 						StringPropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new FillImageProperty(localization, imageManager, element),
 						ImagePropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new PatternFillStyleProperty(localization, element),
 						IconsEnumeratedPropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new HatchingDistanceProperty(localization, element),
 						RangePropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new HatchingAngleProperty(localization, element),
-						RangePropertyListFacade::new),
-		});
+						RangePropertyListFacade::new)
+		).filter(Objects::nonNull).toArray(Property[]::new));
+		if (getProperties().length == 0) {
+			throw new NotApplicablePropertyException(elements.get(0));
+		}
 	}
 }

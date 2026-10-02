@@ -93,6 +93,7 @@ import com.google.j2objc.annotations.Weak;
  * @author Markus
  */
 public class Construction {
+
 	private ConstructionCompanion companion;
 	/** maps arbconst indices to related numbers */
 	private final Map<Integer, GeoNumeric> arbitraryConstantsMap = new TreeMap<>();
@@ -130,7 +131,7 @@ public class Construction {
 
 	/** construction belongs to kernel */
 	@Weak
-	protected Kernel kernel;
+	protected final @Nonnull Kernel kernel;
 
 	// current construction step (-1 ... ceList.size() - 1)
 	// step == -1 shows empty construction
@@ -228,7 +229,7 @@ public class Construction {
 	 * Creates a new Construction.
 	 * @param k Kernel
 	 */
-	public Construction(Kernel k) {
+	public Construction(@Nonnull Kernel k) {
 		this(k, null);
 	}
 
@@ -237,7 +238,7 @@ public class Construction {
 	 * @param k Kernel
 	 * @param parentConstruction parent construction (used for macro constructions)
 	 */
-	protected Construction(Kernel k, Construction parentConstruction) {
+	protected Construction(@Nonnull Kernel k, Construction parentConstruction) {
 		kernel = k;
 
 		companion = kernel.createConstructionCompanion(this);
@@ -327,7 +328,7 @@ public class Construction {
 	/**
 	 * init the axis
 	 */
-	final private void initAxis() {
+	private void initAxis() {
 		xAxis = new GeoAxis(this, GeoAxisND.X_AXIS);
 		yAxis = new GeoAxis(this, GeoAxisND.Y_AXIS);
 
@@ -337,7 +338,7 @@ public class Construction {
 	/**
 	 * creates the ConstructionDefaults consDefaults
 	 */
-	final private void newConstructionDefaults() {
+	private void newConstructionDefaults() {
 		consDefaults = companion.newConstructionDefaults();
 	}
 
@@ -430,14 +431,15 @@ public class Construction {
 	 */
 	final public String updateLocalAxisName(GeoElement element, String localName, String key) {
 		Localization localization = kernel.getLocalization();
-		GeoElement geo = geoTable.remove(localName);
-		String changedLocalName = localName;
-		if (geo == null || geo == element) {
-			changedLocalName = localization.getMenu(key);
-			geo = element;
+		if (localName != null && !localName.equals(key)) {
+			geoTable.remove(localName);
 		}
-		geoTable.put(changedLocalName, geo);
-		return changedLocalName;
+		String changedLocalName = localization.getMenu(key);
+		if (!geoTable.containsKey(changedLocalName)) {
+			geoTable.put(changedLocalName, element);
+			return changedLocalName;
+		}
+		return localName;
 	}
 
 	/**
@@ -546,7 +548,7 @@ public class Construction {
 	 * Returns current kernel
 	 * @return current kernel
 	 */
-	public Kernel getKernel() {
+	public final @Nonnull Kernel getKernel() {
 		return kernel;
 	}
 
@@ -805,9 +807,8 @@ public class Construction {
 	 * Updates all algos
 	 * @return true iff there were any algos that wanted update
 	 * @author Michael Borcherds
-	 * @version 2008-05-15
 	 */
-	private final boolean updateAllConstructionProtocolAlgorithms() {
+	private boolean updateAllConstructionProtocolAlgorithms() {
 		// update all algorithms
 		ArrayList<AlgoElement> updateAlgos = null;
 		for (AlgoElement algo : algoList) {
@@ -2686,7 +2687,7 @@ public class Construction {
 	/**
 	 * Make geoTable contain only xAxis and yAxis
 	 */
-	final private void initGeoTables() {
+	private void initGeoTables() {
 		geoTable.clear();
 		geoCasCellTable = null;
 		localVariableTable = null;
@@ -3537,5 +3538,4 @@ public class Construction {
 		}
 		return false;
 	}
-
 }

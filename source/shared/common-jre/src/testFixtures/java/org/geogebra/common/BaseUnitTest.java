@@ -16,8 +16,6 @@
 
 package org.geogebra.common;
 
-import static org.junit.Assert.fail;
-
 import java.util.function.Function;
 
 import org.geogebra.common.euclidian.Drawable;
@@ -37,7 +35,6 @@ import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.UndoRedoMode;
 import org.geogebra.common.main.error.ErrorHandler;
 import org.geogebra.common.main.settings.Settings;
-import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.test.TestErrorHandler;
 import org.geogebra.test.commands.AlgebraTestHelper;
 import org.hamcrest.Description;
@@ -269,7 +266,8 @@ public class BaseUnitTest {
 	 * @return construction element matcher
 	 */
 	public static TypeSafeMatcher<ExpressionValue> hasValue(String val) {
-		return hasProperty("value", geo -> geo.toValueString(StringTemplate.defaultTemplate), val);
+		return hasProperty("value", geo -> geo.toValueString(
+				StringTemplate.defaultTemplate.deriveWithoutCoefficientSimplification()), val);
 	}
 
 	/**

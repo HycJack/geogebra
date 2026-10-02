@@ -68,7 +68,15 @@ public final class SpreadsheetStyleBarModel {
 		@Property("readonly")
 		public final @CheckForNull GColor textColor;
 
-		State(boolean isEnabled,
+		/**
+		 * Constructs a state class. Visible for testing only.
+		 * @param isEnabled enabled
+		 * @param fontTraits traits
+		 * @param textAlignment alignment
+		 * @param backgroundColor background color
+		 * @param textColor text color
+		 */
+		public State(boolean isEnabled,
 				@CheckForNull Set<SpreadsheetStyling.FontTrait> fontTraits,
 				@CheckForNull SpreadsheetStyling.TextAlignment textAlignment,
 				@CheckForNull GColor backgroundColor,
@@ -237,7 +245,8 @@ public final class SpreadsheetStyleBarModel {
 		}
 		GColor backgroundColor = styling.getBackgroundColor(row, column,
 				styling.getDefaultBackgroundColor());
-		GColor textColor = styling.getTextColor(row, column, styling.getDefaultTextColor());
+		GColor textColor = styling.getTextColor(row, column,
+				SpreadsheetStyling.getDefaultTextColor());
 		return new State(true, fontTraits, textAlignment, backgroundColor, textColor);
 	}
 

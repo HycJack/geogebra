@@ -16,6 +16,7 @@
 
 package org.geogebra.common.properties.impl.objects;
 
+import static org.geogebra.common.main.GeoGebraColorConstants.GEOGEBRA_OBJECT_BLUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -75,6 +76,18 @@ public class DynamicColorComponentPropertyTests extends BaseAppTestSetup {
 	}
 
 	@Test
+	public void testDynamicColorComponentValueInvalid() {
+		setupApp(SuiteSubApp.GRAPHING);
+		GeoElement geoElement = evaluateGeoElement("(1, 2)");
+		DynamicColorModeProperty.activateDynamicColorMode(geoElement);
+		geoElement.setColorSpace(GeoElement.COLORSPACE_RGB);
+		DynamicColorComponentProperty greenColorComponentProperty =
+				DynamicColorComponentProperty.forGreen(getLocalization(), geoElement);
+		String error = greenColorComponentProperty.validateValue("x(a)");
+		assertEquals("Number expected", error);
+	}
+
+		@Test
 	public void testSettingHSLColorComponentValueWithActiveRGBColorSpace() {
 		setupApp(SuiteSubApp.GRAPHING);
 		GeoElement geoElement = evaluateGeoElement("(1, 2)");
@@ -216,5 +229,24 @@ public class DynamicColorComponentPropertyTests extends BaseAppTestSetup {
 
 		geoElement.setColorSpace(GeoElement.COLORSPACE_HSL);
 		assertTrue(opacityColorComponentProperty.isAvailable());
+	}
+
+	@Test
+	public void testActivationShouldMaintainDynamicReferences() {
+		setupApp(SuiteSubApp.GRAPHING);
+		GeoElement geoElement = evaluateGeoElement("A=(1,1)");
+		DynamicColorModeProperty.activateDynamicColorMode(geoElement);
+		DynamicColorComponentProperty red =
+				DynamicColorComponentProperty.forRed(getLocalization(), geoElement);
+		DynamicColorComponentProperty green =
+				DynamicColorComponentProperty.forGreen(getLocalization(), geoElement);
+		DynamicColorComponentProperty blue =
+				DynamicColorComponentProperty.forBlue(getLocalization(), geoElement);
+		red.setValue("x(A)");
+		green.setValue("y(A)");
+		DynamicColorModeProperty.activateDynamicColorModeIfNeeded(geoElement);
+		assertEquals("x(A)", red.getValue());
+		assertEquals("y(A)", green.getValue());
+		assertEquals(String.valueOf(GEOGEBRA_OBJECT_BLUE.getBlue() / 255f), blue.getValue());
 	}
 }

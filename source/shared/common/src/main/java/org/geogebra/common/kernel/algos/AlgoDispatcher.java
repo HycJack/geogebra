@@ -1719,7 +1719,7 @@ public class AlgoDispatcher {
 	 *            moving point
 	 * @return whether Locus(P,Q) is possible
 	 */
-	final public static boolean locusCheck(GeoPointND P, GeoPointND Q) {
+	public static boolean locusCheck(GeoPointND P, GeoPointND Q) {
 		return P.getPath() != null && Q.getPath() == null
 				&& P.isParentOf(Q);
 	}
@@ -2105,7 +2105,7 @@ public class AlgoDispatcher {
 			return g;
 		}
 		// TODO decide polynomial when CAS not loaded
-		if (!a.isPolynomialFunction(false) || !b.isPolynomialFunction(false)) {
+		if (!a.hasPolynomialNumerator(false) || !b.hasPolynomialNumerator(false)) {
 
 			// dummy point
 			GeoPoint A = createDummyPoint();
@@ -2214,7 +2214,7 @@ public class AlgoDispatcher {
 			return ret;
 		}
 
-		if (!f.isPolynomialFunction(false)) {
+		if (!f.hasPolynomialNumerator(false)) {
 
 			// dummy point
 			GeoPoint A = initPoint;

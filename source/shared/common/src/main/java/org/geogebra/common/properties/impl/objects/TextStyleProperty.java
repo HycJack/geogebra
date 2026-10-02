@@ -16,7 +16,9 @@
 
 package org.geogebra.common.properties.impl.objects;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.Localization;
@@ -44,16 +46,22 @@ public class TextStyleProperty extends AbstractPropertyCollection<ToggleableIcon
 			GeoElementPropertiesFactory propertiesFactory, Localization localization,
 			List<GeoElement> elements) throws NotApplicablePropertyException {
 		super(localization, "Properties.TextStyle");
-		setProperties(new ToggleableIconProperty[]{
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+		setProperties(Arrays.stream(new ToggleableIconProperty[]{
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new BoldProperty(localization, element),
 						ToggleableIconPropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new ItalicProperty(localization, element),
 						ToggleableIconPropertyListFacade::new),
-				propertiesFactory.createPropertyFacadeThrowing(elements,
+				propertiesFactory.createOptionalPropertyFacade(elements,
+						element -> new UnderlineProperty(localization, element),
+						ToggleableIconPropertyListFacade::new),
+				propertiesFactory.createOptionalPropertyFacade(elements,
 						element -> new SerifProperty(localization, element),
 						ToggleableIconPropertyListFacade::new)
-		});
+		}).filter(Objects::nonNull).toArray(ToggleableIconProperty[]::new));
+		if (getProperties().length == 0) {
+			throw new NotApplicablePropertyException(elements.get(0));
+		}
 	}
 }

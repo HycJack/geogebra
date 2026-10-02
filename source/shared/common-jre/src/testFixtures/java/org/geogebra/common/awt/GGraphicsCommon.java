@@ -23,6 +23,8 @@ import org.geogebra.common.gui.font.GFontCommon;
  */
 public class GGraphicsCommon implements GGraphics2D {
 
+    private GFont font;
+
     @Override
     public void draw(GShape s) {
         if (s == null) {
@@ -114,12 +116,12 @@ public class GGraphicsCommon implements GGraphics2D {
 
     @Override
     public GFont getFont() {
-		return new GFontCommon(12);
+        return font == null ? new GFontCommon(12) : font;
     }
 
     @Override
     public void setFont(GFont font) {
-        // ignore empty method
+        this.font = font;
     }
 
     @Override
@@ -148,11 +150,6 @@ public class GGraphicsCommon implements GGraphics2D {
     }
 
     @Override
-    public void setClip(GShape shape, boolean saveContext) {
-        // ignore empty method
-    }
-
-    @Override
     public void resetClip() {
         // ignore empty method
     }
@@ -163,12 +160,12 @@ public class GGraphicsCommon implements GGraphics2D {
     }
 
     @Override
-    public void setClip(int x, int y, int width, int height) {
+    public void setClip(double x, double y, double width, double height) {
         // ignore empty method
     }
 
     @Override
-    public void setClip(int x, int y, int width, int height, boolean saveContext) {
+    public void setClip(double x, double y, double width, double height, boolean saveContext) {
         // ignore empty method
     }
 

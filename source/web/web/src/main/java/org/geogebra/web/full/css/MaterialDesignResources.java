@@ -63,6 +63,21 @@ public interface MaterialDesignResources extends ClientBundle {
 	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/axis_tick_off.svg")
 	SVGResource axis_tick_off();
 
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/format_text_clip_24dp.svg")
+	SVGResource wrapping_clip();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/format_text_wrap_24dp.svg")
+	SVGResource wrapping_wrap();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/text_rotate_up_24dp.svg")
+	SVGResource rotation_up();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/text_rotate_vertical_24dp.svg")
+	SVGResource rotation_down();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/text_rotation_none_24dp.svg")
+	SVGResource rotation_none();
+
 	// dynamic stylebar
 	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/format_color_reset-24px.svg")
 	SVGResource no_color();
@@ -99,6 +114,21 @@ public interface MaterialDesignResources extends ClientBundle {
 
 	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/format_underlined-24px.svg")
 	SVGResource text_underline_black();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/no_border.svg")
+	SVGResource border_no();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/thin_border.svg")
+	SVGResource border_thin();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/thick_border.svg")
+	SVGResource border_thick();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/cell_border_thin.svg")
+	SVGResource cell_border_thin();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/settings/cell_border_thick.svg")
+	SVGResource cell_border_thick();
 
 	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/border_all-24px.svg")
 	SVGResource border_all();
@@ -299,6 +329,15 @@ public interface MaterialDesignResources extends ClientBundle {
 
 	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/filling_honeycomb.svg")
 	SVGResource pattern_honeycomb();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/filling_bricks.svg")
+	SVGResource pattern_bricks();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/filling_chessboard.svg")
+	SVGResource pattern_chessboard();
+
+	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/filling_weaving.svg")
+	SVGResource pattern_weaving();
 
 	@Source("org/geogebra/common/icons/svg/web/matDesignIcons/dynStylebar/no_filling.svg")
 	SVGResource no_pattern();

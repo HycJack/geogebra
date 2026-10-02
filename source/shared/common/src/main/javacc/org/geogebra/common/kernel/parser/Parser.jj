@@ -1739,7 +1739,7 @@ ExpressionValue myDouble():
 |
     <GRADIAN>
     {  // constant for gradians to radians
-        d = new MySpecialDouble(kernel, Math.PI / 200.0d, Unicode.GRADIAN);
+        d = new MySpecialDouble(kernel, Math.PI / 200.0d, String.valueOf(Unicode.GRADIAN));
         d.setAngle();
         ret = d;
     }
@@ -1841,7 +1841,7 @@ ExpressionNode functionOrCommand():
         Construction cons = kernel.getConstruction();
         GeoNumeric randNum = new GeoNumeric(cons);
         cons.addRandomGeo(randNum);
-        randNum.setValue(app.getRandomNumber());
+        randNum.setValue(kernel.randomNumberGenerator.getRandomNumber());
         ret = new ExpressionNode(kernel, randNum, Operation.RANDOM, null);
     }
 |

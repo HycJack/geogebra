@@ -16,6 +16,7 @@
 
 package org.geogebra.web.editor;
 
+import org.geogebra.editor.share.catalog.TemplateCatalog;
 import org.geogebra.editor.share.editor.EditorFeatures;
 import org.geogebra.editor.web.MathFieldW;
 import org.geogebra.gwtutil.JsConsumer;
@@ -67,8 +68,10 @@ public final class RenderEditor implements RenderGgbElementFunction {
 		FlowPanel wrapper = new FlowPanel();
 		wrapper.setWidth("100%");
 		wrapper.getElement().getStyle().setOverflow(Overflow.HIDDEN);
-		MathFieldW mathField = new MathFieldW(null, wrapper, canvas, listener,
-				new EditorFeatures());
+		TemplateCatalog catalog = new TemplateCatalog();
+		catalog.enableSubstitutions();
+		MathFieldW mathField = new MathFieldW(null, wrapper, canvas, listener, catalog,
+						new EditorFeatures());
 		if (el.hasAttribute("maxHeight")) {
 			mathField.setMaxHeight(Double.parseDouble(el.getAttribute("maxHeight")));
 		}
@@ -83,8 +86,7 @@ public final class RenderEditor implements RenderGgbElementFunction {
 		RootPanel editorPanel = newRoot(el.getElement());
 
 		editorPanel.add(wrapper);
-		String cssColor = mathField.getBackgroundColor().getCssColor();
-		setBackgroundColor(wrapper.getElement(), cssColor);
+		setBackgroundColor(wrapper.getElement(), editorParams.getBackgroundColor());
 		Dom.addEventListener(wrapper.getElement(), "pointerdown",
 				evt -> adjustCaret(evt, mathField));
 

@@ -127,8 +127,7 @@ public class Tools extends FlowPanel implements SetLabels {
 
 		for (int i = 0; i < categories.size(); i++) {
 			ToolCategory category = categories.get(i);
-			if (GlobalScope.examController.isIdle() || category == null
-					|| category.isAllowedInExam()) {
+			if (!GlobalScope.isExamActive(app) || category == null || category.isAllowedInExam()) {
 				CategoryPanel catPanel = new CategoryPanel(category,
 						parentTab.toolCollection.getTools(i));
 				categoryPanelList.add(catPanel);
@@ -197,8 +196,7 @@ public class Tools extends FlowPanel implements SetLabels {
 				app.setMode(mode);
 				showTooltip(mode);
 				app.updateDynamicStyleBars();
-				Analytics.logEvent(Analytics.Event.TOOL_SELECTED, Analytics.Param.TOOL_NAME,
-						app.getInternalToolName(mode));
+				Analytics.logToolSelected(app.getInternalToolName(mode));
 			});
 			return btn;
 		}

@@ -16,6 +16,7 @@
 
 package org.geogebra.common.kernel.geos;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.function.UnaryOperator;
@@ -69,6 +70,7 @@ import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.kernel.kernelND.GeoQuadricND;
 import org.geogebra.common.kernel.matrix.Coords;
+import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.plugin.EuclidianStyleConstants;
 import org.geogebra.common.plugin.EventType;
@@ -732,7 +734,7 @@ public class GeoList extends GeoElement
 		elements.add(geo.toGeoElement());
 
 		if (elements.size() == 1) {
-			setTypeStringForXML(geo.getXMLtypeString());
+			setTypeStringForXML(geo.getXMLTypeString());
 		}
 
 		/*
@@ -2138,7 +2140,7 @@ public class GeoList extends GeoElement
 	 * @return available trace to spreadsheet mode (values/copy) for the geos
 	 *         list
 	 */
-	final static public TraceModesEnum getTraceModes(
+	public static TraceModesEnum getTraceModes(
 			ArrayList<GeoElement> geos) {
 
 		TraceModesEnum traceModes = null;
@@ -2297,7 +2299,7 @@ public class GeoList extends GeoElement
 	}
 
 	/**
-	 * @return whether this list should be drawn as combobox
+	 * @return whether this list should be drawn as combo box
 	 */
 	public boolean drawAsComboBox() {
 		return drawAsComboBox;
@@ -2305,7 +2307,7 @@ public class GeoList extends GeoElement
 
 	/**
 	 * @param b
-	 *            whether this list should be drawn as combobox
+	 *            whether this list should be drawn as combo box
 	 */
 	public void setDrawAsComboBox(boolean b) {
 		drawAsComboBox = b;
@@ -2708,7 +2710,7 @@ public class GeoList extends GeoElement
 		case ISREFLEX:
 			// do nothing
 			break;
-		default: // ANGLE_ISANTICLOCKWISE
+		default: // ANTICLOCKWISE
 			if (!allowReflexAngle) {
 				setAngleStyle(AngleStyle.NOTREFLEX);
 			}
@@ -2868,7 +2870,22 @@ public class GeoList extends GeoElement
 	 * @param parent
 	 *            parent algo
 	 */
-	public void addNumber(double value, AlgoElement parent) {
+	public void addNumber(BigDecimal value, AlgoElement parent) {
+		GeoNumeric listElement = addNumber(value.doubleValue(), parent);
+		listElement.setExactValue(value);
+	}
+
+	/**
+	 * Add number to the end, use cache if possible. Assume all cached elements
+	 * are GeoNumerics.
+	 *
+	 * @param value
+	 *            value
+	 * @param parent
+	 *            parent algo
+	 * @return the number added
+	 */
+	public GeoNumeric addNumber(double value, AlgoElement parent) {
 		GeoNumeric listElement;
 		if (size() < getCacheSize()) {
 			// use existing list element
@@ -2883,6 +2900,7 @@ public class GeoList extends GeoElement
 
 		add(listElement);
 		listElement.setValue(value);
+		return listElement;
 	}
 
 	/**
@@ -3572,5 +3590,11 @@ public class GeoList extends GeoElement
 	 */
 	public boolean isTableValuesOrPointList() {
 		return tableOrigin;
+	}
+
+	@Override
+	public boolean usesDisabledStyle(EuclidianViewInterfaceSlim ev) {
+		return !isSelectionAllowed(ev) && objColor == GeoGebraColorConstants.NEUTRAL_900
+				&& (bgColor == null || bgColor == GColor.WHITE);
 	}
 }

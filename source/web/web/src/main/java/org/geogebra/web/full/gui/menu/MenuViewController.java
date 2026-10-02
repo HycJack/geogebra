@@ -17,8 +17,12 @@
 package org.geogebra.web.full.gui.menu;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
 
 import org.geogebra.common.GeoGebraConstants;
+import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.exam.ExamType;
 import org.geogebra.common.gui.SetLabels;
 import org.geogebra.common.gui.menu.DrawerMenu;
@@ -37,6 +41,7 @@ import org.geogebra.common.move.ggtapi.models.GeoGebraTubeUser;
 import org.geogebra.common.move.ggtapi.operations.LogInOperation;
 import org.geogebra.common.move.views.EventRenderable;
 import org.geogebra.common.ownership.GlobalScope;
+import org.geogebra.common.restrictions.Restrictions;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.web.full.gui.HeaderView;
 import org.geogebra.web.full.gui.images.AppResources;
@@ -161,10 +166,10 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 		defaultDrawerMenuFactory = createDefaultMenuFactory(app, version);
 		examDrawerMenuFactory = new ExamDrawerMenuFactory(version, app.isSuite());
 		examDrawerMenuFactory.setCreatesExitExam(!app.isLockedExam());
-		if (!GlobalScope.examController.isExamActive()) {
-			setDefaultMenu();
-		} else {
+		if (GlobalScope.isExamActive(app)) {
 			setExamMenu();
+		} else {
+			setDefaultMenu();
 		}
 	}
 
@@ -220,7 +225,13 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 
 	private boolean shouldCreateSwitchCalcEntry(AppW app) {
 		ExamType examType = ExamType.byName(app.getAppletParameters().getParamFeatureSet());
-		return examType == null || GlobalScope.getEnabledSubAppsFor(examType).size() > 1;
+		return examType == null || getEnabledSubAppsFor(examType).size() > 1;
+	}
+
+	private @Nonnull List<SuiteSubApp> getEnabledSubAppsFor(ExamType examType) {
+		Restrictions restrictions = examType.createRestrictions();
+		return SuiteSubApp.availableValues().stream().filter(subApp -> !restrictions
+				.getDisabledSubApps().contains(subApp)).collect(Collectors.toList());
 	}
 
 	private boolean hasLoginButton(AppW app) {
@@ -258,7 +269,7 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 	public void setDefaultMenu() {
 		menuActionRouter =
 				new MenuActionRouter(defaultActionHandlerFactory.create(), this, localization);
-		setDrawerMenu(defaultDrawerMenuFactory.createDrawerMenu());
+		setDrawerMenu(defaultDrawerMenuFactory.createDrawerMenu(frame.getApp()));
 	}
 
 	/**
@@ -267,7 +278,7 @@ public class MenuViewController implements EventRenderable, SetLabels, RequiresR
 	public void setExamMenu() {
 		menuActionRouter =
 				new MenuActionRouter(examActionHandlerFactory.create(), this, localization);
-		setDrawerMenu(examDrawerMenuFactory.createDrawerMenu());
+		setDrawerMenu(examDrawerMenuFactory.createDrawerMenu(frame.getApp()));
 	}
 
 	private void setDrawerMenu(DrawerMenu drawerMenu) {

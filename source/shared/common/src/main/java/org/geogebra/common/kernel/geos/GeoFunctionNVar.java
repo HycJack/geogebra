@@ -946,7 +946,7 @@ public class GeoFunctionNVar extends GeoElement
 		return hasLastHitParameters;
 	}
 
-	final private static boolean isTooFar(double[] xyzf, double zScale) {
+	private static boolean isTooFar(double[] xyzf, double zScale) {
 		return !DoubleUtil.isEqual(xyzf[2], xyzf[3],
 				Kernel.STANDARD_PRECISION_SQRT / zScale);
 	}
@@ -1221,7 +1221,7 @@ public class GeoFunctionNVar extends GeoElement
 		return isFun2Var();
 	}
 
-	private final boolean isInequalityOrFun2Var() {
+	private boolean isInequalityOrFun2Var() {
 		return isInequality() || ((fun != null) && (fun.getVarNumber() == 2));
 	}
 

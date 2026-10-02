@@ -34,7 +34,6 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.OptionType;
 import org.geogebra.common.main.PreviewFeature;
-import org.geogebra.common.ownership.GlobalScope;
 import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
 import org.geogebra.common.properties.factory.PropertiesArray;
 import org.geogebra.web.full.gui.components.sideSheet.ComponentSideSheet;
@@ -50,6 +49,7 @@ import org.geogebra.web.full.gui.dialog.options.OptionsObjectW;
 import org.geogebra.web.full.gui.dialog.options.OptionsSpreadsheetW;
 import org.geogebra.web.full.gui.properties.ui.PropertiesPanelAdapter;
 import org.geogebra.web.full.main.AppWFull;
+import org.geogebra.web.html5.euclidian.FontLoader;
 import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.util.CSSEvents;
@@ -116,6 +116,8 @@ public class PropertiesViewW extends PropertiesView
 		if (app instanceof AppWFull) {
 			((AppWFull) app).getExamEventBus().add(this);
 		}
+		// does not do anything if webfont path is empty
+		FontLoader.loadAllBundled(app.getAppletParameters().getParamWebfontsUrl());
 	}
 
 	private void initGUI() {
@@ -275,11 +277,11 @@ public class PropertiesViewW extends PropertiesView
 	}
 
 	@Override
-	public void updateVisualStyle(GeoElement geo, GProperty prop) {
-		if (geo.isLabelSet()) {
+    public void updateVisualStyle(GeoElement geo, GProperty prop) {
+		if (geo.isLabelSet() && !PreviewFeature.isAvailable(PreviewFeature.SETTINGS_VIEW)) {
 			updatePropertiesGUI();
 		}
-	}
+    }
 
 	@Override
 	public void updateAuxiliaryObject(GeoElement geo) {
@@ -662,7 +664,7 @@ public class PropertiesViewW extends PropertiesView
 		} else {
 			sideSheet.setTitleTransKey("Settings");
 			propLists = app.getConfig().createPropertiesFactory().createProperties(
-					app, app.getLocalization(), GlobalScope.propertiesRegistry);
+					app, app.getLocalization(), app.appScope.propertiesRegistry);
 		}
 		adapter = new PropertiesPanelAdapter(app.getLocalization(),
 				(AppW) app);

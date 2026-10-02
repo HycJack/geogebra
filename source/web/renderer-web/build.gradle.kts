@@ -10,6 +10,7 @@ gwt {
     devMode {
         modules.add("com.himamis.retex.renderer.JLaTeXMathGWTDev")
     }
+    sourceLevel = "17"
 }
 
 gwtDistribution {
@@ -18,6 +19,7 @@ gwtDistribution {
 
 dependencies {
     api("com.himamis.retex:renderer-base")
+    api("org.geogebra:ggbjdk")
     api(project(":gwtutil"))
     api(project(":canvas-web"))
     implementation("org.geogebra:ggbjdk")

@@ -50,10 +50,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 	private interface DrawEllipticSurface {
 		@MissingDoc
-		public void drawNCr(Coords normal);
+		void drawNCr(Coords normal);
 
 		@MissingDoc
-		public void drawNCrm(Coords normal);
+		void drawNCrm(Coords normal);
 
 		/**
 		 * compute radius and z for given latitude
@@ -65,13 +65,13 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		 * @param rz
 		 *            radius and z return
 		 */
-		public void computeRadiusAndZ(int v, int latitudeLength, double[] rz);
+		void computeRadiusAndZ(int v, int latitudeLength, double[] rz);
 
 		/**
 		 * 
 		 * @return true if we draw poles
 		 */
-		public boolean drawPoles();
+		boolean drawPoles();
 
 		/**
 		 * 
@@ -81,7 +81,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		 *            TODO
 		 * @return next jump for latitude length
 		 */
-		public int initNextJump(int latitudeLength, int longitudeLength);
+		int initNextJump(int latitudeLength, int longitudeLength);
 
 		/**
 		 * 
@@ -91,13 +91,13 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		 *            latitude length
 		 * @return updated value for next jump
 		 */
-		public int updateNextJump(int nextJump, int latitudeLength);
+		int updateNextJump(int nextJump, int latitudeLength);
 
 		/**
 		 * 
 		 * @return true if we draw equator
 		 */
-		public boolean drawEquator();
+		boolean drawEquator();
 
 		/**
 		 * 
@@ -105,7 +105,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		 *            latitude index
 		 * @return true if we draw top part at vi (normals and vertices)
 		 */
-		public boolean drawTop(int vi);
+		boolean drawTop(int vi);
 
 		/**
 		 * 
@@ -113,17 +113,17 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		 *            latitude index
 		 * @return true if we draw bottom part at vi (normals and vertices)
 		 */
-		public boolean drawBottom(int vi);
+		boolean drawBottom(int vi);
 
 		/**
 		 * 
 		 * @return north pole
 		 */
-		public Coords getNorthPole();
+		Coords getNorthPole();
 
 	}
 
-	private class DrawSphere implements DrawEllipticSurface {
+	private final class DrawSphere implements DrawEllipticSurface {
 
 		private PlotterSurface surface;
 		private Coords center;
@@ -132,7 +132,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		protected DrawSphere() {
 		}
 
-		public void set(PlotterSurface surface, Coords center, double radius) {
+		void set(PlotterSurface surface, Coords center, double radius) {
 			this.surface = surface;
 			this.center = center;
 			this.radius = radius;
@@ -190,7 +190,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 	}
 
-	private class DrawEllipsoid implements DrawEllipticSurface {
+	private final class DrawEllipsoid implements DrawEllipticSurface {
 
 		private PlotterSurface surface;
 		private Coords center;
@@ -205,10 +205,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		private Coords n = new Coords(4);
 		private Coords tmpCoords = new Coords(4);
 
-		protected DrawEllipsoid() {
-		}
-
-		public void set(PlotterSurface surface, Coords center, Coords ev0,
+		void set(PlotterSurface surface, Coords center, Coords ev0,
 				Coords ev1, Coords ev2, double r0, double r1, double r2) {
 			this.surface = surface;
 			this.center = center;
@@ -334,7 +331,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		protected DrawHyperboloidOneSheet() {
 		}
 
-		public void set(PlotterSurface surface, Coords center, Coords ev0,
+		void set(PlotterSurface surface, Coords center, Coords ev0,
 				Coords ev1, Coords ev2, double r0, double r1, double r2,
 				boolean fading) {
 			this.surface = surface;
@@ -349,7 +346,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 			this.fading = fading;
 		}
 
-		public void setMinMax(double min, double max) {
+		void setMinMax(double min, double max) {
 			if (min < 0) {
 				if (max > 0) {
 					this.min = 0;
@@ -519,13 +516,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 	}
 
-	private class DrawHyperboloidTwoSheets extends DrawHyperboloidOneSheet {
-
-		protected DrawHyperboloidTwoSheets() {
-		}
+	private final class DrawHyperboloidTwoSheets extends DrawHyperboloidOneSheet {
 
 		@Override
-		public void setMinMax(double min, double max) {
+		void setMinMax(double min, double max) {
 			if (min < 0) {
 				if (max > 0) {
 					this.min = 0;
@@ -594,13 +588,10 @@ public class PlotterSurfaceElements extends PlotterSurface {
 
 	}
 
-	private class DrawParaboloid extends DrawHyperboloidOneSheet {
-
-		protected DrawParaboloid() {
-		}
+	private final class DrawParaboloid extends DrawHyperboloidOneSheet {
 
 		@Override
-		public void setMinMax(double min, double max) {
+		void setMinMax(double min, double max) {
 			this.min = min;
 			this.max = max;
 
@@ -2150,7 +2141,7 @@ public class PlotterSurfaceElements extends PlotterSurface {
 		arrayIndex++;
 	}
 
-	final private static void debug(String s) {
+	private static void debug(String s) {
 		if (DEBUG) {
 			Log.debug(s);
 		}

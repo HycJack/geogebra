@@ -67,6 +67,11 @@ public class AwtFactoryD extends AwtFactory {
 	}
 
 	@Override
+	public GRoundRectangle2DD newRoundRectangle2D() {
+		return new GRoundRectangle2DD();
+	}
+
+	@Override
 	public GBufferedImage newBufferedImage(int pixelWidth, int pixelHeight,
 			double pixelRatio) {
 		return new GBufferedImageD(pixelWidth, pixelHeight,
@@ -240,8 +245,9 @@ public class AwtFactoryD extends AwtFactory {
 	}
 
 	@Override
-	public GFont newFont(String name, int style, int size) {
-		return new GFontD(new Font(name, style, size));
+	public GFont newFont(String name, int style, double size) {
+		return new GFontD(new Font(name, style, (int) size)
+				.deriveFont((float) size));
 	}
 
 	/**

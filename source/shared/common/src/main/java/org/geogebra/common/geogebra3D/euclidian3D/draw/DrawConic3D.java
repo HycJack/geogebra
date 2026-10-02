@@ -748,7 +748,7 @@ public class DrawConic3D extends Drawable3DCurves
 	 * @author mathieu
 	 *
 	 */
-	private static enum Visible {
+	private enum Visible {
 		/** the conic is totally outside */
 		TOTALLY_OUTSIDE,
 		/** the frustum is inside the conic */
@@ -830,7 +830,7 @@ public class DrawConic3D extends Drawable3DCurves
 		}
 	}
 
-	final private void setBoundsEllipse() {
+	private void setBoundsEllipse() {
 		boundsMin.set(Double.POSITIVE_INFINITY);
 		boundsMax.set(Double.NEGATIVE_INFINITY);
 		enlargeBoundsToDiagonal(boundsMin, boundsMax, m, ev1, ev2, e1, e2);

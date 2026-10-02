@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
+import org.geogebra.common.awt.MyImage;
 import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.Macro;
@@ -83,6 +86,16 @@ public class ImageManagerW extends ImageManager {
 		if (fileName != null && src != null) {
 			addExternalImage(fileName, new ArchiveEntry(fileName, src));
 		}
+	}
+
+	@Override
+	public @CheckForNull MyImage getExternalImage(@Nonnull String path) {
+		if (externalImageTable.containsKey(path)) {
+			MyImageW myImageW = new MyImageW(externalImageTable.get(path),
+					FileExtensions.SVG.equals(StringUtil.getFileExtension(path)));
+			return myImageW;
+		}
+		return null;
 	}
 
 	/**
@@ -235,7 +248,7 @@ public class ImageManagerW extends ImageManager {
 		}
 		List<GeoElement> list = table.values().stream()
 				.filter(t -> t.isGeoImage() || t.getFillType() == FillType.IMAGE)
-				.collect(Collectors.toList());
+				.toList();
 		GeoElement.updateCascade(list);
 	}
 

@@ -66,9 +66,6 @@ import org.geogebra.common.euclidian.event.PointerEventType;
 import org.geogebra.common.euclidian.plot.GeneralPathClippedForCurvePlotter;
 import org.geogebra.common.euclidian.plot.interval.IntervalPathPlotter;
 import org.geogebra.common.euclidian.plot.interval.IntervalPathPlotterImpl;
-import org.geogebra.common.exam.ExamType;
-import org.geogebra.common.exam.restrictions.ExamFeatureRestriction;
-import org.geogebra.common.exam.restrictions.ExamRestrictable;
 import org.geogebra.common.factories.FormatFactory;
 import org.geogebra.common.gui.EdgeInsets;
 import org.geogebra.common.gui.SetLabels;
@@ -116,6 +113,8 @@ import org.geogebra.common.plugin.EuclidianStyleConstants;
 import org.geogebra.common.plugin.Event;
 import org.geogebra.common.plugin.EventType;
 import org.geogebra.common.plugin.GeoClass;
+import org.geogebra.common.restrictions.FeatureRestriction;
+import org.geogebra.common.restrictions.Restrictable;
 import org.geogebra.common.util.AsyncOperation;
 import org.geogebra.common.util.DoubleUtil;
 import org.geogebra.common.util.MyMath;
@@ -132,7 +131,7 @@ import com.google.j2objc.annotations.Weak;
  * View containing graphic representation of construction elements
  */
 public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
-		SetLabels, ExamRestrictable {
+		SetLabels, Restrictable {
 
 	private boolean isCrashlyticsLoggingEnabled;
 
@@ -541,7 +540,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	private EdgeInsets safeAreaInsets = new EdgeInsets(MINIMUM_SAFE_AREA);
 
 	/** @return line types */
-	public static final Integer[] getLineTypes() {
+	public static Integer[] getLineTypes() {
 		Integer[] ret = new Integer[lineTypes.length];
 
 		for (int i = 0; i < lineTypes.length; i++) {
@@ -571,7 +570,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	/** @return point styles */
-	public static final Integer[] getPointStyles() {
+	public static Integer[] getPointStyles() {
 		Integer[] ret = new Integer[pointStyles.length];
 
 		for (int i = 0; i < pointStyles.length; i++) {
@@ -808,7 +807,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @return True if selection rectangle should be cleared when a certain mode is being
 	 * selected, false else
 	 */
-	final private static boolean shouldClearRectangle(int mode) {
+	private static boolean shouldClearRectangle(int mode) {
 		switch (mode) {
 		case EuclidianConstants.MODE_MIRROR_AT_LINE:
 		case EuclidianConstants.MODE_MIRROR_AT_POINT:
@@ -828,7 +827,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param newMode New Mode which is being set
 	 * @return True if the bounding boxes and selected geos should be cleared, false else
 	 */
-	final private boolean shouldClearSelectedGeos(int newMode) {
+	private boolean shouldClearSelectedGeos(int newMode) {
 		return (this.mode == EuclidianConstants.MODE_SELECT_MOW
 				|| this.mode == EuclidianConstants.MODE_SELECT)
 				&& newMode == EuclidianConstants.MODE_MOVE;
@@ -1892,6 +1891,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	public void endBatchUpdate() {
 		this.batchUpdate = false;
 		if (this.needsAllDrawablesUpdate) {
+			needsAllDrawablesUpdate = false;
 			notifyCoordSystemMoved();
 			allDrawableList.updateAll();
 			repaint();
@@ -2877,7 +2877,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 *            mode
 	 * @return true if given mode can use selection rectangle as input
 	 */
-	final public static boolean usesSelectionAsInput(int mode) {
+	public static boolean usesSelectionAsInput(int mode) {
 		switch (mode) {
 		case EuclidianConstants.MODE_TRANSLATE_BY_VECTOR:
 			return false; // changed for new "drag" behaviour
@@ -2898,7 +2898,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 *            mode
 	 * @return true if mode can handle selection rectangle as input
 	 */
-	final public static boolean usesSelectionRectangleAsInput(int mode) {
+	public static boolean usesSelectionRectangleAsInput(int mode) {
 		switch (mode) {
 		case EuclidianConstants.MODE_FITLINE:
 		case EuclidianConstants.MODE_CREATE_LIST:
@@ -3595,7 +3595,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param g2
 	 *            graphics
 	 */
-	final private void drawGeometricObjects(GGraphics2D g2) {
+	private void drawGeometricObjects(GGraphics2D g2) {
 		// only draw drawables we need
 		allDrawableList.drawAll(g2);
 
@@ -4190,7 +4190,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 				&& (getXmax() > axisCross[1]);
 	}
 
-	protected int getYOffsetForXAxis(int baseFontSize) {
+	protected double getYOffsetForXAxis(double baseFontSize) {
 		return baseFontSize + 4;
 	}
 
@@ -4268,7 +4268,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	 * @param g2
 	 *            graphics
 	 */
-	final public static void setAntialiasing(GGraphics2D g2) {
+	public static void setAntialiasing(GGraphics2D g2) {
 		g2.setAntialiasing();
 	}
 
@@ -5800,7 +5800,7 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 			GRectangle rect = getSelectionRectangle();
 
 			g2d.setClip(0, 0, (int) rect.getWidth(),
-						(int) rect.getHeight());
+						(int) rect.getHeight(), false);
 
 			g2d.translate(-rect.getX(), -rect.getY());
 		} else {
@@ -5814,11 +5814,11 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 				int exportWidth = (int) (x2 - x1 + 2);
 				int exportHeight = (int) (y2 - y1 + 2);
 
-				g2d.setClip(0, 0, exportWidth, exportHeight);
+				g2d.setClip(0, 0, exportWidth, exportHeight, false);
 				g2d.translate(-x1, -y1);
 			} else {
 				// or take full euclidian view
-				g2d.setClip(0, 0, getWidth(), getHeight());
+				g2d.setClip(0, 0, getWidth(), getHeight(), false);
 			}
 		}
 
@@ -6665,15 +6665,13 @@ public abstract class EuclidianView implements EuclidianViewInterfaceCommon,
 	}
 
 	@Override
-	public void applyRestrictions(@Nonnull Set<ExamFeatureRestriction> featureRestrictions,
-			@Nonnull ExamType examType) {
+	public void applyRestrictions(@Nonnull Set<FeatureRestriction> featureRestrictions) {
 		restrictGraphSelectionForFunctions = featureRestrictions
-				.contains(ExamFeatureRestriction.AUTOMATIC_GRAPH_SELECTION_FOR_FUNCTIONS);
+				.contains(FeatureRestriction.AUTOMATIC_GRAPH_SELECTION_FOR_FUNCTIONS);
 	}
 
 	@Override
-	public void removeRestrictions(@Nonnull Set<ExamFeatureRestriction> featureRestrictions,
-			@Nonnull ExamType examType) {
+	public void removeRestrictions(@Nonnull Set<FeatureRestriction> featureRestrictions) {
 		restrictGraphSelectionForFunctions = false;
 	}
 

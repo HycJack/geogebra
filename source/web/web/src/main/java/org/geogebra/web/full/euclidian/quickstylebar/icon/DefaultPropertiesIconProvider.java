@@ -22,16 +22,18 @@ import org.geogebra.common.properties.Property;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.common.properties.impl.facade.AbstractPropertyListFacade;
 import org.geogebra.common.properties.impl.objects.BorderColorProperty;
+import org.geogebra.common.properties.impl.objects.FontRulingColorProperty;
+import org.geogebra.common.properties.impl.objects.FontSizeProperty;
 import org.geogebra.common.properties.impl.objects.ImageOpacityProperty;
 import org.geogebra.common.properties.impl.objects.NameCaptionProperty;
 import org.geogebra.common.properties.impl.objects.NotesColorWithOpacityProperty;
 import org.geogebra.common.properties.impl.objects.OldObjectColorProperty;
 import org.geogebra.common.properties.impl.objects.TextBackgroundColorProperty;
-import org.geogebra.common.properties.impl.objects.TextFontColorProperty;
-import org.geogebra.common.properties.impl.objects.TextFontSizeProperty;
+import org.geogebra.common.properties.impl.objects.TextColorProperty;
 import org.geogebra.web.full.css.GuiResources;
 import org.geogebra.web.full.css.MaterialDesignResources;
 import org.geogebra.web.full.css.ToolbarSvgResourcesSync;
+import org.geogebra.web.html5.css.GuiResourcesSimple;
 import org.geogebra.web.html5.gui.view.IconSpec;
 import org.geogebra.web.html5.gui.view.ImageIconSpec;
 import org.geogebra.web.resources.SVGResource;
@@ -55,6 +57,9 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			case ICON_FILLING_DOTTED -> res.pattern_dots();
 			case ICON_FILLING_CROSSHATCHED -> res.pattern_cross_hatching();
 			case ICON_FILLING_HONEYCOMB -> res.pattern_honeycomb();
+			case ICON_FILLING_CHESSBOARD -> res.pattern_chessboard();
+			case ICON_FILLING_WEAVING -> res.pattern_weaving();
+			case ICON_FILLING_BRICK -> res.pattern_bricks();
 			case ICON_NO_FILLING -> res.no_pattern();
 			case ICON_ALIGNMENT_LEFT -> res.horizontal_align_left();
 			case ICON_ALIGNMENT_CENTER -> res.horizontal_align_center();
@@ -62,6 +67,11 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			case ICON_ALIGNMENT_BOTTOM -> res.vertical_align_bottom();
 			case ICON_ALIGNMENT_MIDDLE -> res.vertical_align_middle();
 			case ICON_ALIGNMENT_TOP -> res.vertical_align_top();
+			case ICON_TEXT_WRAPPING_WRAP -> res.wrapping_wrap();
+			case ICON_TEXT_WRAPPING_CLIP -> res.wrapping_clip();
+			case ICON_TEXT_ROTATION_NONE -> res.rotation_none();
+			case ICON_TEXT_ROTATION_UP -> res.rotation_up();
+			case ICON_TEXT_ROTATION_DOWN -> res.rotation_down();
 			case ICON_SEGMENT_START_DEFAULT -> res.stylingbar_start_default();
 			case ICON_SEGMENT_START_LINE -> res.stylingbar_start_line();
 			case ICON_SEGMENT_START_ARROW -> res.stylingbar_start_arrow();
@@ -86,6 +96,11 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			case ICON_SEGMENT_END_SQUARE -> res.stylingbar_end_square();
 			case ICON_SEGMENT_END_DIAMOND_OUTLINE -> res.stylingbar_end_diamond_outlined();
 			case ICON_SEGMENT_END_DIAMOND -> res.stylingbar_end_diamond_filled();
+			case ICON_BORDER_NONE -> res.border_no();
+			case ICON_BORDER_THIN -> res.border_thin();
+			case ICON_BORDER_THICK -> res.border_thick();
+			case ICON_CELL_BORDER_THIN -> res.cell_border_thin();
+			case ICON_CELL_BORDER_THICK -> res.cell_border_thick();
 			case ICON_CELL_BORDER_ALL -> res.border_all();
 			case ICON_CELL_BORDER_INNER -> res.border_inner();
 			case ICON_CELL_BORDER_OUTER -> res.border_outer();
@@ -115,7 +130,6 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 			case ICON_UNDERLINE -> res.text_underline_black();
 			case ICON_SERIF -> res.text_serif_black();
 			case ICON_CLEAR_COLOR -> res.no_color();
-			case ICON_BORDER_THIN -> res.color_border();
 			case ICON_AXES_LINE_TYPE_FULL -> GuiResources.INSTANCE.deco_axes_none();
 			case ICON_AXES_LINE_TYPE_ARROW -> GuiResources.INSTANCE.deco_axes_arrow();
 			case ICON_AXES_LINE_TYPE_ARROW_FILLED -> GuiResources.INSTANCE.deco_axes_arrow_filled();
@@ -151,9 +165,31 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 					MaterialDesignResources.INSTANCE.stylingbar_end_arrow_filled();
 			case ICON_VECTOR_DECO_DEFAULT ->
 					MaterialDesignResources.INSTANCE.stylingbar_end_arrow();
-			case ICON_FILLING_IMAGE -> res.export_image_black(); // TODO
-			case ICON_FILLING_BRICK, ICON_FILLING_SYMBOL, ICON_FILLING_WEAVING,
-				 ICON_FILLING_CHESSBOARD -> res.pattern_hatching();
+			case ICON_BUTTON_PLAY -> GuiResourcesSimple.INSTANCE.play();
+			case ICON_BUTTON_PAUSE -> GuiResourcesSimple.INSTANCE.pause();
+			case ICON_BUTTON_STOP -> GuiResourcesSimple.INSTANCE.stop();
+			case ICON_BUTTON_FAST_REWIND -> GuiResourcesSimple.INSTANCE.fast_rewind();
+			case ICON_BUTTON_FAST_FORWARD -> GuiResourcesSimple.INSTANCE.fast_forward();
+			case ICON_BUTTON_SKIP_PREVIOUS -> GuiResourcesSimple.INSTANCE.skip_previous();
+			case ICON_BUTTON_SKIP_NEXT -> GuiResourcesSimple.INSTANCE.skip_next();
+			case ICON_BUTTON_LOOP -> GuiResourcesSimple.INSTANCE.loop();
+			case ICON_BUTTON_REPLAY -> GuiResourcesSimple.INSTANCE.replay();
+			case ICON_BUTTON_UNDO -> GuiResourcesSimple.INSTANCE.undo();
+			case ICON_BUTTON_REDO -> GuiResourcesSimple.INSTANCE.redo();
+			case ICON_BUTTON_ARROW_UP -> GuiResourcesSimple.INSTANCE.arrow_up();
+			case ICON_BUTTON_ARROW_DOWN -> GuiResourcesSimple.INSTANCE.arrow_down();
+			case ICON_BUTTON_ARROW_BACK -> GuiResourcesSimple.INSTANCE.arrow_back();
+			case ICON_BUTTON_ARROW_FORWARD -> GuiResourcesSimple.INSTANCE.arrow_forward();
+			case ICON_BUTTON_REMOVE -> GuiResourcesSimple.INSTANCE.remove();
+			case ICON_BUTTON_ADD -> GuiResourcesSimple.INSTANCE.add();
+			case ICON_BUTTON_CHECK_MARK -> GuiResourcesSimple.INSTANCE.check_mark();
+			case ICON_BUTTON_CLOSE -> GuiResourcesSimple.INSTANCE.close();
+			case ICON_BUTTON_ZOOM_OUT -> GuiResourcesSimple.INSTANCE.zoom_out();
+			case ICON_BUTTON_ZOOM_IN -> GuiResourcesSimple.INSTANCE.zoom_in();
+			case ICON_BUTTON_ZOOM_TO_FIT -> GuiResourcesSimple.INSTANCE.zoom_to_fit();
+			case ICON_BUTTON_CENTER_VIEW -> GuiResourcesSimple.INSTANCE.center_view();
+			case ICON_BUTTON_HELP -> GuiResourcesSimple.INSTANCE.help();
+			case ICON_BUTTON_SETTINGS -> GuiResourcesSimple.INSTANCE.settings();
 			default -> res.stylebar_empty();
 		};
 	}
@@ -171,14 +207,16 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 				return getOpacityIcon();
 			} else if (firstProperty instanceof IconAssociatedProperty iconProperty) {
 				return matchIconWithResource(iconProperty.getIcon());
-			} else if (firstProperty instanceof TextFontSizeProperty) {
+			} else if (firstProperty instanceof FontSizeProperty) {
 				return getTextSizeIcon();
 			} else if (firstProperty instanceof OldObjectColorProperty
 					|| firstProperty instanceof TextBackgroundColorProperty
 					|| firstProperty instanceof NotesColorWithOpacityProperty) {
 				return getColorIcon();
-			} else if (firstProperty instanceof TextFontColorProperty) {
+			} else if (firstProperty instanceof TextColorProperty) {
 				return getTextColorIcon();
+			} else if (firstProperty instanceof FontRulingColorProperty) {
+				return getFontStyleIcon();
 			} else if (firstProperty instanceof BorderColorProperty) {
 				return matchIconWithResource(PropertyResource.ICON_BORDER_THIN);
 			} else if (firstProperty instanceof NameCaptionProperty) {
@@ -198,6 +236,10 @@ public class DefaultPropertiesIconProvider implements PropertiesIconProvider {
 	}
 
 	protected IconSpec getTextColorIcon() {
+		return new ImageIconSpec(MaterialDesignResources.INSTANCE.text_color());
+	}
+
+	protected IconSpec getFontStyleIcon() {
 		return new ImageIconSpec(MaterialDesignResources.INSTANCE.text_color());
 	}
 

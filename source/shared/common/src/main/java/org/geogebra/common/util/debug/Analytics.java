@@ -18,16 +18,27 @@ package org.geogebra.common.util.debug;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.LongSupplier;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
+import org.geogebra.common.GeoGebraConstants;
 import org.geogebra.common.SuiteSubApp;
+import org.geogebra.common.main.AppConfig;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /** Subclass this and set the instance to use it for logging analytics events. */
 public abstract class Analytics {
 	private static Analytics INSTANCE = null;
+	private static String lastSelectedToolName = null;
+	private static long lastToolActionTime = 0;
+	private static int toolUseCount = 0;
+	private static LongSupplier timeSupplier = System::currentTimeMillis;
 
 	/** Set the Analytics instance to log events */
+	@SuppressFBWarnings("EI_EXPOSE_STATIC_REP2")
 	public static void setInstance(Analytics analytics) {
 		INSTANCE = analytics;
 	}
@@ -58,11 +69,59 @@ public abstract class Analytics {
 	 * @param params parameters
 	 */
 	public static void logEvent(String name, @CheckForNull Map<String, Object> params) {
-		if (INSTANCE != null) {
-			INSTANCE.recordEvent(name, params);
-		} else {
+		if (INSTANCE == null) {
 			Log.trace("Analytics is not set, event with name '" + name + "' cannot be recorded");
+            return;
+        }
+        INSTANCE.recordEvent(name, params);
+	}
+
+	/**
+	 * Logs tool selection and resets tool creation tracking state.
+	 * @param toolName internal tool name
+	 */
+	public static void logToolSelected(String toolName) {
+		logEvent(Event.TOOL_SELECTED, Param.TOOL_NAME, toolName);
+		lastSelectedToolName = toolName;
+		lastToolActionTime = timeSupplier.getAsLong();
+		toolUseCount = 0;
+	}
+
+	/**
+	 * Logs successful tool-based object creation for the currently selected tool.
+	 */
+	public static void logToolCreated() {
+		if (lastSelectedToolName == null || lastSelectedToolName.isEmpty()) {
+			return;
 		}
+
+		long now = timeSupplier.getAsLong();
+		Map<String, Object> params = new HashMap<>();
+		params.put(Param.TOOL_NAME, lastSelectedToolName);
+		params.put(Param.DURATION_MS, Math.max(0L, now - lastToolActionTime));
+		params.put(Param.USE_COUNT, ++toolUseCount);
+		logEvent(Event.TOOL_CREATED, params);
+		lastToolActionTime = now;
+	}
+
+	/**
+	 * Updates the default analytics parameters from the given app configuration.
+	 * @param config app config
+	 */
+	public static void updateDefaultAnalyticsParameters(@Nonnull AppConfig config) {
+		if (INSTANCE == null) {
+			Log.trace("Analytics is not set, default event parameters cannot be updated");
+			return;
+		}
+		Map<String, Object> params = new HashMap<>();
+		params.put(Param.GEOGEBRA_APP, config.getAppCode());
+		if (GeoGebraConstants.SUITE_APPCODE.equals(config.getAppCode())) {
+			SuiteSubApp subApp = SuiteSubApp.forCode(config.getSubAppCode());
+			if (subApp != null) {
+				params.put(Param.SUB_APP, Param.convertToSubAppParam(subApp));
+			}
+		}
+		INSTANCE.setDefaultEventParametersInternal(params);
 	}
 
 	/**
@@ -70,7 +129,14 @@ public abstract class Analytics {
 	 * @param name event name
 	 * @param params event parameters
 	 */
-	protected abstract void recordEvent(String name, @CheckForNull Map<String, Object> params);
+	protected abstract void recordEvent(@Nonnull String name,
+			@CheckForNull Map<String, Object> params);
+
+	/**
+	 * Sets analytics parameters that should be attached to all future events.
+	 * @param params default parameters
+	 */
+	protected abstract void setDefaultEventParametersInternal(@Nonnull Map<String, Object> params);
 
 	/**
 	 * Analytics events.
@@ -84,6 +150,7 @@ public abstract class Analytics {
 		public static final String LOGIN = "login";
 		public static final String SEARCH = "search";
 		public static final String TOOL_SELECTED = "tool_selected";
+		public static final String TOOL_CREATED = "tool_created";
 		public static final String KEYBOARD = "keyboard";
 		public static final String INSERT_IMAGE = "insert_image";
 
@@ -104,6 +171,7 @@ public abstract class Analytics {
 		public static final String NEW = "new";
 		public static final String OK = "ok";
 		public static final String ERROR = "error";
+		public static final String GEOGEBRA_APP = "geogebra_app";
 		public static final String SUB_APP = "sub_app";
 		public static final String SUB_APP_GRAPHING = "graphing";
 		public static final String SUB_APP_GEOMETRY = "geometry";
@@ -113,6 +181,8 @@ public abstract class Analytics {
 		public static final String SUB_APP_SCIENTIFIC_CALCULATOR = "sciCalc";
 		public static final String SEARCH_TERM = "search_term";
 		public static final String TOOL_NAME = "tool_name";
+		public static final String DURATION_MS = "duration_ms";
+		public static final String USE_COUNT = "use_count";
 		public static final String KEY = "key";
 		public static final String TAB = "tab";
 		public static final String INPUT_SOURCE = "input_source";
@@ -174,5 +244,17 @@ public abstract class Analytics {
 	public static class ImageInputSource {
 		public static final String GALLERY = "gallery";
 		public static final String CAMERA = "camera";
+	}
+
+	// -- Test support --
+
+	static void setTimeSupplier(LongSupplier supplier) {
+		timeSupplier = supplier;
+	}
+
+	static void resetToolCreationTracking() {
+		lastSelectedToolName = null;
+		lastToolActionTime = 0;
+		toolUseCount = 0;
 	}
 }

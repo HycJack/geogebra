@@ -88,6 +88,7 @@ public final class SpreadsheetController {
 
 	/**
 	 * @param tabularData underlying data for the spreadsheet
+	 * @param spreadsheetStyling styling information provider
 	 */
 	public SpreadsheetController(@Nonnull TabularData<?> tabularData,
 			@CheckForNull SpreadsheetStyling spreadsheetStyling) {
@@ -144,7 +145,7 @@ public final class SpreadsheetController {
 	}
 
 	/**
-	 * Inserts a row at a given index
+	 * Inserts a row at a given index.
 	 * @param row Index of where to insert the row
 	 * @param below Whether the row is being inserted below the currently selected row
 	 */
@@ -366,9 +367,15 @@ public final class SpreadsheetController {
 		Selection lastSelection = getLastSelection();
 		if (lastSelection != null && (cellDragPasteHandler == null
 				|| cellDragPasteHandler.getDragPasteDestinationRange() == null)) {
+			scrollRangeIntoView(lastSelection.getRange());
+		}
+	}
+
+	void scrollRangeIntoView(TabularRange range) {
+		if (viewportAdjuster != null) {
 			viewport = viewportAdjuster.adjustViewportIfNeeded(
-					lastSelection.getRange().getToRow(),
-					lastSelection.getRange().getToColumn(),
+					range.getToRow(),
+					range.getToColumn(),
 					viewport);
 		}
 	}
@@ -637,7 +644,7 @@ public final class SpreadsheetController {
 
 		MathFieldInternal mathField = editor.cellEditor.getMathField();
 		String input = mathField.getText();
-		if (input.isEmpty() || !input.startsWith("=")) {
+		if (!input.startsWith("=")) {
 			return null;
 		}
 		ArrayList<String> characterSequences = new ArrayList<>();
@@ -717,7 +724,9 @@ public final class SpreadsheetController {
 			showContextMenuForSelection(x, y);
 			return;
 		}
-
+		if (tabularData.handleMouseDown(row, column)) {
+			return;
+		}
 		if (row >= 0 && column >= 0 && selectionController.isOnlyCellSelected(row, column)) {
 			showCellEditor(row, column, true);
 			return;
@@ -892,11 +901,11 @@ public final class SpreadsheetController {
 	}
 
 	private void adjustDataDimensionsForDrag() {
-		while (lastPointerPositionX + viewport.getMinX()
+		while (canAddColumn() && lastPointerPositionX + viewport.getMinX()
 				> layout.getTotalWidth() - layout.getRowHeaderWidth()) {
 			insertColumnRight();
 		}
-		while (lastPointerPositionY + viewport.getMinY()
+		while (canAddRow() && lastPointerPositionY + viewport.getMinY()
 				> layout.getTotalHeight() - layout.getColumnHeaderHeight()) {
 			insertRowBottom();
 		}
@@ -1188,7 +1197,7 @@ public final class SpreadsheetController {
 	 */
 	void moveDown(boolean extendingCurrentSelection) {
 		Selection lastSelection = selectionController.getLastSelection();
-		if (lastSelection != null
+		if (lastSelection != null && canAddRow()
 				&& lastSelection.getRange().getMaxRow() == tabularData.numberOfRows() - 1) {
 			insertRowBottom();
 		}
@@ -1207,11 +1216,25 @@ public final class SpreadsheetController {
 	 */
 	void moveRight(boolean extendingCurrentSelection) {
 		Selection lastSelection = selectionController.getLastSelection();
-		if (lastSelection != null
+		if (lastSelection != null && canAddColumn()
 				&& lastSelection.getRange().getMaxColumn() == tabularData.numberOfColumns() - 1) {
 			insertColumnRight();
 		}
 		selectionController.moveRight(extendingCurrentSelection, layout.numberOfColumns());
+	}
+
+	/**
+	 * @return whether a row can be inserted
+	 */
+	boolean canAddRow() {
+		return tabularData.numberOfRows() < Spreadsheet.MAX_ROWS;
+	}
+
+	/**
+	 * @return whether a column can be inserted
+	 */
+	boolean canAddColumn() {
+		return tabularData.numberOfColumns() < Spreadsheet.MAX_COLUMNS;
 	}
 
 	// Context menu
@@ -1479,6 +1502,7 @@ public final class SpreadsheetController {
 	// Autocomplete
 
 	void onEditorTextChanged() {
+		updateTextMode();
 		updateAutoCompleteSearchPrefix();
 	}
 
@@ -1518,6 +1542,24 @@ public final class SpreadsheetController {
 			return;
 		}
 		controlsDelegate.showAutoCompleteSuggestions(searchPrefix, editorBounds);
+	}
+
+	/**
+	 * Decides if input should be handled as plain text (e.g. SPACE is replace it with dot if
+	 * not plain text mode).
+	 */
+	private void updateTextMode() {
+		if (editor == null) {
+			return;
+		}
+		MathFieldInternal mathField = editor.cellEditor.getMathField();
+		String text = mathField.getText();
+		boolean isPlainTextMode = !text.startsWith("=");
+		boolean oldPlainTextMode = mathField.getInputController().getPlainTextMode();
+		if (oldPlainTextMode != isPlainTextMode) {
+			mathField.getInputController().setPlainTextMode(isPlainTextMode);
+			mathField.parse(text);
+		}
 	}
 
 	/**

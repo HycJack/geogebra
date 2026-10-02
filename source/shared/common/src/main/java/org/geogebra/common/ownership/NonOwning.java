@@ -16,8 +16,10 @@
 
 package org.geogebra.common.ownership;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Convey to readers that the annotated reference is a non-owning reference
@@ -25,6 +27,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * This is relevant information for code reviewers and architectural audits.
  */
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NonOwning {
 }

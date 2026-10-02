@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.geogebra.common.awt.GColor;
+import org.geogebra.common.awt.GPoint2D;
 import org.geogebra.editor.share.catalog.TemplateCatalog;
 import org.geogebra.editor.share.controller.CursorController;
 import org.geogebra.editor.share.controller.ExpressionReader;
@@ -71,10 +73,9 @@ import com.himamis.retex.renderer.share.TeXFont;
 import com.himamis.retex.renderer.share.TeXIcon;
 import com.himamis.retex.renderer.web.FactoryProviderGWT;
 import com.himamis.retex.renderer.web.JlmLib;
-import com.himamis.retex.renderer.web.geom.Point2DW;
-import com.himamis.retex.renderer.web.graphics.ColorW;
 import com.himamis.retex.renderer.web.graphics.Graphics2DW;
 
+import elemental2.dom.BaseRenderingContext2D;
 import elemental2.dom.CSSProperties;
 import elemental2.dom.CanvasRenderingContext2D;
 import elemental2.dom.ClipboardEvent;
@@ -119,8 +120,8 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 	// can't be merged with instances.size because we sometimes remove an
 	// instance
 	private static int counter = 0;
-	private ColorW foregroundColor = new ColorW("#000000");
-	private ColorW backgroundColor = new ColorW("#ffffff");
+	private GColor foregroundColor = GColor.BLACK;
+	private GColor backgroundColor = GColor.WHITE;
 	private ChangeHandler changeHandler;
 	private int fixMargin = 0;
 	private int minHeight = 0;
@@ -306,7 +307,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 	public void setTeXIcon(TeXIcon icon) {
 		this.lastIcon = icon;
 
-		Point2DW size = computeSize();
+		GPoint2D size = computeSize();
 		if (ctx == null || size == null) {
 			return;
 		}
@@ -318,7 +319,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 		repaintWeb();
 	}
 
-	private Point2DW computeSize() {
+	private GPoint2D computeSize() {
 		double height = computeHeight();
 		if (ctx == null || height < 0) {
 			return null;
@@ -333,7 +334,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 			}
 			adapter.setScale(scale);
 		}
-		return new Point2DW(width, height);
+		return new GPoint2D(width, height);
 	}
 
 	@Override
@@ -644,7 +645,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 		if (lastIcon == null) {
 			return;
 		}
-		Point2DW size = computeSize();
+		GPoint2D size = computeSize();
 		if (size == null) {
 			return;
 		}
@@ -667,7 +668,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 	 * Paints the formula on a canvas
 	 * @param ctx canvas context
 	 */
-	public void paint(CanvasRenderingContext2D ctx, double top, ColorW bgColor, double scale) {
+	public void paint(CanvasRenderingContext2D ctx, double top, GColor bgColor, double scale) {
 		JlmLib.draw(lastIcon, ctx, 0, top, foregroundColor,
 				bgColor, null, ratio * scale);
 	}
@@ -678,7 +679,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 	 * @param bgColor background color
 	 */
 	public void paintFormulaNoPlaceholder(CanvasRenderingContext2D ctx,
-			double top, ColorW bgColor) {
+			double top, GColor bgColor) {
 		TeXIcon iconNoPlaceholder = mathFieldInternal.buildIconNoPlaceholder();
 		if (iconNoPlaceholder != null) {
 			// use ratio 1 here to fit SVG export
@@ -1201,7 +1202,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 	 * @param cssColor color to set
 	 */
 	public void setForegroundColor(String cssColor) {
-		this.foregroundColor = new ColorW(cssColor);
+		this.foregroundColor = parseColor(cssColor);
 	}
 
 	/**
@@ -1210,7 +1211,16 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 	 * @param cssColor color to set
 	 */
 	public void setBackgroundColor(String cssColor) {
-		this.backgroundColor = new ColorW(cssColor);
+		this.backgroundColor = parseColor(cssColor);
+	}
+
+	private GColor parseColor(String cssColor) {
+		GColor parsedColor = GColor.getGColor(cssColor);
+		if (parsedColor == null) {
+			ctx.fillStyle = BaseRenderingContext2D.FillStyleUnionType.of(cssColor);
+			return GColor.getGColor(ctx.fillStyle.asString());
+		}
+		return parsedColor;
 	}
 
 	/**
@@ -1263,7 +1273,7 @@ public class MathFieldW implements MathField, IsWidget, MathFieldAsync, BlurHand
 						margin, lastIcon.getCursorY()));
 	}
 
-	public ColorW getBackgroundColor() {
+	public GColor getBackgroundColor() {
 		return backgroundColor;
 	}
 

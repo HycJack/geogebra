@@ -97,7 +97,7 @@ public class LaTeXTreeItem extends RadioTreeItem {
 			toastController.hide();
 			controller.onBlur(blurEvent);
 		});
-		mf.setOnFocus(focusEvent -> setFocusedStyle(true));
+		mf.setOnFocus(focusEvent -> setFocusedStyle(true, false));
 	}
 
 	private void updateEditorAriaLabel(String text) {
@@ -191,6 +191,12 @@ public class LaTeXTreeItem extends RadioTreeItem {
 		}
 
 		return false;
+	}
+
+	@Override
+	protected void resetCanvas() {
+		canvas = null;
+		mf = null;
 	}
 
 	@Override

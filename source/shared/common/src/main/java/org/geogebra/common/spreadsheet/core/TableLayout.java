@@ -41,8 +41,8 @@ final class TableLayout {
 	private double[] rowHeights;
 	private double[] cumulativeWidths;
 	private double[] cumulativeHeights;
-	final double defaultRowHeight;
-	final double defaultColumnWidth;
+	double defaultRowHeight;
+	double defaultColumnWidth;
 	private double rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
 	private double columnHeaderHeight;
 
@@ -74,6 +74,9 @@ final class TableLayout {
 	 * @return width in points
 	 */
 	double getWidth(int column) {
+		if (column < 0 || column >= columnWidths.length) {
+			return 0;
+		}
 		return columnWidths[column];
 	}
 
@@ -83,6 +86,9 @@ final class TableLayout {
 	 * @return height in points
 	 */
 	double getHeight(int row) {
+		if (row < 0 || row >= rowHeights.length) {
+			return 0;
+		}
 		return rowHeights[row];
 	}
 
@@ -92,6 +98,9 @@ final class TableLayout {
 	 * @return x-coordinate of column's left edge
 	 */
 	double getMinX(int column) {
+		if (column < 0 || column >= cumulativeWidths.length) {
+			return 0;
+		}
 		return cumulativeWidths[column];
 	}
 
@@ -101,6 +110,9 @@ final class TableLayout {
 	 * @return y-coordinate of row's top edge
 	 */
 	double getMinY(int row) {
+		if (row < 0 || row >= cumulativeHeights.length) {
+			return 0;
+		}
 		return cumulativeHeights[row];
 	}
 
@@ -109,6 +121,14 @@ final class TableLayout {
 	 */
 	int numberOfRows() {
 		return rowHeights.length;
+	}
+
+	void setRowHeaderWidth(double rowHeaderWidth) {
+		this.rowHeaderWidth = rowHeaderWidth < 0 ? DEFAULT_ROW_HEADER_WIDTH : rowHeaderWidth;
+	}
+
+	void setColumnHeaderHeight(double columnHeaderHeight) {
+		this.columnHeaderHeight = columnHeaderHeight < 0 ? defaultRowHeight : columnHeaderHeight;
 	}
 
 	/**
@@ -440,6 +460,11 @@ final class TableLayout {
 			}
 		}
 		return heights;
+	}
+
+	public void setDefaultCellSize(double width, double height) {
+		defaultRowHeight = height;
+		defaultColumnWidth = width;
 	}
 
 	/**

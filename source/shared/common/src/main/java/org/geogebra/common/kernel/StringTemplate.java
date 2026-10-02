@@ -57,7 +57,6 @@ import org.geogebra.editor.share.util.Unicode;
 public class StringTemplate implements ExpressionNodeConstants {
 
 	// rounding hack, see Kernel.format()
-	private static final double ROUND_HALF_UP_FACTOR = 1.0 + 1E-15;
 	private static final String RAD = "rad";
 	private static final String LATEX_THICK_SPACE = "\\;";
 
@@ -79,6 +78,8 @@ public class StringTemplate implements ExpressionNodeConstants {
 	private boolean allowMoreDigits;
 	private boolean useRealLabels;
 	private boolean useSimplifications;
+	private boolean omitZeroCoefficient;
+	private boolean allowCoefficientSimplification = true;
 
 	private boolean changeArcTrig = true;
 
@@ -124,13 +125,7 @@ public class StringTemplate implements ExpressionNodeConstants {
 	 * variables (ggbtmpvar)
 	 */
 	public static final StringTemplate prefixedDefault = new StringTemplate(
-			"prefixedDefault") {
-		@Override
-		public double getRoundHalfUpFactor(double abs, NumberFormatAdapter nf2,
-				ScientificFormatAdapter sf2, boolean useSF) {
-			return 1;
-		}
-	};
+			"prefixedDefault");
 
 	static {
 		prefixedDefault.localizeCmds = false;
@@ -145,14 +140,7 @@ public class StringTemplate implements ExpressionNodeConstants {
 	 * Template which prints numbers with maximal precision and adds prefix to
 	 * variables ({@link Kernel#TMP_VARIABLE_PREFIX})
 	 */
-	public static final StringTemplate prefixedDefaultSF = new StringTemplate(
-			"prefixedDefaultSF") {
-		@Override
-		public double getRoundHalfUpFactor(double abs, NumberFormatAdapter nf2,
-				ScientificFormatAdapter sf2, boolean useSF) {
-			return 1;
-		}
-	};
+	public static final StringTemplate prefixedDefaultSF = new StringTemplate("prefixedDefaultSF");
 
 	static {
 		prefixedDefaultSF.localizeCmds = false;
@@ -336,6 +324,9 @@ public class StringTemplate implements ExpressionNodeConstants {
 				20, false);
 		xmlTemplate.questionMarkForNaN = false;
 		xmlTemplate.changeArcTrig = false;
+		xmlTemplate.allowCoefficientSimplification = false;
+		xmlTemplate.useSimplifications = false;
+		xmlTemplate.omitZeroCoefficient = false;
 	}
 
 	/**
@@ -511,14 +502,7 @@ public class StringTemplate implements ExpressionNodeConstants {
 	 * Not localized template, allow bigger precision for Numeric command
 	 */
 	public static final StringTemplate numericNoLocal = new StringTemplate(
-			"numericNoLocal") {
-
-		@Override
-		public double getRoundHalfUpFactor(double abs, NumberFormatAdapter nf2,
-				ScientificFormatAdapter sf2, boolean useSF) {
-			return 1;
-		}
-	};
+			"numericNoLocal");
 
 	static {
 		numericNoLocal.allowMoreDigits = true;
@@ -612,6 +596,7 @@ public class StringTemplate implements ExpressionNodeConstants {
 		template.nf = FormatFactory.getPrototype()
 				.getNumberFormat(GeoElement.MIN_EDITING_PRINT_PRECISION);
 		template.allowMoreDigits = true;
+		template.allowCoefficientSimplification = false;
 	}
 
 	/**
@@ -676,6 +661,7 @@ public class StringTemplate implements ExpressionNodeConstants {
 
 		case GEOGEBRA_XML:
 			printFormPI = "pi";
+			allowPiHack = false;
 			printFormImaginary = Unicode.IMAGINARY + "";
 			break;
 
@@ -693,7 +679,9 @@ public class StringTemplate implements ExpressionNodeConstants {
 			printFormPI = " pi ";
 			printFormImaginary = " i ";
 			break;
-
+		case PGF:
+		case PSTRICKS:
+			allowPiHack = false;
 		default:
 			// #5129
 			// #5130
@@ -862,54 +850,6 @@ public class StringTemplate implements ExpressionNodeConstants {
 	}
 
 	/**
-	 * Returns whether round hack is allowed for given number
-	 *
-	 * @param abs
-	 *            absolute value of number
-	 * @param nf2
-	 *            kernel's number format
-	 * @param sf2
-	 *            kernel's scientific format
-	 * @param useSF
-	 *            round to significant figuress or decimal places
-	 * @return factor to multiply (either 1 or 1+1E-15)
-	 */
-	public double getRoundHalfUpFactor(double abs, NumberFormatAdapter nf2,
-			ScientificFormatAdapter sf2, boolean useSF) {
-
-		int digits = useSF ? sf2.getSigDigits()
-				: nf2.getMaximumFractionDigits();
-
-		// eg make sure 1.2 not displayed as 1.2000000000001 when rounding set
-		// to 15sf
-		if (digits >= 15) {
-			return 1;
-		}
-
-		if (abs < 1000) {
-			return ROUND_HALF_UP_FACTOR;
-		}
-		if (abs > 10E7) {
-			return 1;
-		}
-
-		if (useSF) {
-			if (getSF(sf2) != null && getSF(sf2).getSigDigits() < 10) {
-				return ROUND_HALF_UP_FACTOR;
-			}
-		} else {
-			if (getNF(nf2) != null
-					&& getNF(nf2).getMaximumFractionDigits() < 10) {
-				return ROUND_HALF_UP_FACTOR;
-			}
-
-		}
-
-		return 1;
-
-	}
-
-	/**
 	 * @return true if more digits than what is set by this template are allowed
 	 *         in output
 	 */
@@ -958,6 +898,35 @@ public class StringTemplate implements ExpressionNodeConstants {
 		return copy;
 	}
 
+	/**
+	 * @return Copy of this template that simplifies coefficients as in
+	 * {@code deriveWithSimplification} while also omitting zero coefficients.
+	 */
+	public StringTemplate deriveWithSimplifiedCoefficients() {
+		StringTemplate copy = copy();
+		copy.useSimplifications = true;
+		copy.omitZeroCoefficient = true;
+		return copy;
+	}
+
+	/**
+	 * @return Copy of this template that has coefficient simplification disallowed.
+	 */
+	public StringTemplate deriveWithoutCoefficientSimplification() {
+		StringTemplate copy = copy();
+		copy.useSimplifications = false;
+		copy.omitZeroCoefficient = false;
+		copy.allowCoefficientSimplification = false;
+		return copy;
+	}
+
+	/**
+	 * @return Whether coefficient simplification is allowed.
+	 */
+	public boolean allowsCoefficientSimplification() {
+		return allowCoefficientSimplification;
+	}
+
 	private StringTemplate copy() {
 		StringTemplate result = new StringTemplate("CopyOf:" + name);
 		result.stringType = stringType;
@@ -975,6 +944,8 @@ public class StringTemplate implements ExpressionNodeConstants {
 		result.supportsFractions = supportsFractions;
 		result.questionMarkForNaN = questionMarkForNaN;
 		result.useSimplifications = useSimplifications;
+		result.omitZeroCoefficient = omitZeroCoefficient;
+		result.allowCoefficientSimplification = allowCoefficientSimplification;
 		result.pointCoordBar = pointCoordBar;
 		result.allowPiHack = allowPiHack;
 		result.displayStyle = displayStyle;
@@ -1332,6 +1303,9 @@ public class StringTemplate implements ExpressionNodeConstants {
 					append(sb, leftStr, left, operation);
 					break;
 				}
+			}
+			if (handleZeroOperand(sb, leftStr, left, rightStr, right, true)) {
+				break;
 			}
 			int leftop = ExpressionNode.opID(left);
 			if (left instanceof Equation
@@ -1709,6 +1683,9 @@ public class StringTemplate implements ExpressionNodeConstants {
 			break;
 
 		default:
+			if (handleZeroOperand(sb, leftStr, left, rightStr, right, false)) {
+				break;
+			}
 			if (left instanceof Equation) {
 				appendWithBrackets(sb, leftStr);
 			} else {
@@ -1836,18 +1813,9 @@ public class StringTemplate implements ExpressionNodeConstants {
 
 		case LATEX:
 		case LIBRE_OFFICE:
-			if (useSimplifications && !Unicode.DEGREE_STRING.equals(rightStr)
-					&& !RAD.equals(rightStr)) {
-				Operation operation = Operation.MULTIPLY;
-				// check for 1 at left
-				if ("1".equals(leftStr)) {
-					append(sb, rightStr, right, operation);
-					break;
-				} else if ("-1".equals(leftStr)) {
-					sb.append("-");
-					append(sb, rightStr, right, operation);
-					break;
-				}
+			if (!Unicode.DEGREE_STRING.equals(rightStr) && !RAD.equals(rightStr)
+					&& handleSpecialMultiplier(sb, leftStr, rightStr, left, right)) {
+				break;
 			}
 
 			boolean nounary = true;
@@ -2108,6 +2076,108 @@ public class StringTemplate implements ExpressionNodeConstants {
 				sb.append(degSymbol);
 			}
 		}
+	}
+
+	/**
+	 * In case {@code useSimplifications} is {@code true} we want to get rid of 1 and -1 as
+	 * coefficients. In case {@code omitZeroCoefficient} is {@code true} we want to omit the
+	 * zero coefficient.
+	 * @param sb StringBuilder
+	 * @param leftStr LHS of multiplication
+	 * @param rightStr RHS of multiplication
+	 * @param left Left ExpressionValue
+	 * @param right Right ExpressionValue
+	 * @return Whether the multiplication was simplified.
+	 */
+	private boolean handleSpecialMultiplier(StringBuilder sb, String leftStr,
+			String rightStr, ExpressionValue left, ExpressionValue right) {
+		if (useSimplifications) {
+			if ("1".equals(leftStr)) {
+				append(sb, rightStr, right, Operation.MULTIPLY);
+				return true;
+			}
+			if ("-1".equals(leftStr)) {
+				if (right.isExpressionNode()
+						&& right.wrap().getOperation() == Operation.MULTIPLY
+						&& right.wrap().getLeft().evaluateDouble() == -1
+						&& rightStr.startsWith("-")) {
+					sb.append(rightStr.substring(1));
+				} else {
+					sb.append("-");
+					append(sb, rightStr, right, Operation.MULTIPLY);
+				}
+				return true;
+			}
+		}
+		if (omitZeroCoefficient && ("0".equals(leftStr) || "-0".equals(leftStr))
+				&& DoubleUtil.isZero(left.evaluateDouble(), Kernel.MAX_DOUBLE_PRECISION)
+				&& isPolynomialExpression(right)) {
+			sb.append("0");
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns whether an expression consists only of polynomial-compatible operations.
+	 * @param ev ExpressionValue to check
+	 * @return whether {@code ev} is a polynomial expression
+	 */
+	private static boolean isPolynomialExpression(ExpressionValue ev) {
+		if (ev == null || ev.isConstant() || !ev.isExpressionNode()) {
+			return true;
+		}
+		ExpressionNode node = ev.wrap();
+		return switch (node.getOperation()) {
+			case PLUS, MINUS, MULTIPLY -> isPolynomialExpression(node.getLeft())
+					&& isPolynomialExpression(node.getRight());
+			case DIVIDE, POWER -> isPolynomialExpression(node.getLeft())
+					&& node.getRight().isConstant();
+			default -> false;
+		};
+	}
+
+	/**
+	 * When {@code omitZeroCoefficient} is {@code true}, handles the case where one
+	 * operand of an addition or subtraction is zero.
+	 * @param sb StringBuilder
+	 * @param leftStr LHS of addition/subtraction
+	 * @param left Left ExpressionValue
+	 * @param rightStr RHS of addition/subtraction
+	 * @param right Right ExpressionValue
+	 * @param isAddition {@code true} for PLUS, {@code false} for MINUS
+	 * @return true if one operand was zero and the content was added to the StringBuilder
+	 */
+	private boolean handleZeroOperand(StringBuilder sb,
+			String leftStr, ExpressionValue left,
+			String rightStr, ExpressionValue right,
+			boolean isAddition) {
+		if (!omitZeroCoefficient) {
+			return false;
+		}
+
+		if (isZeroOrEmptyString(leftStr)) {
+			if (!isZeroOrEmptyString(rightStr)) {
+				if (isAddition) {
+					append(sb, rightStr, right, Operation.PLUS);
+				} else {
+					sb.append("-");
+					append(sb, rightStr, right, Operation.PLUS);
+				}
+				return true;
+			}
+		}
+
+		if (isZeroOrEmptyString(rightStr)) {
+			append(sb, leftStr, left, Operation.PLUS);
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean isZeroOrEmptyString(String str) {
+		return "0".equals(str) || "-0".equals(str) || str.isEmpty();
 	}
 
 	/**

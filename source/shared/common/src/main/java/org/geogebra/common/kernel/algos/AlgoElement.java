@@ -524,7 +524,7 @@ public abstract class AlgoElement extends ConstructionElement
 		 * needed.
 		 * @return a new Element of type S. (e.g. new GeoPoint(cons))
 		 */
-		public S newElement();
+		S newElement();
 	}
 
 	/*
@@ -537,7 +537,7 @@ public abstract class AlgoElement extends ConstructionElement
 	 * @param classname algorithm identifier
 	 * @return internal command name
 	 */
-	final static String getCommandString(GetCommand classname) {
+	static String getCommandString(GetCommand classname) {
 		// init rbalgo2command if needed
 		// for translation of Algo-classname to command name
 
@@ -559,7 +559,7 @@ public abstract class AlgoElement extends ConstructionElement
 	public abstract void compute();
 
 	/**
-	 * Inits this algorithm for the near-to-relationship. This is important to
+	 * Initializes this algorithm for the near-to-relationship. This is important to
 	 * init the intersection algorithms when loading a file, so that they have a
 	 * look at the current location of their output points.
 	 */
@@ -1459,7 +1459,7 @@ public abstract class AlgoElement extends ConstructionElement
 				|| this.getClassName().equals(Commands.Object))) {
 			// need to write the geo type in the XML if it's undefined
 			// so that it's the same type when the file is loaded again
-			sb.attrRaw("type", getOutput()[0].getXMLtypeString());
+			sb.attrRaw("type", getOutput()[0].getXMLTypeString());
 		}
 		if (getOutputLength() > 0 && getOutput(0) instanceof FunctionalNVar) {
 			// need to write the geo type in the XML if it's undefined

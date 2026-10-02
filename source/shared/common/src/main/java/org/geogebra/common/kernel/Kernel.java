@@ -16,12 +16,14 @@
 
 package org.geogebra.common.kernel;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -115,7 +117,6 @@ import org.geogebra.common.plugin.GeoClass;
 import org.geogebra.common.plugin.script.GgbScript;
 import org.geogebra.common.plugin.script.Script;
 import org.geogebra.common.util.DoubleUtil;
-import org.geogebra.common.util.LRUMap;
 import org.geogebra.common.util.MaxSizeHashMap;
 import org.geogebra.common.util.MyMath;
 import org.geogebra.common.util.NumberFormatAdapter;
@@ -145,6 +146,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	final public static String STRING_PLUS_MINUS = "\u00B1 ";
 	/** string for -+ */
 	final public static String STRING_MINUS_PLUS = "\u2213 ";
+	private static final int FORMATTER_CACHE_CAPACITY = 100; // cache 100 numbers per template
 
 	// critical for exam mode
 	// must use getter
@@ -322,7 +324,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	/** Application */
 	@NonOwning
 	@Weak
-	protected App app;
+	protected final @Nonnull App app;
 
 	private EquationSolver eqnSolver;
 	private ExtremumFinderI extrFinder;
@@ -333,7 +335,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	private Manager3DInterface manager3D;
 	private AlgoDispatcher algoDispatcher;
 	private final ArithmeticFactory arithmeticFactory;
-	private final GeoFactory geoFactory;
+	private final @Nonnull GeoFactory geoFactory;
 
 	private GeoVec2D imaginaryUnit;
 
@@ -368,7 +370,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	private String libraryJavaScript = defaultLibraryJavaScript;
 
 	private boolean isSaving;
-	private MaxSizeHashMap<String, String> ggbCasCache;
+	private Map<String, String> ggbCasCache;
 	/** min real world x for all views */
 	protected double[] xmin = new double[1];
 	/** max real world x for all views */
@@ -387,7 +389,8 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	private boolean notifyViewsActive = true;
 
 	// MOB-1304 cache axes numbers
-	private final HashMap<StringTemplate, LRUMap<Double, String>> formatterMaps = new HashMap<>();
+	private final Map<StringTemplate, MaxSizeHashMap<Double, String>> formatterMaps
+			= new HashMap<>();
 
 	private final Traversing.VariableReplacer variableReplacer;
 	private final GeoFunctionConverter functionConverter = new GeoFunctionConverter();
@@ -396,15 +399,16 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	private @CheckForNull Surds surds = new Surds();
 	private @CheckForNull Rationalization rationalization = new Rationalization();
 
+	public final @Nonnull RandomNumberGenerator randomNumberGenerator;
+
 	/**
 	 * @param app
 	 *            Application
 	 * @param factory
 	 *            element factory
 	 */
-	public Kernel(App app, GeoFactory factory) {
-		this(factory);
-		this.app = app;
+	public Kernel(@Nonnull App app, @Nonnull GeoFactory factory) {
+		this(factory, app);
 
 		newConstruction();
 		getExpressionNodeEvaluator();
@@ -418,7 +422,9 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 * @param factory
 	 *            factory for new elements
 	 */
-	protected Kernel(GeoFactory factory) {
+	protected Kernel(@Nonnull GeoFactory factory, @Nonnull App app) {
+		this.app = app;
+		randomNumberGenerator = app.randomNumberGenerator;
 		nf = FormatFactory.getPrototype().getNumberFormat(2);
 		sf = FormatFactory.getPrototype().getScientificFormat(5, 16, false);
 		deleteList = new ArrayList<>();
@@ -555,7 +561,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	/**
 	 * @return app
 	 */
-	final public App getApplication() {
+	final public @Nonnull App getApplication() {
 		return app;
 	}
 
@@ -620,7 +626,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 * @return a double comparator which says doubles are equal if their diff is
 	 *         less than precision
 	 */
-	final static public Comparator<Double> doubleComparator(double precision) {
+	static public Comparator<Double> doubleComparator(double precision) {
 
 		final double eps = precision;
 
@@ -690,21 +696,18 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            coordinates from XML
 	 * @return whether this worked without exception
 	 */
-	public boolean handleCoords(GeoElement geo,
-			LinkedHashMap<String, String> attrs) {
-
-		if (!(geo instanceof GeoVec3D)) {
+	public boolean handleCoords(GeoElement geo, Map<String, String> attrs) {
+		if (!(geo instanceof GeoVec3D vector)) {
 			Log.debug("wrong element type for <coords>: " + geo.getClass());
 			return false;
 		}
-		GeoVec3D v = (GeoVec3D) geo;
 
 		try {
 			double x = StringUtil.parseDouble(attrs.get("x"));
 			double y = StringUtil.parseDouble(attrs.get("y"));
 			double z = StringUtil.parseDouble(attrs.get("z"));
-			v.hasUpdatePrivilege = true;
-			v.setCoords(x, y, z);
+			vector.hasUpdatePrivilege = true;
+			vector.setCoords(x, y, z);
 			return true;
 
 		} catch (Exception e) {
@@ -1036,7 +1039,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 		return loadingMode;
 	}
 
-	final private static char sign(double x) {
+	private static char sign(double x) {
 		if (x > 0) {
 			return '+';
 		}
@@ -1182,12 +1185,12 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 		sb.append(format(-x, tpl));
 	}
 
-	final private String formatPiERaw(double x, NumberFormatAdapter numF,
+	private String formatPiERaw(double x, NumberFormatAdapter numF,
 			StringTemplate tpl) {
 
-		LRUMap<Double, String> formatterMap = formatterMaps.get(tpl);
+		MaxSizeHashMap<Double, String> formatterMap = formatterMaps.get(tpl);
 		if (formatterMap == null) {
-			formatterMap = new LRUMap<>();
+			formatterMap = new MaxSizeHashMap<>(FORMATTER_CACHE_CAPACITY);
 			formatterMaps.put(tpl, formatterMap);
 		} else {
 			String ret = formatterMap.get(x);
@@ -1335,36 +1338,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 
 		// number formatting for CAS
 		case GIAC:
-			if (Double.isNaN(x)) {
-				return "?";
-			} else if (Double.isInfinite(x)) {
-				return (x < 0) ? "-inf" : "inf";
-			} else if (isLongInteger) {
-				return Long.toString(rounded);
-			} else if (DoubleUtil.isZero(x, Kernel.MAX_PRECISION)) {
-				// #4802
-				return "0";
-			} else {
-				double abs = Math.abs(x);
-				// number small enough that Double.toString() won't create E
-				// notation
-				if ((abs >= 10E-3) && (abs < 10E7)) {
-					String ret = MyDouble.toString(x);
-
-					// convert 0.125 to 1/8 so Giac treats it as an exact number
-					// Note: exact(0.3333333333333) gives 1/3
-					if (ret.indexOf('.') > -1) {
-						return StringUtil.wrapInExact(x, ret, tpl, this);
-					}
-
-					return ret;
-				}
-				// convert scientific notation 1.0E-20 to 1*10^(-20)
-				String scientificStr = MyDouble.toString(x);
-
-				return tpl.convertScientificNotationGiac(scientificStr);
-			}
-
+			return toGiacString(x, isLongInteger, rounded, tpl);
 			// number formatting for screen output
 		default:
 			if (Double.isNaN(x)) {
@@ -1376,19 +1350,6 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 			}
 
 			boolean useSF = tpl.useScientific(useSignificantFigures);
-
-			// ROUNDING hack
-			// NumberFormat and SignificantFigures use ROUND_HALF_EVEN as
-			// default which is not changeable, so we need to hack this
-			// to get ROUND_HALF_UP like in schools: increase abs(x) slightly
-			// x = x * ROUND_HALF_UP_FACTOR;
-			// We don't do this for large numbers as
-			if (!isLongInteger && tpl.getPrecision(nf) > 5E-7) {
-				double abs = Math.abs(x);
-				// increase abs(x) slightly to round up
-				x = x * tpl.getRoundHalfUpFactor(abs, nf, sf, useSF);
-			}
-
 			if (tpl.shouldDisplayEngineeringNotation()) {
 				return tpl.convertEngineeringNotationForDisplay(number,
 						useSF ? value -> formatSF(value, tpl) : value -> formatNF(value, tpl));
@@ -1400,10 +1361,112 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 		}
 	}
 
+	private String toGiacString(double x, boolean isLongInteger, Long rounded, StringTemplate tpl) {
+		if (Double.isNaN(x)) {
+			return "?";
+		} else if (Double.isInfinite(x)) {
+			return (x < 0) ? "-inf" : "inf";
+		} else if (isLongInteger) {
+			return Long.toString(rounded);
+		} else if (DoubleUtil.isZero(x, Kernel.MAX_PRECISION)) {
+			// #4802
+			return "0";
+		} else {
+			double abs = Math.abs(x);
+			// number small enough that Double.toString() won't create E
+			// notation
+			if ((abs >= 10E-3) && (abs < 10E7)) {
+				String ret = MyDouble.toString(x);
+
+				// convert 0.125 to 1/8 so Giac treats it as an exact number
+				// Note: exact(0.3333333333333) gives 1/3
+				if (ret.indexOf('.') > -1) {
+					return StringUtil.wrapInExact(x, ret, tpl, this);
+				}
+
+				return ret;
+			}
+			// convert scientific notation 1.0E-20 to 1*10^(-20)
+			String scientificStr = MyDouble.toString(x);
+
+			return tpl.convertScientificNotationGiac(scientificStr);
+		}
+	}
+
+	/**
+	 * @param exactValue exact decimal value
+	 * @param tpl string template
+	 * @return formatter value, using decimal places or significant figures based
+	 * on kernel settings and the template overrides
+	 */
+	public String format(BigDecimal exactValue, StringTemplate tpl) {
+		double asDouble = exactValue.doubleValue();
+		if (tpl.hasType(StringType.GIAC)) {
+			long asLong = exactValue.longValue();
+			return toGiacString(asDouble, asDouble == asLong, asLong, tpl);
+		}
+		if (tpl.shouldDisplayEngineeringNotation()
+				|| asDouble == 0.0 || !Double.isFinite(asDouble)) {
+			return format(asDouble, tpl);
+		}
+		if (MyDouble.exactEqual(asDouble, Math.PI) && tpl.allowPiHack()) {
+			return tpl.getPi();
+		}
+		if (tpl.useScientific(useSignificantFigures)) {
+			ScientificFormatAdapter sf1 = tpl.getSF(sf);
+			double log = Math.log10(Math.abs(exactValue.doubleValue()));
+			if (log == (int) log) {
+				return format(exactValue.doubleValue(), tpl);
+			}
+			int sigDigits = sf1.getSigDigits();
+			int scale = sigDigits - 1 - (int) Math.floor(log);
+			scale = Math.min(scale, 16 - (int) Math.floor(log));
+			BigDecimal scaled = exactValue.setScale(scale,
+					RoundingMode.HALF_UP);
+			String strippedZeros = tpl.hasType(StringType.GEOGEBRA_XML)
+					? scaled.stripTrailingZeros().toString() : stripExtraZeros(scaled, sigDigits);
+			return internationalizeDigits(tpl.fixMinus(strippedZeros), tpl);
+		}
+		BigDecimal scaled = exactValue.setScale(tpl.getNF(nf).getMaximumFractionDigits(),
+				RoundingMode.HALF_UP).stripTrailingZeros();
+		return internationalizeDigits(tpl.fixMinus(scaled.toPlainString()), tpl);
+	}
+
+	private String stripExtraZeros(BigDecimal scaled, int sigDigits) {
+		String stripped = scaled.toString();
+		int periodIndex = stripped.indexOf('.');
+		if (!stripped.contains("E")) {
+			int firstSigDigit = -2;
+			for (int i = 0; i < stripped.length(); i++) {
+				if (stripped.charAt(i) > '0' && stripped.charAt(i) <= '9') {
+					firstSigDigit = i;
+					break;
+				}
+			}
+			boolean isInteger = true;
+			for (int i = periodIndex + 1; i < stripped.length(); i++) {
+				if (stripped.charAt(i) != '0') {
+					isInteger = false;
+					break;
+				}
+			}
+			int afterLastSigDigit = periodIndex > firstSigDigit ? firstSigDigit + sigDigits + 1
+					: firstSigDigit + sigDigits;
+			afterLastSigDigit = isInteger ? periodIndex
+					: Math.max(periodIndex, afterLastSigDigit);
+			if (afterLastSigDigit < stripped.length()) {
+				stripped = stripped.substring(0, afterLastSigDigit);
+			}
+		} else {
+			stripped = sf.prettyPrint(stripped);
+		}
+		return stripped;
+	}
+
 	/**
 	 * Uses current NumberFormat nf to format a number.
 	 */
-	final private String formatNF(double x, StringTemplate tpl) {
+	private String formatNF(double x, StringTemplate tpl) {
 		// "<=" catches -0.0000000000000005
 		// should be rounded to -0.000000000000001 (15 d.p.)
 		// but nf.format(x) returns "-0"
@@ -1452,7 +1515,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 */
 	public String internationalizeDigits(String num, StringTemplate tpl) {
 		if (!tpl.internationalizeDigits()
-				|| !getLocalization().isUsingLocalizedDigits()) {
+				|| getLocalization().usesNonAsciiDigits()) {
 			return num;
 		}
 
@@ -1546,7 +1609,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 * @param b
 	 *            output array
 	 */
-	final static void copy(double[] a, double[] b) {
+	static void copy(double[] a, double[] b) {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i];
 		}
@@ -1562,7 +1625,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 * @param c
 	 *            array for results
 	 */
-	final static void divide(double[] a, double b, double[] c) {
+	static void divide(double[] a, double b, double[] c) {
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] / b;
 		}
@@ -1577,7 +1640,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            second number
 	 * @return GCD of given numbers
 	 */
-	final public static long gcd(long m, long n) {
+	public static long gcd(long m, long n) {
 		// Return the GCD of positive integers m and n.
 		if ((m == 0) || (n == 0)) {
 			return Math.max(Math.abs(m), Math.abs(n));
@@ -1600,7 +1663,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            array of numbers
 	 * @return GCD of given numbers
 	 */
-	final public static double gcd(double[] numbers) {
+	public static double gcd(double[] numbers) {
 		long gcd = (long) numbers[0];
 		for (int i = 0; i < numbers.length; i++) {
 			gcd = gcd((long) numbers[i], gcd);
@@ -1619,7 +1682,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            rounding step
 	 * @return rounded number
 	 */
-	final public static double roundToScale(double x, double scale) {
+	public static double roundToScale(double x, double scale) {
 		if (scale == 1.0) {
 			return Math.round(x);
 		}
@@ -1697,7 +1760,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	}
 
 	// lhs of implicit equation without constant coeff
-	final private double buildImplicitVarPart(
+	private double buildImplicitVarPart(
 			StringBuilder sbBuildImplicitVarPart, double[] numbers,
 			String[] vars, boolean cancelDown,
 			boolean needsZ, StringTemplate tpl) {
@@ -1706,7 +1769,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	}
 
 	// lhs of implicit equation without constant coeff
-	final private double buildImplicitVarPart(
+	private double buildImplicitVarPart(
 			StringBuilder sbBuildImplicitVarPart, double[] numbers,
 			String[] vars, boolean cancelDown,
 			boolean needsZ, boolean setConstantIfNoLeading,
@@ -1960,7 +2023,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 * Uses current ScientificFormat sf to format a number. Makes sure ".123" is
 	 * returned as "0.123".
 	 */
-	final private String formatSF(double number, StringTemplate tpl) {
+	private String formatSF(double number, StringTemplate tpl) {
 		if (sbFormatSF == null) {
 			sbFormatSF = new StringBuilder();
 		} else {
@@ -2191,11 +2254,11 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            whether to allow angles out of [0,2pi]
 	 * @return formatted angle
 	 */
-	final public StringBuilder formatAngle(double phi, StringTemplate tpl,
+	final public StringBuilder formatAngle(double phi, BigDecimal exactValue, StringTemplate tpl,
 			boolean unbounded) {
 		// STANDARD_PRECISION * 10 as we need a little leeway as we've converted
 		// from radians
-		return formatAngle(phi, 10, tpl, unbounded, false);
+		return formatAngle(phi, exactValue, 10, tpl, unbounded, false);
 	}
 
 	/**
@@ -2211,11 +2274,11 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            whether to keep format in degrees]
 	 * @return formatted angle
 	 */
-	final public StringBuilder formatAngle(double phi, StringTemplate tpl,
+	final public StringBuilder formatAngle(double phi, BigDecimal exactValue, StringTemplate tpl,
 			boolean unbounded, boolean forceDegrees) {
 		// STANDARD_PRECISION * 10 as we need a little leeway as we've converted
 		// from radians
-		return formatAngle(phi, 10, tpl, unbounded, forceDegrees);
+		return formatAngle(phi, exactValue, 10, tpl, unbounded, forceDegrees);
 	}
 
 	/**
@@ -2230,7 +2293,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 * @param forceDegrees whether to override kernel's degreeMode
 	 * @return formatted angle
 	 */
-	final public StringBuilder formatAngle(double alpha, double precision,
+	final public StringBuilder formatAngle(double alpha, BigDecimal exactValue, double precision,
 			StringTemplate tpl, boolean unbounded, boolean forceDegrees) {
 		double phi = alpha;
 		sbFormatAngle.setLength(0);
@@ -2245,8 +2308,12 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 			if (isMinusOnRight) {
 				sbFormatAngle.append(Unicode.DEGREE_CHAR);
 			}
-
-			phi = Math.toDegrees(phi);
+			if (exactValue == null) {
+				phi = Math.toDegrees(phi);
+			} else {
+				phi = exactValue.divide(MySpecialDouble.DEGREE, 16, RoundingMode.HALF_UP)
+						.doubleValue();
+			}
 
 			// make sure 360.0000000002 -> 360
 			phi = DoubleUtil.checkInteger(phi);
@@ -2411,7 +2478,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *
 	 * @return true if angle unit wants degree symbol automatically added
 	 */
-	final public static boolean angleUnitUsesDegrees(int unit) {
+	public static boolean angleUnitUsesDegrees(int unit) {
 		return unit == Kernel.ANGLE_DEGREE
 				|| unit == Kernel.ANGLE_DEGREES_MINUTES_SECONDS;
 	}
@@ -2440,7 +2507,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            string, possibly containing CAS prefix several times
 	 * @return string without CAS prefixes
 	 */
-	final public static String removeCASVariablePrefix(final String str) {
+	public static String removeCASVariablePrefix(final String str) {
 		return removeCASVariablePrefix(str, "");
 	}
 
@@ -2452,7 +2519,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 * @return String where CAS variable prefixes are removed again, e.g.
 	 *         "ggbcasvar1a" is turned into "a" and
 	 */
-	final public static String removeCASVariablePrefix(final String str,
+	public static String removeCASVariablePrefix(final String str,
 			final String replace) {
 		// need a space when called from GeoGebraCAS.evaluateGeoGebraCAS()
 		// so that eg Derivative[1/(-x+E2)] works (want 2 E2 not 2E2) #1595,
@@ -2772,10 +2839,9 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	/**
 	 * @return Hash map for caching CAS results.
 	 */
-	public MaxSizeHashMap<String, String> getCasCache() {
+	public Map<String, String> getCasCache() {
 		if (ggbCasCache == null) {
-			ggbCasCache = new MaxSizeHashMap<>(
-					GEOGEBRA_CAS_CACHE_SIZE);
+			ggbCasCache = new MaxSizeHashMap<>(GEOGEBRA_CAS_CACHE_SIZE);
 		}
 		return ggbCasCache;
 	}
@@ -3379,9 +3445,8 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	}
 
 	private void addViews(Integer id, double[] viewBounds) {
-		View view = getApplication().getView(id);
-		if (view instanceof EuclidianViewInterfaceSlim) {
-			EuclidianViewInterfaceSlim ev = (EuclidianViewInterfaceSlim) view;
+		EuclidianViewInterfaceSlim ev = getApplication().getEuclidianViewById(id);
+		if (ev != null) {
 			viewBounds[0] = Math.min(viewBounds[0], ev.getXmin());
 			viewBounds[1] = Math.max(viewBounds[1], ev.getXmax());
 			viewBounds[2] = Math.min(viewBounds[2], ev.getYmin());
@@ -5152,7 +5217,7 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 	 *            construction
 	 * 
 	 * @param type
-	 *            String as produced by GeoElement.getXMLtypeString()
+	 *            String as produced by GeoElement.getXMLTypeString()
 	 * @return new element
 	 */
 	public GeoElement createGeoElement(Construction cons1, String type) {
@@ -5399,5 +5464,12 @@ public class Kernel implements SpecialPointsListener, ConstructionStepper {
 		return views.stream().map(View::getViewID)
 				.filter(viewID -> viewID != App.VIEW_EVENT_DISPATCHER)
 				.collect(Collectors.toUnmodifiableList());
+	}
+
+	/**
+	 * @return number of attached views
+	 */
+	public int countViews() {
+		return views.size();
 	}
 }

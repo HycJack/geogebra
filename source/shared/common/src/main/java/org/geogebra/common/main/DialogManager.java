@@ -339,13 +339,13 @@ public abstract class DialogManager {
 		 * @param num angle
 		 * @return rotated element
 		 */
-		public GeoElement[] createGeos(EuclidianController ec, GeoElement geo,
+		GeoElement[] createGeos(EuclidianController ec, GeoElement geo,
 				GeoNumberValue num);
 
 		/**
 		 * @return point or line to rotate around
 		 */
-		public GeoElementND getPivot();
+		GeoElementND getPivot();
 	}
 
 	/**
@@ -705,7 +705,7 @@ public abstract class DialogManager {
 			boolean rw) {
 		app.setWaitCursor();
 
-		if (textInputDialog == null) {
+		if (textInputDialog == null || text == null) {
 			textInputDialog = createTextDialog(text, startPoint, rw);
 		} else {
 			textInputDialog.reInitEditor(text, startPoint, rw);
@@ -824,7 +824,7 @@ public abstract class DialogManager {
 		 * @param num radius
 		 * @return circle, cone, cylinder or sphere
 		 */
-		public GeoElement createGeo(Kernel kernel, GeoNumberValue num);
+		GeoElement createGeo(Kernel kernel, GeoNumberValue num);
 	}
 
 	public static class CreateSphereFromRadius implements CreateGeoFromRadius {

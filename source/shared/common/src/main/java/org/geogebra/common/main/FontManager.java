@@ -24,14 +24,6 @@ import org.geogebra.common.awt.GFont;
 public abstract class FontManager {
 
 	/**
-	 * Change size of all fonts
-	 * 
-	 * @param guiFontSize
-	 *            new font size
-	 */
-	public abstract void setFontSize(int guiFontSize);
-
-	/**
 	 * Get a font which can display given string
 	 * 
 	 * @param testString
@@ -45,6 +37,6 @@ public abstract class FontManager {
 	 * @return usable font
 	 */
 	public abstract GFont getFontCanDisplay(String testString, boolean serif,
-			int fontStyle, int fontSize);
+			int fontStyle, double fontSize);
 
 }

@@ -120,11 +120,6 @@ public class AppConfigDefault extends AbstractAppConfig {
 	}
 
 	@Override
-	public boolean isSimpleMaterialPicker() {
-		return false;
-	}
-
-	@Override
 	public boolean hasPreviewPoints() {
 		return false;
 	}
@@ -366,6 +361,6 @@ public class AppConfigDefault extends AbstractAppConfig {
 
 	@Override
 	public boolean hasSpreadsheetView() {
-		return false;
+		return true;
 	}
 }

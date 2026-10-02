@@ -92,7 +92,6 @@ import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.kernel.kernelND.GeoPointND;
 import org.geogebra.common.kernel.matrix.Coords;
 import org.geogebra.common.main.App;
-import org.geogebra.common.main.AppConfig;
 import org.geogebra.common.main.Localization;
 import org.geogebra.common.main.MyError;
 import org.geogebra.common.main.ScreenReader;
@@ -143,8 +142,7 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	public static final int MAX_LINE_WIDTH = 13;
 
 	@Weak
-	protected App app;
-	protected AppConfig appConfig;
+	protected final @Nonnull App app;
 
 	private int tooltipMode = TOOLTIP_ALGEBRAVIEW_SHOWING;
 	/** should only be used directly in subclasses */
@@ -335,8 +333,10 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 		super(c);
 		app = kernel.getApplication();
 		c.addUsedType(this.getGeoClassType());
-		if (app != null) {
-			initWith(app);
+		graphicsadapter = app.newGeoElementGraphicsAdapter();
+		EuclidianViewInterfaceSlim ev  = app.getActiveEuclidianView();
+		if (ev != null && ev.getViewID() != App.VIEW_EUCLIDIAN) {
+			initWith(ev);
 		}
 	}
 
@@ -361,15 +361,6 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	 */
 	public static void updateCascade(List<GeoElement> list) {
 		updateCascade(list, getTempSet(), true);
-	}
-
-	private void initWith(@Nonnull App app) {
-		appConfig = app.getConfig();
-		graphicsadapter = app.newGeoElementGraphicsAdapter();
-		EuclidianViewInterfaceSlim ev  = app.getActiveEuclidianView();
-		if (ev != null && app.getActiveEuclidianView().getViewID() != App.VIEW_EUCLIDIAN) {
-			initWith(ev);
-		}
 	}
 
 	private void initWith(@Nonnull EuclidianViewInterfaceSlim ev) {
@@ -1303,11 +1294,10 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 		bgColor = geo.bgColor;
 		isColorSet = geo.isColorSet();
 
-		if (geo instanceof ChartStyleGeo && this instanceof ChartStyleGeo) {
-			int barNumber = ((ChartStyleGeo) geo).getIntervals();
-			for (int i = 0; i <= barNumber; i++) {
-				((ChartStyleGeo) this).getStyle().setBarColor(
-						((ChartStyleGeo) geo).getStyle().getBarColor(i), i);
+		if (geo instanceof ChartStyleGeo source && this instanceof ChartStyleGeo dest) {
+			int barNumber = source.getIntervals();
+			for (int i = 1; i <= barNumber; i++) {
+				dest.getStyle().setBarColor(source.getStyle().getBarColor(i), i);
 			}
 		}
 	}
@@ -1532,7 +1522,7 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	@Override
 	public void setFixed(boolean flag) {
 		if (!flag) {
-			fixed = appConfig.isObjectDraggingRestricted()
+			fixed = app.getConfig().isObjectDraggingRestricted()
 					&& isFunctionOrEquationFromUser()
 					&& !this.isDefaultGeo();
 		} else if (isFixable()) {
@@ -1933,7 +1923,6 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	 */
 	public boolean isRedefineable() {
 		return !isProtected(EventType.UPDATE)
-				&& app.letRedefine()
 				&& !(this instanceof TextValue) && isAlgebraViewEditable()
 				&& (isChangeable() // redefine changeable (independent and
 										// not fixed)
@@ -2263,12 +2252,21 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	}
 
 	/**
-	 * over ridden by types that implement Animateable
+	 * Overridden by types that implement Animateable.
 	 * 
 	 * @return true if this can be animated
 	 */
 	public boolean isAnimatable() {
 		return false;
+	}
+
+	/**
+	 * Similar to {@link #isAnimatable()}, but more permissive
+	 * (e.g. does not check valid interval for sliders).
+	 * @return whether animation attributes should be saved to XML
+	 */
+	public boolean needsAnimationAttributes() {
+		return isPointerChangeable();
 	}
 
 	@Override
@@ -2366,11 +2364,8 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 
 		String newLabel = labelNew;
 		if (cons.isSuppressLabelsActive()) {
-			if (app.getGuiManager() != null
-					&& app.getGuiManager()
-					.hasSpreadsheetView()) {
-				app.getGuiManager().getSpreadsheetView()
-						.scrollIfNeeded(this, labelNew);
+			if (app.getGuiManager() != null) {
+				app.getGuiManager().scrollSpreadsheetToCell(this, labelNew);
 			}
 			return;
 		}
@@ -2605,10 +2600,10 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 
 			// we need to also support wrapped GeoElements like
 			// $A4 that are implemented as dependent geos (using ExpressionNode)
-			final SpreadsheetCoords p = GeoElementSpreadsheet.spreadsheetIndices(
+			final SpreadsheetCoords p = GeoElementSpreadsheet.getSpreadsheetCoordsForLabel(
 					getLabel(StringTemplate.defaultTemplate));
 
-			if ((p.column >= 0) && (p.row >= 0)) {
+			if (p != null) {
 				spreadsheetCoords.setLocation(p);
 			} else {
 				spreadsheetCoords = null;
@@ -3125,7 +3120,7 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	}
 
 	private void maybeUpdateSpecialPoints() {
-		if (canHaveSpecialPoints() && appConfig.hasPreviewPoints()) {
+		if (canHaveSpecialPoints() && app.getConfig().hasPreviewPoints()) {
 			app.getSpecialPointsManager().updateSpecialPoints(null);
 		}
 	}
@@ -3732,7 +3727,7 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	}
 
 	@Override
-	final public String getXMLtypeString() {
+	final public String getXMLTypeString() {
 		// don't use getTypeString() as it's overridden
 		return getGeoClassType().xmlName;
 	}
@@ -4505,7 +4500,7 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	 *            string builder
 	 */
 	protected void getElementOpenTagXML(final XMLStringBuilder sb) {
-		final String type = getXMLtypeString();
+		final String type = getXMLTypeString();
 		sb.startOpeningTag("element", 0);
 		sb.attr("type", type);
 		sb.attr("label", label);
@@ -4593,8 +4588,8 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	 * @param sb
 	 *            string builder
 	 */
-	protected void getXMLvisualTags(final XMLStringBuilder sb) {
-		XMLBuilder.getXMLvisualTags(this, sb, true);
+	protected void getXMVisualTags(final XMLStringBuilder sb) {
+		XMLBuilder.getXMLVisualTags(this, sb, true);
 	}
 
 	/**
@@ -4638,10 +4633,10 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	 * @param sb
 	 *            string builder
 	 */
-	protected void getXMLanimationTags(final XMLStringBuilder sb) {
+	protected void getXMLAnimationTags(final XMLStringBuilder sb) {
 		StringTemplate tpl = StringTemplate.xmlTemplate;
 		// animation step width
-		if (isPointerChangeable()) {
+		if (needsAnimationAttributes()) {
 			sb.startTag("animation");
 			if (!isGeoNumeric() || !((GeoNumeric) this).isAutoStep()) {
 				final String animStep = animationIncrement == null ? "1"
@@ -4679,7 +4674,7 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	 * @param sb
 	 *            string builder
 	 */
-	protected void getXMLfixedTag(final XMLStringBuilder sb) {
+	protected void getXMLFixedTag(final XMLStringBuilder sb) {
 		// is object fixed
 		if (fixed && isFixable()) {
 			sb.startTag("fixed").attr("val", true).endTag();
@@ -4701,9 +4696,9 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	}
 
 	protected void getStyleXML(XMLStringBuilder sb) {
-		getXMLvisualTags(sb);
-		getXMLanimationTags(sb);
-		getXMLfixedTag(sb);
+		getXMVisualTags(sb);
+		getXMLAnimationTags(sb);
+		getXMLFixedTag(sb);
 		getAuxiliaryXML(sb);
 		getBreakpointXML(sb);
 		if (kernel.getSaveScriptsToXML()) {
@@ -5891,12 +5886,20 @@ public abstract class GeoElement extends ConstructionElement implements GeoEleme
 	}
 
 	/**
-	 * @param ev
-	 *            view
+	 * @param ev view
 	 * @return true if selection is allowed
 	 */
 	public boolean isSelectionAllowed(EuclidianViewInterfaceSlim ev) {
 		return selectionAllowed;
+	}
+
+	/**
+	 * @param ev view
+	 * @return Whether the disabled style is used. This is the case if selection is disallowed
+	 * and neither a custom foreground nor a custom background color is set.
+	 */
+	public boolean usesDisabledStyle(EuclidianViewInterfaceSlim ev) {
+		return !isSelectionAllowed(ev);
 	}
 
 	/**

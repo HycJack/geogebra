@@ -309,7 +309,7 @@ public class GeoLine extends GeoVec3D implements Path, Translateable,
 	 *            third input
 	 * @return if the inputs are concurrent
 	 */
-	final public static boolean concurrent(GeoLine inputLine1,
+	public static boolean concurrent(GeoLine inputLine1,
 			GeoLine inputLine2, GeoLine inputLine3) {
 		double det = inputLine1.getX() * inputLine2.getY() * inputLine3.getZ()
 				+ inputLine2.getX() * inputLine3.getY() * inputLine1.getZ()
@@ -999,9 +999,7 @@ public class GeoLine extends GeoVec3D implements Path, Translateable,
 		if (DoubleUtil.isZero(x) || DoubleUtil.isZero(y)) {
 			return kernel.buildExplicitEquation(g, vars, tpl, true).toString();
 		}
-		boolean useGCD = true;
-		return kernel.buildImplicitEquation(g, vars, useGCD, false, tpl, true)
-				.toString();
+		return kernel.buildImplicitEquation(g, vars, true, false, tpl, true).toString();
 	}
 
 	/**
@@ -1212,9 +1210,9 @@ public class GeoLine extends GeoVec3D implements Path, Translateable,
 		}
 	}
 
-	private class PathMoverLine extends PathMoverGeneric {
+	private final class PathMoverLine extends PathMoverGeneric {
 
-		public PathMoverLine() {
+		private PathMoverLine() {
 			super(GeoLine.this);
 		}
 
@@ -1856,6 +1854,11 @@ public class GeoLine extends GeoVec3D implements Path, Translateable,
 
 	@Override
 	public boolean isPolynomialFunction(boolean forRoot) {
+		return true;
+	}
+
+	@Override
+	public boolean hasPolynomialNumerator(boolean forRoot) {
 		return true;
 	}
 

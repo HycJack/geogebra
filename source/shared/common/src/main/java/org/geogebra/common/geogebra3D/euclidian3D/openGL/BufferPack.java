@@ -23,14 +23,14 @@ import org.geogebra.common.awt.GColor;
  */
 class BufferPack extends BufferPackAbstract {
 
-	private GLBufferManager manager;
+	private final GLBufferManager manager;
 	/** buffer for vertices */
-	private GLBuffer vertexBuffer;
+	private final GLBuffer vertexBuffer;
 	/** buffer for normals */
-	private GLBuffer normalBuffer;
-	private GLBuffer textureBuffer;
+	private final GLBuffer normalBuffer;
+	private final GLBuffer textureBuffer;
 	/** buffer for colors */
-	private GLBuffer colorBuffer;
+	private final GLBuffer colorBuffer;
 	/** buffer for indices */
 	protected GLBufferIndices indicesBuffer;
 
@@ -44,7 +44,7 @@ class BufferPack extends BufferPackAbstract {
 	 * @param manager
 	 *            geometries manager
 	 */
-	public BufferPack(GLBufferManager manager) {
+	protected BufferPack(GLBufferManager manager) {
 		this(manager, manager.getElementSizeStart(),
 				manager.getIndicesSizeStart());
 	}
@@ -170,7 +170,7 @@ class BufferPack extends BufferPackAbstract {
 	 *            length to write
 	 */
 	protected void setElementsForBigCurve(int curve, int length) {
-		int arrayOffset = (ELEMENT_SIZE_MAX - PlotterBrush.LATITUDES) * curve;
+		int arrayOffset = (ELEMENT_SIZE_MAX - manager.getCurveLatitudeSplits()) * curve;
 		vertexBuffer.set(manager.vertexArray, arrayOffset * 3, 0, length * 3);
 		normalBuffer.set(manager.normalArray, arrayOffset * 3, 0, length * 3);
 		textureBuffer.set(manager.textureArray, arrayOffset * 2, 0, length * 2);
@@ -267,7 +267,7 @@ class BufferPack extends BufferPackAbstract {
 	 * @see org.geogebra.common.geogebra3D.euclidian3D.openGL.BufferPackInterface#reset()
 	 */
 	@Override
-	public void reset() {
+	protected void reset() {
 		super.reset();
 		elementsLength = 0;
 		indicesLength = 0;

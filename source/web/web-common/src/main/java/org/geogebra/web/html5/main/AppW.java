@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import org.geogebra.common.GeoGebraConstants.Platform;
 import org.geogebra.common.SuiteSubApp;
@@ -41,7 +42,6 @@ import org.geogebra.common.euclidian.EmbedManager;
 import org.geogebra.common.euclidian.EuclidianConstants;
 import org.geogebra.common.euclidian.EuclidianController;
 import org.geogebra.common.euclidian.EuclidianView;
-import org.geogebra.common.exam.ExamController;
 import org.geogebra.common.export.pstricks.GeoGebraExport;
 import org.geogebra.common.export.pstricks.GeoGebraToAsymptote;
 import org.geogebra.common.export.pstricks.GeoGebraToPgf;
@@ -92,6 +92,7 @@ import org.geogebra.common.move.ggtapi.models.Pagination;
 import org.geogebra.common.move.ggtapi.requests.MaterialCallbackI;
 import org.geogebra.common.move.operations.NetworkOperation;
 import org.geogebra.common.ownership.GlobalScope;
+import org.geogebra.common.ownership.SuiteScope;
 import org.geogebra.common.plugin.Event;
 import org.geogebra.common.plugin.EventDispatcher;
 import org.geogebra.common.plugin.EventType;
@@ -222,6 +223,7 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 
 	private DrawEquationW drawEquation;
 
+	protected SuiteScope suiteScope;
 	protected GgbAPIW ggbapi;
 	private final LocalizationW loc;
 	private ImageManagerW imageManager;
@@ -287,7 +289,6 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 	private Widget lastFocusableWidget;
 	private FullScreenState fullscreenState;
 	private ToolTipManagerW toolTipManager;
-	private final ExamController examController = GlobalScope.examController;
 	private ToolboxIconResource toolboxIconResource;
 	private TopBarIconResource topBarIconResource;
 	private GeneralIconResource generalIconResource;
@@ -306,6 +307,10 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 		super(getPlatform(appletParameters, dimension, laf));
 		this.geoGebraElement = geoGebraElement;
 		this.appletParameters = appletParameters;
+
+		suiteScope = GlobalScope.registerNewSuiteScope();
+		suiteScope.registerApp(this);
+
 		// laf = null in webSimple
 		boolean hasUndo = appletParameters.getDataParamEnableUndoRedo()
 				&& (laf == null || laf.undoRedoSupported());
@@ -457,7 +462,8 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 	/**
 	 * handler for window resize
 	 */
-	protected final void windowResized() {
+	public final void windowResized() {
+		geoGebraElement.resetScale();
 		for (RequiresResize mtg : this.euclidianHandlers) {
 			mtg.onResize();
 		}
@@ -1055,8 +1061,8 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 			pageController.updatePreviewImage();
 		}
 		resetUrl();
-		if (examController.isExamActive()) {
-			setActiveMaterial(examController.getNewTempMaterial());
+		if (suiteScope != null && suiteScope.examController.isExamActive()) {
+			setActiveMaterial(suiteScope.examController.getNewTempMaterial());
 		}
 		reapplyRestrictions();
 		setSaved();
@@ -1662,7 +1668,7 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 	 *            application
 	 * @return a kernel
 	 */
-	protected Kernel newKernel(App thisApp) {
+	protected Kernel newKernel(@Nonnull App thisApp) {
 		return new Kernel(thisApp, new GeoFactory());
 	}
 
@@ -2025,13 +2031,6 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 		UserPreferredLanguage.translate(this, ".GeoGebraHeader");
 	}
 
-	@Override
-	public boolean letRedefine() {
-		// TODO
-		// Auto-generated
-		return true;
-	}
-
 	// ============================================
 	// IMAGES
 	// ============================================
@@ -2229,7 +2228,9 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 	 *            popup
 	 */
 	public void registerPopup(HasHide widget) {
-		popups.add(widget);
+		if (!popups.contains(widget)) {
+			popups.add(widget);
+		}
 	}
 
 	/**
@@ -3676,6 +3677,7 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 	private void initializeAnalytics() {
 		try {
 			Analytics.setInstance(new AnalyticsW());
+			Analytics.updateDefaultAnalyticsParameters(getConfig());
 		} catch (Throwable e) {
 			Log.debug("Could not initialize analytics object." + e);
 		}

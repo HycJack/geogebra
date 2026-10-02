@@ -49,7 +49,7 @@ public class XMLBuilder {
 	 * @param withLabelOffset
 	 *            true to include label offsets
 	 */
-	protected static void getXMLvisualTags(GeoElement geo,
+	protected static void getXMLVisualTags(GeoElement geo,
 			final XMLStringBuilder sb, final boolean withLabelOffset) {
 		final boolean isDrawable = geo.isDrawable();
 
@@ -138,7 +138,7 @@ public class XMLBuilder {
 
 		// don't remove layer 0 information
 		// we always need it in case an earlier element has higher layer eg 1
-		if (isDrawable) {
+		if (isDrawable && (!geo.isGeoNumeric() || geo.getDefinition() == null)) {
 			sb.startTag("layer").attr("val", geo.getLayer()).endTag();
 
 			if (!Double.isNaN(geo.getOrdering())) {
@@ -159,7 +159,10 @@ public class XMLBuilder {
 		}
 
 		if (geo.isDrawable()) {
-			sb.startTag("labelMode").attr("val", geo.labelMode).endTag();
+			if (!geo.isGeoNumeric() || geo.getDefinition() == null
+					|| geo.labelMode != GeoElement.LABEL_NAME_VALUE) {
+				sb.startTag("labelMode").attr("val", geo.labelMode).endTag();
+			}
 
 			if (geo.getTooltipMode() != GeoElementND.TOOLTIP_ALGEBRAVIEW_SHOWING) {
 				sb.startTag("tooltipMode").attr("val", geo.getTooltipMode()).endTag();

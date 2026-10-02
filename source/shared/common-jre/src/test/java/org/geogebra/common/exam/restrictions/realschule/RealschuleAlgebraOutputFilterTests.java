@@ -22,19 +22,19 @@ import static org.junit.Assert.assertTrue;
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.exam.BaseExamTestSetup;
 import org.geogebra.common.gui.view.algebra.filter.AlgebraOutputFilter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RealschuleAlgebraOutputFilterTests extends BaseExamTestSetup {
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		setupApp(SuiteSubApp.GRAPHING);
 	}
 
 	@Test
 	public void testAlgebraOutputRestrictions() {
-		AlgebraOutputFilter outputFilter = new RealschuleAlgebraOutputFilter(null);
+		AlgebraOutputFilter outputFilter = new RealschuleAlgebraOutputFilter();
 
 		assertFalse(outputFilter.isAllowed(evaluateGeoElement("Line((0, 0), (1, 2))")));
 		assertFalse(outputFilter.isAllowed(evaluateGeoElement("Ray((0, 0), (1, 2))")));

@@ -44,12 +44,13 @@
 
 package com.himamis.retex.renderer.web;
 
+import org.geogebra.common.awt.AwtFactory;
+import org.geogebra.web.awt.AwtFactoryW;
+
 import com.himamis.retex.renderer.share.platform.FactoryProvider;
 import com.himamis.retex.renderer.share.platform.font.FontFactory;
-import com.himamis.retex.renderer.share.platform.geom.GeomFactory;
 import com.himamis.retex.renderer.share.platform.graphics.GraphicsFactory;
 import com.himamis.retex.renderer.web.font.FontFactoryGWT;
-import com.himamis.retex.renderer.web.geom.GeomFactoryGWT;
 import com.himamis.retex.renderer.web.graphics.GraphicsFactoryGWT;
 
 import elemental2.dom.DomGlobal;
@@ -62,17 +63,13 @@ public final class FactoryProviderGWT extends FactoryProvider {
 	}
 
 	/**
-	 * Setup factory if not done previously
+	 * Setup factory if not done previously.
 	 */
 	public static void ensureLoaded() {
 		if (FactoryProvider.getInstance() == null) {
+			AwtFactory.setPrototypeIfNull(new AwtFactoryW());
 			setInstance(new FactoryProviderGWT());
 		}
-	}
-
-	@Override
-	protected GeomFactory createGeomFactory() {
-		return new GeomFactoryGWT();
 	}
 
 	@Override

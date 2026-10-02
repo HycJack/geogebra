@@ -39,7 +39,7 @@ public class WtrOutputFilterTest extends BaseExamTestSetup {
 		evaluate("a=1 deg");
 		evaluate("b=2");
 		evaluate("c=3");
-		WtrAlgebraOutputFilter filter = new WtrAlgebraOutputFilter(null);
+		WtrAlgebraOutputFilter filter = new WtrAlgebraOutputFilter();
 		assertFalse(filter.isAllowed(evaluate("pi/deg")[0]));
 		assertFalse(filter.isAllowed(evaluate("pi/a")[0]));
 		assertTrue(filter.isAllowed(evaluate("sin(a)")[0]));
@@ -55,7 +55,7 @@ public class WtrOutputFilterTest extends BaseExamTestSetup {
 		getKernel().setAngleUnit(Kernel.ANGLE_RADIANT);
 		evaluate("a=1 deg");
 		evaluate("b=2");
-		WtrAlgebraOutputFilter filter = new WtrAlgebraOutputFilter(null);
+		WtrAlgebraOutputFilter filter = new WtrAlgebraOutputFilter();
 		assertFalse(filter.isAllowed(evaluate("pi/deg")[0]));
 		assertFalse(filter.isAllowed(evaluate("pi/a")[0]));
 		assertFalse(filter.isAllowed(evaluate("a+a")[0]));

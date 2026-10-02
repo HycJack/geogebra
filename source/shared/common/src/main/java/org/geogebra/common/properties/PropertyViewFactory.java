@@ -23,16 +23,15 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
-import org.geogebra.common.kernel.commands.AlgebraProcessor;
 import org.geogebra.common.kernel.geos.GeoElement;
+import org.geogebra.common.kernel.geos.GeoSymbolic;
+import org.geogebra.common.kernel.kernelND.GeoElementND;
 import org.geogebra.common.main.App;
-import org.geogebra.common.main.Localization;
-import org.geogebra.common.main.undo.UndoManager;
-import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
+import org.geogebra.common.ownership.GlobalScope;
+import org.geogebra.common.ownership.SuiteScope;
 import org.geogebra.common.properties.factory.PropertiesArray;
 import org.geogebra.common.properties.impl.undo.UndoSavingPropertyObserver;
 import org.geogebra.common.properties.util.PropertyArrayValueObserving;
-import org.geogebra.common.util.ImageManager;
 
 /**
  * Factory class for creating {@link PropertyView}s.
@@ -89,30 +88,22 @@ public class PropertyViewFactory {
 
 	/**
 	 * Constructs the {@link Property}s for the settings of the given objects, connects the
-	 * {@link UndoManager}, and transforms them into a {@code PropertyView} to be displayed.
-	 * @param geoElements the objects for which to construct the settings
-	 * @param algebraProcessor the algebra processor
-	 * @param localization the localization
-	 * @param geoElementPropertiesFactory the factory to be used to create the {@code Property}s
-	 * @param undoManager the undo manager to connect to
+	 * undo manager, and transforms them into a {@code PropertyView} to be displayed.
+	 * @param app the active app
 	 * @return the {@code PropertyView} containing the settings for the given objects
 	 */
 	public static @Nonnull PropertyView.TabbedPageSelector propertyViewOfObjectSettings(
-			@Nonnull List<GeoElement> geoElements,
-			@Nonnull AlgebraProcessor algebraProcessor,
-			@Nonnull ImageManager imageManager,
-			@Nonnull Localization localization,
-			@Nonnull GeoElementPropertiesFactory geoElementPropertiesFactory,
-			@Nonnull UndoManager undoManager) {
-		List<PropertiesArray> propertiesArrayList = geoElementPropertiesFactory
-				.createStructuredProperties(algebraProcessor, localization,
-						imageManager, geoElements);
-		UndoSavingPropertyObserver undoSavingPropertyObserver =
-				new UndoSavingPropertyObserver(undoManager);
-		propertiesArrayList.forEach(propertiesArray -> PropertyArrayValueObserving
-				.addObserver(propertiesArray, undoSavingPropertyObserver));
-		return new PropertyView.TabbedPageSelector(
-				localization.getMenu(geoElements.get(0).getTypeString()), propertiesArrayList, 0);
+			@Nonnull App app) {
+		List<GeoElement> geoElements = app.getSelectionManager().getSelectedGeos();
+		String title = app.getLocalization().getMenu(getTypeString(geoElements.get(0)));
+		SuiteScope suiteScope = GlobalScope.getSuiteScope(app);
+		assert suiteScope != null;
+		List<PropertiesArray> propertiesArrayList = suiteScope.geoElementPropertiesFactory
+				.createStructuredProperties(app.getKernel().getAlgebraProcessor(),
+						app.getLocalization(), app.getImageManager(), geoElements);
+		propertiesArrayList.forEach(propertiesArray -> PropertyArrayValueObserving.addObserver(
+				propertiesArray, new UndoSavingPropertyObserver(app.getUndoManager())));
+		return new PropertyView.TabbedPageSelector(title, propertiesArrayList, 0);
 	}
 
 	/**
@@ -136,6 +127,17 @@ public class PropertyViewFactory {
 				propertyArrayList, objectPropertiesAreShown);
 		return new PropertyView.TabbedPageSelector(app.getLocalization().getMenu("Settings"),
 				propertyArrayList, initialSelectedTabIndex);
+	}
+
+	private static String getTypeString(GeoElement geoElement) {
+		if (!(geoElement instanceof GeoSymbolic geoSymbolic)) {
+			return geoElement.getTypeString();
+		}
+		GeoElementND twinGeo = geoSymbolic.getTwinGeo();
+		if (twinGeo == null) {
+			return "Settings";
+		}
+		return twinGeo.toGeoElement().getTypeString();
 	}
 
 	private static int calculateInitialSelectedTabIndex(

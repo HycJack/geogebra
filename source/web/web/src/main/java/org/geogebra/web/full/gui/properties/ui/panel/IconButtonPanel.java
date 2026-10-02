@@ -25,6 +25,7 @@ import org.geogebra.common.gui.SetLabels;
 import org.geogebra.common.properties.PropertyResource;
 import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.IconButton;
 import org.geogebra.web.full.main.AppWFull;
+import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.main.AppW;
 import org.gwtproject.user.client.ui.FlowPanel;
 import org.gwtproject.user.client.ui.Label;
@@ -34,9 +35,9 @@ public class IconButtonPanel extends FlowPanel implements SetLabels, Configurati
 	private final AppW appW;
 	private Label label;
 	private final String labelKey;
-	private List<IconButton> iconButtonList;
+	private List<List<IconButton>> iconButtonList;
 	private Runnable callback;
-	private final SingleSelectionIconRow property;
+	private final List<SingleSelectionIconRow> propertyList;
 
 	/**
 	 * Created an icon button panel
@@ -46,11 +47,28 @@ public class IconButtonPanel extends FlowPanel implements SetLabels, Configurati
 	 */
 	public IconButtonPanel(AppW appW, SingleSelectionIconRow property, boolean addTitle) {
 		this.appW = appW;
-		this.property = property;
+		propertyList = List.of(property);
 		labelKey = property.getLabel();
 		buildGUI(addTitle);
 		property.setConfigurationUpdateDelegate(this);
 		property.setVisibilityUpdateDelegate(this);
+	}
+
+	/**
+	 * Created an icon button panel
+	 * @param appW application
+	 * @param labelKey title
+	 * @param properties list of {@link SingleSelectionIconRow}
+	 */
+	public IconButtonPanel(AppW appW, String labelKey, List<SingleSelectionIconRow> properties) {
+		this.appW = appW;
+		propertyList = properties;
+		this.labelKey = labelKey;
+		buildGUI(true);
+		for (SingleSelectionIconRow property : properties) {
+			property.setConfigurationUpdateDelegate(this);
+			property.setVisibilityUpdateDelegate(this);
+		}
 	}
 
 	/**
@@ -69,49 +87,76 @@ public class IconButtonPanel extends FlowPanel implements SetLabels, Configurati
 	private void buildGUI(boolean addTitle) {
 		addStyleName("iconButtonPanel");
 		if (addTitle) {
-			label = new Label(property.getLabel());
+			label = new Label(appW.getLocalization().getMenu(labelKey));
 			add(label);
 		}
 
-		FlowPanel iconPanel = new FlowPanel();
-		iconPanel.addStyleName("iconPanel");
-		PropertyResource[] icons = property.getIcons().toArray(new PropertyResource[0]);
-		String[] labels = property.getToolTipLabels();
-		int idx = 0;
-		Integer selectedIdx = property.getSelectedIconIndex();
-		if (selectedIdx == null) {
-			selectedIdx = 0;
-		}
 		iconButtonList = new ArrayList<>();
-		for (PropertyResource icon: icons) {
-			String label = labels != null && labels[idx] != null ? labels[idx] : "";
-			IconButton btn = new IconButton(appW, null,
-					((AppWFull) appW).getPropertiesIconResource().getImageResource(icon), label);
-			btn.setActive(selectedIdx == idx);
-			iconPanel.add(btn);
-			iconButtonList.add(btn);
-			final int index = idx;
-			btn.addClickHandler(appW.getGlobalHandlers(),
-					(w) -> {
-						property.setSelectedIconIndex(index);
-						iconButtonList.forEach(iconButton -> iconButton.setActive(false));
-						btn.setActive(true);
-						if (callback != null) {
-							callback.run();
-						}
-					});
-			idx++;
-		}
+		FlowPanel iconButtonListPanel = new FlowPanel();
+		iconButtonListPanel.addStyleName("iconButtonListPanel");
+		for (SingleSelectionIconRow property : propertyList) {
+			List<IconButton> buttons = new ArrayList<>();
+			FlowPanel iconPanel = new FlowPanel();
+			iconPanel.addStyleName("iconPanel");
 
-		add(iconPanel);
+			PropertyResource[] icons = property.getIcons().toArray(new PropertyResource[0]);
+			String[] labels = property.getToolTipLabels();
+			int idx = 0;
+			Integer selectedIdx = property.getSelectedIconIndex();
+			if (selectedIdx == null) {
+				selectedIdx = 0;
+			}
+
+			for (PropertyResource icon : icons) {
+				String label = labels != null && labels[idx] != null ? labels[idx] : "";
+				IconButton btn = new IconButton(appW, null,
+						((AppWFull) appW).getPropertiesIconResource().getImageResource(icon),
+						label);
+				btn.setDisabled(!property.isEnabled());
+				btn.setActive(selectedIdx == idx);
+				iconPanel.add(btn);
+				buttons.add(btn);
+				final int index = idx;
+				btn.addClickHandler(appW.getGlobalHandlers(),
+						(w) -> {
+							property.setSelectedIconIndex(index);
+							buttons.forEach(iconButton -> iconButton.setActive(false));
+							btn.setActive(true);
+							if (callback != null) {
+								callback.run();
+							}
+						});
+				idx++;
+			}
+
+			iconButtonListPanel.add(iconPanel);
+			iconButtonList.add(buttons);
+			if (propertyList.indexOf(property) != propertyList.size() - 1) {
+				iconButtonListPanel.add(BaseWidgetFactory.INSTANCE.newDivider(true));
+			}
+		}
+		add(iconButtonListPanel);
 	}
 
 	/**
 	 * Enabled/disable buttons
+	 * @param index index of icon button panel (if multiple)
 	 * @param disabled whether buttons should be enabled or disabled
 	 */
-	public void setDisabled(boolean disabled) {
-		iconButtonList.forEach(button -> button.setDisabled(disabled));
+	public void setDisabled(int index, boolean disabled) {
+		iconButtonList.get(index).forEach(button -> button.setDisabled(disabled));
+	}
+
+	/**
+	 * Deselect all buttons, but button at index for given property, if available.
+	 * @param propertyIndex index of property
+	 * @param selectedIndex index of button in property button list
+	 */
+	public void deselectAllBut(int propertyIndex, int selectedIndex) {
+		iconButtonList.get(propertyIndex).forEach(button -> button.setActive(false));
+		if (selectedIndex > -1 && selectedIndex < iconButtonList.size()) {
+			iconButtonList.get(propertyIndex).get(selectedIndex).setActive(true);
+		}
 	}
 
 	@Override
@@ -119,16 +164,21 @@ public class IconButtonPanel extends FlowPanel implements SetLabels, Configurati
 		if (label != null) {
 			label.setText(appW.getLocalization().getMenu(labelKey));
 		}
-		iconButtonList.forEach(IconButton::setLabels);
+		iconButtonList.forEach(buttonList -> buttonList.forEach(IconButton::setLabels));
 	}
 
 	@Override
 	public void configurationUpdated() {
-		setDisabled(!property.isEnabled());
+		for (int i = 0; i < propertyList.size(); i++) {
+			SingleSelectionIconRow property = propertyList.get(i);
+			setDisabled(i, !property.isEnabled());
+		}
 	}
 
 	@Override
 	public void visibilityUpdated() {
-		setVisible(property.isVisible());
+		for (SingleSelectionIconRow property : propertyList) {
+			setVisible(property.isVisible());
+		}
 	}
 }

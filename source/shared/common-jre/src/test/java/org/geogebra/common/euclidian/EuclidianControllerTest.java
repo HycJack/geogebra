@@ -1068,6 +1068,69 @@ public class EuclidianControllerTest extends BaseEuclidianControllerTest {
 		assertEquals(0, slider.evaluateDouble(), .001);
 	}
 
+	@Test
+	public void testMoveBoxPlot() {
+		setMode(EuclidianConstants.MODE_MOVE);
+		GeoNumeric numeric = add("BoxPlot(0, 1, {1, 2, 3, 4})");
+		numeric.setFixed(false);
+
+		dragStart(50, 50);
+		dragEnd(50, 200);
+
+		assertEquals("BoxPlot(-4, 1, {1, 2, 3, 4})", numeric
+				.getDefinition(StringTemplate.defaultTemplate));
+	}
+
+	@Test
+	public void testFixedBoxPlotDoesNotMove() {
+		setMode(EuclidianConstants.MODE_MOVE);
+		GeoNumeric numeric = add("BoxPlot(0, 1, {1, 2, 3, 4})");
+		numeric.setFixed(true);
+
+		dragStart(50, 50);
+		dragEnd(50, 200);
+
+		assertEquals("BoxPlot(0, 1, {1, 2, 3, 4})", numeric
+				.getDefinition(StringTemplate.defaultTemplate));
+	}
+
+	@Test
+	public void testMoveBoxPlotUndoRedo() {
+		activateUndo();
+		setMode(EuclidianConstants.MODE_MOVE);
+		GeoNumeric numeric = add("BoxPlot(0, 1, {1, 2, 3, 4})");
+		numeric.setFixed(false);
+
+		dragStart(50, 50);
+		dragEnd(50, 200);
+
+		getApp().getKernel().undo();
+
+		assertEquals("BoxPlot(0, 1, {1, 2, 3, 4})", numeric
+				.getDefinition(StringTemplate.defaultTemplate));
+
+		getApp().getKernel().redo();
+		assertEquals("BoxPlot(-4, 1, {1, 2, 3, 4})", numeric
+				.getDefinition(StringTemplate.defaultTemplate));
+	}
+
+	@Test
+	@Issue({"APPS-7317", "APPS-7429"})
+	public void testDependentListExpressionNotMoveable() {
+		setMode(EuclidianConstants.MODE_MOVE);
+		add("y_1={0,1,2}");
+		add("y_2={0,2,3}");
+		GeoElement element = add("(y_1, y_2)");
+
+		dragStart(0, 0);
+		dragEnd(50, 50);
+
+		assertEquals("(y_1, y_2)",
+				element.getDefinition(StringTemplate.defaultTemplate));
+		assertEquals("{(0, 0), (1, 2), (2, 3)}",
+				element.toValueString(StringTemplate.defaultTemplate));
+	}
+
 	@Override
 	protected void click(int x, int y) {
 		super.click(x, y);

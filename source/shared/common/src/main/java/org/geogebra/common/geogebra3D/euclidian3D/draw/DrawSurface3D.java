@@ -168,13 +168,13 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		private static final long serialVersionUID = 1L;
 		private DrawSurface3D surface;
 
-		public NotEnoughCornersException(DrawSurface3D surface,
+		NotEnoughCornersException(DrawSurface3D surface,
 				String message) {
 			super(message);
 			this.surface = surface;
 		}
 
-		public void caught() {
+		void caught() {
 			Log.debug(this);
 			surface.setNoRoomLeft();
 		}
@@ -262,7 +262,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 	 * @param s
 	 *            message
 	 */
-	final static protected void debug(String s) {
+	static protected void debug(String s) {
 		if (DEBUG) {
 			Log.debug(s);
 		}
@@ -494,7 +494,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 	 *            surface plotter
 	 * 
 	 */
-	static final private void endGeometry(PlotterSurface surface) {
+	static private void endGeometry(PlotterSurface surface) {
 		surface.endGeometryDirect();
 	}
 
@@ -575,7 +575,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		drawWireframe(renderer);
 	}
 
-	static final private boolean isDefinedForWireframe(Corner corner) {
+	static private boolean isDefinedForWireframe(Corner corner) {
 		if (corner.p.isFinalUndefined()) {
 			return false;
 		}
@@ -873,14 +873,14 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		return first;
 	}
 
-	final private Corner addLeftToMesh(Corner right, double u, double v)
+	private Corner addLeftToMesh(Corner right, double u, double v)
 			throws NotEnoughCornersException {
 		Corner left = newCorner(u, v);
 		right.l = left;
 		return left;
 	}
 
-	final private Corner addRowAboveToMesh(Corner bottomRight, double v,
+	private Corner addRowAboveToMesh(Corner bottomRight, double v,
 			double uBorderMin, double uBorderMax, double uMax, int uN)
 			throws NotEnoughCornersException {
 		Corner below = bottomRight;
@@ -962,15 +962,15 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 	 * 
 	 * @return new coords 3
 	 */
-	final static protected Coords3 newCoords3() {
+	static protected Coords3 newCoords3() {
 		return new CoordsDouble3();
 	}
 
-	final private void scaleXYZ(Coords3 p) {
+	private void scaleXYZ(Coords3 p) {
 		getView3D().scaleXYZ(p);
 	}
 
-	final private void scaleAndNormalizeNormalXYZ(Coords3 n) {
+	private void scaleAndNormalizeNormalXYZ(Coords3 n) {
 		getView3D().scaleAndNormalizeNormalXYZ(n);
 	}
 
@@ -1056,7 +1056,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 
 	}
 
-	class Corner {
+	protected class Corner {
 		Coords3 p;
 		Coords3 normal;
 		double u;
@@ -1066,16 +1066,16 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		Corner l; // left
 		int id;
 
-		public Corner(int id) {
+		Corner(int id) {
 			this.id = id;
 		}
 
-		public Corner(double u, double v, int id) {
+		Corner(double u, double v, int id) {
 			this.id = id;
 			set(u, v);
 		}
 
-		public void set(double u, double v) {
+		void set(double u, double v) {
 			this.u = u;
 			this.v = v;
 			p = evaluatePoint(u, v, p);
@@ -1089,7 +1089,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 			l = null;
 		}
 
-		public void set(Corner c) {
+		void set(Corner c) {
 			u = c.u;
 			v = c.v;
 			p = c.p;
@@ -1097,11 +1097,11 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 			id = c.id;
 		}
 
-		public Corner(double u, double v, Coords3 p) {
+		Corner(double u, double v, Coords3 p) {
 			set(u, v, p);
 		}
 
-		public void set(double u, double v, Coords3 p) {
+		void set(double u, double v, Coords3 p) {
 			this.u = u;
 			this.v = v;
 			this.p = p;
@@ -1118,34 +1118,8 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		 * @param surface
 		 *            surface plotter
 		 */
-		public void drawAsNextToSplit(PlotterSurface surface) {
-
-			// if (this.p.isNotFinalUndefined()){
-			// if (a.p.isNotFinalUndefined()){
-			// if (l.p.isNotFinalUndefined()){
-			// drawTriangle(surface, this, a, l);
-			// if (l.a.p.isNotFinalUndefined()){
-			// drawTriangle(surface, l, a, l.a);
-			// }
-			// }else{
-			// if (l.a.p.isNotFinalUndefined()){
-			// drawTriangle(surface, this, a, l.a);
-			// }
-			// }
-			// }else{
-			// if (l.p.isNotFinalUndefined() && l.a.p.isNotFinalUndefined()){
-			// drawTriangle(surface, this, l.a, l);
-			// }
-			// }
-			// }else{ // this undefined
-			// if (l.p.isNotFinalUndefined() && a.p.isNotFinalUndefined() &&
-			// l.a.p.isNotFinalUndefined()){
-			// drawTriangle(surface, l, a, l.a);
-			// }
-			// }
-
+		void drawAsNextToSplit(PlotterSurface surface) {
 			drawAsStillToSplit(surface);
-
 		}
 
 		/**
@@ -1154,7 +1128,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		 * @param surface
 		 *            surface plotter
 		 */
-		public void drawAsStillToSplit(PlotterSurface surface) {
+		void drawAsStillToSplit(PlotterSurface surface) {
 
 			// prevent keeping old element id
 			for (int i = 0; i < cornerToDrawStillToSplit.length; i++) {
@@ -1242,7 +1216,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 
 		}
 
-		public void split(boolean draw) throws NotEnoughCornersException {
+		void split(boolean draw) throws NotEnoughCornersException {
 
 			Corner left, above, subLeft, subAbove;
 
@@ -2670,7 +2644,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		Coords3 centerNormal;
 		int id;
 
-		public CornerAndCenter(Corner corner, int id) {
+		CornerAndCenter(Corner corner, int id) {
 			center = newCoords3();
 			centerNormal = newCoords3();
 			setCorner(corner);
@@ -2683,7 +2657,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		 * @param corner
 		 *            corner
 		 */
-		public void setCorner(Corner corner) {
+		void setCorner(Corner corner) {
 			this.corner = corner;
 		}
 
@@ -2691,7 +2665,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		 * 
 		 * @return corner
 		 */
-		public Corner getCorner() {
+		Corner getCorner() {
 			return corner;
 		}
 
@@ -2699,7 +2673,7 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		 * 
 		 * @return center
 		 */
-		public Coords3 getCenter() {
+		Coords3 getCenter() {
 			return center;
 		}
 
@@ -2707,12 +2681,11 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 		 * 
 		 * @return center normal
 		 */
-		public Coords3 getCenterNormal() {
+		Coords3 getCenterNormal() {
 			return centerNormal;
 		}
 
-		public void drawDebug(PlotterSurface surface) {
-
+		void drawDebug(PlotterSurface surface) {
 			surface.startTrianglesWireFrame();
 			draw(surface);
 			surface.endGeometryDirect();
@@ -2720,10 +2693,9 @@ public class DrawSurface3D extends Drawable3DSurfaces implements HasZPick {
 			surface.startTrianglesWireFrameSurface();
 			draw(surface);
 			surface.endGeometryDirect();
-
 		}
 
-		public void draw(PlotterSurface surface) {
+		void draw(PlotterSurface surface) {
 			Corner p1, p2;
 
 			// go left

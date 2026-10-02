@@ -23,6 +23,7 @@ import org.geogebra.common.awt.GFont;
 import org.geogebra.common.awt.GGraphics2D;
 import org.geogebra.common.spreadsheet.core.CellRenderer;
 import org.geogebra.common.spreadsheet.style.CellFormat;
+import org.geogebra.common.spreadsheet.style.SpreadsheetStyling;
 import org.geogebra.common.util.shape.Rectangle;
 
 public final class SelfRenderable {
@@ -31,37 +32,45 @@ public final class SelfRenderable {
 	private final CellRenderer renderer;
 	private final Object renderable;
 	private final GColor background;
+	private final GColor textColor;
 	private final int fontStyle;
 	private final int alignment;
 	private final double width;
+	private final double fontSize;
 
 	/**
 	 * @param renderer renderer
 	 * @param renderable cached renderable value
+	 * @param fontSize font size in points
 	 * @param fontStyle optional font style ({@link GFont#getStyle})
 	 * @param alignment text alignment
 	 */
-	public SelfRenderable(CellRenderer renderer, Integer fontStyle,
+	public SelfRenderable(CellRenderer renderer, double fontSize, Integer fontStyle,
 			Integer alignment, Object renderable) {
-		this(renderer, fontStyle, alignment, renderable, null);
+		this(renderer, fontSize, fontStyle, alignment, renderable, null,
+				SpreadsheetStyling.getDefaultTextColor());
 	}
 
 	/**
 	 * @param renderer renderer
+	 * @param fontSize fontSize in points
 	 * @param renderable cached renderable value
 	 * @param fontStyle optional font style ({@link GFont#getStyle})
 	 * @param alignment text alignment
 	 * @param background background color
+	 * @param textColor text color
 	 */
-	public SelfRenderable(CellRenderer renderer, Integer fontStyle,
-			Integer alignment, Object renderable, GColor background) {
+	public SelfRenderable(CellRenderer renderer, double fontSize, Integer fontStyle,
+			Integer alignment, Object renderable, GColor background, GColor textColor) {
 		this.renderer = renderer;
 		this.renderable = renderable;
 		this.background = background;
+		this.textColor = textColor;
 		this.alignment = alignment == null ? DEFAULT_CELL_ALIGNMENT : alignment;
 		this.fontStyle = fontStyle == null ? GFont.PLAIN : fontStyle;
+		this.fontSize = fontSize;
 		if (this.alignment != CellFormat.ALIGN_LEFT) {
-			width = renderer.measure(renderable, this.fontStyle);
+			width = renderer.measureWidth(renderable, this.fontStyle, fontSize);
 		} else {
 			width = 0;
 		}
@@ -79,10 +88,17 @@ public final class SelfRenderable {
 		} else if (alignment == CellFormat.ALIGN_RIGHT) {
 			offset = cellBorder.getWidth() - width - HORIZONTAL_PADDING;
 		}
-		renderer.draw(renderable, fontStyle, offset, graphics, cellBorder);
+		graphics.setClip(cellBorder.getMinX(), cellBorder.getMinY(),
+				cellBorder.getWidth(), cellBorder.getHeight());
+		renderer.draw(renderable, fontSize, fontStyle, offset, graphics, cellBorder);
+		graphics.resetClip();
 	}
 
 	public GColor getBackground() {
 		return background;
+	}
+
+	public GColor getTextColor() {
+		return textColor;
 	}
 }

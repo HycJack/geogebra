@@ -17,10 +17,29 @@
 package org.geogebra.web.full.gui.properties.ui;
 
 import static org.geogebra.common.main.GeoGebraColorConstants.NEUTRAL_700;
-import static org.geogebra.common.properties.PropertyView.*;
+import static org.geogebra.common.properties.PropertyView.ActionableButtonRow;
+import static org.geogebra.common.properties.PropertyView.ButtonIconEditor;
+import static org.geogebra.common.properties.PropertyView.ButtonWithIcon;
+import static org.geogebra.common.properties.PropertyView.Checkbox;
+import static org.geogebra.common.properties.PropertyView.ColorSelectorRow;
+import static org.geogebra.common.properties.PropertyView.ComboBox;
+import static org.geogebra.common.properties.PropertyView.ConnectedButtonGroup;
+import static org.geogebra.common.properties.PropertyView.DimensionRatioEditor;
+import static org.geogebra.common.properties.PropertyView.Dropdown;
+import static org.geogebra.common.properties.PropertyView.ExpandableList;
+import static org.geogebra.common.properties.PropertyView.GroupedIconButtonRow;
+import static org.geogebra.common.properties.PropertyView.HorizontalSplitView;
+import static org.geogebra.common.properties.PropertyView.ImagePicker;
+import static org.geogebra.common.properties.PropertyView.MultiSelectionIconRow;
+import static org.geogebra.common.properties.PropertyView.RelatedPropertyViewCollection;
+import static org.geogebra.common.properties.PropertyView.ScriptEditor;
+import static org.geogebra.common.properties.PropertyView.SingleSelectionIconRow;
+import static org.geogebra.common.properties.PropertyView.Slider;
+import static org.geogebra.common.properties.PropertyView.TextField;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.gui.AccessibilityGroup;
@@ -28,15 +47,19 @@ import org.geogebra.common.main.Localization;
 import org.geogebra.common.properties.PropertyView;
 import org.geogebra.common.properties.PropertyViewFactory;
 import org.geogebra.common.properties.factory.PropertiesArray;
+import org.geogebra.common.properties.impl.objects.FontProperty;
 import org.geogebra.web.full.gui.components.ComponentCheckbox;
 import org.geogebra.web.full.gui.components.ComponentComboBox;
+import org.geogebra.web.full.gui.components.ComponentConnectedButtonGroup;
 import org.geogebra.web.full.gui.components.ComponentDropDown;
 import org.geogebra.web.full.gui.components.ComponentExpandableList;
 import org.geogebra.web.full.gui.components.ComponentInputField;
 import org.geogebra.web.full.gui.components.ComponentSlider;
 import org.geogebra.web.full.gui.properties.ui.panel.ActionableButtonPanel;
+import org.geogebra.web.full.gui.properties.ui.panel.ButtonIconEditorPanel;
 import org.geogebra.web.full.gui.properties.ui.panel.DimensionRatioPanel;
 import org.geogebra.web.full.gui.properties.ui.panel.IconButtonPanel;
+import org.geogebra.web.full.gui.properties.ui.panel.ImagePickerPanel;
 import org.geogebra.web.full.gui.properties.ui.panel.MultiSelectionIconRowPanel;
 import org.geogebra.web.full.gui.properties.ui.tabs.ScriptTabFactory;
 import org.geogebra.web.full.gui.toolbar.mow.popupcomponents.ColorChooserPanel;
@@ -124,6 +147,13 @@ public class PropertiesPanelAdapter {
 			return new ComponentCheckbox(loc, checkBoxProperty,
 					checkBoxProperty.getLabel(), checkBoxProperty::setSelected, false);
 		}
+		if (propertyView instanceof ImagePicker imagePicker) {
+			return new ImagePickerPanel(app, imagePicker);
+		}
+		if (propertyView instanceof ConnectedButtonGroup connectedButtonGroup) {
+			return new ComponentConnectedButtonGroup(connectedButtonGroup, widgets);
+
+		}
 		if (propertyView instanceof ButtonWithIcon buttonWithIcon) {
 			IconSpec icon = ((AppWFull) app).getPropertiesIconResource()
 					.getImageResource(buttonWithIcon.getIcon()).withFill(NEUTRAL_700.toString());
@@ -145,12 +175,19 @@ public class PropertiesPanelAdapter {
 		if (propertyView instanceof DimensionRatioEditor) {
 			return new DimensionRatioPanel(app, this, (DimensionRatioEditor) propertyView);
 		}
+		if (propertyView instanceof GroupedIconButtonRow groupedIconButtonRow) {
+			return new IconButtonPanel(app, groupedIconButtonRow.getLabel(),
+					groupedIconButtonRow.getIconRowList());
+		}
 		if (propertyView instanceof HorizontalSplitView) {
 			FlowPanel panel = new FlowPanel();
 			panel.addStyleName("horizontalSplitView");
 			panel.add(getWidget(((HorizontalSplitView) propertyView).getLeadingPropertyView()));
 			panel.add(getWidget(((HorizontalSplitView) propertyView).getTrailingPropertyView()));
 			return panel;
+		}
+		if (propertyView instanceof ButtonIconEditor buttonIconEditor) {
+			return new ButtonIconEditorPanel(app, buttonIconEditor);
 		}
 		if (propertyView instanceof RelatedPropertyViewCollection relatedPropertyView) {
 			FlowPanel panel = new FlowPanel();
@@ -182,9 +219,9 @@ public class PropertiesPanelAdapter {
 			}
 			return expandableList;
 		}
-		if (propertyView instanceof Dropdown) {
+		if (propertyView instanceof Dropdown dropDownView) {
 			ComponentDropDown dropDown = new ComponentDropDown(app,
-					((Dropdown) propertyView).getPropertyName(), (Dropdown) propertyView);
+					dropDownView.getPropertyName(), dropDownView, getItemStyler(dropDownView));
 			dropDown.setFullWidth(true);
 			return dropDown;
 		}
@@ -216,26 +253,12 @@ public class PropertiesPanelAdapter {
 					},
 					colorSelectorRow);
 			Integer index = colorSelectorRow.getSelectedColorIndex();
-			if (index == null) {
-				index = 0;
+			if (index != null) {
+				colorPanel.updateColorSelection(colorSelectorRow.getColors().get(index));
 			}
-			colorPanel.updateColorSelection(colorSelectorRow.getColors().get(index));
 			colorPanel.addStyleName("colorPanel");
 			return colorPanel;
 		}
-		/*if (property instanceof FilePropertyFacade) {
-			StandardButton upload = new StandardButton(loc.getMenu("ChooseFromFile"));
-			upload.addStyleName("openFileBtn");
-			upload.addFastClickHandler(event ->
-					UploadImagePanel.getUploadButton(app, (fn, data) -> {
-						String fileName = ImageManagerW.getMD5FileName(fn, data);
-
-						app.getImageManager().addExternalImage(fileName, data);
-						app.getImageManager().triggerSingleImageLoading(fileName, app.getKernel());
-						((FilePropertyListFacade) property).setValue(fileName);
-					}).click());
-			return upload;
-		}*/
 		if (propertyView instanceof TextField) {
 			ComponentInputField inputField = new ComponentInputField(app, "", "",
 					(TextField) propertyView);
@@ -247,5 +270,17 @@ public class PropertiesPanelAdapter {
 			return inputField;
 		}
 		return new Label(propertyView.toString());
+	}
+
+	private ComponentDropDown.Styler getItemStyler(Dropdown dropDownView) {
+		Map<Integer, FontProperty.FontFamily> fontFamilies = dropDownView.getFontFamilies();
+		if (!fontFamilies.isEmpty()) {
+			return (item, index) -> {
+				FontProperty.FontFamily font = fontFamilies
+						.getOrDefault(index, FontProperty.FontFamily.ARIAL);
+				item.getElement().getStyle().setProperty("fontFamily", font.cssName());
+			};
+		}
+		return null;
 	}
 }

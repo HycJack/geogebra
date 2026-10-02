@@ -22,6 +22,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -491,6 +492,20 @@ public class GuiManagerD extends GuiManager implements GuiManagerInterfaceD {
 	}
 
 	@Override
+	public boolean isSpreadsheetFocused() {
+		return hasSpreadsheetView()
+				&& this.getSpreadsheetView().hasFocus();
+	}
+
+	@Override
+	public void scrollSpreadsheetToCell(GeoElement geo, String labelNew) {
+		if (hasSpreadsheetView()) {
+			this.getSpreadsheetView()
+					.scrollIfNeeded(geo, labelNew);
+		}
+	}
+
+	@Override
 	public void updateSpreadsheetColumnWidths() {
 		if (spreadsheetView != null) {
 			spreadsheetView.updateColumnWidths();
@@ -572,7 +587,7 @@ public class GuiManagerD extends GuiManager implements GuiManagerInterfaceD {
 
 	@Override
 	public void attachSpreadsheetView() {
-		getSpreadsheetView();
+		this.getSpreadsheetView();
 		spreadsheetView.attachView();
 	}
 
@@ -744,7 +759,7 @@ public class GuiManagerD extends GuiManager implements GuiManagerInterfaceD {
 			}
 
 			if (viewId == App.VIEW_SPREADSHEET) {
-				getSpreadsheetView().requestFocus();
+				this.getSpreadsheetView().requestFocus();
 			}
 		} else {
 			if (showView(viewId)) {

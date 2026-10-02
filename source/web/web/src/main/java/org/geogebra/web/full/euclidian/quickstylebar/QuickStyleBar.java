@@ -46,6 +46,7 @@ import org.geogebra.web.full.gui.GuiManagerW;
 import org.geogebra.web.full.gui.toolbar.mow.toolbox.components.IconButton;
 import org.geogebra.web.full.javax.swing.GPopupMenuW;
 import org.geogebra.web.full.main.AppWFull;
+import org.geogebra.web.html5.euclidian.FontLoader;
 import org.geogebra.web.html5.gui.BaseWidgetFactory;
 import org.geogebra.web.html5.gui.GPopupPanel;
 import org.geogebra.web.html5.gui.util.ClickStartHandler;
@@ -87,6 +88,8 @@ public class QuickStyleBar extends FlowPanel implements EuclidianStyleBar {
 		addHandlers();
 		buildGUI();
 		TestHarness.setAttr(this, "dynamicStyleBar");
+		// does not do anything if webfont path is empty
+		FontLoader.loadAllBundled(app.getAppletParameters().getParamWebfontsUrl());
 	}
 
 	private void buildGUI() {
@@ -163,10 +166,15 @@ public class QuickStyleBar extends FlowPanel implements EuclidianStyleBar {
 		addColorPropertyButton(activeGeoList, UndoActionType.STYLE_OR_CONTENT,
 				fontColorProperty);
 
-		Property fontSizeProperty = geoElementPropertiesFactory.createTextFontSizeProperty(
+		Property fontSizeProperty = geoElementPropertiesFactory.createFontSizeProperty(
 				getApp().getLocalization(), activeGeoList);
 		addPropertyPopupButton(activeGeoList, "gwt-PopupPanel contextSubMenu", true,
 				UndoActionType.STYLE_OR_CONTENT, fontSizeProperty);
+
+		PropertiesArray fontStyleProperty = geoElementPropertiesFactory.createFontStyleProperties(
+				getApp().getLocalization(), activeGeoList);
+		addColorPropertyButton(activeGeoList, UndoActionType.STYLE_OR_CONTENT,
+				"fontStyle", fontStyleProperty.getProperties());
 
 		BooleanProperty boldProperty = geoElementPropertiesFactory
 				.createBoldProperty(getApp().getLocalization(), activeGeoList);
@@ -205,12 +213,18 @@ public class QuickStyleBar extends FlowPanel implements EuclidianStyleBar {
 
 	private void addColorPropertyButton(List<GeoElement> geos, UndoActionType undoFiler,
 			PropertySupplier... properties) {
+		addColorPropertyButton(geos, undoFiler, "", properties);
+	}
+
+	private void addColorPropertyButton(List<GeoElement> geos, UndoActionType undoFiler,
+			String className, PropertySupplier... properties) {
 		if (properties.length == 0 || properties[0] == null || properties[0].get() == null) {
 			return;
 		}
 		Property firstProperty = properties[0].get();
 		propertyWrapper.addUndoActionObserver(properties, geos, undoFiler);
-		IconButtonWithProperty colorButton = new IconButtonWithProperty(getApp(), "colorStyle",
+		IconButtonWithProperty colorButton = new IconButtonWithProperty(
+				getApp(), className.isEmpty() ? "colorStyle" : "colorStyle " + className,
 				propertiesIconResource.getImageResource(firstProperty), firstProperty.getName(),
 				geos, true, properties);
 

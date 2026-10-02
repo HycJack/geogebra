@@ -25,9 +25,9 @@ import org.geogebra.common.awt.GComposite;
 import org.geogebra.common.awt.GDimension;
 import org.geogebra.common.awt.GFont;
 import org.geogebra.common.awt.GFontRenderContext;
-import org.geogebra.common.awt.GGraphics2D;
 import org.geogebra.common.awt.GPaint;
 import org.geogebra.common.awt.GPathIterator;
+import org.geogebra.common.awt.GRectangle2D;
 import org.geogebra.common.awt.GShape;
 import org.geogebra.common.awt.MyImage;
 import org.geogebra.common.awt.VectorPatternPaint;
@@ -46,7 +46,7 @@ import elemental2.dom.HTMLCanvasElement;
 import elemental2.dom.HTMLImageElement;
 import jsinterop.base.Js;
 
-public class GGraphics2DW implements GGraphics2DWI, GGraphics2D {
+public class GGraphics2DW implements GGraphics2DWI {
 
 	protected final Canvas canvas;
 	private JLMContext2D context;
@@ -187,7 +187,13 @@ public class GGraphics2DW implements GGraphics2DWI, GGraphics2D {
 		context.stroke();
 	}
 
-	protected void doDrawShape(Shape shape) {
+	/**
+	 * Create a path in the context (without drawing it).
+	 * @param shape shape to draw
+	 * @param context context
+	 * @param coords segment coordinates (for caching)
+	 */
+	public static void doDrawShape(Shape shape, JLMContext2D context, double[] coords) {
 		context.beginPath();
 		GPathIterator it = shape.getPathIterator(null);
 
@@ -629,11 +635,10 @@ public class GGraphics2DW implements GGraphics2DWI, GGraphics2D {
 
 	@Override
 	public void setClip(GShape shape) {
-		setClip(shape, true);
+		doSetClip(shape, true);
 	}
 
-	@Override
-	public void setClip(GShape shape, boolean saveContext) {
+	private void doSetClip(GShape shape, boolean saveContext) {
 		if (shape == null) {
 			resetClip();
 			return;
@@ -643,7 +648,7 @@ public class GGraphics2DW implements GGraphics2DWI, GGraphics2D {
 			context.saveTransform();
 		}
 
-		doDrawShape((Shape) shape);
+		doDrawShape((Shape) shape, context, coords);
 
 		context.clip();
 	}
@@ -651,10 +656,10 @@ public class GGraphics2DW implements GGraphics2DWI, GGraphics2D {
 	@Override
 	public void draw(GShape shape) {
 		if (shape == null) {
-			Log.debug("Error in EuclidianView.draw");
+			Log.debug("Error in draw");
 			return;
 		}
-		doDrawShape((Shape) shape);
+		doDrawShape((Shape) shape, context, coords);
 		context.stroke();
 		if (debug) {
 			debug(shape);
@@ -668,7 +673,7 @@ public class GGraphics2DW implements GGraphics2DWI, GGraphics2D {
 			return;
 		}
 
-		doDrawShape((Shape) shape);
+		doDrawShape((Shape) shape, context, coords);
 
 		/*
 		 * App.debug((shape instanceof GeneralPath)+""); App.debug((shape
@@ -700,15 +705,16 @@ public class GGraphics2DW implements GGraphics2DWI, GGraphics2D {
 	}
 
 	@Override
-	public void setClip(int x, int y, int width, int height) {
-		setClip(x, y, width, height, false);
+	public void setClip(double x, double y, double width, double height) {
+		setClip(x, y, width, height, true);
 	}
 
 	@Override
-	public void setClip(int x, int y, int width, int height,
+	public void setClip(double x, double y, double width, double height,
 			boolean saveContext) {
-		GShape sh = AwtFactory.getPrototype().newRectangle(x, y, width, height);
-		setClip(sh, saveContext);
+		GRectangle2D sh = AwtFactory.getPrototype().newRectangle2D();
+		sh.setRect(x, y, width, height);
+		doSetClip(sh, saveContext);
 
 		/*
 		 * alternative: makes clipping bad, see #3212

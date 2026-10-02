@@ -166,18 +166,23 @@ public final class GColor implements GPaint {
 	 * @return new color
 	 */
 	public static GColor newColorRGB(int rgb) {
+		return getColorARGB(rgb | 0xff000000);
+	}
+
+	/**
+	 * @param argb ARGB value
+	 * @return unique color with given ARGB value
+	 */
+	public static GColor getColorARGB(int argb) {
 		GColor ret;
-		int arbg = rgb | 0xff000000;
 		synchronized (map) {
-			ret = map.get(arbg);
+			ret = map.get(argb);
 			if (ret == null) {
-				ret = new GColor(arbg);
-				map.put(arbg, ret);
+				ret = new GColor(argb);
+				map.put(argb, ret);
 			}
 		}
-
 		return ret;
-
 	}
 
 	private static int getRed(int rgba) {
@@ -270,10 +275,10 @@ public final class GColor implements GPaint {
 	 * @return gColor
 	 */
 	public static GColor newColor(String r, String g, String b, String a) {
-		int red = Integer.parseInt(r);
-		int green = Integer.parseInt(g);
-		int blue = Integer.parseInt(b);
-		double alpha = Double.parseDouble(a);
+		int red = Integer.parseInt(r.trim());
+		int green = Integer.parseInt(g.trim());
+		int blue = Integer.parseInt(b.trim());
+		double alpha = Double.parseDouble(a.trim());
 		return newColor(red, green, blue, (int) (alpha * 255));
 	}
 
@@ -789,8 +794,7 @@ public final class GColor implements GPaint {
 
 	private double lumComponent(int val) {
 		double valD = val / 255.0;
+		// If(x <= 0.03928 , x / 12.92, ((x + 0.055) / 1.055)^2.4)
 		return valD <= 0.03928 ? valD / 12.92 : Math.pow((valD + 0.055) / 1.055, 2.4);
 	}
 }
-
-// If(x <= 0.03928 , x / 12.92, ((x + 0.055) / 1.055)^2.4)

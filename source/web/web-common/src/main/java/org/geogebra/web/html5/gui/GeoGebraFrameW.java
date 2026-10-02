@@ -22,6 +22,7 @@ import javax.annotation.CheckForNull;
 
 import org.geogebra.common.euclidian.SymbolicEditor;
 import org.geogebra.common.main.PreviewFeature;
+import org.geogebra.common.ownership.GlobalScope;
 import org.geogebra.common.util.StringUtil;
 import org.geogebra.common.util.debug.Log;
 import org.geogebra.editor.web.MathFieldW;
@@ -772,9 +773,10 @@ public abstract class GeoGebraFrameW extends FlowPanel implements
 			km.removeFromDom();
 		}
 		splash = null;
+		getApp().detachFromExamController();
+		GlobalScope.unregisterSuiteScope(GlobalScope.getSuiteScope(app));
 		// this one should be scheduled, so that all scheduled things depending on app execute OK
 		Scheduler.get().scheduleDeferred(() -> app = null);
-		getApp().detachFromExamController();
 	}
 
 	/**

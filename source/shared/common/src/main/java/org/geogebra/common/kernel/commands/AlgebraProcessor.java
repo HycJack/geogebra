@@ -2351,7 +2351,7 @@ public class AlgebraProcessor {
 				if (info.isScripting()) {
 					((GeoScriptAction) ret[0]).perform();
 				}
-				return new GeoElement[] {};
+				return new GeoElement[0];
 			} else if (info.isCopyingPlainVariables() && singleReturnValue) {
 				boolean isPlainVariable = node.isLeaf();
 				boolean returnValueIsInput = node.unwrap() == ret[0];
@@ -2363,7 +2363,7 @@ public class AlgebraProcessor {
 				int actions = ((GeoList) ret[0]).performScriptActions(info);
 				if (actions > 0) {
 					ret[0].remove();
-					return new GeoElement[] {};
+					return new GeoElement[0];
 				}
 			}
 		}
@@ -3687,9 +3687,11 @@ public class AlgebraProcessor {
 	 */
 	public GeoElement[] processEquationIntersect(ExpressionValue x,
 			ExpressionValue y) {
-
 		GeoElement[] ret = processCommand(intersectCommand(x, y),
 				new EvalInfo(true));
+		if (ret == null || ret.length == 0) {
+			return null;
+		}
 		if (ret[0].getParentAlgorithm() instanceof HasShortSyntax) {
 			((HasShortSyntax) ret[0].getParentAlgorithm()).setShortSyntax(true);
 			ret[0].updateRepaint();

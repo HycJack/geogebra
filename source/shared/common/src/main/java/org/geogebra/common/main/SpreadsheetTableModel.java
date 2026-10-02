@@ -204,6 +204,10 @@ public abstract class SpreadsheetTableModel implements UpdateLocationView {
 	public void add(GeoElement geo) {
 		update(geo);
 		addToCellRangeAlgos(geo);
+		GuiManagerInterface guiManager = app.getGuiManager();
+		if (guiManager != null) {
+			guiManager.scrollSpreadsheetToCell(geo, null);
+		}
 	}
 
 	private void addWithoutTrace(GeoElement geo) {
@@ -285,15 +289,18 @@ public abstract class SpreadsheetTableModel implements UpdateLocationView {
 
 	@Override
 	public void clearView() {
+		resetValues();
+		highestUsedColumn = -1;
+		highestUsedRow = -1;
+		cellRangeManager.clear();
+	}
 
+	protected void resetValues() {
 		for (int c = 0; c < getColumnCount(); ++c) {
 			for (int r = 0; r < getRowCount(); ++r) {
 				setValueAt(null, r, c);
 			}
 		}
-		highestUsedColumn = -1;
-		highestUsedRow = -1;
-		cellRangeManager.clear();
 	}
 
 	@Override

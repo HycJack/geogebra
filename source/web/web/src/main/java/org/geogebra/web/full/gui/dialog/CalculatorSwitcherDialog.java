@@ -17,8 +17,8 @@
 package org.geogebra.web.full.gui.dialog;
 
 import org.geogebra.common.SuiteSubApp;
-import org.geogebra.common.exam.ExamController;
 import org.geogebra.common.ownership.GlobalScope;
+import org.geogebra.common.ownership.SuiteScope;
 import org.geogebra.common.util.debug.Analytics;
 import org.geogebra.web.full.main.AppWFull;
 import org.geogebra.web.html5.gui.GPopupPanel;
@@ -38,7 +38,7 @@ import org.gwtproject.user.client.ui.RequiresResize;
 public class CalculatorSwitcherDialog extends GPopupPanel implements Persistable,
 		RequiresResize, CloseHandler<GPopupPanel> {
 	private FlowPanel contentPanel;
-	private final ExamController examController = GlobalScope.examController;
+	private final SuiteScope suiteScope;
 
 	/**
 	 * constructor
@@ -46,6 +46,7 @@ public class CalculatorSwitcherDialog extends GPopupPanel implements Persistable
 	 */
 	public CalculatorSwitcherDialog(AppW app, boolean autoHide) {
 		super(autoHide, app.getAppletFrame(), app);
+		suiteScope = GlobalScope.getSuiteScope(app);
 		setGlassEnabled(true);
 		addStyleName("calcChooser");
 		Dom.toggleClass(this, "smallScreen", app.getWidth() < 914);
@@ -83,8 +84,8 @@ public class CalculatorSwitcherDialog extends GPopupPanel implements Persistable
 	}
 
 	private void buildAndAddCalcButton(SuiteSubApp subAppCode, FlowPanel contentPanel) {
-		if (examController.isExamActive()
-				&& examController.isDisabledSubApp(subAppCode)) {
+		if (suiteScope.examController.isExamActive()
+				&& suiteScope.restrictionsController.isDisabledSubApp(subAppCode)) {
 			return;
 		}
 		AppDescription description = AppDescription.get(subAppCode) ;

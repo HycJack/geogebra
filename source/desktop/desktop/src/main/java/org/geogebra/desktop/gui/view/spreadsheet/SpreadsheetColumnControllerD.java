@@ -29,7 +29,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -228,7 +228,7 @@ public class SpreadsheetColumnControllerD
 
 			// show contextMenu
 			SpreadsheetContextMenuD contextMenu = new SpreadsheetContextMenuD(
-					table);
+					table, table.getToolProcessor(app));
 			JPopupMenu popup = contextMenu.getMenuContainer();
 			popup.show(e.getComponent(), e.getX(), e.getY());
 
@@ -474,9 +474,9 @@ public class SpreadsheetColumnControllerD
 		private JButton btnTrace;
 		private BorderLayout layout;
 
-		private ImageIcon pauseIcon = app
+		private Icon pauseIcon = app
 				.getScaledIcon(GuiResourcesD.SPREADSHEETTRACE_PAUSE);
-		private ImageIcon recordIcon = app
+		private Icon recordIcon = app
 				.getScaledIcon(GuiResourcesD.SPREADSHEETTRACE_RECORD);
 
 		public ColumnHeaderRenderer() {

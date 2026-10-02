@@ -30,7 +30,6 @@ import org.geogebra.common.properties.impl.facade.ColorPropertyListFacade;
 import org.geogebra.common.properties.impl.facade.IconsEnumeratedPropertyListFacade;
 import org.geogebra.common.properties.impl.facade.NamedEnumeratedPropertyListFacade;
 import org.geogebra.common.properties.impl.facade.RangePropertyListFacade;
-import org.geogebra.common.properties.impl.objects.ChartSegmentSelectionProperty.ChartSegmentSelection;
 import org.geogebra.common.properties.impl.objects.delegate.NotApplicablePropertyException;
 
 /**
@@ -49,7 +48,7 @@ public class StylePropertyCollection extends AbstractPropertyCollection<Property
 	public StylePropertyCollection(
 			GeoElementPropertiesFactory propertiesFactory, Localization localization,
 			List<GeoElement> elements) throws NotApplicablePropertyException {
-		super(localization, "Style");
+		super(localization, "Properties.Style");
 		ChartSegmentSelection chartSegmentSelection = new ChartSegmentSelection();
 		setProperties(Stream.<Property>of(
 				propertiesFactory.createOptionalPropertyFacade(elements, element ->

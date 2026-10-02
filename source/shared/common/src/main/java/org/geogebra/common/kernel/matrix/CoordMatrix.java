@@ -139,7 +139,7 @@ public class CoordMatrix {
 	 *            dimension
 	 * @return the identity matrix
 	 */
-	public static final CoordMatrix identity(int n) {
+	public static CoordMatrix identity(int n) {
 		CoordMatrix m = new CoordMatrix(n, n);
 
 		for (int i = 1; i <= n; i++) {
@@ -156,7 +156,7 @@ public class CoordMatrix {
 	 *            scaling vector
 	 * @return scale matrix
 	 */
-	public static final CoordMatrix scaleMatrix(Coords v) {
+	public static CoordMatrix scaleMatrix(Coords v) {
 		int n = v.getLength();
 		CoordMatrix m = new CoordMatrix(n + 1, n + 1);
 
@@ -175,7 +175,7 @@ public class CoordMatrix {
 	 *            values on diagonal (determines dimension)
 	 * @return diagonal matrix
 	 */
-	public static final CoordMatrix diagonalMatrix(double[] vals) {
+	public static CoordMatrix diagonalMatrix(double[] vals) {
 		int n = vals.length;
 		CoordMatrix m = new CoordMatrix(n, n);
 
@@ -193,7 +193,7 @@ public class CoordMatrix {
 	 *            translation vector
 	 * @return translation matrix
 	 */
-	public static final CoordMatrix translationMatrix(Coords v) {
+	public static CoordMatrix translationMatrix(Coords v) {
 		int n = v.getLength();
 		CoordMatrix m = new CoordMatrix(n + 1, n + 1);
 
@@ -215,50 +215,50 @@ public class CoordMatrix {
 	 *            angle of rotation
 	 * @return rotation matrix
 	 */
-	public static final CoordMatrix rotation3DMatrix(int axe, double angle) {
+	public static CoordMatrix rotation3DMatrix(int axe, double angle) {
 		CoordMatrix m = new CoordMatrix(4, 4);
-        setRotation3DMatrix(axe, angle, m);
+		setRotation3DMatrix(axe, angle, m);
 		return m;
 
 	}
 
-    /**
-     * returns 3d rotation homogeneous matrix, dim 4x4
-     *
-     * @param axe
-     *            axis of rotation
-     * @param angle
-     *            angle of rotation
-     */
-    public static final void setRotation3DMatrix(int axe, double angle, CoordMatrix m) {
-        m.set(0);
-        switch (axe) {
-            case Z_AXIS:
-                m.set(1, 1, Math.cos(angle));
-                m.set(1, 2, -Math.sin(angle));
-                m.set(2, 1, Math.sin(angle));
-                m.set(2, 2, Math.cos(angle));
-                m.set(3, 3, 1.0);
-                break;
-            case X_AXIS:
-                m.set(1, 1, 1.0);
-                m.set(2, 2, Math.cos(angle));
-                m.set(2, 3, -Math.sin(angle));
-                m.set(3, 2, Math.sin(angle));
-                m.set(3, 3, Math.cos(angle));
-                break;
-            case Y_AXIS:
-                m.set(2, 2, 1.0);
-                m.set(3, 3, Math.cos(angle));
-                m.set(3, 1, -Math.sin(angle));
-                m.set(1, 3, Math.sin(angle));
-                m.set(1, 1, Math.cos(angle));
-                break;
-            default:
-                break;
-        }
-        m.set(4, 4, 1.0);
-    }
+	/**
+	 * returns 3d rotation homogeneous matrix, dim 4x4
+	 *
+	 * @param axe
+	 *            axis of rotation
+	 * @param angle
+	 *            angle of rotation
+	 */
+	public static void setRotation3DMatrix(int axe, double angle, CoordMatrix m) {
+		m.set(0);
+		switch (axe) {
+			case Z_AXIS:
+				m.set(1, 1, Math.cos(angle));
+				m.set(1, 2, -Math.sin(angle));
+				m.set(2, 1, Math.sin(angle));
+				m.set(2, 2, Math.cos(angle));
+				m.set(3, 3, 1.0);
+				break;
+			case X_AXIS:
+				m.set(1, 1, 1.0);
+				m.set(2, 2, Math.cos(angle));
+				m.set(2, 3, -Math.sin(angle));
+				m.set(3, 2, Math.sin(angle));
+				m.set(3, 3, Math.cos(angle));
+				break;
+			case Y_AXIS:
+				m.set(2, 2, 1.0);
+				m.set(3, 3, Math.cos(angle));
+				m.set(3, 1, -Math.sin(angle));
+				m.set(1, 3, Math.sin(angle));
+				m.set(1, 1, Math.cos(angle));
+				break;
+			default:
+				break;
+		}
+		m.set(4, 4, 1.0);
+	}
 
 	/**
 	 * 3x3 rotation matrix around oz
@@ -268,7 +268,7 @@ public class CoordMatrix {
 	 * @param m
 	 *            output matrix
 	 */
-	public static final void rotation3x3(double angle, CoordMatrix m) {
+	public static void rotation3x3(double angle, CoordMatrix m) {
 		double cos = Math.cos(angle);
 		double sin = Math.sin(angle);
 		m.set(1, 1, cos);
@@ -288,7 +288,7 @@ public class CoordMatrix {
 	 * @param m
 	 *            output matrix
 	 */
-	public static final void rotation3x3(Coords u, double angle,
+	public static void rotation3x3(Coords u, double angle,
 			CoordMatrix m) {
 
 		double ux = u.getX();
@@ -571,25 +571,25 @@ public class CoordMatrix {
 		return s.toString();
 	}
 
-    /**
-     *
-     * @param digits
-     *            digits length
-     * @param precision
-     *            decimal precision
-     * @return string representation with +/-XXXX for too large values
-     */
-    public String toString(int digits, int precision) {
-        StringBuilder s = new StringBuilder();
-        for (int i = 1; i <= getRows(); i++) {
-            for (int j = 1; j <= getColumns(); j++) {
-                s.append("  ");
-                StringUtil.toString(get(i, j), digits, precision, s);
-            }
-            s.append('\n');
-        }
-        return s.toString();
-    }
+	/**
+	 *
+	 * @param digits
+	 *            digits length
+	 * @param precision
+	 *            decimal precision
+	 * @return string representation with +/-XXXX for too large values
+	 */
+	public String toString(int digits, int precision) {
+	    StringBuilder s = new StringBuilder();
+	    for (int i = 1; i <= getRows(); i++) {
+	        for (int j = 1; j <= getColumns(); j++) {
+	            s.append("  ");
+	            StringUtil.toString(get(i, j), digits, precision, s);
+	        }
+	        s.append('\n');
+	    }
+	    return s.toString();
+	}
 
 	/**
 	 * returns false if one value equals NaN
@@ -949,13 +949,10 @@ public class CoordMatrix {
 	 *         deprecated create result and use {@link #solve(Coords, Coords)}
 	 *         instead
 	 */
-
 	public Coords solve(Coords v) {
-
 		Coords sol = new Coords(v.getLength());
 		pivot(sol, v);
 		return sol;
-
 	}
 
 	/**
@@ -984,7 +981,7 @@ public class CoordMatrix {
 	 * @param columns
 	 *            matrix columns
 	 */
-	static synchronized final public void solve(double[][] matrixForSolve,
+	static synchronized public void solve(double[][] matrixForSolve,
 			double[] sol, Coords res,
 			Coords... columns) {
 
@@ -1030,7 +1027,7 @@ public class CoordMatrix {
 		 * @param factor
 		 *            factor to divide
 		 */
-		abstract public void divideFirst(int index, double factor);
+		abstract void divideFirst(int index, double factor);
 
 		/**
 		 * perform the last pivot step
@@ -1040,7 +1037,7 @@ public class CoordMatrix {
 		 * @param matrix
 		 *            matrix
 		 */
-		public void lastStep(ArrayList<Integer> stack, double[][] matrix) {
+		void lastStep(ArrayList<Integer> stack, double[][] matrix) {
 			int index = stack.get(0);
 			divideFirst(index, matrix[index][0]);
 		}
@@ -1053,7 +1050,7 @@ public class CoordMatrix {
 		 * @param value
 		 *            value to divide
 		 */
-		abstract public void divideRes(int step, double value);
+		abstract void divideRes(int step, double value);
 
 		/**
 		 * sub value at step to value at l, multiplied by coef
@@ -1065,7 +1062,7 @@ public class CoordMatrix {
 		 * @param coef
 		 *            multiply factor
 		 */
-		abstract public void subRes(int l, int step, double coef);
+		abstract void subRes(int l, int step, double coef);
 
 		/**
 		 * calc sol at this index
@@ -1081,10 +1078,10 @@ public class CoordMatrix {
 		 * @param value
 		 *            TODO
 		 */
-		abstract public void calcSol(int index, int step, double[][] matrix,
+		abstract void calcSol(int index, int step, double[][] matrix,
 				ArrayList<Integer> stack, double value);
 
-		public void divideAndSub(double[][] matrix, ArrayList<Integer> stack,
+		void divideAndSub(double[][] matrix, ArrayList<Integer> stack,
 				int step, int index, double value) {
 
 			// divide step line by value in matrix and res
@@ -1113,7 +1110,7 @@ public class CoordMatrix {
 		 *            step
 		 * @return true if value is zero
 		 */
-		public boolean handleZeroValue(double value, int step) {
+		boolean handleZeroValue(double value, int step) {
 			return false;
 		}
 	}
@@ -1197,18 +1194,6 @@ public class CoordMatrix {
 				// str += i + ",";
 			}
 			sol[index] = s;
-
-			// str += "\nmatrix=\n";
-			// for (int i = 0 ; i < matrix.length;i++){
-			// for (int j = 0 ; j < matrix[i].length;j++){
-			// str += matrix[i][j] + " ";
-			// }
-			// str += "\n";
-			//
-			// }
-			//
-			// Log.debug(str);
-
 		}
 
 		@Override
@@ -1216,7 +1201,7 @@ public class CoordMatrix {
 			return DoubleUtil.isZero(value);
 		}
 
-		public void init(int length) {
+		private void init(int length) {
 			nonZeroIndices = new boolean[length];
 		}
 
@@ -1241,12 +1226,12 @@ public class CoordMatrix {
 		/**
 		 * solution vector
 		 */
-		public double[] sol;
+		double[] sol;
 
 		/**
 		 * result vector
 		 */
-		public double[] res;
+		double[] res;
 
 		protected PivotSolRes() {
 			super();
@@ -1279,17 +1264,13 @@ public class CoordMatrix {
 
 	}
 
-	static private class PivotInverseMatrix extends PivotAbstract {
+	static private final class PivotInverseMatrix extends PivotAbstract {
 
-		public int columns;
+		private int columns;
 
-		public double[] matrixRes;
+		private double[] matrixRes;
 
-		public Coords[] inverse;
-
-		protected PivotInverseMatrix() {
-
-		}
+		private Coords[] inverse;
 
 		@Override
 		public void divideFirst(int index, double factor) {
@@ -1404,7 +1385,7 @@ public class CoordMatrix {
 	 * @param psr
 	 *            pivot solution-result
 	 */
-	static final public void pivot(double[][] matrix, PivotAbstract psr) {
+	static public void pivot(double[][] matrix, PivotAbstract psr) {
 		int size = matrix.length;
 		ArrayList<Integer> stack = new ArrayList<>();
 		for (int i = size - 1; i >= 0; i--) {
@@ -1418,7 +1399,7 @@ public class CoordMatrix {
 	 * one step Gauss pivot
 	 *
 	 */
-	static final private void pivot(double[][] matrix, PivotAbstract psr,
+	static private void pivot(double[][] matrix, PivotAbstract psr,
 			final int step, ArrayList<Integer> stack) {
 
 		// Log.debug("XXXXX pivot : step = " + step);

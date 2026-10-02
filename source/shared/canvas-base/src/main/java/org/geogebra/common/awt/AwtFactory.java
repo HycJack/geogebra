@@ -62,6 +62,11 @@ public abstract class AwtFactory {
 	public abstract GRectangle newRectangle(int x, int y, int width, int height);
 
 	/**
+	 * @return round rectangle with no size
+	 */
+	public abstract GRoundRectangle2D newRoundRectangle2D();
+
+	/**
 	 * @param pixelWidth width in pixels
 	 * @param pixelHeight height in pixels
 	 * @param pixelRatio ratio between physical pixels and DIP
@@ -264,7 +269,7 @@ public abstract class AwtFactory {
 	 *            size
 	 * @return font
 	 */
-	public abstract GFont newFont(String name, int style, int size);
+	public abstract GFont newFont(String name, int style, double size);
 
 	/**
 	 * @param tx

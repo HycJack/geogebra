@@ -77,7 +77,7 @@ public class EuclidianStatic {
 	 *            rendering context
 	 * @return text width
 	 */
-	public final static double textWidth(String str, GFont font,
+	public static double textWidth(String str, GFont font,
 			GFontRenderContext frc) {
 		if ("".equals(str)) {
 			return 0;
@@ -192,12 +192,12 @@ public class EuclidianStatic {
 	 * @param ret
 	 *            output rectangle
 	 */
-	public static final void drawMultilineLaTeX(App app,
+	public static void drawMultilineLaTeX(App app,
 			GGraphics2D tempGraphics, GeoElementND geo, GGraphics2D g2,
 			GFont font, GColor fgColor, GColor bgColor, String labelDesc,
 			int xLabel, int yLabel, boolean serif, Runnable callback,
 			GRectangle ret) {
-		int fontSize = g2.getFont().getSize();
+		double fontSize = g2.getFont().getSize();
 		int lineSpread = (int) (fontSize * 1.0f);
 		int lineSpace = (int) (fontSize * 0.5f);
 
@@ -484,7 +484,7 @@ public class EuclidianStatic {
 		// GTextLayout layout;
 		GFontRenderContext frc = g3.getFontRenderContext();
 
-		int indexOffset = indexFont.getSize() / 2;
+		double indexOffset = indexFont.getSize() / 2;
 		double maxY = 0;
 		int depth = 0;
 		double x = xPos;
@@ -625,12 +625,12 @@ public class EuclidianStatic {
 	 *            geo                  
 	 * @return border of resulting text drawing
 	 */
-	public final static GRectangle drawMultiLineText(App app, String labelDesc,
+	public static GRectangle drawMultiLineText(App app, String labelDesc,
 			int xLabel, int yLabel, GGraphics2D g2, boolean serif,
 			GFont textFont, GRectangle ret, GeoElement geo, int margin) {
 
 		int lines = 0;
-		int fontSize = textFont.getSize();
+		double fontSize = textFont.getSize();
 		double lineSpread = fontSize * 1.5f;
 
 		GFont font = app.getFontCanDisplay(labelDesc, serif,
@@ -682,7 +682,7 @@ public class EuclidianStatic {
 		// labelRectangle.setLocation(xLabel, yLabel - fontSize);
 		int height = (int) ((lines + 1) * lineSpread);
 
-		ret.setBounds(xLabel - margin, yLabel - fontSize - margin,
+		ret.setBounds(xLabel - margin, (int) Math.round(yLabel - fontSize - margin),
 				xoffset + 2 * margin, height + 2 * margin);
 		return ret;
 	}
@@ -712,7 +712,7 @@ public class EuclidianStatic {
 		// draw text line by line
 		int lineBegin = 0;
 		int lines = 0;
-		int fontSize = textFont.getSize();
+		double fontSize = textFont.getSize();
 		double lineSpread = fontSize * 1.5;
 		int length = labelDesc.length();
 		int xoffset = 0, yoffset = 0;
@@ -751,7 +751,7 @@ public class EuclidianStatic {
 		}
 
 		int height = (int) ((lines + 1) * lineSpread);
-		labelRectangle.setBounds(xLabel - margin, yLabel - fontSize - margin,
+		labelRectangle.setBounds(xLabel - margin, (int) Math.round(yLabel - fontSize - margin),
 				xoffset + 2 * margin, height + 2 * margin);
 
 		return yoffset > 0;

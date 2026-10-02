@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -65,6 +66,8 @@ import org.geogebra.regexp.shared.RegExp;
  * Platform (Java / GWT) independent part of giac CAS
  */
 public abstract class CASgiac implements CASGenericInterface {
+	// Results exceeding this length are replaced with "?"
+	protected static final int MAX_ALLOWED_STRING_LENGTH = 10_000;
 
 	/**
 	 * Random number generator
@@ -476,7 +479,7 @@ public abstract class CASgiac implements CASGenericInterface {
 	public long timeoutMillis = 5000;
 	final private static String EVALFA = "evalfa(";
 	private final StringBuilder expSB = new StringBuilder(EVALFA);
-	private final MaxSizeHashMap<String, String> casGiacCache
+	private final Map<String, String> casGiacCache
 			= new MaxSizeHashMap<>(Kernel.GEOGEBRA_CAS_CACHE_SIZE);
 
 	// eg {(ggbtmpvarx>(-sqrt(110)/5)) && ((sqrt(110)/5)>ggbtmpvarx)}
@@ -554,6 +557,10 @@ public abstract class CASgiac implements CASGenericInterface {
 		String rtrimmed = result.trim();
 		if (rtrimmed.startsWith("\"") && rtrimmed.endsWith("\"")) {
 				result = result.substring(1, result.length() - 1); // removing
+		}
+
+		if (result.length() > MAX_ALLOWED_STRING_LENGTH) {
+			result = "?";
 		}
 
 		Log.debug("result = " + result);

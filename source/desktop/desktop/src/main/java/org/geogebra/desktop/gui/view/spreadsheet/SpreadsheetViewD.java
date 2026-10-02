@@ -310,7 +310,6 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 	@Override
 	public void add(GeoElement geo) {
 		update(geo);
-		scrollIfNeeded(geo, null);
 	}
 
 	@Override
@@ -318,7 +317,7 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		SpreadsheetCoords location = geo.getSpreadsheetCoords();
 
 		if (labelNew != null && location == null) {
-			location = GeoElementSpreadsheet.spreadsheetIndices(labelNew);
+			location = GeoElementSpreadsheet.getSpreadsheetCoordsSafe(labelNew);
 		}
 
 		if (location == null || (location.column == -1 && location.row == -1)) {
@@ -959,7 +958,7 @@ public class SpreadsheetViewD implements SpreadsheetViewInterface,
 		getSpreadsheetTable().getCellFormatHandler()
 				.processXMLString(settings().cellFormat());
 		spreadsheetWrapper.repaint();
-		table.repaintAll();
+		table.repaint();
 		// preferredSize
 		spreadsheetWrapper.setPreferredSize(
 				GDimensionD.getAWTDimension(settings().preferredSize()));

@@ -746,17 +746,21 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 	/**
 	 * Increments path parameter
 	 *
-	 * @param a
+	 * @param increment
 	 *            increment
 	 */
 	@Override
-	public void addToPathParameter(double a) {
+	public boolean addToPathParameter(double increment) {
 		PathParameter parameter = getPathParameter();
-		parameter.t += a;
+		if (path.cannotAdd(pathParameter, increment)) {
+			return false;
+		}
+		parameter.t += increment;
 
 		// update point relative to path
 		path.pathChanged(this);
 		updateCoords();
+		return true;
 	}
 
 	@Override
@@ -1132,7 +1136,7 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 	 *            second point
 	 * @return true if they are in the same place
 	 */
-	final public static boolean samePosition(GeoPointND P, GeoPointND Q) {
+	public static boolean samePosition(GeoPointND P, GeoPointND Q) {
 		return DoubleUtil.isZero(P.distance(Q));
 	}
 
@@ -1246,7 +1250,7 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 	 *            second point
 	 * @return determinant
 	 */
-	public static final double det(GeoPoint P, GeoPoint Q) {
+	public static double det(GeoPoint P, GeoPoint Q) {
 		return (P.x * Q.y - Q.x * P.y) / (P.z * Q.z);
 	}
 
@@ -1527,7 +1531,7 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 	 * @param sb
 	 *            string builder
 	 */
-	public static final void buildValueStringCoordCartesian3D(Kernel kernel,
+	public static void buildValueStringCoordCartesian3D(Kernel kernel,
 			StringTemplate tpl, double x, double y, double z,
 			StringBuilder sb) {
 
@@ -1573,7 +1577,7 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 	 *            output template
 	 * @return separator for cartesian coords
 	 */
-	public static final String getValueSeparatorWithSpace(Kernel kernel,
+	public static String getValueSeparatorWithSpace(Kernel kernel,
 			StringTemplate tpl) {
 		if (tpl.hasCASType()) {
 			return ",";
@@ -1603,7 +1607,7 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 	 * @param sbBuildValueString
 	 *            string builder
 	 */
-	public static final void buildValueStringCoordSpherical(Kernel kernel,
+	public static void buildValueStringCoordSpherical(Kernel kernel,
 			StringTemplate tpl, double x, double y, double z,
 			StringBuilder sbBuildValueString) {
 
@@ -1639,10 +1643,10 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 		sbBuildValueString.append(radius);
 		sbBuildValueString.append("; ");
 		sbBuildValueString
-				.append(kernel.formatAngle(Math.atan2(y, x), tpl, false));
+				.append(kernel.formatAngle(Math.atan2(y, x), null, tpl, false));
 		sbBuildValueString.append("; ");
 		sbBuildValueString
-				.append(kernel.formatAngle(Math.atan2(z, lengthXY), tpl, true));
+				.append(kernel.formatAngle(Math.atan2(z, lengthXY), null, tpl, true));
 		sbBuildValueString.append(')');
 
 	}
@@ -1661,7 +1665,7 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 	 * @param sbBuildValueString
 	 *            string builder
 	 */
-	public static final void buildValueString(Kernel kernel, StringTemplate tpl,
+	public static void buildValueString(Kernel kernel, StringTemplate tpl,
 			int toStringMode, double x, double y,
 			StringBuilder sbBuildValueString) {
 		switch (toStringMode) {
@@ -1671,7 +1675,7 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 			sbBuildValueString.append(tpl.polarSeparator());
 			tpl.appendOptionalSpace(sbBuildValueString);
 			sbBuildValueString
-					.append(kernel.formatAngle(Math.atan2(y, x), tpl, false));
+					.append(kernel.formatAngle(Math.atan2(y, x), null, tpl, false));
 			sbBuildValueString.append(tpl.rightBracket());
 			break;
 
@@ -2476,10 +2480,12 @@ public class GeoPoint extends GeoPointVector implements VectorValue, PathOrPoint
 			if (Math.abs(rwTransVec.getY()) > Kernel.MIN_PRECISION) {
 				y1 = DoubleUtil.checkDecimalFraction(y1);
 			}
-
+			double oldX = x;
+			double oldY = y;
+			double oldZ = z;
 			// set translated point coords
 			point.setCoords(x1, y1, 1);
-			movedGeo = true;
+			movedGeo = x != oldX || y != oldY || oldZ != 1.0;
 		}
 
 		return movedGeo;

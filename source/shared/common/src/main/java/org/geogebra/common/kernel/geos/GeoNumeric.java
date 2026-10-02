@@ -35,6 +35,7 @@ import org.geogebra.common.kernel.Construction;
 import org.geogebra.common.kernel.Kernel;
 import org.geogebra.common.kernel.SetRandomValue;
 import org.geogebra.common.kernel.StringTemplate;
+import org.geogebra.common.kernel.algos.AlgoBoxPlot;
 import org.geogebra.common.kernel.algos.AlgoDependentFunction;
 import org.geogebra.common.kernel.algos.AlgoElement;
 import org.geogebra.common.kernel.algos.SymbolicParametersBotanaAlgo;
@@ -711,6 +712,9 @@ public class GeoNumeric extends GeoElement
 				&& (!definition.isLeaf() || isWrappedFraction(definition))) {
 			return definition.toFractionString(tpl);
 		}
+		if (exactValue != null) {
+			return kernel.format(exactValue, tpl);
+		}
 		return kernel.format(value, tpl);
 	}
 
@@ -865,12 +869,12 @@ public class GeoNumeric extends GeoElement
 
 	@Override
 	public boolean isFixable() {
-		return !isSetEuclidianVisible() && !isDefaultGeo();
+		return (!isSetEuclidianVisible() || isBoxPlot()) && !isDefaultGeo();
 	}
 
 	@Override
 	public boolean showFixUnfix() {
-		return false;
+		return isBoxPlot();
 	}
 
 	/**
@@ -1188,6 +1192,11 @@ public class GeoNumeric extends GeoElement
 		this.sliderHorizontal = sliderHorizontal;
 	}
 
+	@Override
+	public boolean isPointerChangeable() {
+		return super.isPointerChangeable() || (!isLocked() && isBoxPlot());
+	}
+
 	/**
 	 * Sets the location of the slider for this number.
 	 * 
@@ -1401,7 +1410,7 @@ public class GeoNumeric extends GeoElement
 		double increment = getAnimationStep();
 		int n = 1 + (int) Math.round((max - min) / increment);
 		return DoubleUtil.checkDecimalFraction(
-				Math.floor(kernel.getApplication().getRandomNumber() * n)
+				Math.floor(kernel.randomNumberGenerator.getRandomNumber() * n)
 						* increment + min);
 	}
 
@@ -1456,6 +1465,12 @@ public class GeoNumeric extends GeoElement
 	public boolean isAnimatable() {
 		return isIndependent() && isIntervalMinActive()
 				&& isIntervalMaxActive();
+	}
+
+	@Override
+	public boolean needsAnimationAttributes() {
+		return !isLocked() && isIndependent()
+				&& (definition == null || isSliderable() || getAnimationSpeedObject() != null);
 	}
 
 	/**
@@ -1619,7 +1634,7 @@ public class GeoNumeric extends GeoElement
 	@Override
 	final public void updateRandomGeo() {
 		// set random value (for numbers used in trees using random())
-		setValue(kernel.getApplication().getRandomNumber());
+		setValue(kernel.randomNumberGenerator.getRandomNumber());
 
 		final AlgoElement algo = getParentAlgorithm();
 		if (algo != null) {
@@ -1825,9 +1840,7 @@ public class GeoNumeric extends GeoElement
 
 		// label visibility
 		App app = getKernel().getApplication();
-		LabelVisibility labelingStyle = app == null
-				? LabelVisibility.UseDefaults
-				: app.getCurrentLabelingStyle();
+		LabelVisibility labelingStyle = app.getCurrentLabelingStyle();
 
 		// automatic labelling:
 		// if algebra window open -> all labels
@@ -2177,6 +2190,11 @@ public class GeoNumeric extends GeoElement
 	}
 
 	@Override
+	public boolean hasPolynomialNumerator(boolean forRoot) {
+		return true;
+	}
+
+	@Override
 	public boolean showLineProperties() {
 		return isDrawable() && !isSlider() && getDrawAlgorithm() != null;
 	}
@@ -2197,6 +2215,7 @@ public class GeoNumeric extends GeoElement
 	 * Removes the slider.
 	 */
 	public void removeSlider() {
+		setAnimating(false);
 		isDrawable = false;
 		symbolicMode = true;
 		setAVSliderOrCheckboxVisible(false);
@@ -2306,5 +2325,9 @@ public class GeoNumeric extends GeoElement
 	@Override
 	public void setZero() {
 		setValue(0);
+	}
+
+	private boolean isBoxPlot() {
+		return algoParent instanceof AlgoBoxPlot;
 	}
 }

@@ -17,6 +17,7 @@
 package org.geogebra.common.spreadsheet.core;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -42,6 +43,7 @@ public final class Spreadsheet implements TabularDataChangeListener {
 
 	public static final int MAX_COLUMNS = 9999;
 	public static final int MAX_ROWS = 9999;
+	public static final double DEFAULT_FONT_SIZE = 16.0;
 	private final SpreadsheetController controller;
 	private final SpreadsheetStyling styling;
 	private final SpreadsheetStyleBarModel styleBarModel;
@@ -68,6 +70,7 @@ public final class Spreadsheet implements TabularDataChangeListener {
 	/**
 	 * @param tabularData data source
 	 * @param rendererFactory converts custom data type to renderable objects
+	 * @param constructionDelegate delegate for creating construction elements
 	 * @param undoProvider undo provider, may be null
 	 */
 	public Spreadsheet(@Nonnull TabularData<?> tabularData,
@@ -302,7 +305,7 @@ public final class Spreadsheet implements TabularDataChangeListener {
 		if (isSelected) {
 			graphics.setColor(styling.getSelectedTextColor());
 		} else {
-			graphics.setColor(styling.getDefaultTextColor());
+			graphics.setColor(SpreadsheetStyling.getDefaultTextColor());
 		}
 	}
 
@@ -400,6 +403,13 @@ public final class Spreadsheet implements TabularDataChangeListener {
 	}
 
 	/**
+	 * @return list of selections, may be empty
+	 */
+	public List<TabularRange> getSelections() {
+		return controller.getSelections().map(Selection::getRange).collect(Collectors.toList());
+	}
+
+	/**
 	 * Clears the selection only.
 	 */
 	public void clearSelectionOnly() {
@@ -482,5 +492,51 @@ public final class Spreadsheet implements TabularDataChangeListener {
 
 	void selectCell(int row, int column, boolean extend, boolean add) {
 		controller.selectCell(row, column, extend, add);
+	}
+
+	/**
+	 * Toggle grid visibility, without repainting the view.
+	 * @param showGrid whether to show grid
+	 */
+	public void setShowGrid(boolean showGrid) {
+		styling.setShowGrid(showGrid);
+	}
+
+	/**
+	 * @param width row header width in points, -1 for default
+	 */
+	public void setRowHeaderWidth(double width) {
+		controller.getLayout().setRowHeaderWidth(width);
+	}
+
+	/**
+	 * @param height column header height in points, -1 for default
+	 */
+	public void setColumnHeaderHeight(double height) {
+		controller.getLayout().setColumnHeaderHeight(height);
+	}
+
+	/**
+	 * @param width default cell width in points
+	 * @param height default cell height in points
+	 */
+	public void setDefaultCellSize(double width, double height) {
+		controller.getLayout().setDefaultCellSize(width, height);
+	}
+
+	/**
+	 * Invalidate all cached cells, repaint the view.
+	 */
+	public void invalidateAndRepaint() {
+		renderer.invalidateAll();
+		notifyRepaintNeeded();
+	}
+
+	/**
+	 * Scroll viewport so that given range of cells is visible.
+	 * @param tabularRange non-empty range of cells
+	 */
+	public void scrollRangeIntoView(TabularRange tabularRange) {
+		controller.scrollRangeIntoView(tabularRange);
 	}
 }

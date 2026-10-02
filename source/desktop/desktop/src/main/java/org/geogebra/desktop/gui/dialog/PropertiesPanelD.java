@@ -31,7 +31,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.ConcurrentModificationException;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.List;
@@ -40,7 +39,6 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.InputVerifier;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -104,6 +102,7 @@ import org.geogebra.common.gui.dialog.options.model.ShowLabelModel;
 import org.geogebra.common.gui.dialog.options.model.ShowLabelModel.IShowLabelListener;
 import org.geogebra.common.gui.dialog.options.model.ShowObjectModel;
 import org.geogebra.common.gui.dialog.options.model.ShowObjectModel.IShowObjectListener;
+import org.geogebra.common.gui.dialog.options.model.SimplifyCoefficientsModel;
 import org.geogebra.common.gui.dialog.options.model.SlopeTriangleSizeModel;
 import org.geogebra.common.gui.dialog.options.model.StartPointModel;
 import org.geogebra.common.gui.dialog.options.model.SymbolicModel;
@@ -144,6 +143,7 @@ import org.geogebra.desktop.gui.util.SliderUtil;
 import org.geogebra.desktop.gui.view.algebra.InputPanelD;
 import org.geogebra.desktop.main.AppD;
 import org.geogebra.desktop.main.LocalizationD;
+import org.geogebra.desktop.main.ScaledIcon;
 import org.geogebra.desktop.util.GuiResourcesD;
 import org.geogebra.desktop.util.ImageResourceD;
 
@@ -170,6 +170,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 	private ShowObjectPanel showObjectPanel;
 	private CheckboxPanel selectionAllowed;
 	private CheckboxPanel showTrimmedIntersectionLines;
+	private CheckboxPanel simplifyCoefficientsPanel;
 	private ColorPanel colorPanel;
 	private LabelPanel labelPanel;
 	private ComboPanel tooltipPanel;
@@ -287,6 +288,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		selectionAllowed = getCheckboxPanel(new SelectionAllowedModel(null, app));
 		showTrimmedIntersectionLines = getCheckboxPanel(
 				new TrimmedIntersectionLinesModel(null, app));
+		simplifyCoefficientsPanel = getCheckboxPanel(new SimplifyCoefficientsModel(app));
 		colorPanel = new ColorPanel(this, colChooser);
 		coordPanel = new ComboPanel(new CoordsModel(app), app);
 		lineEqnPanel = new ComboPanel(new LineEqnModel(app), app);
@@ -555,6 +557,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		algebraTabList.add(lineEqnPanel);
 		algebraTabList.add(planeEqnPanel);
 		algebraTabList.add(conicEqnPanel);
+		algebraTabList.add(simplifyCoefficientsPanel);
 		algebraTabList.add(animStepPanel);
 		algebraTabList.add(verticalIncrementPanel);
 		algebraTabList.add(animSpeedPanel);
@@ -620,6 +623,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		symbolicPanel.setLabels();
 		selectionAllowed.setLabels();
 		showTrimmedIntersectionLines.setLabels();
+		simplifyCoefficientsPanel.setLabels();
 		colChooser.setLabels();
 		colorPanel.setLabels();
 		coordPanel.setLabels();
@@ -711,6 +715,7 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 		showObjectPanel.updateFonts();
 		selectionAllowed.updateFonts();
 		showTrimmedIntersectionLines.updateFonts();
+		simplifyCoefficientsPanel.updateFonts();
 		colorPanel.updateFonts();
 		colChooser.updateFonts();
 		coordPanel.updateFonts();
@@ -778,10 +783,13 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 
 		// remember selected tab
 		Component selectedTab = tabs.getSelectedComponent();
-
+		int visibleTabs = 0;
 		for (int i = 0; i < tabPanelList.size(); i++) {
 			TabPanel tp = tabPanelList.get(i);
-			tp.update(geos, tabs);
+			boolean visible = tp.update(geos, tabs, visibleTabs);
+			if (visible) {
+				visibleTabs++;
+			}
 		}
 
 		// switch back to previously selected tab
@@ -912,14 +920,16 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			this.title = title;
 		}
 
-		public void update(Object[] geos, JTabbedPane tabs) {
+		public boolean update(Object[] geos, JTabbedPane tabs, int index) {
 			if (updateTabPanel(panelList, geos)) {
 				if (!tabs.isAncestorOf(this)) {
-					tabs.addTab(title, this);
+					tabs.insertTab(title, null, this, null, Math.min(index, tabs.getTabCount()));
 				}
+				return true;
 			} else if (tabs.isAncestorOf(this)) {
 				tabs.remove(this);
 			}
+			return false;
 		}
 	}
 
@@ -2692,10 +2702,10 @@ public class PropertiesPanelD extends JPanel implements SetLabels, UpdateFonts,
 			this.model = model;
 			model.setListener(this);
 
-			ImageIcon[] iconArray = new ImageIcon[imgFileNameList.size()];
+			ScaledIcon[] iconArray = new ScaledIcon[imgFileNameList.size()];
 			for (int i = 0; i < iconArray.length; i++) {
 				iconArray[i] = GeoGebraIconD.createFileImageIcon(
-						imgFileNameList.get(i));
+						imgFileNameList.get(i), app.getImageManager().getPixelRatio());
 			}
 			dropdown = new PopupMenuButtonD(app, iconArray, -1, nrOfColumns,
 					new Dimension(36, 36), SelectionTable.MODE_ICON);

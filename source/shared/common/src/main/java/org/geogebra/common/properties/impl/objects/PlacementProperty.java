@@ -81,7 +81,7 @@ public class PlacementProperty extends AbstractNamedEnumeratedProperty<Placement
 	public PlacementProperty(Localization localization, GeoElement geoElement)
 			throws NotApplicablePropertyException {
 		super(localization, "ObjectProperties.Placement");
-		if (!(geoElement instanceof Locateable)) {
+		if (!(geoElement instanceof AbsoluteScreenLocateable) || geoElement.isGeoAngle()) {
 			throw new NotApplicablePropertyException(geoElement);
 		}
 		this.geoElement = geoElement;
@@ -158,7 +158,7 @@ public class PlacementProperty extends AbstractNamedEnumeratedProperty<Placement
 		if (element.needsUpdatedBoundingBox()) {
 			element.updateCascade();
 		}
-		 element.updateVisualStyleRepaint(GProperty.POSITION);
+		element.updateVisualStyleRepaint(GProperty.POSITION);
 		geoElement.notifyUpdate();
 	}
 
