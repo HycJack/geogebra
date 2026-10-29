@@ -49,7 +49,6 @@ import org.geogebra.common.main.DialogManager;
 import org.geogebra.common.main.OptionType;
 import org.geogebra.common.move.ggtapi.models.Material.MaterialType;
 import org.geogebra.common.util.AsyncOperation;
-import org.geogebra.common.util.GTimerListener;
 import org.geogebra.common.util.debug.AccessibilityAnalytics;
 import org.geogebra.common.util.debug.AccessibilityAnalyticsContext;
 import org.geogebra.common.util.debug.Log;
@@ -577,11 +576,6 @@ public class DialogManagerW extends DialogManager implements LoadingApplication 
 	}
 
 	@Override
-	public void openToolHelp() {
-		// only desktop
-	}
-
-	@Override
 	public void showDataSourceDialog(int mode, boolean doAutoLoadSelectedGeos) {
 		if (mode == EuclidianConstants.MODE_SPREADSHEET_ONEVARSTATS
 				|| mode == EuclidianConstants.MODE_SPREADSHEET_TWOVARSTATS
@@ -677,10 +671,13 @@ public class DialogManagerW extends DialogManager implements LoadingApplication 
 		}
 	}
 
-	@Override
-	public void openTableViewDialog(GeoElement geo) {
+	/**
+	 * @param geo
+	 *            function to add to the table view after success
+	 */
+	public static void openTableViewDialog(GeoElement geo, AppW app, Runnable returnFocus) {
 		DialogData data = new DialogData("TableOfValues");
-		InputDialogTableView tableViewDialog = new InputDialogTableView((AppW) app, data);
+		InputDialogTableView tableViewDialog = new InputDialogTableView(app, data, returnFocus);
 		tableViewDialog.show(geo);
 	}
 
@@ -701,15 +698,5 @@ public class DialogManagerW extends DialogManager implements LoadingApplication 
 	@Override
 	public void closeTemplateChooser() {
 		templateChooser.hide();
-	}
-
-	/**
-	 * @return session expire dialog listener
-	 */
-	public GTimerListener getSessionExpireDialog() {
-		return () -> {
-			DialogData data = new DialogData(null, "Cancel", "Save");
-			new SessionExpireNotifyDialog((AppW) app, data).show();
-		};
 	}
 }

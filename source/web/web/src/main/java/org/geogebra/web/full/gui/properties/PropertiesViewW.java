@@ -32,6 +32,7 @@ import org.geogebra.common.main.App;
 import org.geogebra.common.main.OptionType;
 import org.geogebra.common.move.ggtapi.operations.LogInOperation;
 import org.geogebra.common.plugin.ScriptType;
+import org.geogebra.common.properties.PropertyViewFactory;
 import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
 import org.geogebra.common.properties.factory.PropertiesArray;
 import org.geogebra.common.properties.impl.general.LanguageProperty;
@@ -392,7 +393,9 @@ public final class PropertiesViewW extends PropertiesView
 					app.getImageManager(),
 					app.getEventDispatcher().availableTypes().contains(ScriptType.JAVASCRIPT),
 					showableGeos);
-			titleKey = showableGeos.size() == 1 ? showableGeos.get(0).getTypeString() : "Selection";
+			titleKey = showableGeos.size() == 1
+					? PropertyViewFactory.getObjectSettingsTitleKey(showableGeos.get(0))
+					: "Selection";
 		} else {
 			titleKey = "Settings";
 			propLists = app.getConfig()
@@ -453,11 +456,13 @@ public final class PropertiesViewW extends PropertiesView
 		} else if (optionType != OptionType.OBJECTS) {
 			oldTab = ComponentTab.indexOf(tabs, optionType.getName());
 		}
+		int initialTab = oldTab != -1 && oldTab < tabs.size() ? oldTab : 0;
+		boolean tabChanged = settingsTab != null && settingsTab.getSelectedTabIdx() != initialTab;
 		settingsTab = new ComponentTab(
 				(AppW) app,
 				"Settings",
-				oldTab != -1 && oldTab < tabs.size() ? oldTab : 0,
-				!keepViewState,
+				initialTab,
+				!keepViewState && tabChanged,
 				tabs.toArray(new TabData[0]));
 		if (!showObjectProperties) {
 			settingsTab.addTabChangedListener(idx -> {

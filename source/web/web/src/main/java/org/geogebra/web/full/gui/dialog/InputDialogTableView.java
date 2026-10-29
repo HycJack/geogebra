@@ -28,6 +28,8 @@ import org.geogebra.common.plugin.Event;
 import org.geogebra.common.plugin.EventType;
 import org.geogebra.web.full.gui.GuiManagerW;
 import org.geogebra.web.full.gui.components.ComponentInputField;
+import org.geogebra.web.full.gui.toolbarpanel.ToolbarTab;
+import org.geogebra.web.full.gui.toolbarpanel.tableview.TableTab;
 import org.geogebra.web.html5.gui.HasKeyboardPopup;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.util.TestHarness;
@@ -41,6 +43,7 @@ import org.gwtproject.user.client.ui.Label;
  *
  */
 public final class InputDialogTableView extends ComponentDialog implements HasKeyboardPopup {
+	private final Runnable returnFocus;
 	private ComponentInputField startValue;
 	private ComponentInputField endValue;
 	private ComponentInputField step;
@@ -55,15 +58,20 @@ public final class InputDialogTableView extends ComponentDialog implements HasKe
 	 *            see {@link AppW}
 	 * @param data
 	 *            dialog translation keys
+	 * @param returnFocus action that moves focus after the dialog is closed in any way
 	 */
-	public InputDialogTableView(final AppW app, DialogData data) {
+	public InputDialogTableView(final AppW app, DialogData data, Runnable returnFocus) {
 		super(app, data, false, true);
 		addStyleName("tableOfValuesDialog");
 		buildContent();
 		validator = new TableValuesDialogValidator(app);
+		this.returnFocus = returnFocus;
 		this.addCloseHandler(event -> {
 			app.unregisterPopup(this);
 			app.hideKeyboard();
+			if (this.returnFocus != null) {
+				this.returnFocus.run();
+			}
 		});
 	}
 
@@ -133,6 +141,7 @@ public final class InputDialogTableView extends ComponentDialog implements HasKe
 				initTableValuesView(inputFieldValues[0], inputFieldValues[1], inputFieldValues[2]);
 				app.storeUndoInfo();
 				hide();
+				focusTableAfterClosingDialog();
 			} catch (InvalidValuesException ex) {
 				errorLabel.setText(ex.getLocalizedMessage(app.getLocalization()));
 				errorLabel.getElement().scrollIntoView();
@@ -175,5 +184,18 @@ public final class InputDialogTableView extends ComponentDialog implements HasKe
 	private void dispatchSetTVValues(double valuesMin, double valuesMax, double valuesStep) {
 		String values = valuesMin + "," + valuesMax + "," + valuesStep;
 		app.dispatchEvent(new Event(EventType.SET_VALUES_TV, null, values));
+	}
+
+	private void focusTableAfterClosingDialog() {
+		if (returnFocus != null) {
+			returnFocus.run();
+			return;
+		}
+		GuiManagerW gui = (GuiManagerW) app.getGuiManager();
+		ToolbarTab toolbarTab =
+				gui.getUnbundledToolbar().getTab(gui.getUnbundledToolbar().getSelectedTabId());
+		if (toolbarTab instanceof TableTab tableTab) {
+			tableTab.focusFirstCell();
+		}
 	}
 }

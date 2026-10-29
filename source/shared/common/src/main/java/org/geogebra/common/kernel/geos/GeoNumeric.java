@@ -87,7 +87,9 @@ public class GeoNumeric extends GeoElement
 	private PVariable[] botanaVars;
 
 	/** eg boxplot */
-	public static final int DEFAULT_THICKNESS = 2;
+	public static final int DEFAULT_THICKNESS = 4;
+
+	public static final int DEFAULT_LINE_OPACITY = 204; // 0.8 * 255
 	/** sliders */
 	public static final int DEFAULT_SLIDER_THICKNESS = 10;
 
@@ -1871,10 +1873,12 @@ public class GeoNumeric extends GeoElement
 
 	/**
 	 * @param geoElement
-	 *            make sure min/max interval is big enough to contain the value
+	 *            make sure min/max interval is big enough to contain the value;
+	 *            the value itself is not changed
 	 */
 	public void extendMinMax(GeoElement geoElement) {
 		if (geoElement instanceof GeoNumeric) {
+			double oldValue = value;
 			value = geoElement.evaluateDouble();
 			if (getIntervalMaxObject() != null && isChangeable(getIntervalMaxObject())) {
 				setMaxFrom(this);
@@ -1883,7 +1887,8 @@ public class GeoNumeric extends GeoElement
 			if (getIntervalMinObject() != null && isChangeable(getIntervalMinObject())) {
 				setMinFrom(this);
 			}
-			exactValue = null;
+			// only the interval is extended here; callers set the new value
+			value = oldValue;
 		}
 	}
 

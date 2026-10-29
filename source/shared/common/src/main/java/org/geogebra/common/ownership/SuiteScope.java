@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.geogebra.common.SuiteSubApp;
 import org.geogebra.common.exam.ExamController;
+import org.geogebra.common.gui.colorpicker.ColorHistory;
 import org.geogebra.common.main.App;
 import org.geogebra.common.properties.PropertyValueObserver;
 import org.geogebra.common.properties.ValuedProperty;
@@ -57,13 +58,19 @@ public final class SuiteScope implements PropertyValueObserver {
 	@Property
 	public final @NonNull ExamController examController = new ExamController(restrictionsController);
 
+	@Property
+	public final @NonNull ColorHistory colorHistory = new ColorHistory();
+
 	final Set<App> apps = new HashSet<>();
 	private final Map<App, LanguageProperty> languageProperties = new HashMap<>();
+	private boolean synchronizingLanguage;
 
 	/**
 	 * Prevent instantiation outside package.
 	 */
-	SuiteScope() {}
+	SuiteScope() {
+		examController.addListener(colorHistory);
+	}
 
 	/**
 	 * Register an app instance with this suite scope. It's Ok to register an app instance more
@@ -107,13 +114,21 @@ public final class SuiteScope implements PropertyValueObserver {
 
 	@Override
 	public void onDidSetValue(ValuedProperty property) {
-		if (property instanceof LanguageProperty incomingProperty) {
-			// distribute new value to all other languageProperties
+		if (synchronizingLanguage || !(property instanceof LanguageProperty incomingProperty)) {
+			return;
+		}
+		synchronizingLanguage = true;
+		try {
+			String language = incomingProperty.getValue();
+			// Updating another calculator's language calls onDidSetValue again.
+			// The synchronizingLanguage guard prevents those callbacks from starting another loop.
 			for (LanguageProperty languageProperty : languageProperties.values()) {
 				if (property != languageProperty) {
-					languageProperty.setValue(incomingProperty.getValue());
+					languageProperty.setValue(language);
 				}
 			}
+		} finally {
+			synchronizingLanguage = false;
 		}
 	}
 }

@@ -55,7 +55,6 @@ import org.geogebra.common.exam.ExamOptions;
 import org.geogebra.common.exam.ExamState;
 import org.geogebra.common.exam.ExamType;
 import org.geogebra.common.factories.CASFactory;
-import org.geogebra.common.factories.UtilFactory;
 import org.geogebra.common.geogebra3D.euclidian3D.printer3D.FormatCollada;
 import org.geogebra.common.geogebra3D.euclidian3D.printer3D.FormatColladaHTML;
 import org.geogebra.common.gui.inputfield.HasLastItem;
@@ -99,7 +98,6 @@ import org.geogebra.common.move.events.BaseEvent;
 import org.geogebra.common.move.events.StayLoggedOutEvent;
 import org.geogebra.common.move.ggtapi.TubeAvailabilityCheckEvent;
 import org.geogebra.common.move.ggtapi.events.LoginEvent;
-import org.geogebra.common.move.ggtapi.models.AuthenticationModel;
 import org.geogebra.common.move.ggtapi.models.Material;
 import org.geogebra.common.move.ggtapi.models.Pagination;
 import org.geogebra.common.move.views.EventRenderable;
@@ -185,6 +183,8 @@ import org.geogebra.web.full.main.activity.SuiteActivity;
 import org.geogebra.web.full.main.mask.MaskWidgetListW;
 import org.geogebra.web.full.main.video.VideoManagerW;
 import org.geogebra.web.full.move.googledrive.operations.GoogleDriveOperationW;
+import org.geogebra.web.full.mow.header.DefaultTopBarIconProvider;
+import org.geogebra.web.full.mow.header.MebisTopBarIconProvider;
 import org.geogebra.web.html5.Browser;
 import org.geogebra.web.html5.euclidian.EuclidianViewW;
 import org.geogebra.web.html5.gui.GPopupPanel;
@@ -206,6 +206,7 @@ import org.geogebra.web.html5.main.FragmentPrefetcher;
 import org.geogebra.web.html5.main.GlobalKeyDispatcherW;
 import org.geogebra.web.html5.main.LocalizationW;
 import org.geogebra.web.html5.main.ScriptManagerW;
+import org.geogebra.web.html5.main.topbar.TopBarIconResource;
 import org.geogebra.web.html5.move.googledrive.GoogleDriveOperation;
 import org.geogebra.web.html5.util.AppletParameters;
 import org.geogebra.web.html5.util.GeoGebraElement;
@@ -303,6 +304,7 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	private ExamEventBus examEventBus;
 	private InitialViewState initialViewState;
 	private PropertiesIconResource propertiesIconResource;
+	private TopBarIconResource topBarIconResource;
 
 	/**
 	 * @param geoGebraElement GeoGebra element
@@ -665,12 +667,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 	private void initMenu() {
 		if (isFloatingMenu()) {
 			ensureLoginOperation();
-			if (getVendorSettings().canSessionExpire()) {
-				AuthenticationModel model = getLoginOperation().getModel();
-				model.setSessionExpireTimer(UtilFactory.getPrototype()
-						.newTimer(
-								getDialogManager().getSessionExpireDialog(), AuthenticationModel.SESSION_TIME));
-			}
 			MenuViewController menuController = new MenuViewController(this);
 			menuController.setMenuViewListener(this);
 			menuViewController = menuController;
@@ -1117,9 +1113,6 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 						getGgbApi().setBase64(material.getBase64());
 					}
 					setActiveMaterial(material);
-					if (material.isMultiuser()) {
-						getShareController().startMultiuser(material.getSharingKeySafe());
-					}
 					ensureSupportedModeActive();
 				} else {
 					onError.callback(Errors.LoadFileFailed.getKey());
@@ -1329,9 +1322,24 @@ public class AppWFull extends AppW implements HasKeyboard, MenuViewListener {
 		return icon;
 	}
 
+	/**
+	 * @return top bar icon resource provider
+	 */
+	public TopBarIconResource getTopBarIconResource() {
+		if (topBarIconResource == null) {
+			topBarIconResource = new TopBarIconResource(
+					isUsingFontAwesome() ? new MebisTopBarIconProvider() : new DefaultTopBarIconProvider());
+		}
+
+		return topBarIconResource;
+	}
+
 	@Override
 	public final void closePopups() {
 		super.closePopups();
+		if (!isUnbundled() && getGuiManager() != null && getGuiManager().hasAlgebraView()) {
+			getAlgebraView().resetItems(false);
+		}
 		PopupMenuButtonW.resetCurrentPopup();
 		if (getToolbar() != null && getToolbar().isMobileToolbar()) {
 			getToolbar().getToolBar().closeAllSubmenu();

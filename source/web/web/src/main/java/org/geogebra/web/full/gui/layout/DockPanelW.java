@@ -541,6 +541,14 @@ public abstract class DockPanelW extends ResizeComposite
 	}
 
 	/**
+	 * For dock panels with just one view this is the same as {@link getViewId}
+	 * @return focused view ID
+	 */
+	public int getFocusedViewId() {
+		return getViewId();
+	}
+
+	/**
 	 * extends DockLayoutPanel to expose getCenterHeight() and getCenterWidth()
 	 * TODO: move some code above into this class, e.g. setLayout(), or possibly
 	 * extend DockPanelW itself
@@ -837,7 +845,7 @@ public abstract class DockPanelW extends ResizeComposite
 	}
 
 	/**
-	 * @return An unique ID for this DockPanel.
+	 * @return A unique ID for this DockPanel.
 	 */
 	@Override
 	public int getViewId() {
@@ -1076,11 +1084,11 @@ public abstract class DockPanelW extends ResizeComposite
 	}
 
 	/**
-	 * Add reset icon to the stylebar
+	 * Add reset icon to the style bar
 	 */
 	public void showResetIcon() {
 		StandardButton resetBtn =
-				new StandardButton(GuiResourcesSimple.INSTANCE.viewRefresh(), null, 24);
+				new StandardButton(GuiResourcesSimple.INSTANCE.viewRefresh(), null, 22);
 		resetBtn.addFastClickHandler(source -> app.reset());
 		resetBtn.addStyleName("graphicsResetIcon");
 		if (!app.allowStylebar()) {

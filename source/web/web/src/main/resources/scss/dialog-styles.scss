@@ -966,235 +966,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 		}
 	}
 
-	.MaterialDialogBox.mow {
-		.AutoCompleteTextFieldW {
-			border-bottom: 1px solid colors.$mow_dark;
-		}
-	}
-
-	.dialogComponent.shareDialogMow {
-		max-width: 510px;
-
-		&.hasBorder {
-			.groupPanel {
-				overflow: unset;
-				max-height: unset;
-				border-top: unset;
-			}
-		}
-
-		.dialogTitle {
-			margin-left: 24px;
-		}
-
-		.dialogMainPanel {
-			padding-left: 0px;
-		}
-
-		.dialogContent {
-			padding: 0px 0px 24px 0px;
-		}
-
-		.selGrLbl {
-			font-size: 100%;
-			margin-top: 0px;
-			margin-bottom: 20px;
-			margin-left: 24px;
-		}
-
-		.groupPanel {
-			border-top: 1px solid colors.$black-12;
-			border-bottom: 1px solid colors.$black-12;
-			max-height: 200px;
-			overflow: auto;
-			padding: 16px 0px 0px 20px;
-		}
-
-		.noGroupPanel {
-			border-bottom: 1px solid colors.$black-12;
-
-			.groupImgHolder {
-				width: 48px;
-				height: 48px;
-				padding: 12px;
-				border-radius: 50%;
-				background-color: colors.$mow_grey_button;
-				display: block;
-				margin: 0px auto;
-				margin-top: 16px;
-
-				img {
-					opacity: 0.38;
-				}
-			}
-
-			.noGroupsLbl {
-				font-size: 100%;
-				width: fit-content;
-				display: block;
-				margin: 0px auto;
-				margin-top: 16px;
-			}
-
-			.noGroupsHelpLbl {
-				width: 262px;
-				height: fit-content;
-				display: block;
-				margin: 0px auto;
-				margin-top: 8px;
-				margin-bottom: 20px;
-				font-size: 87%;
-				text-align: center;
-			}
-
-		}
-
-		.shareByLink {
-			margin: 16px 24px 0px 24px;
-
-			.linkImg {
-				opacity: 0.54;
-				margin: auto 32px auto 0px;
-			}
-
-			.switcherPanel {
-				display: flex;
-
-				.switch {
-					margin: auto 0px auto auto;
-				}
-			}
-
-			.textPanel {
-				position: relative;
-				max-width: 356px;
-				margin-right: 8px;
-				display: inline-block;
-
-				.linkShareOnOff {
-					margin-top: 0px;
-					font-size: 100%;
-					line-height: 16px;
-				}
-
-				.linkShareHelp {
-					margin-top: 0px;
-					font-size: 87%;
-					line-height: 16px;
-				}
-			}
-
-			.linkPanel {
-				margin-top: 16px;
-				display: flex;
-
-				.linkBox {
-					width: 362px;
-					padding: 8px 0 8px 0;
-					margin: 0;
-					border-radius: 0;
-					box-shadow: none;
-					border: none;
-					border-bottom: 2px solid colors.$mow_dark;
-				}
-				.linkBox::selection {
-					background: rgba(colors.$mow_primary, 0.2);
-				}
-
-				.materialTextButton {
-					margin-left: 32px;
-				}
-			}
-
-			&.disabled {
-				.linkImg {
-					opacity: 0.38;
-				}
-
-				.textPanel {
-					.linkShareOnOff {
-						color: neutral(500);
-					}
-					.linkShareHelp {
-						color: neutral(500);
-					}
-				}
-
-				.switch {
-					cursor: default;
-					opacity: 0.38;
-				}
-			}
-		}
-
-		.shareLinkAvailableInfo {
-			max-width: 474px;
-			margin: 16px 24px 0px 24px;
-			font-size: 87%;
-		}
-	}
-
-	.groupButton {
-		cursor: pointer;
-		height: 96px;
-		width: 90px;
-		margin: 0px 2px 4px 2px;
-		display: inline-flex;
-
-		.content {
-			height: 96px;
-			width: 90px;
-			overflow: hidden;
-		}
-
-		.groupImgHolder {
-			width: 24px;
-			height: 24px;
-			padding: 10px;
-			border-radius: 50%;
-			border: 2px solid colors.$black-24;
-			display: block;
-			margin: 0px auto;
-			margin-top: 4px;
-
-			.groupImg {
-				opacity: 0.54;
-			}
-		}
-
-		.groupName {
-			margin-top: 8px;
-			padding-bottom: 4px;
-			font-size: 75%;
-			height: 32px;
-			text-align: center;
-			line-height: 16px;
-			overflow: hidden;
-			cursor: pointer;
-			position: relative;
-			top: -20px;
-		}
-
-		.checkMark {
-			padding: 1px;
-			border-radius: 50%;
-			background-color: colors.$mow_primary;
-			position: relative;
-			top: -44px;
-			right: -56px;
-			visibility: hidden;
-		}
-
-		&.selected {
-			.groupImgHolder {
-				border: 2px solid colors.$mow_primary;
-			}
-			.checkMark {
-				visibility: visible;
-			}
-		}
-	}
-
 	.dialogComponent.tableOfValuesDialog {
 		max-width: 368px;
 
@@ -1316,16 +1087,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 					box-sizing: border-box;
 				}
 			 }
-		}
-	}
-
-	.sessionExpireNotifyDialog {
-		max-width: 448px;
-		height: unset;
-
-		.sessionExpireTxt {
-			max-width: 400px;
-			margin-bottom: 20px;
 		}
 	}
 
@@ -1505,14 +1266,81 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				border-bottom: 1px colors.$teal-default solid;
 			}
 
-			.group {
-				margin-bottom: 22px;
+			.subTitle {
+				font-weight: 500;
+				height: 19px;
+				line-height: 19px;
+				margin-bottom: 16px;
+			}
 
-				.heading {
-					margin-top: 8px;
-					margin-bottom: 4px;
-					height: 14px;
-					font-size: 12px;
+			.heading {
+				font-size: 16px;
+				font-weight: 500;
+				height: 20px;
+				line-height: 20px;
+				padding: 8px 0;
+			}
+
+			.group {
+				margin-bottom: 16px;
+				padding: 0 12px;
+				border: 1px solid neutral(300);
+				border-radius: 12px;
+
+				.row {
+					display: flex;
+					position: relative;
+					gap: 8px;
+					padding: 8px 0;
+					&:not(:last-child) {
+						border-bottom: 1px solid neutral(300);
+					}
+
+					.label {
+						flex: 1 0 0;
+						max-width: 150px;
+						font-size: 14px;
+						line-height: 16px;
+						align-content: center;
+						hyphens: auto;
+					}
+
+					.value {
+						width: 168px;
+						font-size: 14px;
+						line-height: 16px;
+						margin: auto 0;
+						text-overflow: ellipsis;
+						overflow: hidden;
+						white-space: nowrap;
+					}
+
+					.canvasWrapper {
+						width: 168px;
+						overflow-x: auto;
+						margin: auto 0;
+						line-height: 50%;
+					}
+
+					.valueCopyButton {
+						position: absolute;
+						right: -10px;
+						height: 16px;
+						top: calc(50% - 8px);
+						opacity: 0;
+
+						&.transitionIn {
+							transition: opacity 200ms;
+							transition-timing-function: cubic-bezier(0, 0, 0, 1);
+							opacity: 1;
+						}
+
+						&.transitionOut {
+							transition: opacity 200ms;
+							transition-timing-function: cubic-bezier(0.3, 0, 1, 1);
+							opacity: 0;
+						}
+					}
 				}
 			}
 
@@ -1523,11 +1351,6 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				.checkbox {
 					margin-left: 0;
 				}
-			}
-
-			.subTitle {
-				height: 32px;
-				line-height: 32px;
 			}
 
 			.sideSheetStats .infoErrorPanel {
@@ -1570,6 +1393,18 @@ $shadow-card-hover: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,
 				tr:last-child td {
 					border-bottom: 0;
 				}
+			}
+		}
+	}
+
+	.statistics.regression .sideSheet {
+		.contentPanel .group {
+			.label {
+				max-width: 94px;
+			}
+
+			.value, .canvasWrapper {
+				width: 222px;
 			}
 		}
 	}

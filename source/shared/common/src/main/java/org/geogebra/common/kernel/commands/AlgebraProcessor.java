@@ -494,7 +494,7 @@ public class AlgebraProcessor {
 	 * @param storeUndoInfo
 	 *            true to make undo step
 	 * @param callback
-	 *            what to do with the changed geo
+	 *            what to do with the changed geo; not called if the redefinition fails
 	 * @param handler
 	 *            decides how to handle exceptions
 	 *
@@ -538,11 +538,6 @@ public class AlgebraProcessor {
 			changeGeoElementNoExceptionHandling(geo, ve, info, storeUndoInfo, callback, handler);
 		} catch (MyError e) {
 			ErrorHelper.handleError(e, newValue, loc, handler);
-		} catch (ParseException exception) {
-			handler.showError(exception.getMessage());
-			if (callback != null) {
-				callback.callback(geo);
-			}
 		} catch (Exception e) {
 			ErrorHelper.handleException(e, app, handler);
 		} catch (CommandNotLoadedError e) {
@@ -1252,7 +1247,7 @@ public class AlgebraProcessor {
 
 	private GeoCasCell casEval(int row, String rhs) {
 		if (app.getGuiManager() != null) {
-			app.getGuiManager().getCasView().cancelEditItem();
+			app.getGuiManager().cancelCasEditing();
 		}
 		StringBuilder oldXML = cons.getCurrentUndoXML(false);
 		GeoCasCell cell = cons.getCasCell(row);
@@ -1765,7 +1760,7 @@ public class AlgebraProcessor {
 
 	/**
 	 * Parses given String str and tries to evaluate it to a NumberValue Returns
-	 * null if something went wrong. Michael Borcherds 2008-08-13
+	 * null if something went wrong.
 	 *
 	 * @param str
 	 *            string to parse
@@ -2713,6 +2708,9 @@ public class AlgebraProcessor {
 			gf.setForceInequality(forceInequality(en, gf));
 		} else {
 			gf = dependentFunctionNVar(fun);
+			if (info.isLabelOutput() || !info.isScripting()) {
+				gf.ensureStyleInitialized();
+			}
 		}
 		gf.setShortLHS(fun.getShortLHS());
 		gf.setLabel(label);
@@ -2727,6 +2725,8 @@ public class AlgebraProcessor {
 	/**
 	 * Multivariate Function depending on coefficients of arithmetic expressions
 	 * with variables, e.g. f(x,y) = a x^2 + b y^2
+	 *
+	 * @implNote the inequality tree and construction defaults are not set, up to the caller
 	 */
 	private GeoFunctionNVar dependentFunctionNVar(FunctionNVar fun) {
 		AlgoDependentFunctionNVar algo = new AlgoDependentFunctionNVar(cons, fun);
@@ -3905,5 +3905,30 @@ public class AlgebraProcessor {
 	 */
 	public void removeGeoElementSetup(GeoElementSetup geoElementSetup) {
 		geoElementSetups.remove(geoElementSetup);
+	}
+
+	/**
+	 * Parses given String str and tries to evaluate it to a GeoNumeric. Returns
+	 * null if something went wrong. Unlike {@link #evaluateToNumeric(String, ErrorHandler)},
+	 * this wraps polygons and segments in a converter algo to make sure the resuult is a numeric.
+	 *
+	 * @param value
+	 *            string to parse
+	 * @param errorHandler
+	 *            false to show error messages (only stacktrace otherwise)
+	 * @return resulting number
+	 */
+	public @Nullable GeoNumeric evaluateToGeoNumeric(String value, ErrorHandler errorHandler) {
+		NumberValue numberValue = evaluateToNumeric(value, errorHandler);
+		return numberValue == null
+				? null
+				: numberValue instanceof GeoNumeric numeric ? numeric : coerceToGeoNumeric(numberValue);
+	}
+
+	private @Nullable GeoNumeric coerceToGeoNumeric(NumberValue numberValue) {
+		AlgoDependentNumber algoDependentNumber =
+				new AlgoDependentNumber(cons, numberValue.wrap(), false);
+		cons.removeFromConstructionList(algoDependentNumber);
+		return (GeoNumeric) algoDependentNumber.getNumber();
 	}
 }

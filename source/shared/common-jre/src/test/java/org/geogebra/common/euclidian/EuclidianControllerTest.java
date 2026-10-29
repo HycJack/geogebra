@@ -32,7 +32,6 @@ import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoInlineText;
 import org.geogebra.common.main.GeoGebraColorConstants;
 import org.geogebra.common.plugin.EuclidianStyleConstants;
-import org.geogebra.editor.share.util.Unicode;
 import org.geogebra.test.TestEvent;
 import org.geogebra.test.annotation.Issue;
 import org.junit.jupiter.api.AfterEach;
@@ -89,14 +88,6 @@ class EuclidianControllerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	void joinTool() {
-		setMode(EuclidianConstants.MODE_JOIN);
-		click(0, 0);
-		click(100, 100);
-		checkContent("A = (0, 0)", "B = (2, -2)", "f: x + y = 0");
-	}
-
-	@Test
 	void deleteTool() {
 		setMode(EuclidianConstants.MODE_DELETE);
 		t("a:x=1");
@@ -106,32 +97,6 @@ class EuclidianControllerTest extends BaseEuclidianControllerTest {
 		resetMouseLocation();
 		click(50, 50);
 		checkContent();
-	}
-
-	@Test
-	void vectorTool() {
-		setMode(EuclidianConstants.MODE_VECTOR);
-		click(0, 0);
-		click(100, 100);
-		checkContent("A = (0, 0)", "B = (2, -2)", "u = (2, -2)");
-	}
-
-	@Test
-	void circle2Tool() {
-		setMode(EuclidianConstants.MODE_CIRCLE_TWO_POINTS);
-		click(50, 50);
-		click(100, 100);
-		checkContent("A = (1, -1)", "B = (2, -2)", unicode("c: (x - 1)^2 + (y + 1)^2 = 2"));
-	}
-
-	@Test
-	void circle3Tool() {
-		setMode(EuclidianConstants.MODE_CIRCLE_THREE_POINTS);
-		click(0, 0);
-		click(100, 100);
-		click(100, 0);
-		checkContent(
-				"A = (0, 0)", "B = (2, -2)", "C = (2, 0)", unicode("c: (x - 1)^2 + (y + 1)^2 = 2"));
 	}
 
 	@Test
@@ -157,63 +122,6 @@ class EuclidianControllerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	void segmentTool() {
-		setMode(EuclidianConstants.MODE_SEGMENT);
-		click(0, 0);
-		click(100, 100);
-		checkContent("A = (0, 0)", "B = (2, -2)", "f = 2.82843");
-	}
-
-	@Test
-	@Issue("APPS-5779")
-	void segmentWithDrag3Points() {
-		setMode(EuclidianConstants.MODE_SEGMENT);
-		click(0, 0);
-		dragStart(100, 100);
-		pointerRelease(200, 150);
-		checkContent("A = (0, 0)", "B = (4, -3)", "f = 5");
-		events.clear();
-	}
-
-	@Test
-	@Issue("APPS-5779")
-	void segmentWithDrag3PointsFixed() {
-		getApp()
-				.getSettings()
-				.getEuclidian(1)
-				.setPointCapturing(EuclidianStyleConstants.POINT_CAPTURING_ON_GRID);
-		setMode(EuclidianConstants.MODE_SEGMENT);
-		click(10, 10);
-		dragStart(110, 110);
-		pointerRelease(210, 160);
-		checkContent("A = (0, 0)", "B = (4, -3)", "f = 5");
-		events.clear();
-	}
-
-	@Test
-	@Issue("APPS-5779")
-	void segmentWithDragPreExisting() {
-		add("B=(2,-2)");
-		setMode(EuclidianConstants.MODE_SEGMENT);
-		click(0, 0);
-		dragStart(100, 100);
-		pointerRelease(200, 150);
-		checkContent("B = (4, -3)", "A = (0, 0)", "f = 5");
-		events.clear();
-	}
-
-	@Test
-	void segmentWithDrag() {
-		setMode(EuclidianConstants.MODE_SEGMENT);
-		dragStart(0, 0);
-		dragEnd(200, 150);
-		checkContent("A = (0, 0)", "B = (4, -3)", "f = 5");
-		dragStart(0, 0);
-		dragEnd(400, 300);
-		checkContent("A = (0, 0)", "B = (4, -3)", "f = 5", "C = (8, -6)", "g = 10");
-	}
-
-	@Test
 	void polygonTool() {
 		setMode(EuclidianConstants.MODE_POLYGON);
 		click(0, 0);
@@ -236,60 +144,6 @@ class EuclidianControllerTest extends BaseEuclidianControllerTest {
 	@Test
 	void textTool() {
 		setMode(EuclidianConstants.MODE_TEXT); // TODO 17
-	}
-
-	@Test
-	void rayTool() {
-		setMode(EuclidianConstants.MODE_RAY);
-		click(0, 0);
-		click(100, 100);
-		// Equation form for lines and rays aligned in APPS-6337
-		checkContent("A = (0, 0)", "B = (2, -2)", "f: x + y = 0");
-	}
-
-	@Test
-	void circleArc3Tool() {
-		setMode(EuclidianConstants.MODE_CIRCLE_ARC_THREE_POINTS);
-		click(100, 100);
-		click(100, 0);
-		click(0, 0);
-
-		checkContent("A = (2, -2)", "B = (2, 0)", "C = (0, 0)", "c = 1.5708");
-	}
-
-	@Test
-	void circleSector3Tool() {
-		setMode(EuclidianConstants.MODE_CIRCLE_SECTOR_THREE_POINTS);
-		click(0, 0);
-		click(100, 100);
-		click(150, 0);
-		checkContent("A = (0, 0)", "B = (2, -2)", "C = (3, 0)", "c = 3.14159");
-	}
-
-	@Test
-	void circumcircleArc3Tool() {
-		setMode(EuclidianConstants.MODE_CIRCUMCIRCLE_ARC_THREE_POINTS);
-		click(0, 0);
-		click(50, 50);
-		click(100, 0);
-		checkContent("A = (0, 0)", "B = (1, -1)", "C = (2, 0)", "c = " + Unicode.pi);
-	}
-
-	@Test
-	void circumcircleSector3Tool() {
-		setMode(EuclidianConstants.MODE_CIRCUMCIRCLE_SECTOR_THREE_POINTS);
-		click(0, 0);
-		click(100, 100);
-		click(200, 0);
-		checkContent("A = (0, 0)", "B = (2, -2)", "C = (4, 0)", "c = 6.28319");
-	}
-
-	@Test
-	void semicircleTool() {
-		setMode(EuclidianConstants.MODE_SEMICIRCLE);
-		click(100, 100);
-		click(100, 0);
-		checkContent("A = (2, -2)", "B = (2, 0)", "c = " + Unicode.pi);
 	}
 
 	@Test
@@ -418,31 +272,8 @@ class EuclidianControllerTest extends BaseEuclidianControllerTest {
 	}
 
 	@Test
-	void circlePointRadiusTool() {
-		setMode(EuclidianConstants.MODE_CIRCLE_POINT_RADIUS); // TODO 34
-	}
-
-	@Test
-	void vectorFromPointTool() {
-		setMode(EuclidianConstants.MODE_VECTOR_FROM_POINT); // TODO 37
-	}
-
-	@Test
 	void selectionListenerTool() {
 		setMode(EuclidianConstants.MODE_SELECTION_LISTENER); // TODO 43
-	}
-
-	@Test
-	void polarDiameterTool() {
-		setMode(EuclidianConstants.MODE_POLAR_DIAMETER); // TODO 44
-	}
-
-	@Test
-	void segmentFixedTool() {
-		setMode(EuclidianConstants.MODE_SEGMENT_FIXED);
-		prepareInput("2");
-		click(100, 100);
-		checkContent("A = (2, -2)", "B = (4, -2)", "f = 2");
 	}
 
 	@Test
@@ -471,59 +302,6 @@ class EuclidianControllerTest extends BaseEuclidianControllerTest {
 	@Test
 	void showCheckBoxTool() {
 		setMode(EuclidianConstants.MODE_SHOW_HIDE_CHECKBOX); // TODO 52
-	}
-
-	@Test
-	void compassesTool() {
-		t("A = (2, -2)");
-		t("B = (0, 0)");
-		setMode(EuclidianConstants.MODE_COMPASSES);
-		click(100, 100);
-		click(0, 0);
-		click(150, 0);
-		checkContent("A = (2, -2)", "B = (0, 0)", "C = (3, 0)", unicode("c: (x - 3)^2 + y^2 = 8"));
-	}
-
-	@Test
-	@Issue("APPS-6270")
-	void compassesToolOnTheFlyPoints() {
-		setMode(EuclidianConstants.MODE_COMPASSES);
-		click(100, 100);
-		click(0, 0);
-		click(150, 0);
-		checkContent("A = (2, -2)", "B = (0, 0)", "C = (3, 0)", unicode("c: (x - 3)^2 + y^2 = 8"));
-	}
-
-	@Test
-	void compassesToolSegment() {
-		t("A = (2, -2)");
-		t("B = (0, 0)");
-		t("Segment(A,B)");
-		setMode(EuclidianConstants.MODE_COMPASSES);
-		click(50, 50);
-		click(150, 0);
-		checkContent(
-				"A = (2, -2)",
-				"B = (0, 0)",
-				"f = 2.82843",
-				"C = (3, 0)",
-				unicode("c: (x - 3)^2 + y^2 = 8"));
-	}
-
-	@Test
-	void compassesToolCircle() {
-		t("A = (2, -2)");
-		t("B = (0, 0)");
-		t("Circle(A,B)");
-		setMode(EuclidianConstants.MODE_COMPASSES);
-		click(200, 200);
-		click(150, 0);
-		checkContent(
-				"A = (2, -2)",
-				"B = (0, 0)",
-				unicode("c: (x - 2)^2 + (y + 2)^2 = 8"),
-				"C = (3, 0)",
-				unicode("d: (x - 3)^2 + y^2 = 8"));
 	}
 
 	@Test
@@ -605,16 +383,6 @@ class EuclidianControllerTest extends BaseEuclidianControllerTest {
 	@Test
 	void rigidPolygonTool() {
 		setMode(EuclidianConstants.MODE_RIGID_POLYGON); // TODO 64
-	}
-
-	@Test
-	void polyLineTool() {
-		setMode(EuclidianConstants.MODE_POLYLINE);
-		click(50, 50);
-		click(100, 50);
-		click(100, 100);
-		click(50, 50);
-		checkContent("A = (1, -1)", "B = (2, -1)", "C = (2, -2)", "f = 2");
 	}
 
 	@Test

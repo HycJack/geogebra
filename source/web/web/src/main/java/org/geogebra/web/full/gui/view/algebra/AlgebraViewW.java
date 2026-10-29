@@ -67,6 +67,7 @@ import org.geogebra.web.html5.gui.util.CancelEventTimer;
 import org.geogebra.web.html5.gui.util.Dom;
 import org.geogebra.web.html5.main.AppW;
 import org.geogebra.web.html5.main.DrawEquationW;
+import org.geogebra.web.html5.main.GlobalKeyDispatcherW;
 import org.geogebra.web.html5.main.TimerSystemW;
 import org.geogebra.web.html5.util.CopyPasteW;
 import org.geogebra.web.shared.SharedResources;
@@ -74,6 +75,7 @@ import org.gwtproject.animation.client.AnimationScheduler;
 import org.gwtproject.animation.client.AnimationScheduler.AnimationCallback;
 import org.gwtproject.core.client.Scheduler;
 import org.gwtproject.dom.client.Element;
+import org.gwtproject.dom.client.Node;
 import org.gwtproject.dom.style.shared.Unit;
 import org.gwtproject.event.dom.client.KeyCodes;
 import org.gwtproject.event.dom.client.MouseDownEvent;
@@ -232,9 +234,17 @@ public final class AlgebraViewW extends Tree
 
 		// needed to have tabindex >= 0 with focus to catch keyboard events
 		getElement().setTabIndex(0);
-		addKeyDownHandler(this.app.getGlobalKeyDispatcher());
-		addKeyUpHandler(this.app.getGlobalKeyDispatcher());
-		addKeyPressHandler(this.app.getGlobalKeyDispatcher());
+		GlobalKeyDispatcherW keyDispatcher = this.app.getGlobalKeyDispatcher();
+		addKeyDownHandler(keyDispatcher);
+		addKeyUpHandler(keyDispatcher);
+		addKeyPressHandler(keyDispatcher);
+		Node focusable = getElement().getChild(0);
+		if (focusable instanceof Element focusableElement) {
+			Dom.addEventListener(
+					focusableElement,
+					"keypress",
+					evt -> keyDispatcher.onKeyPressNative(Js.uncheckedCast(evt)));
+		}
 		if (!app.getAppletParameters().preventFocus()) {
 			setFocus(true);
 		}
@@ -1338,7 +1348,7 @@ public final class AlgebraViewW extends Tree
 		scrollOnRepaint = false;
 		latexLoaded = false;
 		clearTree();
-		activeItem = null;
+		clearActiveItem();
 		if (inputPanelLatex != null) {
 			inputPanelLatex.setText("");
 		}
@@ -1534,15 +1544,17 @@ public final class AlgebraViewW extends Tree
 	 */
 	private @NonNull RadioTreeItem prepareInputPanel() {
 		if (inputPanelLatex == null) {
-			if (getApp().getAlgebraStyle() == AlgebraStyle.LINEAR_NOTATION) {
-				inputPanelLatex = new LinearNotationTreeItem(kernel, this).initInput();
-			} else {
-				inputPanelLatex = new LaTeXTreeItem(kernel, this).initInput();
-			}
+			inputPanelLatex = isLinearNotation()
+					? new LinearNotationTreeItem(kernel, this).initInput()
+					: new LaTeXTreeItem(kernel, this).initInput();
 		} else {
 			inputPanelLatex.removeFromParent();
 		}
 		return inputPanelLatex;
+	}
+
+	private boolean isLinearNotation() {
+		return getApp().getAlgebraStyle() == AlgebraStyle.LINEAR_NOTATION;
 	}
 
 	@Override
@@ -1552,6 +1564,11 @@ public final class AlgebraViewW extends Tree
 		} else {
 			hideAlgebraInput();
 		}
+	}
+
+	@Override
+	protected void updateAriaAttributes() {
+		// the default implementation results in invalid roles
 	}
 
 	private void hideAlgebraInput() {
@@ -1683,7 +1700,6 @@ public final class AlgebraViewW extends Tree
 		if (activeItem != null && !selectionCtrl.isMultiSelect()) {
 			selectRow(activeItem.getGeo(), false);
 		}
-
 		this.activeItem = item;
 		//
 		if (activeItem != null) {
@@ -1705,7 +1721,7 @@ public final class AlgebraViewW extends Tree
 			activeItem.removeCloseButton();
 			stopCurrentEditor();
 			// use setter to make sure current item is reset correctly
-			activeItem = null;
+			clearActiveItem();
 		}
 	}
 
@@ -1747,10 +1763,13 @@ public final class AlgebraViewW extends Tree
 
 	@Override
 	public void updatePreviewFromInputBar(GeoElement @NonNull [] geos) {
-		if (geos.length > 0 && getActiveTreeItem() != null) {
-			getActiveTreeItem().previewValue(geos[0]);
-		} else if (inputPanelLatex != null) {
-			inputPanelLatex.clearPreviewAndSuggestions();
+		RadioTreeItem activeTreeItem = getActiveTreeItem();
+		if (activeTreeItem != null) {
+			if (geos.length > 0) {
+				activeTreeItem.previewValue(geos[0]);
+			} else {
+				activeTreeItem.clearPreviewAndSuggestions();
+			}
 		}
 	}
 
@@ -1759,8 +1778,7 @@ public final class AlgebraViewW extends Tree
 		return Dom.isAttachedAndVisible(this);
 	}
 
-	@Override
-	public void cancelEditItem() {
+	void cancelEditItem() {
 		editItem = false;
 		setAnimationEnabled(true);
 	}
@@ -1794,7 +1812,10 @@ public final class AlgebraViewW extends Tree
 
 		if (!geo.isPointOnPath() && !geo.isPointInRegion()) {
 			// check for attached needed for F2 when Algebra View closed
-			if (geo.isGeoText() && ((GeoText) geo).isLaTeX() && !geo.isTextCommand()) {
+			if (geo.isGeoText()
+					&& ((GeoText) geo).isLaTeX()
+					&& !geo.isTextCommand()
+					&& !isLinearNotation()) {
 				app.getDialogManager().showRedefineDialog(geo, true);
 				return;
 			}
@@ -1823,7 +1844,6 @@ public final class AlgebraViewW extends Tree
 		RadioTreeItem node = nodeTable.get(geo);
 
 		if (node != null) {
-			cancelEditItem();
 			editItem = true;
 			setAnimationEnabled(false);
 			expandAVToItem(node);
@@ -1856,10 +1876,7 @@ public final class AlgebraViewW extends Tree
 		RadioTreeItem node = nodeTable.get(geo);
 
 		if (node != null) {
-			cancelEditItem();
-			// FIXMEWEB select and show node
 			editItem = true;
-
 			setAnimationEnabled(false);
 			expandAVToItem(node);
 			if (!node.enterEditMode(false)) {
@@ -2078,8 +2095,10 @@ public final class AlgebraViewW extends Tree
 		activeItem = null;
 	}
 
-	@Override
-	public void resetItems(boolean unselectAll) {
+	/**
+	 * Finish editing and update currently edited item.
+	 */
+	public void resetItems(boolean unused) {
 		MinMaxPanel.closeMinMaxPanel();
 
 		cancelEditItem();

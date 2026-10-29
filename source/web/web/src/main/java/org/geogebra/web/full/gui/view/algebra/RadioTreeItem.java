@@ -427,7 +427,11 @@ public abstract class RadioTreeItem extends AVTreeItem
 			definitionFromTeX(text);
 		} else if (geo != null) {
 			resetCanvas();
-			IndexHTMLBuilder sb = new DOMIndexHTMLBuilder(definitionPanel, app);
+			Label plainDefinitionContent = new Label();
+			definitionPanel.clear();
+			// intermediate DIV needed so that parent's color used for scrollbar does not hide text
+			definitionPanel.add(plainDefinitionContent);
+			IndexHTMLBuilder sb = new DOMIndexHTMLBuilder(plainDefinitionContent, app);
 			if (isAlgebraStyle(AlgebraStyle.DESCRIPTION)) {
 				if (AlgebraItem.needsPacking(geo)) {
 					IndexHTMLBuilder.convertIndicesToHTML(
@@ -453,17 +457,21 @@ public abstract class RadioTreeItem extends AVTreeItem
 	}
 
 	protected boolean updateValuePanel(String text) {
+		return updateValuePanel(text, geo);
+	}
+
+	protected boolean updateValuePanel(String text, GeoElement geoElement) {
 		if (outputPanel == null) {
 			return false;
 		}
-		boolean ret = outputPanel.updateValuePanel(geo, text, latex, getFontSize());
-		if (geo != null && shouldShowOutputButton(geo)) {
+		boolean ret = outputPanel.updateValuePanel(geoElement, text, latex, getFontSize());
+		if (geoElement != null && shouldShowOutputButton(geoElement)) {
 			addControls();
 			createOutputButtonIfNeeded();
 			AlgebraOutputPanel.updateOutputPanelButton(
 					symbolicButton,
 					controls,
-					geo,
+					geoElement,
 					isEngineeringNotationEnabled(),
 					getAlgebraOutputFormatFilters());
 
@@ -561,7 +569,9 @@ public abstract class RadioTreeItem extends AVTreeItem
 		}
 		ariaPreview = null;
 		outputPanel.reset();
-		definitionValuePanel.removeFromParent();
+		if (isInputTreeItem()) {
+			definitionValuePanel.removeFromParent();
+		}
 	}
 
 	/**
@@ -578,7 +588,7 @@ public abstract class RadioTreeItem extends AVTreeItem
 	 */
 	public void previewValue(GeoElement previewGeo) {
 
-		if (previewGeo.getDescriptionMode() != DescriptionMode.DEFINITION_VALUE
+		if (previewGeo.getDescriptionMode() == DescriptionMode.DEFINITION
 				|| getController().isInputAsText()
 				|| !previewGeo.isAllowedToShowValue()) {
 			clearPreview();
@@ -604,7 +614,7 @@ public abstract class RadioTreeItem extends AVTreeItem
 				content.add(definitionValuePanel);
 			}
 		} else {
-			if (updateOutputValuePanel()) {
+			if (updateOutputValuePanel(previewGeo)) {
 				outputPanel.addValuePanel();
 			}
 		}
@@ -617,14 +627,19 @@ public abstract class RadioTreeItem extends AVTreeItem
 	}
 
 	protected boolean updateOutputValuePanel() {
-		initIfRationazableFraction();
-		return updateValuePanel(
-				geo.getLaTeXDescriptionRHS(true, app.getConfig().getOutputStringTemplate()));
+		return updateOutputValuePanel(geo);
 	}
 
-	private void initIfRationazableFraction() {
-		if (geo.isGeoNumeric() && geo.getDefinition() != null) {
-			geo.getDefinition().isRationalizableFraction();
+	protected boolean updateOutputValuePanel(GeoElement geoElement) {
+		initIfRationazableFraction(geoElement);
+		return updateValuePanel(
+				geoElement.getLaTeXDescriptionRHS(true, app.getConfig().getOutputStringTemplate()),
+				geoElement);
+	}
+
+	private void initIfRationazableFraction(GeoElement geoElement) {
+		if (geoElement.isGeoNumeric() && geoElement.getDefinition() != null) {
+			geoElement.getDefinition().isRationalizableFraction();
 		}
 	}
 
@@ -901,13 +916,13 @@ public abstract class RadioTreeItem extends AVTreeItem
 	}
 
 	/**
-	 * @param rawInput
-	 *            value after edit
-	 * @param callback
-	 *            callback
+	 * @param rawInput editor content, kept for correction if the input is rejected
+	 * @param evalInput input to evaluate (e.g. without trailing operator)
+	 * @param callback callback, only called if the input was accepted
+	 * @return false if the input was rejected and is kept for correction; true otherwise
 	 */
-	public final void stopEditing(
-			final String rawInput, final AsyncOperation<GeoElementND> callback) {
+	public final boolean stopEditing(
+			final String rawInput, final String evalInput, final AsyncOperation<GeoElementND> callback) {
 		lastTeX = null;
 		lastInput = null;
 		onStopEdit();
@@ -927,16 +942,17 @@ public abstract class RadioTreeItem extends AVTreeItem
 		}
 
 		if (!StringUtil.empty(rawInput)) {
-			String newValue = isTextItem() ? "\"" + rawInput + "\"" : rawInput;
+			String newValue = isTextItem() ? "\"" + rawInput + "\"" : evalInput;
 			final boolean wasLaTeX = geo instanceof GeoText && ((GeoText) geo).isLaTeX();
 			if (geo != null) {
 				boolean redefine = !isMoveablePoint(geo);
-				this.lastInput = newValue;
+				this.lastInput = rawInput;
 				this.lastTeX = getEditorLatex();
 				if (this.lastTeX == null) {
 					this.lastInput = null;
 				}
 
+				final boolean[] accepted = {false};
 				EvalInfo info = EvalInfoFactory.getEvalInfoForRedefinition(kernel, geo, redefine);
 				kernel
 						.getAlgebraProcessor()
@@ -946,30 +962,26 @@ public abstract class RadioTreeItem extends AVTreeItem
 								info,
 								true,
 								geo2 -> {
-									if (geo2 != null) {
-										geo = geo2.toGeoElement();
-										lastTeX = null;
-										lastInput = null;
+									if (geo2 == null) {
+										return;
 									}
+									accepted[0] = true;
+									geo = geo2.toGeoElement();
+									lastTeX = null;
+									lastInput = null;
 									if (geo instanceof GeoText && wasLaTeX && geo.isIndependent()) {
 										((GeoText) geo).setLaTeX(true, false);
 									}
 									if (marblePanel != null) {
 										marblePanel.updateIcons(false);
 									}
-									updateAfterRedefine(geo2 != null);
+									updateAfterRedefine(true);
 									if (callback != null) {
 										callback.callback(geo2);
 									}
 								},
-								AlgebraInputW.getWarningHandler(this, app));
-				// make sure edting ends: run callback even if not successful
-				// TODO maybe prevent running this twice?
-				if (!geo.isIndependent() && callback != null) {
-					callback.callback(geo);
-				}
-
-				return;
+								getErrorHandler(true, false, false));
+				return accepted[0];
 			}
 		} else {
 			if (isAlgebraStyle(AlgebraStyle.DEFINITION_AND_VALUE)) {
@@ -979,6 +991,7 @@ public abstract class RadioTreeItem extends AVTreeItem
 
 		// empty new value -- consider success to make sure focus goes away
 		updateAfterRedefine(rawInput == null);
+		return true;
 	}
 
 	protected void showStyleBarIfNeeded() {
@@ -1054,16 +1067,11 @@ public abstract class RadioTreeItem extends AVTreeItem
 	}
 
 	/**
-	 * Mark geo as erroneous; show warning icon
+	 * Mark geo as erroneous; show warning icon. The element itself stays unchanged.
 	 */
 	protected void saveError() {
 		if (geo != null) {
-			geo.setUndefined();
-			geo.updateRepaint();
-			updateAfterRedefine(true);
-			if (marblePanel != null) {
-				marblePanel.updateIcons(true);
-			}
+			updateIcons(true);
 		}
 	}
 
@@ -1832,7 +1840,11 @@ public abstract class RadioTreeItem extends AVTreeItem
 	}
 
 	String getPreviewText() {
-		return getMathField() != null ? getMathField().getInternal().getPreviewText() : getText();
+		if (getMathField() == null) {
+			return getText();
+		}
+		String previewText = getMathField().getInternal().getPreviewText();
+		return StringUtil.emptyTrim(previewText) ? getText() : previewText;
 	}
 
 	/**
@@ -1852,7 +1864,7 @@ public abstract class RadioTreeItem extends AVTreeItem
 	 * Cancel editing
 	 */
 	public void cancelEditing() {
-		stopEditing(getText(), null);
+		stopEditing(getText(), getPreviewText(), null);
 		updateIcons(this.errorMessage != null);
 		app.getActiveEuclidianView().requestFocus();
 	}

@@ -167,6 +167,7 @@ public final class ComponentTab extends FlowPanel implements SetLabels {
 
 	private void initTabList() {
 		tabList = new FlowPanel();
+		AriaHelper.setTabIndex(tabList, 0);
 		AriaHelper.setRole(tabList, "tablist");
 		AriaHelper.setLabel(tabList, loc.getMenu(ariaLabel));
 		tabList.addStyleName("tabList");
@@ -229,10 +230,12 @@ public final class ComponentTab extends FlowPanel implements SetLabels {
 	 * @param animate Whether tab switching animation should occur
 	 */
 	private void switchToTab(int tabIdx, boolean animate) {
+		if (selectedTabIdx == tabIdx && panelContainer.getWidget(tabIdx).isVisible()) {
+			return;
+		}
 		if (selectedBtn != null) {
 			updateSelection(selectedBtn, false);
 		}
-
 		int toHide = selectedTabIdx;
 		if (animate) {
 			fadeTab(toHide, "fadeOut", false);

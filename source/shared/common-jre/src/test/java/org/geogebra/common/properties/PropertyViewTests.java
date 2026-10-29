@@ -37,7 +37,6 @@ import org.geogebra.common.jre.headless.MyImageCommon;
 import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoNumeric;
 import org.geogebra.common.main.App;
-import org.geogebra.common.main.PreviewFeature;
 import org.geogebra.common.properties.aliases.BooleanProperty;
 import org.geogebra.common.properties.aliases.ImageProperty;
 import org.geogebra.common.properties.factory.GeoElementPropertiesFactory;
@@ -61,8 +60,6 @@ import org.geogebra.common.util.MockedCasValues;
 import org.geogebra.common.util.MockedCasValuesExtension;
 import org.geogebra.test.BaseAppTestSetup;
 import org.geogebra.test.annotation.Issue;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -71,16 +68,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 @SuppressWarnings({"variableDeclarationUsageDistanceCheck", "RegexpSinglelineCheck"})
 @ExtendWith(MockedCasValuesExtension.class)
 class PropertyViewTests extends BaseAppTestSetup {
-
-	@BeforeAll
-	static void enablePreviewFeatures() {
-		PreviewFeature.setPreviewFeaturesEnabled(true);
-	}
-
-	@AfterAll
-	static void disabledPreviewFeatures() {
-		PreviewFeature.setPreviewFeaturesEnabled(false);
-	}
 
 	@Test
 	void testGridTypeDependentLineStyleVisibility() {
@@ -270,15 +257,19 @@ class PropertyViewTests extends BaseAppTestSetup {
 
 		GeoElement line = evaluateGeoElement("Line((-1,-1),(1,1))");
 		GeoElementPropertiesFactory propertiesFactory = new GeoElementPropertiesFactory();
-		PropertiesArray properties = propertiesFactory.createGeoElementProperties(
-				getAlgebraProcessor(), getLocalization(), List.of(line));
+		PropertiesArray advanced = propertiesFactory
+				.createProperties(getAlgebraProcessor(), getLocalization(), null, false, List.of(line))
+				.get(2);
 		LinearEquationFormProperty linearEquationFormProperty = null;
-		for (Property property : properties.getProperties()) {
-			if (property instanceof NamedEnumeratedPropertyListFacade) {
-				Property firstProperty = ((NamedEnumeratedPropertyListFacade) property).getFirstProperty();
-				if (firstProperty instanceof LinearEquationFormProperty) {
-					linearEquationFormProperty = (LinearEquationFormProperty) firstProperty;
-					break;
+		for (Property collections : advanced.getProperties()) {
+			for (Property property : ((PropertyCollection) collections).getProperties()) {
+				if (property instanceof NamedEnumeratedPropertyListFacade) {
+					Property firstProperty =
+							((NamedEnumeratedPropertyListFacade) property).getFirstProperty();
+					if (firstProperty instanceof LinearEquationFormProperty) {
+						linearEquationFormProperty = (LinearEquationFormProperty) firstProperty;
+						break;
+					}
 				}
 			}
 		}
@@ -439,6 +430,50 @@ class PropertyViewTests extends BaseAppTestSetup {
 		assertEquals(
 				originalValue,
 				LineOpacityProperty.forLine(getLocalization(), lookup("a")).getValue());
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+			delimiterString = "->",
+			value = {
+				"PieChart({1,2,3}) -> Pie chart",
+				"BarChart({1,2,3},{2,3,1}) -> Bar chart",
+				"LineGraph({1,2,3},{2,3,1}) -> Line chart",
+				"Histogram({0,1,2},{2,1}) -> Histogram",
+				"HistogramRight({0,1,2},{2,1}) -> Histogram",
+				"BoxPlot(0,1,{1,2,3,4,5}) -> Boxplot",
+				"42 -> Number",
+				"{1,2,3} -> List",
+				"Polyline({(0,0),(1,1)}) -> Polyline",
+			})
+	void testTabbedPageSelectorTitle(String command, String expectedTitle) {
+		setupApp(SuiteSubApp.GRAPHING);
+		getApp().setImageManager(new ImageManagerCommon());
+		GeoElement chart = evaluateGeoElement(command);
+		PropertyView.TabbedPageSelector settings =
+				PropertyViewFactory.propertyViewOfObjectSettings(getApp(), List.of(chart));
+		assertNotNull(settings);
+		assertEquals(expectedTitle, settings.getTitle());
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+			delimiter = ';',
+			value = {
+				"(1,2); (3,4)",
+				"(1,2); 42",
+				"42; (1,2)",
+				"PieChart({1,2,3}); (1,2)",
+				"(1,2); PieChart({1,2,3})",
+			})
+	void testTabbedPageSelectorTitleForMultipleElements(String first, String second) {
+		setupApp(SuiteSubApp.GRAPHING);
+		getApp().setImageManager(new ImageManagerCommon());
+		List<GeoElement> elements = List.of(evaluateGeoElement(first), evaluateGeoElement(second));
+		PropertyView.TabbedPageSelector settings =
+				PropertyViewFactory.propertyViewOfObjectSettings(getApp(), elements);
+		assertNotNull(settings);
+		assertEquals(getLocalization().getMenu("Selection"), settings.getTitle());
 	}
 
 	@ParameterizedTest

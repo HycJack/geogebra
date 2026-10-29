@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +122,66 @@ class SpreadsheetStatisticsTest {
 
 		Result.GroupList result =
 				assertInstanceOf(Result.GroupList.class, oneVarStatisticsView().getResult());
-		assertEquals(11, result.statisticGroups().size());
+		assertEquals(1, result.statisticGroups().size());
+		assertEquals(11, result.statisticGroups().get(0).rows().size());
+	}
+
+	@Test
+	@Issue("APPS-8011")
+	void testOneVarStatisticsUsesAllSelectedColumns() {
+		setupColumn(0, 1, 2, 3, 4);
+		setupColumn(1, 5, 6, 7, 8);
+		kernelBackedController.select(new TabularRange(0, 0, 3, 1), false, false);
+		kernelBackedController.showOneVarStatistics();
+
+		assertEquals(
+				new OneVarInput(parseReference("A1:B4")), oneVarStatisticsView().getInput());
+		Result.GroupList result =
+				assertInstanceOf(Result.GroupList.class, oneVarStatisticsView().getResult());
+		assertEquals("4.5", result.statisticGroups().get(0).rows().get(0).clipboardValue());
+		assertEquals("36", result.statisticGroups().get(0).rows().get(1).clipboardValue());
+		assertEquals("8", result.statisticGroups().get(0).rows().get(5).clipboardValue());
+
+		oneVarStatisticsView().setFocusedDataRange(SpreadsheetStatistics.DataRange.X);
+		assertEquals(
+				new SpreadsheetReferences(List.of(), parseReference("A1:B4")),
+				kernelBackedController.getStatisticsReferences());
+	}
+
+	@Test
+	@Issue("APPS-8011")
+	void testOneVarStatisticsUsesReversedHorizontalSelection() {
+		setupColumn(1, 100, 2);
+		setupColumn(2, 100, 4);
+		setupColumn(3, 100, 6);
+		kernelBackedController.select(new TabularRange(1, 3, 1, 1), false, false);
+		kernelBackedController.showOneVarStatistics();
+
+		assertEquals(
+				new OneVarInput(parseReference("B2:D2")), oneVarStatisticsView().getInput());
+		Result.GroupList result =
+				assertInstanceOf(Result.GroupList.class, oneVarStatisticsView().getResult());
+		assertEquals("4", result.statisticGroups().get(0).rows().get(0).clipboardValue());
+		assertEquals("3", result.statisticGroups().get(0).rows().get(5).clipboardValue());
+	}
+
+	@Test
+	@Issue("APPS-8011")
+	void testOneVarStatisticsRecalculatesWhenSecondColumnChanges() {
+		setupColumn(0, 1, 2, 3, 4);
+		setupColumn(1, 5, 6, 7, 8);
+		kernelBackedController.select(new TabularRange(0, 0, 3, 1), false, false);
+		kernelBackedController.showOneVarStatistics();
+
+		GeoNumeric cell = (GeoNumeric) kernelTabularData.contentAt(3, 1);
+		cell.setValue(16);
+		cell.updateRepaint();
+
+		Result.GroupList result =
+				assertInstanceOf(Result.GroupList.class, oneVarStatisticsView().getResult());
+		assertEquals("5.5", result.statisticGroups().get(0).rows().get(0).clipboardValue());
+		assertEquals("44", result.statisticGroups().get(0).rows().get(1).clipboardValue());
+		assertEquals("8", result.statisticGroups().get(0).rows().get(5).clipboardValue());
 	}
 
 	@Test
@@ -471,7 +531,10 @@ class SpreadsheetStatisticsTest {
 
 		Result.GroupList result =
 				assertInstanceOf(Result.GroupList.class, twoVarStatisticsView().getResult());
-		assertEquals(18, result.statisticGroups().size());
+		assertEquals(3, result.statisticGroups().size());
+		assertEquals(4, result.statisticGroups().get(0).rows().size());
+		assertEquals(7, result.statisticGroups().get(1).rows().size());
+		assertEquals(7, result.statisticGroups().get(2).rows().size());
 	}
 
 	@Test
@@ -631,7 +694,9 @@ class SpreadsheetStatisticsTest {
 
 		Result.GroupList result =
 				assertInstanceOf(Result.GroupList.class, regressionView().getResult());
-		assertEquals(4, result.statisticGroups().size());
+		assertEquals(2, result.statisticGroups().size());
+		assertEquals(3, result.statisticGroups().get(0).rows().size());
+		assertEquals(2, result.statisticGroups().get(1).rows().size());
 	}
 
 	@Test
@@ -1048,6 +1113,28 @@ class SpreadsheetStatisticsTest {
 		kernelBackedController.closeStatisticsView();
 
 		assertNull(kernelBackedController.getStatisticsView());
+	}
+
+	@Test
+	@Issue("APPS-8060")
+	void testStatisticsViewDoesNotCreateListsOnUndoRedo() {
+		app.setUndoActive(true);
+		setupColumn(0, 1, 2, 3);
+		setupColumn(1, 4, 5, 6);
+		app.storeUndoInfo();
+		kernelBackedController.select(new TabularRange(0, 0, 2, 1), false, false);
+		kernelBackedController.showTwoVarStatistics();
+		assertInstanceOf(Result.GroupList.class, twoVarStatisticsView().getResult());
+		app.getKernel().getAlgebraProcessor().processAlgebraCommand("LineGraph(A1:A3,B1:B3)", true);
+
+		app.getUndoManager().undo();
+		app.getUndoManager().redo();
+
+		assertTrue(app.getKernel().getConstruction().getGeoSetConstructionOrder().stream()
+				.noneMatch(GeoElement::isGeoList));
+		assertEquals(
+				"LineGraph(A1:A3, B1:B3)",
+				app.getKernel().lookupLabel("f").getDefinition(StringTemplate.testTemplate));
 	}
 
 	/**

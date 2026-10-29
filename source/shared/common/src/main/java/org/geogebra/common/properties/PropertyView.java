@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.geogebra.common.awt.GColor;
 import org.geogebra.common.awt.MyImage;
+import org.geogebra.common.euclidian.CoordSystemListener;
 import org.geogebra.common.euclidian.EuclidianViewInterfaceCommon;
 import org.geogebra.common.euclidian3D.EuclidianView3DInterface;
 import org.geogebra.common.gui.view.probcalculator.ProbabilityCalculatorView;
@@ -42,6 +43,7 @@ import org.geogebra.common.properties.aliases.ImageProperty;
 import org.geogebra.common.properties.aliases.StringProperty;
 import org.geogebra.common.properties.factory.PropertiesArray;
 import org.geogebra.common.properties.impl.AbstractEnumeratedProperty;
+import org.geogebra.common.properties.impl.ZoomProperty;
 import org.geogebra.common.properties.impl.collections.AbstractPropertyCollection;
 import org.geogebra.common.properties.impl.collections.ActionablePropertyCollection;
 import org.geogebra.common.properties.impl.distribution.ProbabilityCalculatorViewDependentProperty;
@@ -72,6 +74,7 @@ import org.geogebra.common.properties.impl.objects.AbsoluteScreenPositionPropert
 import org.geogebra.common.properties.impl.objects.AlgebraViewVisibilityPropertyCollection;
 import org.geogebra.common.properties.impl.objects.AlignmentPropertyCollection;
 import org.geogebra.common.properties.impl.objects.BackgroundColorPropertyCollection;
+import org.geogebra.common.properties.impl.objects.BarChartBoundsPropertyCollection;
 import org.geogebra.common.properties.impl.objects.BorderStylePropertyCollection;
 import org.geogebra.common.properties.impl.objects.ChartDataPropertyCollection;
 import org.geogebra.common.properties.impl.objects.ChartSegmentFillCategoryProperty;
@@ -181,6 +184,7 @@ public abstract class PropertyView {
 					ProbabilityCalculatorView.Listener,
 					ValueFilter.Observer,
 					ChartSegmentSelection.Listener,
+					CoordSystemListener,
 					SettingListener,
 					EventListener,
 					EuclidianViewInterfaceCommon.DimensionListener {
@@ -279,6 +283,12 @@ public abstract class PropertyView {
 			}
 			dependentGeoElements.remove(originalElement);
 			dependentGeoElements.add(newElement);
+			notifyUpdateDelegates();
+		}
+
+		@Override
+		public void onCoordSystemChanged() {
+			updatePropertyViewValues();
 			notifyUpdateDelegates();
 		}
 
@@ -459,13 +469,12 @@ public abstract class PropertyView {
 	}
 
 	/**
-	 * Representation of a combo box with a label, a dropdown for suggestions, an input field for
-	 * custom values, displaying the current value and an optional error message.
+	 * View combining suggestion dropdown with a validating input field.
 	 */
-	public static final class ComboBox
+	public abstract static sealed class PropertyViewWithSuggestions
 			extends ValidatablePropertyBackedView<StringPropertyWithSuggestions> {
-		ComboBox(StringPropertyWithSuggestions stringPropertyWithSuggestions) {
-			super(stringPropertyWithSuggestions);
+		protected PropertyViewWithSuggestions(@NonNull StringPropertyWithSuggestions stringProperty) {
+			super(stringProperty);
 		}
 
 		/**
@@ -483,6 +492,24 @@ public abstract class PropertyView {
 		}
 
 		/**
+		 * @param value potential value
+		 * @return whether value is valid
+		 */
+		public boolean validate(String value) {
+			return property.validateValue(value) == null;
+		}
+	}
+
+	/**
+	 * Representation of a combo box with a label, a dropdown for suggestions, an input field for
+	 * custom values, displaying the current value and an optional error message.
+	 */
+	public static final class ComboBox extends PropertyViewWithSuggestions {
+		ComboBox(StringPropertyWithSuggestions stringPropertyWithSuggestions) {
+			super(stringPropertyWithSuggestions);
+		}
+
+		/**
 		 * @return Whether invalid input should be replaced with the previous valid value
 		 */
 		public boolean restoresPreviousValueOnInvalidInput() {
@@ -494,6 +521,31 @@ public abstract class PropertyView {
 		 */
 		public @NonNull TextFormat getFormat() {
 			return property.isDisplayedInMathFormat() ? TextFormat.MATH : TextFormat.PLAIN;
+		}
+	}
+
+	/**
+	 * Similar to {@link ComboBox}, but items can have icons and dividers are supported.
+	 */
+	public static final class ComboBoxWithIcons extends PropertyViewWithSuggestions {
+
+		public ComboBoxWithIcons(@NonNull ZoomProperty stringProperty) {
+			super(stringProperty);
+		}
+
+		/**
+		 * @param index item index
+		 * @return icon related to given item
+		 */
+		public PropertyResource getIcon(int index) {
+			return ((ZoomProperty) property).getIcon(index);
+		}
+
+		/**
+		 * @return list of indices of items that should be preceded by a divider
+		 */
+		public List<Integer> getDividerLocations() {
+			return ((ZoomProperty) property).getDividerLocations();
 		}
 	}
 
@@ -616,6 +668,7 @@ public abstract class PropertyView {
 				}
 			} else {
 				commitValue();
+				refreshCachedValue();
 			}
 		}
 
@@ -792,6 +845,13 @@ public abstract class PropertyView {
 		 */
 		public void setSelectedColorIndex(int newSelectedColorIndex) {
 			property.setIndex(newSelectedColorIndex);
+		}
+
+		/**
+		 * @return the underlying color property
+		 */
+		public @NonNull ColorProperty getColorProperty() {
+			return property;
 		}
 	}
 
@@ -1757,6 +1817,10 @@ public abstract class PropertyView {
 							new HorizontalSplitView(
 									new TextField(dimensionPropertyMinZ), new TextField(dimensionPropertyMaxZ))),
 					10);
+		} else if (property instanceof BarChartBoundsPropertyCollection collection) {
+			return new HorizontalSplitView(
+					new TextField(collection.getProperties()[0]),
+					new TextField(collection.getProperties()[1]));
 		} else if (property instanceof AbsoluteScreenPositionPropertyCollection collection) {
 			return new HorizontalSplitView(
 					new TextField(collection.getProperties()[0]),

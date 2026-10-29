@@ -17,7 +17,6 @@
     <exclude-pattern>.*/org/geogebra/desktop/gui/editor/.*</exclude-pattern>
     <!-- We'll use the entire 'strings' ruleset -->
     <rule ref="category/java/bestpractices.xml">
-        <exclude name="AccessorMethodGeneration"/>
         <exclude name="UseCollectionIsEmpty"/>
         <exclude name="ConstantsInInterface"/>
         <exclude name="UseVarargs"/>
@@ -106,7 +105,6 @@
         <exclude name="TooManyFields"/>
         <exclude name="AvoidRethrowingException"/>
         <exclude name="ExcessivePublicCount"/>
-        <exclude name="AvoidThrowingNullPointerException"/>
         <exclude name="LoosePackageCoupling"/>
         <exclude name="ExcessiveParameterList"/>
         <exclude name="SignatureDeclareThrowsException"/>
@@ -125,7 +123,6 @@
         <exclude name="LawOfDemeter"/>
         <exclude name="SwitchDensity"/>
         <exclude name="InstantiableUtilityClass"/>
-        <exclude name="AbstractClassWithoutAnyMethod"/>
         <exclude name="DoNotExtendJavaLangError"/>
         <exclude name="AvoidUncheckedExceptionsInSignatures"/>
         <exclude name="MutableStaticState"/>
@@ -234,7 +231,20 @@
             </property>
         </properties>
     </rule>
-
+    <rule name="StringBuilderEmptyCheck"
+          language="java"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
+          typeResolution="true"
+          message="StringBuilder.isEmpty() is not supported in j2objc and Android &lt; 15">
+        <properties>
+            <property name="xpath">
+                <value>
+                    //MethodCall[pmd-java:matchesSig("java.lang.StringBuilder#isEmpty()")]
+                </value>
+            </property>
+            <property name="violationSuppressXPath" value="//PackageDeclaration[matches(@Name, 'org.geogebra.(web|desktop).*')]"/>
+        </properties>
+    </rule>
     <rule name="UseOrgGwtproject"
           language="java"
           class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"

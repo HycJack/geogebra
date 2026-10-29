@@ -710,11 +710,6 @@ public abstract class DialogManager {
 		showTextDialog(null, startPoint, rw);
 	}
 
-	/**
-	 * Open help for current tool.
-	 */
-	public abstract void openToolHelp();
-
 	protected void showTextDialog(GeoText text, GeoPointND startPoint, boolean rw) {
 		app.setWaitCursor();
 
@@ -1169,14 +1164,6 @@ public abstract class DialogManager {
 	 * Show embed dialog in web.
 	 */
 	public void showEmbedDialog() {
-		// only needed in web
-	}
-
-	/**
-	 * @param geo
-	 *            function to add to able view after success
-	 */
-	public void openTableViewDialog(GeoElement geo) {
 		// only needed in web
 	}
 

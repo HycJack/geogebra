@@ -462,11 +462,10 @@ public abstract class GlobalKeyDispatcher {
 
 			// open Tool Help
 			case F1:
-				app.getDialogManager().openToolHelp();
-				return true;
+				return openToolHelp();
 
 			// F9 updates construction
-			// cmd-f9 on Mac OS
+			// cmd-f9 on macOS
 			case F9:
 				if (!app.isApplet() || keyboardShortcutsEnabled()) {
 					app.getKernel().updateConstruction(true);
@@ -1265,8 +1264,7 @@ public abstract class GlobalKeyDispatcher {
 				return true;
 
 			case F1:
-				app.getDialogManager().openToolHelp();
-				return true;
+				return openToolHelp();
 
 			case F4:
 				// F4 key: copy value to input field
@@ -1325,9 +1323,6 @@ public abstract class GlobalKeyDispatcher {
 		double changeValY = 0; // later: changeVal = base or -base
 		double changeValZ = 0; // later: changeVal = base or -base
 		switch (key) {
-			default:
-				// do nothing
-				break;
 			case UP:
 				// make sure arrow keys work in menus
 				if (app.getGuiManager() != null
@@ -1417,6 +1412,9 @@ public abstract class GlobalKeyDispatcher {
 
 			case PAGEDOWN:
 				changeValZ = -base;
+				break;
+			default:
+				// do nothing
 				break;
 		}
 
@@ -1524,6 +1522,14 @@ public abstract class GlobalKeyDispatcher {
 			return changed;
 		}
 
+		return false;
+	}
+
+	/**
+	 * Open help dialog for current tool when F1 is pressed.
+	 * @return whether tool help was opened
+	 */
+	protected boolean openToolHelp() {
 		return false;
 	}
 

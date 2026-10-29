@@ -35,6 +35,7 @@ import org.geogebra.common.kernel.kernelND.GeoEvaluatable;
 import org.geogebra.common.kernel.statistics.FitAlgo;
 import org.geogebra.common.kernel.statistics.Statistic;
 import org.geogebra.common.main.Localization;
+import org.geogebra.common.util.AttributedString;
 import org.geogebra.common.util.debug.Log;
 
 public class RegressionBuilder {
@@ -56,7 +57,7 @@ public class RegressionBuilder {
 
 	/**
 	 * Creates a list of available stats groups.
-	 * If regression is not possible (not enough data) the list will be empty.
+	 * If fitting fails, the model is retained with undefined parameter values.
 	 * @param regression regression type + degree
 	 * @return regression parameters + coefficient of determination
 	 */
@@ -68,23 +69,28 @@ public class RegressionBuilder {
 		try {
 			GeoElementND geo = algebraProcessor.processValidExpressionSilent(cmd)[0];
 			FitAlgo fitAlgo = (FitAlgo) geo.getParentAlgorithm();
-			double[] coeffs = Objects.requireNonNull(fitAlgo).getCoeffs();
-			if (coeffs == null) {
+			double[] coeffs = geo.isDefined() ? Objects.requireNonNull(fitAlgo).getCoeffs() : null;
+			if (geo.isDefined() && coeffs == null) {
 				return stats;
 			}
+			List<StatisticGroup.Row> modelRows = new ArrayList<>();
 			String formula = regression.getFormula();
 			if (formula != null) {
-				stats.add(new StatisticGroup(
-						kernel.getLocalization().getMenu("Stats.Formula"), true, List.of(formula)));
+				modelRows.add(new StatisticGroup.Row(loc.getMenu("Stats.Formula"), formula, true, null));
 			}
-			List<String> parameters = new ArrayList<>(coeffs.length);
-			for (int i = 0; i < coeffs.length; i++) {
+			int coefficientCount =
+					coeffs == null ? regression.getCoeffOrdering().length() : coeffs.length;
+			for (int i = 0; i < coefficientCount; i++) {
 				char coeffName = regression.getCoeffName(i);
 				int index = regression.getCoeffOrdering().indexOf(coeffName);
-				parameters.add(
-						coeffName + " = " + kernel.format(coeffs[index], StringTemplate.defaultTemplate));
+				double coefficient = coeffs == null ? Double.NaN : coeffs[index];
+				String value = kernel.format(coefficient, StringTemplate.defaultTemplate);
+				String clipboardValue = kernel.format(coefficient, StringTemplate.maxDecimals);
+				modelRows.add(
+						new StatisticGroup.Row(String.valueOf(coeffName), value, false, clipboardValue));
 			}
-			stats.add(new StatisticGroup(loc.getMenu("Parameters"), false, parameters));
+			stats.add(new StatisticGroup(new AttributedString(loc.getMenu("Stats.Model")), modelRows));
+			List<StatisticGroup.Row> fitQualityRows = new ArrayList<>();
 			if (regression.hasCoefficientOfDetermination()) {
 				addResidual(
 						loc.getMenu("CoefficientOfDetermination"),
@@ -92,9 +98,9 @@ public class RegressionBuilder {
 						Statistic.RSQUARE,
 						geo,
 						points,
-						stats);
+						fitQualityRows);
 				if (regression.hasCorrelationCoefficient()) {
-					addCorrelationCoefficient(stats, points);
+					addCorrelationCoefficient(fitQualityRows, points);
 				}
 			} else {
 				addResidual(
@@ -103,7 +109,11 @@ public class RegressionBuilder {
 						Statistic.PMCC,
 						geo,
 						points,
-						stats);
+						fitQualityRows);
+			}
+			if (!fitQualityRows.isEmpty()) {
+				stats.add(new StatisticGroup(
+						new AttributedString(loc.getMenu("Stats.FitQuality")), fitQualityRows));
 			}
 		} catch (CommandNotLoadedError e) {
 			throw e; // commands not loaded => throw so that we can retry on UI level
@@ -119,14 +129,15 @@ public class RegressionBuilder {
 			Statistic lhsStat,
 			GeoElementND geo,
 			MyVecNode points,
-			List<StatisticGroup> stats)
+			List<StatisticGroup.Row> rows)
 			throws CircularDefinitionException {
 		Command residualCmd = buildCommand(Statistic.RSQUARE, points, geo);
 		GeoElementND residual = algebraProcessor.processValidExpressionSilent(residualCmd)[0];
 		String lhs = lhsStat.getLHS(kernel.getLocalization(), "");
-		String rSquareRow = kernel.format(
-				transform.applyAsDouble(residual.evaluateDouble()), StringTemplate.defaultTemplate);
-		stats.add(new StatisticGroup(coefficient, false, List.of(lhs + " = " + rSquareRow)));
+		double residualValue = transform.applyAsDouble(residual.evaluateDouble());
+		String value = kernel.format(residualValue, StringTemplate.defaultTemplate);
+		String clipboardValue = kernel.format(residualValue, StringTemplate.maxDecimals);
+		rows.add(new StatisticGroup.Row(coefficient, lhs + " = " + value, false, clipboardValue));
 	}
 
 	private Command buildCommand(Statistic statistic, ExpressionValue... args) {
@@ -138,16 +149,17 @@ public class RegressionBuilder {
 		return residualCmd;
 	}
 
-	private void addCorrelationCoefficient(List<StatisticGroup> stats, MyVecNode points) {
+	private void addCorrelationCoefficient(List<StatisticGroup.Row> rows, MyVecNode points) {
 		Command exec = buildCommand(Statistic.PMCC, points);
 		String varName = xVal.getLabelSimple() + yVal.getLabelSimple();
 
 		try {
 			GeoElementND r = algebraProcessor.processValidExpressionSilent(exec)[0];
-			String heading = kernel.getLocalization().getMenu("Stats." + Statistic.PMCC.getCommandName());
+			String label = kernel.getLocalization().getMenu("Stats." + Statistic.PMCC.getCommandName());
 			String lhs = Statistic.PMCC.getLHS(kernel.getLocalization(), varName);
-			String formula = lhs + " = " + r.toValueString(StringTemplate.defaultTemplate);
-			stats.add(new StatisticGroup(heading, false, List.of(formula)));
+			String value = r.toValueString(StringTemplate.defaultTemplate);
+			String clipboardValue = r.toValueString(StringTemplate.maxDecimals);
+			rows.add(new StatisticGroup.Row(label, lhs + " = " + value, false, clipboardValue));
 		} catch (RuntimeException | CircularDefinitionException e) {
 			Log.debug(e);
 		}

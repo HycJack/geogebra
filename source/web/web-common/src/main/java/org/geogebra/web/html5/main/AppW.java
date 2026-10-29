@@ -161,9 +161,6 @@ import org.geogebra.web.html5.main.toolbox.DefaultToolboxIconProvider;
 import org.geogebra.web.html5.main.toolbox.FaIconSpec;
 import org.geogebra.web.html5.main.toolbox.MebisToolboxIconProvider;
 import org.geogebra.web.html5.main.toolbox.ToolboxIconResource;
-import org.geogebra.web.html5.main.topbar.DefaultTopBarIconProvider;
-import org.geogebra.web.html5.main.topbar.MebisTopBarIconProvider;
-import org.geogebra.web.html5.main.topbar.TopBarIconResource;
 import org.geogebra.web.html5.move.googledrive.GoogleDriveOperation;
 import org.geogebra.web.html5.safeimage.ImageLoader;
 import org.geogebra.web.html5.sound.SoundManagerW;
@@ -286,7 +283,6 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 	private FullScreenState fullscreenState;
 	private ToolTipManagerW toolTipManager;
 	private ToolboxIconResource toolboxIconResource;
-	private TopBarIconResource topBarIconResource;
 	private GeneralIconResource generalIconResource;
 
 	/**
@@ -2245,10 +2241,6 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 		closePopupsNoTooltips();
 		getToolTipManager().hideTooltip();
 
-		if (!isUnbundled() && getGuiManager() != null && getGuiManager().hasAlgebraView()) {
-			getAlgebraView().resetItems(false);
-		}
-
 		if (getActiveEuclidianView() != null) {
 			getActiveEuclidianView().getEuclidianController().setObjectMenuActive(false);
 		}
@@ -3627,18 +3619,6 @@ public abstract class AppW extends App implements SetLabels, HasLanguage {
 		}
 
 		return toolboxIconResource;
-	}
-
-	/**
-	 * @return top bar icon resource provider
-	 */
-	public TopBarIconResource getTopBarIconResource() {
-		if (topBarIconResource == null) {
-			topBarIconResource = new TopBarIconResource(
-					isUsingFontAwesome() ? new MebisTopBarIconProvider() : new DefaultTopBarIconProvider());
-		}
-
-		return topBarIconResource;
 	}
 
 	/**

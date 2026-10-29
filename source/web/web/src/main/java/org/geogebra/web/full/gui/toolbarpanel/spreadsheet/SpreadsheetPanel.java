@@ -17,6 +17,7 @@
 package org.geogebra.web.full.gui.toolbarpanel.spreadsheet;
 
 import org.geogebra.common.gui.FocusableComponent;
+import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.ScreenReader;
 import org.geogebra.common.main.settings.SpreadsheetSettings;
@@ -91,7 +92,7 @@ public final class SpreadsheetPanel extends FlowPanel
 	 * @param app application
 	 * @param spreadsheet spreadsheet
 	 */
-	public SpreadsheetPanel(AppW app, @NonNull Spreadsheet<?> spreadsheet) {
+	public SpreadsheetPanel(AppW app, @NonNull Spreadsheet<GeoElement> spreadsheet) {
 		Canvas spreadsheetWidget = Canvas.createIfSupported();
 		spreadsheetWidget.addStyleName("spreadsheetWidget");
 		graphics = new GGraphics2DW(spreadsheetWidget);
@@ -138,6 +139,9 @@ public final class SpreadsheetPanel extends FlowPanel
 			setPointerCapture(event);
 			if (!app.isUnbundled()) {
 				app.getGuiManager().setActivePanelAndToolbar(App.VIEW_SPREADSHEET);
+			} else {
+				// VIEW_ALGEBRA corresponds to ToolbarDockPanelW, which owns the spreadsheet
+				app.getGuiManager().getLayout().getDockManager().setFocusedPanel(App.VIEW_ALGEBRA);
 			}
 			if (modifiers.secondaryButton
 					|| spreadsheet.isEditorActive()
